@@ -10,7 +10,9 @@
   "version": "0.1.0",
   "description": "Minimalist Web Component based framework",
   "main": "modulocli.js",
-  "dependencies": {},
+  "dependencies": {
+    "jsdom": "^16.4.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/michaelpb/modulo.git"

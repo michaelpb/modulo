@@ -1,4 +1,8 @@
-const Modulo = {};
+if (typeof HTMLElement === 'undefined') {
+    var HTMLElement = class {}; // Node.js compatibilty
+}
+const globals = {HTMLElement};
+const Modulo = {globals};
 
 Modulo.DEBUG = true;
 Modulo.ON_EVENTS = new Set([
@@ -184,8 +188,8 @@ class ModuloLoader extends HTMLElement {
     }
 
     loadString(text) {
-        const frag = new DocumentFragment();
-        const div = document.createElement('div');
+        const frag = new globals.DocumentFragment();
+        const div = globals.document.createElement('div');
         const tagInfo = {content: text, options: parseAttrs(this)};
         const {content} = this.applyMiddleware('mod-load', tagInfo, {});
         div.innerHTML = content;
@@ -200,15 +204,15 @@ class ModuloLoader extends HTMLElement {
         for (const tag of tags) {
             this.loadFromDOMElement(tag);
         }
+
         // TODO: Move this to loader middleware?
         const textContent = this.componentFactoryData
             .map(([tagName, options]) =>
                 options.style.map(({content}) => content).join('\n')
             ).join('\n');
-        const styling = document.createElement('style');
+        const styling = globals.document.createElement('style');
         styling.append(textContent);
-        document.head.append(styling)
-        console.log('this is me', this.componentFactoryData)
+        globals.document.head.append(styling)
     }
 
     _checkNode(child, searchTagName) {
@@ -267,6 +271,7 @@ class ModuloLoader extends HTMLElement {
         componentFactory.register();
     }
 }
+
 class ModuloConfigure extends HTMLElement {
     static defaultSettings = {};
     connectedCallback() {
@@ -319,6 +324,7 @@ class ModuloState extends HTMLElement {
 }
 
 class ModuloProps extends HTMLElement {}
+
 function genSelectorForDescendant(component, elem) {
     // todo: improve with real key system (?)
     // NOTE: Low priority, since morphdom works great
@@ -329,7 +335,7 @@ function genSelectorForDescendant(component, elem) {
 
 function saveFocus(component) {
     component._activeElementSelector = null;
-    const {activeElement} = document;
+    const {activeElement} = globals.document;
     if (activeElement && component.contains(activeElement)) {
         component._activeElementSelector = genSelectorForDescendant(component, activeElement);
     }
@@ -372,8 +378,8 @@ Modulo.adapters = {
             return context => scopedEval(null, (context || {}), code);
         },
         TinyTiny: () => {
-            assert(window.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
-            return window.TinyTiny;
+            assert(globals.window.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
+            return globals.window.TinyTiny;
         },
     },
     reconciliation: {
@@ -383,7 +389,8 @@ Modulo.adapters = {
             restoreFocus(component);
         },
         setdom: () => {
-            assert(window.setDOM, 'setDOM is not loaded at window.setDOM');
+            assert(globals.window.setDOM, 'setDOM is not loaded at window.setDOM');
+            const {setDOM} = globals.window;
             setDOM.KEY = 'key';
             return (component, html) => {
                 if (!component.isMounted) {
@@ -394,8 +401,8 @@ Modulo.adapters = {
             };
         },
         morphdom: () => {
-            assert(window.morphdom, 'morphdom is not loaded at window.morphdom');
-            const {morphdom} = window;
+            assert(globals.window.morphdom, 'morphdom is not loaded at window.morphdom');
+            const {morphdom} = globals.window;
             const opts = {
                 getNodeKey: el => el.getAttribute && el.getAttribute('key'),
                 onBeforeElChildrenUpdated: (fromEl, toEl) => {
@@ -494,7 +501,7 @@ class ComponentFactory {
 
     register() {
         const tagName = this.fullName.toLowerCase();
-        customElements.define(tagName, this.componentClass);
+        globals.customElements.define(tagName, this.componentClass);
     }
 }
 
@@ -634,7 +641,7 @@ class ModuloComponent extends HTMLElement {
     createUtilityComponents() {
         const stateObjects = this.factory.options.state;
         for (const {options} of stateObjects) {
-            const elem = document.createElement('mod-state');
+            const elem = globals.document.createElement('mod-state');
             for (const [key, value] of Object.entries(options)) {
                 elem.setAttribute(key, value);
             }
@@ -668,14 +675,18 @@ Modulo.Props = ModuloProps;
 Modulo.State = ModuloState;
 Modulo.Configure = ModuloConfigure;
 Modulo.middleware = middleware;
+Modulo.globals = globals;
 
 if (typeof module !== 'undefined') { // Node
     module.exports = Modulo;
 }
-
 if (typeof customElements !== 'undefined') { // Browser
-    customElements.define('mod-load', Modulo.ModuloLoader);
-    customElements.define('mod-state', Modulo.ModuloState);
-    customElements.define('mod-props', Modulo.ModuloProps);
-    customElements.define('mod-configure', Modulo.ModuloConfigure);
+    globals.window = window;
+    globals.document = document;
+    globals.DocumentFragment = DocumentFragment;
+    globals.customElements = customElements;
+    customElements.define('mod-load', ModuloLoader);
+    customElements.define('mod-state', ModuloState);
+    customElements.define('mod-props', ModuloProps);
+    customElements.define('mod-configure', ModuloConfigure);
 }
