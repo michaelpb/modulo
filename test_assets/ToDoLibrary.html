@@ -1,0 +1,107 @@
+<mod-configure
+></mod-configure>
+
+<template mod-component="ToDoApp" reconciliation-engine="morphdom">
+    <template templating-engine="TinyTiny">
+        <header>
+            <h1>To Do List</h1>
+        </header>
+
+        <main>
+            <ol>
+                {% for item in state.list %}
+                    <li>
+                        {{ item }}
+                        <button onclick:=remove onclick.payload="{{item}}">X</button>
+                    </li>
+                {% endfor %}
+                <li>
+                    <input
+                        onkeyup:=updateInputValue
+                        value="{{ state.invalue}}"
+                    />
+                    <button onclick:=add onclick.payload="{{state.invalue}}">
+                        +
+                    </button>
+                </li>
+            </ol>
+            <p>(Adding: {{state.invalue}})</p>
+        </main>
+    </template>
+
+    <style>
+        ToDoApp {
+            font-family: sans-serif;
+            background: linear-gradient(to right, #ef32d9, #89fffd);
+        }
+
+        ol {
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.3);
+            min-height: 100px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+
+    <mod-state
+        list:='
+            [
+                "Call the dentist",
+                "Shop for gift",
+                "Finish coding side-project"
+            ]
+        '
+        invalue="Okay"
+    ></mod-state>
+
+    <script>
+        /*
+        function initialized() {
+            this.state.set('list', [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            ]);
+        }
+        */
+        function remove(ev, payload) {
+            const list = this.state.reference('list');
+            list.splice(list.indexOf(payload), 1);
+            //this.state.alter('list',
+            //    list => list.filter(item => item !== payload));
+        }
+
+        function updateInputValue(ev, newValue) {
+            this.state.set('invalue', newValue);
+        }
+
+        function add(ev, payload) {
+            payload = payload.trim();
+            if (payload) {
+                const list = this.state.reference('list');
+                list.push(payload);
+                this.state.set('invalue', ''); // clear input
+            }
+        }
+    </script>
+</template>
+
+
+
+<template mod-component="Button" reconciliation-engine="morphdom">
+    <!-- NOTE: Unused -->
+    <template templating-engine="TinyTiny">
+        <button onclick:=props.onclick>
+            {{ props.caption }}
+        </button>
+    </template>
+    <mod-props
+        caption=String
+        onclick=Function
+    /><mod-props>
+    <style>
+        button {
+            color: blue;
+            background: pink;
+        }
+    </style>
+</template>
+

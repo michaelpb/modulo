@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+    <head>
+        <script>
+            // Small hack
+            module = {};
+            module.exports = {};
+        </script>
+        <script src="./Modulo.js"></script>
+        <script src="./ModuloAdapters.js"></script>
+        <script src="./tinytiny/index.js"></script>
+        <script src="./node_modules/set-dom/dist/set-dom.js"></script>
+        <script src="./node_modules/morphdom/dist/morphdom.js"></script>
+    </head>
+
+    <mod-load namespace="todo" src="./ToDoLibrary.html"></mod-load>
+    <body>
+        <h1>Modulo.js - To Do App Demo</h1>
+        <todo-ToDoApp></todo-ToDoApp>
+    </body>
+</html>
+
+
+
