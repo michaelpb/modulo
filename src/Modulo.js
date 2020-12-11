@@ -1,3 +1,419 @@
+const Modulo = {};
+
+Modulo.DEBUG = true;
+Modulo.ON_EVENTS = new Set([
+    'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
+    'onmousemove', 'onmouseout', 'ondragstart', 'ondrag', 'ondragenter',
+    'ondragleave', 'ondragover', 'ondrop', 'ondragend', 'onkeydown',
+    'onkeypress', 'onkeyup', 'onload', 'onunload', 'onabort', 'onerror',
+    'onresize', 'onscroll', 'onselect', 'onchange', 'onsubmit', 'onreset',
+    'onfocus', 'onblur',
+]);
+
+// TODO: Decide on ':' vs ''
+Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:]`).join(',');
+// moedco.REWRITE_CHILD_SELECTOR = []; // TODO: Select only children with : in property name
+
+const defaultLifeCycleMethods = {
+    initialized: () => {},
+    prepare: component => component.factory.prepareDefaultRenderInfo(component),
+    render: (context, opts) => opts.compiledTemplate(context),
+    update: (component, newContents) => {
+        component.clearEvents();
+        component.factory.options.meta.reconcile(component, newContents);
+        component.rewriteEvents();
+    },
+    updated: () => {},
+};
+const baseScript = {get: key => defaultLifeCycleMethods[key]};
+
+const middleware = {
+    prefixAllSelectors: (info, {loader}, componentMeta) => {
+        // TODO: replace with AST based auto-prefixing
+        const name = componentMeta.options.modComponent;
+        const fullName = `${loader.namespace}-${name}`;
+        //let content = info.content.replace(new RegExp(name, 'ig'), fullName);
+        let content = info.content.replace(/\*\/.*?\*\//ig, ''); // strip comments
+        content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
+            selector = selector.trim();
+            if (selector.startsWith('@') || selector.startsWith(fullName)) {
+                // Skip, is @media or @keyframes, or already prefixed
+                return selector;
+            }
+            selector = selector.replace(new RegExp(name, 'ig'), fullName);
+            if (!selector.startsWith(fullName)) {
+                selector = `${fullName} ${selector}`;
+            }
+            return selector;
+        });
+        console.log('this is new CSS', content);
+        return {...info, content};
+    },
+    compileTemplate(info, opts) {
+        const templateCompiler = Modulo.adapters.templating[opts.templatingEngine]();
+        const compiledTemplate = templateCompiler(info.content, opts);
+        return {...info, compiledTemplate};
+    },
+    rewriteComponentNamespace(info, {loader}) {
+        return {
+            ...info,
+            content: info.content.replace(/(<\/?)my-/ig, '$1' + loader.namespace + '-'),
+        };
+    },
+    selectReconciliationEngine(metaInfo, opts) {
+        const reconcile = Modulo.adapters.reconciliation[opts.reconciliationEngine]();
+        return {...metaInfo, reconcile};
+    },
+    rewriteTemplateTagsAsScriptTags(info, opts) {
+        // NOTE: May need to create a simple helper library of HTML parsing,
+        // for both this and componentNamespace and maybe CSS "it's easy"
+        return {
+            ...info,
+            content: info.content.replace(/<template /ig, '<script type="modulo/template"'),
+        };
+    },
+};
+
+function parseAttrs(elem, processColons) {
+    const obj = {};
+    for (let name of elem.getAttributeNames()) {
+        let value = elem.getAttribute(name);
+        name = name.replace(/-([a-z])/g, g => g[1].toUpperCase());
+        if (processColons && name.endsWith(':')) {
+            // TODO: Refactor this with buildProps & resolveAttr etc
+            name = name.slice(0, -1); // slice out colon
+            value = JSON.parse(value);
+        }
+        obj[name] = value;
+    }
+    return obj;
+}
+
+function assert(value, ...messages) {
+    if (!value) {
+        console.error(...messages);
+        const message = Array.from(messages).join(' - ');
+        throw new Error(`Modulo Error: "${message}"`)
+    }
+}
+
+function scopedEval(thisContext, namedArgs, code) {
+    const argPairs = Array.from(Object.entries(namedArgs));
+    const argNames = argPairs.map(pair => pair[0]);
+    const argValues = argPairs.map(pair => pair[1]);
+    const func = new Function(...argNames, code);
+    return func.apply(thisContext, argValues);
+}
+
+function observeAllAttributes(element) {
+    // https://github.com/WICG/webcomponents/issues/565
+    const observer = new MutationObserver(mutations => mutations
+        .filter(({type}) => type === 'attributes')
+        .map(element.attributeMutated, element))
+    observer.observe(element, {attributes: true});
+}
+
+const defaultSettings = {
+    factoryMiddleware: {
+        template: [middleware.rewriteComponentNamespace, middleware.compileTemplate],
+        style: [middleware.prefixAllSelectors],
+        script: [],
+        'mod-state': [],
+        'mod-props': [],
+        'mod-component': [middleware.selectReconciliationEngine],
+        'mod-load': [],
+        //'mod-load': [middleware.rewriteTemplateTagsAsScriptTags],
+                        // This is where we can warn if ':="' occurs (:= should
+                        // only be for symbols)
+    },
+    enforceProps: true, // TODO: Put as default seting on mod-props
+};
+
+class ModuloLoader extends HTMLElement {
+    constructor(...args) {
+        super()
+        this.initialize.apply(this, args);
+    }
+
+    initialize(namespace, options, factoryData=null) {
+        this.namespace = namespace;
+        this.customizedSettings = options;
+        this.settings = Object.assign({}, defaultSettings, options);
+        this.componentFactoryData = [];
+        if (factoryData) {
+            for (const [name, options] of factoryData) {
+                this.defineComponent(name, options);
+            }
+        }
+    }
+
+    serialize() {
+        // Note: Will probably rewrite thsi when working on "modulo-cli build"
+        const arg0 = JSON.stringify(this.namespace);
+        const arg1 = JSON.stringify(this.customizedSettings);
+        const arg2 = JSON.stringify(this.componentFactoryData);
+        return `new ModuloLoader(${arg0}, ${arg1}, ${arg2});`;
+    }
+
+    connectedCallback() {
+        this.initialize(this.getAttribute('namespace'), parseAttrs(this));
+        // TODO: Check if already loaded via serialized etc
+        fetch(this.getAttribute('src'))
+            .then(response => response.text())
+            .then(this.loadString.bind(this));
+    }
+
+    applyMiddleware(typeName, tagInfo, componentMeta = null) {
+        const middlewareArr = this.settings.factoryMiddleware[typeName];
+        const attrs = tagInfo.options;
+        assert(middlewareArr, 'not midware:', typeName);
+        const opts = {
+            attrs,
+            loader: this,
+            reconciliationEngine: attrs.reconciliationEngine || 'none',
+            templatingEngine: attrs.templatingEngine || 'Backtick',
+        };
+        for (const func of middlewareArr) {
+            tagInfo = func(tagInfo, opts, componentMeta);
+            // TODO: Add asserts to make sure tagInfo remains serializable --
+            // factory middleware should be preprocessing only
+            // - Later make "executable" string type (for serializing
+            //   post-compile templates)
+        }
+        return tagInfo;
+    }
+
+    loadString(text) {
+        const frag = new DocumentFragment();
+        const div = document.createElement('div');
+        const tagInfo = {content: text, options: parseAttrs(this)};
+        const {content} = this.applyMiddleware('mod-load', tagInfo, {});
+        div.innerHTML = content;
+        frag.append(div);
+        this.loadFromDOM(div);
+    }
+
+    loadFromDOM(domElement) {
+        const elem = domElement.querySelector('mod-settings');
+        Object.assign(this.settings, (elem || {}).settings);
+        const tags = domElement.querySelectorAll('[mod-component]');
+        for (const tag of tags) {
+            this.loadFromDOMElement(tag);
+        }
+        // TODO: Move this to loader middleware?
+        const textContent = this.componentFactoryData
+            .map(([tagName, options]) =>
+                options.style.map(({content}) => content).join('\n')
+            ).join('\n');
+        const styling = document.createElement('style');
+        styling.append(textContent);
+        document.head.append(styling)
+        console.log('this is me', this.componentFactoryData)
+    }
+
+    _checkNode(child, searchTagName) {
+        if (child.nodeType === 3 || child.nodeType === 8) {
+            return false; // Text node, continue (later generate warning if not whitespace)
+        }
+        let name = (child.tagName || '').toLowerCase();
+        const splitType = (child.getAttribute('type') || '').split('/');
+        if (splitType[0] && splitType[0].lower() === 'modulo') {
+            name = splitType[1];
+        }
+        if (!(name in {script: 1, style: 1, template: 1, 'mod-state': 1, 'mod-props': 1})) {
+            console.error('Modulo - Unknown tag in component def:', name);
+            return false; // Invalid node (later generate warning)
+        }
+        return name === searchTagName;
+    }
+
+    loadTagType(parentElem, searchTagName, componentMeta) {
+        const results = [];
+        for (const childNode of parentElem.content.childNodes) {
+            if (!this._checkNode(childNode, searchTagName)) {
+                continue;
+            }
+            const options = parseAttrs(childNode);
+            const content = searchTagName === 'template' ? childNode.innerHTML
+                                                         : childNode.textContent;
+            let tagInfo = {options, content};
+            tagInfo = this.applyMiddleware(searchTagName, tagInfo, componentMeta);
+            results.push(tagInfo);
+        }
+        return results;
+    }
+
+    loadFromDOMElement(elem) {
+        const attrs = parseAttrs(elem);
+        let componentMeta = {content: '', options: attrs};
+        componentMeta = this.applyMiddleware('mod-component', componentMeta);
+        const style = this.loadTagType(elem, 'style', componentMeta);
+        const template = this.loadTagType(elem, 'template', componentMeta);
+        const script = this.loadTagType(elem, 'script', componentMeta);
+        const state = this.loadTagType(elem, 'mod-state', componentMeta);
+        const props = this.loadTagType(elem, 'mod-props', componentMeta);
+        assert(style.length < 2, 'Mod: only 1 style'); // later allow for cascading
+        assert(script.length < 3, 'Mod: only 1 script'); // ""
+        assert(template.length < 2, 'Mod: only 1 template'); // later allow for "selection"
+        assert(props.length < 2, 'Mod: only 1 props');
+        assert(state.length < 2, 'Mod: only 1 state');
+        const options = {template, style, script, state, props, meta: componentMeta};
+        this.defineComponent(attrs.modComponent, options);
+    }
+
+    defineComponent(name, options) {
+        this.componentFactoryData.push([name, options]);
+        const componentFactory = new ComponentFactory(this, name, options);
+        componentFactory.register();
+    }
+}
+class ModuloConfigure extends HTMLElement {
+    static defaultSettings = {};
+    connectedCallback() {
+        this.settings = parseAttrs(this);
+    }
+    // attributeChangedCallback() {} // TODO - allow live configuration
+}
+
+class ModuloState extends HTMLElement {
+    get(key) {
+        if (this.hasAttribute(key + ':')) {
+            const value = this.getAttribute(key + ':');
+            console.log('this is value', value);
+            return JSON.parse(value);
+        } else {
+            return this.getAttribute(key);
+        }
+    }
+    set(key, value) {
+        if (typeof value !== 'string') {
+            value = JSON.stringify(value);
+            key += ':';
+        }
+        this.setAttribute(key, value);
+    }
+
+    alter(key, callback) {
+        setTimeout(() => this.set(key, callback(this.get(key))), 0);
+    }
+
+    reference(key) {
+        const newVersion = this.get(key);
+        setTimeout(() => this.set(key, newVersion), 0);
+        return newVersion;
+    }
+
+    connectedCallback() {
+        this.parentComponent = ModuloComponent.renderStackPeak();
+        this.parentComponent.state = this; // Currently assumes 1 state
+        if (!this.isMounted) {
+            this.defaults = parseAttrs(this, true);
+            observeAllAttributes(this);
+            this.isMounted = true;
+        }
+    }
+    attributeMutated() {
+        //console.log('attributeMutated!'); // TODO dedupe 
+        this.parentComponent.rerender();
+    }
+}
+
+class ModuloProps extends HTMLElement {}
+function genSelectorForDescendant(component, elem) {
+    // todo: improve with real key system (?)
+    // NOTE: Low priority, since morphdom works great
+    const tags = Array.from(component.querySelectorAll(elem.tagName));
+    const index = tags.findIndex(el => el === elem);
+    return `${elem.tagName}:nth-of-type(${index + 1})`; // tODO: broken
+}
+
+function saveFocus(component) {
+    component._activeElementSelector = null;
+    const {activeElement} = document;
+    if (activeElement && component.contains(activeElement)) {
+        component._activeElementSelector = genSelectorForDescendant(component, activeElement);
+    }
+}
+
+function restoreFocus(component) {
+    if (component._activeElementSelector) {
+        const elem = component.querySelector(component._activeElementSelector);
+        if (elem) {
+            // https://stackoverflow.com/a/2345915
+            elem.focus();
+            const {value} = elem;
+            elem.value = '';
+            elem.value = value;
+        } else {
+            //console.log('Could not restore focus!', component._activeElementSelector);
+        }
+    }
+    component._activeElementSelector = null;
+}
+
+
+function makeAttrString(component) {
+    return Array.from(component.attributes)
+        .map(({name, value}) => `${name}=${JSON.stringify(value)}`).join(' ');
+}
+
+function wrapHTML(component, inner) {
+    const attrs = makeAttrString(component);
+    return `<${component.tagName} ${attrs}>${inner}</${component.tagName}>`;
+}
+
+Modulo.adapters = {
+    templating: {
+        Backtick: () => str => {
+            // TODO: Need to clean this up
+            let html = JSON.stringify(str).replace(/`/g, "\`").slice(1, -1);
+            html = html.replace(/&amp;/g, '&'); // probably not needed
+            const code = `return \`${html.trim()}\`;`
+            return context => scopedEval(null, (context || {}), code);
+        },
+        TinyTiny: () => {
+            assert(window.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
+            return window.TinyTiny;
+        },
+    },
+    reconciliation: {
+        none: () => (component, html) => {
+            saveFocus(component);
+            component.innerHTML = html;
+            restoreFocus(component);
+        },
+        setdom: () => {
+            assert(window.setDOM, 'setDOM is not loaded at window.setDOM');
+            setDOM.KEY = 'key';
+            return (component, html) => {
+                if (!component.isMounted) {
+                    component.innerHTML = html;
+                } else {
+                    setDOM(component, wrapHTML(component, html));
+                }
+            };
+        },
+        morphdom: () => {
+            assert(window.morphdom, 'morphdom is not loaded at window.morphdom');
+            const {morphdom} = window;
+            const opts = {
+                getNodeKey: el => el.getAttribute && el.getAttribute('key'),
+                onBeforeElChildrenUpdated: (fromEl, toEl) => {
+                    return !toEl.tagName.includes('-');
+                },
+                childrenOnly: true,
+            };
+            return (component, html) => {
+                if (!component.isMounted) {
+                    component.innerHTML = html;
+                } else {
+                    morphdom(component, `<div>${html}</div>`, opts);
+                }
+            };
+        },
+    },
+};
+
 class ComponentFactory {
     // NOTE: The "dream" is to have an upgraded template like mod-component
     // that instantiates these component factories, but the "upgrade" support
@@ -83,12 +499,12 @@ class ComponentFactory {
 }
 
 class ModuloComponent extends HTMLElement {
-    static renderStack = [document.body];
+    static renderStack = [null];
     static renderStackPeak() {
         const { length } = ModuloComponent.renderStack;
         if (length === 0) {
             return null; // Later, have "Global Parent", to make interface with
-                         // multi page apps easier?
+                         // multi page apps easier? (e.g. access JSON or global vars as props)
         }
         return ModuloComponent.renderStack[length - 1];
     }
@@ -137,7 +553,7 @@ class ModuloComponent extends HTMLElement {
         const context = this.getDefaultTemplateContext();
         // Allow "." notation to drill down into context
         return value.split('.').reduce((obj, key) => obj[key], context);
-        //return scopedEval(this, context, 'return ' + value);
+        // return scopedEval(this, context, 'return ' + value);
     }
 
     getDefaultTemplateContext() {
@@ -246,6 +662,20 @@ class ModuloComponent extends HTMLElement {
     }
 }
 
-if (typeof module !== 'undefined') { // Node compat
+Modulo.Loader = ModuloLoader;
+Modulo.Component = ModuloComponent;
+Modulo.Props = ModuloProps;
+Modulo.State = ModuloState;
+Modulo.Configure = ModuloConfigure;
+Modulo.middleware = middleware;
+
+if (typeof module !== 'undefined') { // Node
     module.exports = Modulo;
+}
+
+if (typeof customElements !== 'undefined') { // Browser
+    customElements.define('mod-load', Modulo.ModuloLoader);
+    customElements.define('mod-state', Modulo.ModuloState);
+    customElements.define('mod-props', Modulo.ModuloProps);
+    customElements.define('mod-configure', Modulo.ModuloConfigure);
 }
