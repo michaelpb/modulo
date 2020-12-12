@@ -4,6 +4,36 @@ if (typeof HTMLElement === 'undefined') {
 const globals = {HTMLElement};
 const Modulo = {globals};
 
+Modulo.MapStack = class MapStack {
+    constructor() {
+        this.stack = [];
+        this.top = {};
+    }
+    peek() {
+        return this.top;
+    }
+    push(name) {
+        this.top = {};
+        this.stack.push([name, this.top]);
+    }
+    pop() {
+        // dead code?
+        const [name, obj] = this.stack.pop();
+        this.top = obj || {};
+        return name;
+    }
+    toObject() {
+        return Object.assign(...this.stack);
+    }
+    get(key, defaultValue) {
+        const obj = this.toObject();
+        return key in obj ? obj[key] : defaultValue;
+    }
+    set(key, value) {
+        this.top[key] = value;
+    }
+}
+
 Modulo.DEBUG = true;
 Modulo.ON_EVENTS = new Set([
     'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
@@ -530,6 +560,24 @@ class ModuloComponent extends HTMLElement {
 
     restoreUtilityComponents() {
         this.specialComponents.forEach(elem => this.prepend(elem));
+    }
+
+    rerender2() {
+        const lifecycleMethods = ['prepare', 'render', 'update', 'updated'];
+        for (const mName of lifecycleMethods) {
+            this.lifecycle(mName);
+        }
+    }
+
+    lifecycle(name) {
+        let renderingObj = new MapStack();
+        for (const cPart of this.componentParts) {
+            const method = cPart[name + 'Callback'];
+            if (method) {
+                const results = method(renderingObj);
+                renderingObj.push(`${name}:${cPart.tagName}`, results);
+            }
+        }
     }
 
     rerender() {

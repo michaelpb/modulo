@@ -17,3 +17,72 @@ module.exports = ComponentPart;
 
 
 
+// Each componentPart should function like middleware:
+const renderingObjectExample = {
+    props: {
+    },
+    state: {
+    },
+    script: {
+      // OH shit, script.myFunc
+      // super.script.myFunc
+    },
+    template: {
+        content: '<...>',
+        // template "breaks out" and changes output
+        // also, has a render(),
+    },
+    output: '<div...>',
+};
+
+LifeCycle:
+
+  factory // e.g. during load (on class)
+
+  initialized // e.g. mounted (on instance)
+
+  prepare // about to render
+  render // doing the render
+  update // doing the update itself
+  updated // noop hook (?)
+
+
+LifeCycle:
+
+  factory
+      - script runs
+          - Eventually: we get a static_ function_ context etc (using stuff)
+      - template runs
+          - compiles
+      - GENERATES:
+          - objBase
+
+  initialized // e.g. mounted (on instance)
+      - props runs
+          - populates rendering obj with_ props
+          - Use object freeze on ----------^ (?)
+          - "RenderingObj.setFrozen()"
+          - only needs to happen once per instance
+          - receive props
+      - GENERATES:
+          - renderObjBase
+
+  prepare
+      - state runs
+          - populates rendering obj with_ state
+      - template runs
+          - chooses the template (for_ template selection, if_ exists)
+      - GENERATES:
+          - renderObjBase
+
+  render // doing the render
+      - template
+          - runs chosen template and populates render object with_ output
+
+  update // doing the update itself
+      - template (?) runs --- or maybe "mod-configure" runs
+          - Maybe mod-component RUNS!!!! Thats where it runs!!! HOOKS ITSELF
+          - reconcile happens
+
+  updated // noop hook (?)
+
