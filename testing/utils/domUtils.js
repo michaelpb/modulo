@@ -32,7 +32,7 @@ function webComponentsUpgrade(dom, el, cls) {
 }
 
 function setupModulo(path = null) {
-    const Modulo = require('../../src/Modulo');
+    const Modulo = require('../../src/Modulo2');
     const htmlCode = path ? fs.readFileSync(path, 'utf-8') : '';
     const dom = new JSDOM(htmlCode);
     Modulo.document = dom.window.document; // for easier testing

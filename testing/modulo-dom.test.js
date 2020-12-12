@@ -13,6 +13,14 @@ test('Modulo defineAll runs and registers built-in', t => {
     t.is(Modulo.globals.mockRegistered.length, 4);
 });
 
+test.skip('Loader loads libraries with expected properties', t => {
+    const {document} = setupModulo('./testing/assets/loader_test.html');
+    const loader = document.querySelector('mod-load');
+    t.truthy(loader);
+    t.truthy(loader.componentFactoryData);
+    t.snapshot(loader.componentFactoryData);
+});
+
 test('Loader libraries which mount components', t => {
     const {globals, document} = setupModulo('./testing/assets/loader_test.html');
     t.is(globals.mockRegistered.length, 6);

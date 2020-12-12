@@ -37,10 +37,10 @@ const renderingObjectExample = {
 
 LifeCycle:
 
-  factory // e.g. during load (on class)
+  load // e.g. during load (generates "options" obj)
+  factory // e.g. during construction (on class)
 
   initialized // e.g. mounted (on instance)
-
   prepare // about to render
   render // doing the render
   update // doing the update itself
@@ -54,8 +54,6 @@ LifeCycle:
           - Eventually: we get a static_ function_ context etc (using stuff)
       - template runs
           - compiles
-      - GENERATES:
-          - objBase
 
   initialized // e.g. mounted (on instance)
       - props runs
@@ -64,16 +62,14 @@ LifeCycle:
           - "RenderingObj.setFrozen()"
           - only needs to happen once per instance
           - receive props
-      - GENERATES:
-          - renderObjBase
 
   prepare
       - state runs
           - populates rendering obj with_ state
       - template runs
           - chooses the template (for_ template selection, if_ exists)
-      - GENERATES:
-          - renderObjBase
+      - MAP STACK GROUP undoes through:
+          - 'prepare'
 
   render // doing the render
       - template

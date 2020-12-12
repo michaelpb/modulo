@@ -4,16 +4,38 @@ if (typeof HTMLElement === 'undefined') {
 const globals = {HTMLElement};
 const Modulo = {globals};
 
-Modulo.MapStack = class MapStack {
-    constructor() {
+Modulo.GroupedMapStack = class GroupedMapStack {
+    static groupPrefix = 'GROUP-';
+    constructor(parentStack) {
         this.stack = [];
-        this.top = {};
+        this.parentStack = parentStack;
+        this.push(''); // start with empty string..?
     }
-    peek() {
-        return this.top;
+    pushGroup(name) {
+        const {groupPrefix} = Modulo.GroupedMapStack;
+        this.stack.push([groupPrefix + name, {}]);
+    }
+    popThroughGroup(name) {
+        const {groupPrefix} = Modulo.GroupedMapStack;
+        let i = this.stack.length - 1;
+        while (i >= 0) {
+            const name = this.stack[i][0];
+            if (name === groupPrefix + name) {
+                // found!
+                break;
+            }
+            i--;
+        }
+        let j = 0;
+        while (j < i) {
+            this.pop();
+            j++;
+        }
     }
     push(name) {
+        const {groupPrefix} = Modulo.GroupedMapStack;
         this.top = {};
+        assert(!name.startsWith(groupPrefix), 'invalid name');
         this.stack.push([name, this.top]);
     }
     pop() {
@@ -23,11 +45,16 @@ Modulo.MapStack = class MapStack {
         return name;
     }
     toObject() {
-        return Object.assign(...this.stack);
+        // TODO: Recurse into sub-objects and flatten, allowing for proper flattening
+        const pObj = this.parentStack ? this.parentStack.toObject() : {};
+        return Object.assign(pObj, ...this.stack.map(pair => pair[1]), this.top);
     }
     get(key, defaultValue) {
         const obj = this.toObject();
-        return key in obj ? obj[key] : defaultValue;
+        const result = key.split('.')
+            .reduce((obj, k) => (k in obj ? obj[k] : {}), obj);
+        //return key in obj ? obj[key] : defaultValue;
+        return result;
     }
     set(key, value) {
         this.top[key] = value;
@@ -51,7 +78,12 @@ Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:
 const defaultLifeCycleMethods = {
     initialized: () => {},
     prepare: component => component.factory.prepareDefaultRenderInfo(component),
-    render: (context, opts) => opts.compiledTemplate(context),
+    render: (context, opts, renderingObj) => {
+        const compiledTemplate = renderingObj.get('template.compiledTemplate');
+        const result = compiledTemplate(context);
+        console.log('this is result', result);
+        return result
+    },
     update: (component, newContents) => {
         component.clearEvents();
         component.factory.options.meta.reconcile(component, newContents);
@@ -125,7 +157,7 @@ function parseAttrs(elem, processColons) {
 function assert(value, ...messages) {
     if (!value) {
         console.error(...messages);
-        const message = Array.from(messages).join(' - ');
+        const message = Array.from(messages).join(' ');
         throw new Error(`Modulo Error: "${message}"`)
     }
 }
@@ -157,11 +189,13 @@ function getFirstModuloAncestor(elem) {
 
 const defaultSettings = {
     factoryMiddleware: {
-        template: [middleware.rewriteComponentNamespace, middleware.compileTemplate],
+        template: [middleware.rewriteComponentNamespace],//, middleware.compileTemplate],
         style: [middleware.prefixAllSelectors],
         script: [],
         'mod-state': [],
+        'state': [], // todo
         'mod-props': [],
+        'props': [], // todo
         'mod-component': [middleware.selectReconciliationEngine],
         'mod-load': [],
         //'mod-load': [middleware.rewriteTemplateTagsAsScriptTags],
@@ -171,7 +205,19 @@ const defaultSettings = {
     enforceProps: true, // TODO: Put as default seting on mod-props
 };
 
-class ModuloLoader extends HTMLElement {
+
+Modulo.Loader = class Loader extends HTMLElement {
+    static componentParts = {};
+    static componentPartsByTagName = {};
+    static registerComponentPart(componentClass) {
+        const {name, upgradesFrom} = componentClass;
+        Modulo.Loader.componentParts[name] = componentClass;
+        const names = [`mod-${name}`, ...(upgradesFrom || [])];
+        for (const name of names) {
+            Modulo.Loader.componentPartsByTagName[name] = componentClass;
+        }
+    }
+
     constructor(...args) {
         super()
         this.initialize.apply(this, args);
@@ -194,12 +240,12 @@ class ModuloLoader extends HTMLElement {
         const arg0 = JSON.stringify(this.namespace);
         const arg1 = JSON.stringify(this.customizedSettings);
         const arg2 = JSON.stringify(this.componentFactoryData);
-        return `new ModuloLoader(${arg0}, ${arg1}, ${arg2});`;
+        return `new Modulo.Loader(${arg0}, ${arg1}, ${arg2});`;
     }
 
     connectedCallback() {
         this.initialize(this.getAttribute('namespace'), parseAttrs(this));
-        // TODO: Check if already loaded via serialized etc
+        // TODO: Check if already loaded via a global / static serialized obj
         globals.fetch(this.getAttribute('src'))
             .then(response => response.text())
             .then(text => this.loadString(text));
@@ -220,7 +266,7 @@ class ModuloLoader extends HTMLElement {
             // TODO: Add asserts to make sure tagInfo remains serializable --
             // factory middleware should be preprocessing only
             // - Later make "executable" string type (for serializing
-            //   post-compile templates)
+            // post-compile templates)
         }
         return tagInfo;
     }
@@ -242,63 +288,46 @@ class ModuloLoader extends HTMLElement {
         for (const tag of tags) {
             this.loadFromDOMElement(tag);
         }
-
-        // TODO: Move this to loader middleware?
-        const textContent = this.componentFactoryData
-            .map(([tagName, options]) =>
-                options.style.map(({content}) => content).join('\n')
-            ).join('\n');
-        const styling = globals.document.createElement('style');
-        styling.append(textContent);
-        globals.document.head.append(styling)
-    }
-
-    _checkNode(child, searchTagName) {
-        if (child.nodeType === 3 || child.nodeType === 8) {
-            return false; // Text node, continue (later generate warning if not whitespace)
-        }
-        let name = (child.tagName || '').toLowerCase();
-        const splitType = (child.getAttribute('type') || '').split('/');
-        if (splitType[0] && splitType[0].lower() === 'modulo') {
-            name = splitType[1];
-        }
-        if (!(name in {script: 1, style: 1, template: 1, 'mod-state': 1, 'mod-props': 1})) {
-            console.error('Modulo - Unknown tag in component def:', name);
-            return false; // Invalid node (later generate warning)
-        }
-        return name === searchTagName;
-    }
-
-    loadTagType(parentElem, searchTagName, componentMeta) {
-        const results = [];
-        for (const childNode of parentElem.content.childNodes) {
-            if (!this._checkNode(childNode, searchTagName)) {
-                continue;
-            }
-            const options = parseAttrs(childNode);
-            const content = searchTagName === 'template' ? childNode.innerHTML
-                                                         : childNode.textContent;
-            let tagInfo = {options, content};
-            tagInfo = this.applyMiddleware(searchTagName, tagInfo, componentMeta);
-            results.push(tagInfo);
-        }
-        return results;
     }
 
     loadFromDOMElement(elem) {
         const attrs = parseAttrs(elem);
         let componentMeta = {content: '', options: attrs};
         componentMeta = this.applyMiddleware('mod-component', componentMeta);
-        const style = this.loadTagType(elem, 'style', componentMeta);
-        const template = this.loadTagType(elem, 'template', componentMeta);
-        const script = this.loadTagType(elem, 'script', componentMeta);
-        const state = this.loadTagType(elem, 'mod-state', componentMeta);
-        const props = this.loadTagType(elem, 'mod-props', componentMeta);
-        assert(style.length < 2, 'Mod: only 1 style'); // later allow for cascading
-        assert(script.length < 3, 'Mod: only 1 script'); // ""
-        assert(template.length < 2, 'Mod: only 1 template'); // later allow for "selection"
-        assert(props.length < 2, 'Mod: only 1 props');
-        assert(state.length < 2, 'Mod: only 1 state');
+
+        // >---< SURGERY
+        const partsInfo = {};
+        for (const child of elem.content.childNodes) {
+            if (child.nodeType === 3 || child.nodeType === 8) {
+                // Text nodes & comment nodes
+                if (child.nodeType === 3 && child.textContent && child.textContent.trim()) {
+                    console.error('Unexpected text in component def:', child.textContent);
+                }
+                continue;
+            }
+            let tagName = (child.tagName || '').toLowerCase();
+            const splitType = (child.getAttribute('type') || '').split('/');
+            if (splitType[0] && splitType[0].lower() === 'modulo') {
+                tagName = splitType[1];
+            }
+            if (!(tagName in Modulo.Loader.componentPartsByTagName)) {
+                //console.error('Unexpected tag in component def:', tagName);
+                continue;
+            }
+            // Get part name for this tag
+            const partClass = Modulo.Loader.componentPartsByTagName[tagName];
+            const {name, loadCallback} = partClass;
+            let tagInfo = loadCallback(child);
+            tagInfo = this.applyMiddleware(name, tagInfo, componentMeta); // todo: axe middleware
+            if (!(name in partsInfo)) {
+                partsInfo[name] = [];
+            }
+            partsInfo[name].push(tagInfo);
+        }
+
+        const {props = [], style = [], template = [], script = [], state = []} = partsInfo;
+        // >---< SURGERY
+
         const options = {template, style, script, state, props, meta: componentMeta};
         this.defineComponent(attrs.modComponent, options);
     }
@@ -319,6 +348,7 @@ class ModuloConfigure extends HTMLElement {
 }
 
 class ModuloState extends HTMLElement {
+    // TODO: Replace this with "DebugGhost"
     get(key) {
         if (this.hasAttribute(key + ':')) {
             const value = this.getAttribute(key + ':');
@@ -471,29 +501,9 @@ class ComponentFactory {
         this.options = options;
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
+        this.script = baseScript; // todo: remove after stack rewrite
+        this.baseRenderingObj = this.prepareBaseRenderingObject();
         this.componentClass = this.createClass();
-    }
-
-    wrapJavaScriptContext(contents) {
-        // NOTE: Might want to clean up so we don't have to use eval()?
-        return `
-            'use strict';
-            const module = {exports: {}};
-            ${contents}
-            return {
-                get: (name) => {
-                    try { return eval(name); }
-                    catch (e) {
-                        if (superScript) {
-                            return superScript.get(name);
-                        } else {
-                            return undefined;
-                        }
-                    }
-                },
-                ...module.exports,
-            };
-        `;
     }
 
     /* Prepares data before render() step of lifecycle */
@@ -505,29 +515,45 @@ class ComponentFactory {
         }
     }
 
-    evalConstructorScript(meta, superScript) {
-        const factory = this;
-        const scriptContextDefaults = {superScript, factory, meta};
-        const wrappedJS = this.wrapJavaScriptContext(meta.content || '');
-        return scopedEval(factory, scriptContextDefaults, wrappedJS);
+    prepareBaseRenderingObject() {
+        // TODO: Refactor with identical loop buildParts, and the "lifecycle"
+        // method on component (also similar)
+        const renderingObj = new Modulo.GroupedMapStack();
+        renderingObj.pushGroup('factory');
+        for (const [partName, partOptionsArr] of Object.entries(this.options)) {
+            if (partName === 'meta') { continue } // HACK // HACK // HACK // HACK
+            for (const partOptions of partOptionsArr) {
+                const {factoryCallback} = Modulo.Loader.componentParts[partName]
+                if (factoryCallback) {
+                    console.log('partName', partName, partOptions);
+                    const results = factoryCallback(partOptions, renderingObj, this);
+                    if (results) {
+                        renderingObj.set(partName, results); // beginning of siloing?
+                        renderingObj.push(`factory:${partName}`);
+                        console.log('rendering obj is now:', renderingObj.toObject());
+                    }
+                }
+            }
+        }
+        return renderingObj;
     }
 
     createClass() {
-        // The "script" object represents custom JavaScript in the script
+        /*
+        // Old pre-stack script logic:
         let superScript = baseScript;
         let script = baseScript;
         for (const meta of this.options.script) {
             script = this.evalConstructorScript(meta, superScript);
             superScript = script;
         }
+        */
         const factory = this;
         const componentClass = class CustomComponent extends ModuloComponent {
-            get script() { return script; }
+            get script() { return factory.script; } // TODO, fix with stacked
             get factory() { return factory; }
             static get observedAttributes() {
-                // TODO fix, almost correct
-                //const propsInfo = this.getSelected('props');
-                //return Array.from(Object.keys(propsInfo.options));
+                // TODO Should be set by factoryCallback in Props
                 return [];
             }
         };
@@ -550,7 +576,27 @@ class ModuloComponent extends HTMLElement {
         this.isMounted = false;
         this.isModuloComponent = true; // important
         this.originalHTML = this.innerHTML;
+        this.renderingObj = new Modulo.GroupedMapStack(this.factory.baseRenderingObj);
         this.componentParts = [];
+    }
+
+    buildParts() {
+        // Note: For testability, this is invoked on first mount, before
+        // initialize.  This is so the hacky "fake-upgrade" for custom
+        // components works for the automated tests. Logically, it should
+        // probably be invoked in the constructor
+        this.componentParts = [];
+        // console.log('this is facotry options', this.factory.options);
+        for (const [partName, partOptionsArr] of Object.entries(this.factory.options)) {
+            //if (partName !== 'props') continue; // surgery 
+            if (partName === 'meta') { continue } // hack
+            // console.log('this is partsOptionsArr', partName, partOptionsArr);
+            for (const partOptions of partOptionsArr) {
+                const cls = Modulo.Loader.componentParts[partName]
+                const instance = new cls(this, partOptions);
+                this.componentParts.push(instance);
+            }
+        }
     }
 
     saveUtilityComponents() {
@@ -562,20 +608,17 @@ class ModuloComponent extends HTMLElement {
         this.specialComponents.forEach(elem => this.prepend(elem));
     }
 
-    rerender2() {
-        const lifecycleMethods = ['prepare', 'render', 'update', 'updated'];
-        for (const mName of lifecycleMethods) {
-            this.lifecycle(mName);
-        }
-    }
-
-    lifecycle(name) {
-        let renderingObj = new MapStack();
+    lifecycle(lifecycleName) {
+        this.renderingObj.pushGroup(lifecycleName);
         for (const cPart of this.componentParts) {
-            const method = cPart[name + 'Callback'];
+            const method = cPart[lifecycleName + 'Callback'];
             if (method) {
-                const results = method(renderingObj);
-                renderingObj.push(`${name}:${cPart.tagName}`, results);
+                const results = method.call(cPart, this.renderingObj, this);
+                if (results) {
+                    this.renderingObj.set(cPart.name, results); // beginning of siloing?
+                    this.renderingObj.push(lifecycleName + ':' + cPart.name);
+                }
+
             }
         }
     }
@@ -590,13 +633,21 @@ class ModuloComponent extends HTMLElement {
         }
         //this.prepend(document.createElement('render-marker'));
         const {context, templateInfo} = this.script.get('prepare').call(this, this);
-        const newHTML = this.script.get('render').call(this, context, templateInfo);
+        const newHTML = this.script.get('render').call(this, context, templateInfo, this.renderingObj);
         //newHTML.replace(/:=(\w+)/g, `"getElementById('thisid').$1"`); // TODO, fix this, see buildProps issue
         this.script.get('update').call(this, this, newHTML);
         this.script.get('updated').call(this, this);
         //this.querySelector('render-marker').remove();
         if (Modulo.DEBUG) {
             this.restoreUtilityComponents();
+        }
+    }
+
+    rerender2() {
+        const lifecycleMethods = ['prepare', 'render', 'update', 'updated'];
+        this.renderingObj.popThroughGroup('prepare'); // unwind back to "prepare" stage
+        for (const mName of lifecycleMethods) {
+            this.lifecycle(mName);
         }
     }
 
@@ -613,44 +664,7 @@ class ModuloComponent extends HTMLElement {
 
     getDefaultTemplateContext() {
         const state = this.state && parseAttrs(this.state, true);
-        //console.log('getting props context', this.props);
         return {state, props: this.props};
-    }
-
-    buildProps() {
-        // TODO: This logic is incorrect. There needs to be a concept of
-        // "rendering context" that is stored when we do the tempalte render.
-        // This is a combination of the template context and the script context.
-        // Then, when we resolve =: attributes, it uses this.
-        // Not sure how to attach this during update()
-        // Maybe render stack is the only way?
-        const propsInfo = this.factory.getSelected('props');
-        if (!propsInfo) {
-            this.props = null;
-            return;
-        }
-        this.props = {};
-        for (let propName of Object.keys(propsInfo.options)) {
-            // if (this.settings.enforceProps) { } // TODO: add enforcement here
-            propName = propName.replace(/:$/, ''); // normalize
-            //console.log('this is propName', propName);
-            //console.log('this is mah attributes', this.getAttributeNames());
-            let attrName = this.resolveAttributeName(propName);
-            if (!attrName) {
-                console.error('Prop', propName, 'is required for', this.tagName);
-                continue;
-            }
-            let value = this.getAttribute(attrName);
-            if (attrName.endsWith(':')) {
-                // TODO: If we have DOCUMENT tier props, then resolve at window
-                // instead
-                attrName = attrName.slice(0, -1); // trim ':'
-                value = this.parentComponent.resolveValue(value);
-            }
-            // console.error('Prop', propName, 'has', value, this.props);
-            this.props[propName] = value;
-        }
-        //console.log('this is props', this.props);
     }
 
     resolveAttributeName(name) {
@@ -713,9 +727,11 @@ class ModuloComponent extends HTMLElement {
 
     connectedCallback() {
         this.parentComponent = getFirstModuloAncestor(this);
-        this.buildProps();
+        //this.buildProps();
+        this.buildParts();
+        this.lifecycle('initialized');
         this.rerender();
-        this.script.get('initialized').call(this, this);
+        //this.script.get('initialized').call(this, this);
         this.isMounted = true;
     }
 
@@ -728,15 +744,137 @@ class ModuloComponent extends HTMLElement {
     }
 }
 
-Modulo.Loader = ModuloLoader;
+Modulo.ComponentPart = class ComponentPart {
+    static loadCallback(node) {
+        const options = parseAttrs(node);
+        const content = node.tagName === 'TEMPLATE' ? node.innerHTML
+                                                    : node.textContent;
+        return {options, content};
+    }
+
+    constructor(component, options) {
+        this.component = component;
+        this.options = options.options;
+        this.content = options.content;
+    }
+}
+
+Modulo.parts = {};
+
+Modulo.parts.Props = class Props extends Modulo.ComponentPart {
+    static name = 'props';
+    initializedCallback(renderObj) {
+        return this.buildProps();
+    }
+    buildProps() {
+        // old todo: This logic is bad. There needs to be a concept of...
+        const props = {};
+        this.component.props = props; // hack, dd
+        for (let propName of Object.keys(this.options)) {
+            propName = propName.replace(/:$/, ''); // normalize
+            let attrName = this.component.resolveAttributeName(propName);
+            if (!attrName) {
+                console.error('Prop', propName, 'is required for', this.component.tagName);
+                continue;
+            }
+            let value = this.component.getAttribute(attrName);
+            if (attrName.endsWith(':')) {
+                attrName = attrName.slice(0, -1); // trim ':'
+                value = this.component.parentComponent.resolveValue(value);
+            }
+            props[propName] = value;
+        }
+        return props;
+    }
+}
+Modulo.Loader.registerComponentPart(Modulo.parts.Props);
+
+Modulo.parts.Style = class Style extends Modulo.ComponentPart {
+    static name = 'style';
+    static upgradesFrom = ['style'];
+    static factoryCallback({content}) {
+        const styling = globals.document.createElement('style');
+        styling.append(content);
+        globals.document.head.append(styling)
+    }
+}
+Modulo.Loader.registerComponentPart(Modulo.parts.Style);
+
+
+Modulo.parts.Template = class Template extends Modulo.ComponentPart {
+    static name = 'template';
+    static upgradesFrom = ['template'];
+    static factoryCallback(opts, renderingObj, factory) {
+        const {templatingEngine = 'Backtick'} = opts.options;
+        const templateCompiler = Modulo.adapters.templating[templatingEngine]();
+        const compiledTemplate = templateCompiler(opts.content, opts);
+        return {compiledTemplate};
+    }
+}
+Modulo.Loader.registerComponentPart(Modulo.parts.Template);
+
+
+Modulo.parts.Script = class Script extends Modulo.ComponentPart {
+    static name = 'script';
+    static upgradesFrom = ['script'];
+
+    static getSymbolsAsObjectAssignment(contents) {
+        const regexpG = /function\s+(\w+)/g;
+        const regexp2 = /function\s+(\w+)/; // hack, refactor
+        return contents.match(regexpG)
+            .map(s => s.match(regexp2)[1])
+            .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
+            .join('');
+    }
+
+    static wrapJavaScriptContext(contents) {
+        const symbolsString = this.getSymbolsAsObjectAssignment(contents);
+        return `
+            'use strict';
+            const module = {exports: {}};
+            ${contents}
+            return {
+                ${symbolsString}
+                ...module.exports,
+            };
+        `;
+    }
+
+    static evalConstructorScript(meta) {
+        // (getting replaced with new stack-based inheritance)
+        const superScript = baseScript;
+        const factory = null; // ? probably not needed
+        const scriptContextDefaults = {superScript, meta, Modulo};
+        const wrappedJS = this.wrapJavaScriptContext(meta.content || '');
+        return scopedEval(factory, scriptContextDefaults, wrappedJS);
+    }
+
+    static factoryCallback(partOptions, renderingObj, factory) {
+        // todo: possibly move part of this into loadCallback, e.g. all string
+        // preprocessing -- only if we do the same for precompiled Templates
+        const script = Modulo.parts.Script.evalConstructorScript(partOptions);
+        // TODO delete below after stack-based inheritance
+        factory.script = script;
+        script.get = name => script[name] || baseScript.get(name);
+        return script;
+    }
+}
+Modulo.Loader.registerComponentPart(Modulo.parts.Script);
+
+
+Modulo.parts.State = class State extends Modulo.ComponentPart {
+    static name = 'state';
+}
+Modulo.Loader.registerComponentPart(Modulo.parts.State);
+
+
 Modulo.Component = ModuloComponent;
-Modulo.Props = ModuloProps;
 Modulo.State = ModuloState;
 Modulo.Configure = ModuloConfigure;
 Modulo.middleware = middleware;
 Modulo.globals = globals;
 Modulo.defineAll = () => {
-    globals.customElements.define('mod-load', ModuloLoader);
+    globals.customElements.define('mod-load', Modulo.Loader);
     globals.customElements.define('mod-state', ModuloState);
     globals.customElements.define('mod-props', ModuloProps);
     globals.customElements.define('mod-configure', ModuloConfigure);
