@@ -50,7 +50,6 @@ const middleware = {
             }
             return selector;
         });
-        console.log('this is new CSS', content);
         return {...info, content};
     },
     compileTemplate(info, opts) {
@@ -162,9 +161,9 @@ class ModuloLoader extends HTMLElement {
     connectedCallback() {
         this.initialize(this.getAttribute('namespace'), parseAttrs(this));
         // TODO: Check if already loaded via serialized etc
-        fetch(this.getAttribute('src'))
+        globals.fetch(this.getAttribute('src'))
             .then(response => response.text())
-            .then(this.loadString.bind(this));
+            .then(text => this.loadString(text));
     }
 
     applyMiddleware(typeName, tagInfo, componentMeta = null) {
@@ -548,7 +547,9 @@ class ModuloComponent extends HTMLElement {
         const newHTML = this.script.get('render').call(this, context, templateInfo);
         this.script.get('update').call(this, this, newHTML);
         this.script.get('updated').call(this, this);
-        this.restoreUtilityComponents();
+        if (Modulo.DEBUG) {
+            this.restoreUtilityComponents();
+        }
         this.renderStackPop();
     }
 
@@ -676,6 +677,12 @@ Modulo.State = ModuloState;
 Modulo.Configure = ModuloConfigure;
 Modulo.middleware = middleware;
 Modulo.globals = globals;
+Modulo.defineAll = () => {
+    globals.customElements.define('mod-load', ModuloLoader);
+    globals.customElements.define('mod-state', ModuloState);
+    globals.customElements.define('mod-props', ModuloProps);
+    globals.customElements.define('mod-configure', ModuloConfigure);
+};
 
 if (typeof module !== 'undefined') { // Node
     module.exports = Modulo;
@@ -683,10 +690,8 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     globals.window = window;
     globals.document = document;
+    globals.fetch = window.fetch;
     globals.DocumentFragment = DocumentFragment;
     globals.customElements = customElements;
-    customElements.define('mod-load', ModuloLoader);
-    customElements.define('mod-state', ModuloState);
-    customElements.define('mod-props', ModuloProps);
-    customElements.define('mod-configure', ModuloConfigure);
+    globals.defineAll();
 }

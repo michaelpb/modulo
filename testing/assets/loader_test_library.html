@@ -1,0 +1,33 @@
+<mod-configure
+></mod-configure>
+
+<template mod-component="TestComponent">
+    <template>
+      <h1>Hello Test World</h1>
+    </template>
+</template>
+
+<template mod-component="Counter" >
+    <template>
+        <button onclick:=count>
+            {{ state.num }}
+        </button>
+    </template>
+    <mod-state
+      num:=1
+    ></mod-state>
+    <style>
+        button {
+            color: blue;
+            background: pink;
+        }
+    </style>
+    <script>
+        function count() {
+            let num = this.state.get('num');
+            num++;
+            this.state.set('num', num);
+        }
+    </script>
+</template>
+
