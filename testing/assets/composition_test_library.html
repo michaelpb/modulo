@@ -1,0 +1,25 @@
+<template mod-component="ParentComponent">
+    <template>
+        <div>
+            <my-ChildComponent clickme:=gotClicked txt="Click me! :)">
+            </my-ChildComponent>
+        </div>
+    </template>
+    <script>
+        function gotClicked() {
+            this.wasClicked = true;
+        }
+    </script>
+</template>
+
+<template mod-component="ChildComponent">
+    <template>
+        <button onclick:=props.clickme>
+            ${props.txt}
+        </button>
+    </template>
+    <mod-props
+      clickme:=Function
+      txt:=String
+    ></mod-props>
+</template>

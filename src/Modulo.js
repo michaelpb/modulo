@@ -110,11 +110,39 @@ function scopedEval(thisContext, namedArgs, code) {
 
 function observeAllAttributes(element) {
     // https://github.com/WICG/webcomponents/issues/565
-    const observer = new MutationObserver(mutations => mutations
-        .filter(({type}) => type === 'attributes')
-        .map(element.attributeMutated, element))
+    const observer = new globals.MutationObserver(
+        mutations => mutations
+            .filter(({type}) => type === 'attributes')
+            .map(element.attributeMutated, element))
     observer.observe(element, {attributes: true});
 }
+
+function getFirstModuloAncestor(elem) {
+    // Walk up tree to first DOM node that is a modulo component
+    const node = elem.parentNode;
+    return !node ? null : (
+        node.isModuloComponent ? node : getFirstModuloAncestor(node)
+    );
+}
+
+
+// Each componentPart should function like middleware:
+const renderingObjectExample = {
+    props: {
+    },
+    state: {
+    },
+    script: {
+      // OH shit, script.myFunc
+      // super.script.myFunc
+    },
+    template: {
+        content: '<...>',
+        // template "breaks out" and changes output
+        // also, has a render(),
+    },
+    output: '<div...>',
+};
 
 const defaultSettings = {
     factoryMiddleware: {
@@ -283,7 +311,7 @@ class ModuloState extends HTMLElement {
     get(key) {
         if (this.hasAttribute(key + ':')) {
             const value = this.getAttribute(key + ':');
-            console.log('this is value', value);
+            //console.log('this is value', value);
             return JSON.parse(value);
         } else {
             return this.getAttribute(key);
@@ -308,17 +336,18 @@ class ModuloState extends HTMLElement {
     }
 
     connectedCallback() {
-        this.parentComponent = ModuloComponent.renderStackPeak();
-        this.parentComponent.state = this; // Currently assumes 1 state
         if (!this.isMounted) {
-            this.defaults = parseAttrs(this, true);
-            observeAllAttributes(this);
             this.isMounted = true;
+            this.defaults = parseAttrs(this, true);
+            if (Modulo.DEBUG) {
+                observeAllAttributes(this);
+            }
         }
     }
-    attributeMutated() {
-        //console.log('attributeMutated!'); // TODO dedupe 
-        this.parentComponent.rerender();
+
+    attributeMutated() { // TODO: Clean up, should only use in DEBUG mode
+        const parentComponent = getFirstModuloAncestor(this);
+        parentComponent.rerender();
     }
 }
 
@@ -505,31 +534,16 @@ class ComponentFactory {
 }
 
 class ModuloComponent extends HTMLElement {
-    static renderStack = [null];
-    static renderStackPeak() {
-        const { length } = ModuloComponent.renderStack;
-        if (length === 0) {
-            return null; // Later, have "Global Parent", to make interface with
-                         // multi page apps easier? (e.g. access JSON or global vars as props)
-        }
-        return ModuloComponent.renderStack[length - 1];
-    }
-    renderStackPush() {
-        ModuloComponent.renderStack.push(this);
-    }
-    renderStackPop() {
-        ModuloComponent.renderStack.pop();
-    }
-
     constructor() {
         super();
         this.isMounted = false;
+        this.isModuloComponent = true;
         this.originalHTML = this.innerHTML;
     }
 
     saveUtilityComponents() {
         this.specialComponents = Array.from(this.querySelectorAll('mod-state'));
-        this.specialComponents.forEach(elem => elem.remove);
+        this.specialComponents.forEach(elem => elem.remove());
     }
 
     restoreUtilityComponents() {
@@ -538,19 +552,22 @@ class ModuloComponent extends HTMLElement {
 
     rerender() {
         // Calls all the LifeCycle functions in order
-        this.renderStackPush();
         if (!this.isMounted) {
             this.createUtilityComponents();
         }
-        this.saveUtilityComponents();
+        if (Modulo.DEBUG) {
+            this.saveUtilityComponents();
+        }
+        //this.prepend(document.createElement('render-marker'));
         const {context, templateInfo} = this.script.get('prepare').call(this, this);
         const newHTML = this.script.get('render').call(this, context, templateInfo);
+        //newHTML.replace(/:=(\w+)/g, `"getElementById('thisid').$1"`); // TODO, fix this, see buildProps issue
         this.script.get('update').call(this, this, newHTML);
         this.script.get('updated').call(this, this);
+        //this.querySelector('render-marker').remove();
         if (Modulo.DEBUG) {
             this.restoreUtilityComponents();
         }
-        this.renderStackPop();
     }
 
     resolveValue(value) {
@@ -566,18 +583,28 @@ class ModuloComponent extends HTMLElement {
 
     getDefaultTemplateContext() {
         const state = this.state && parseAttrs(this.state, true);
+        //console.log('getting props context', this.props);
         return {state, props: this.props};
     }
 
     buildProps() {
+        // TODO: This logic is incorrect. There needs to be a concept of
+        // "rendering context" that is stored when we do the tempalte render.
+        // This is a combination of the template context and the script context.
+        // Then, when we resolve =: attributes, it uses this.
+        // Not sure how to attach this during update()
+        // Maybe render stack is the only way?
         const propsInfo = this.factory.getSelected('props');
         if (!propsInfo) {
             this.props = null;
             return;
         }
         this.props = {};
-        for (const propName of Object.keys(propsInfo.options)) {
+        for (let propName of Object.keys(propsInfo.options)) {
             // if (this.settings.enforceProps) { } // TODO: add enforcement here
+            propName = propName.replace(/:$/, ''); // normalize
+            //console.log('this is propName', propName);
+            //console.log('this is mah attributes', this.getAttributeNames());
             let attrName = this.resolveAttributeName(propName);
             if (!attrName) {
                 console.error('Prop', propName, 'is required for', this.tagName);
@@ -590,9 +617,10 @@ class ModuloComponent extends HTMLElement {
                 attrName = attrName.slice(0, -1); // trim ':'
                 value = this.parentComponent.resolveValue(value);
             }
+            // console.error('Prop', propName, 'has', value, this.props);
             this.props[propName] = value;
         }
-        console.log('this is props', this.props);
+        //console.log('this is props', this.props);
     }
 
     resolveAttributeName(name) {
@@ -646,18 +674,18 @@ class ModuloComponent extends HTMLElement {
             for (const [key, value] of Object.entries(options)) {
                 elem.setAttribute(key, value);
             }
-            this.appendChild(elem);
+            if (Modulo.DEBUG) {
+                this.prepend(elem);
+            }
+            this.state = elem;
         }
     }
 
     connectedCallback() {
-        const { length } = ModuloComponent.renderStack;
-        this.parentComponent = ModuloComponent.renderStackPeak();
-        if (Modulo.DEBUG) { console.log('<', this.tagName, '>', this); }
+        this.parentComponent = getFirstModuloAncestor(this);
         this.buildProps();
         this.rerender();
         this.script.get('initialized').call(this, this);
-        if (Modulo.DEBUG) { console.log('</', this.tagName, '>'); }
         this.isMounted = true;
     }
 
@@ -690,6 +718,7 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     globals.window = window;
     globals.document = document;
+    globals.MutationObserver = MutationObserver;
     globals.fetch = window.fetch;
     globals.DocumentFragment = DocumentFragment;
     globals.customElements = customElements;

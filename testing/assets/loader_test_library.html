@@ -1,16 +1,14 @@
-<mod-configure
-></mod-configure>
-
 <template mod-component="TestComponent">
     <template>
       <h1>Hello Test World</h1>
     </template>
 </template>
 
-<template mod-component="Counter" >
+<template mod-component="Counter">
     <template>
+        <aside onclick:=testClick>Test</aside>
         <button onclick:=count>
-            {{ state.num }}
+            ${state.num}
         </button>
     </template>
     <mod-state
@@ -27,6 +25,10 @@
             let num = this.state.get('num');
             num++;
             this.state.set('num', num);
+        }
+
+        function testClick() {
+            this.wasClicked = true;
         }
     </script>
 </template>

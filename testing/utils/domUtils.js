@@ -2,13 +2,20 @@ const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
 
-// Very simple mocked web-components define
+// Very simple hacky way to do mocked web-components define
 function webComponentsUpgrade(dom, el, cls) {
     // Manually "upgrading" the JSDOM element with the webcomponent
-    console.log('mock upgrading', el);
     const instance = new cls();
-    const allProps = Reflect.ownKeys(Reflect.getPrototypeOf(instance))
-        .concat(Reflect.ownKeys(instance));
+    const protos = [instance, Reflect.getPrototypeOf(instance)];
+    if (!el.tagName.startsWith('MOD-')) {
+        protos.push(Reflect.getPrototypeOf(protos[1]));
+    }
+    protos.reverse();
+    const allProps = [];
+    for (const proto of protos) {
+        allProps.push(...Reflect.ownKeys(proto));
+    }
+    // console.log(el.tagName, 'this is all props', allProps);
     for (const key of allProps) {
         if (instance[key] instanceof Function) {
             el[key] = instance[key].bind(el);
@@ -17,7 +24,9 @@ function webComponentsUpgrade(dom, el, cls) {
         }
     }
     if (el.connectedCallback) {
-        console.log('connected callback!');
+        // console.log('connected callback for:', el.tagName);
+        //setTimeout(() => {
+        //}, 0);
         el.connectedCallback();
     }
 }
@@ -32,6 +41,16 @@ function setupModulo(path = null) {
     Modulo.globals.DocumentFragment =  dom.window.DocumentFragment;
     Modulo.globals.mockRegistered = [];
     Modulo.globals.mockMounted = [];
+    Modulo.globals.MutationObserver = class {
+        observe(el) {
+            const {setAttribute} = el;
+            el.setAttribute = (...args) => {
+                //console.log('fake set attribute happening!', args);
+                setAttribute.apply(el, args);
+                el.attributeMutated();
+            };
+        }
+    };
     Modulo.globals.fetch = url => {
         // Faked version of fetch
         const rootDir = pathlib.dirname(path);

@@ -1,4 +1,9 @@
 {
+  "name": "modulo",
+  "version": "0.1.0",
+  "description": "Minimalist Web Component based framework",
+  "homepage": "https://github.com/michaelpb/modulo#readme",
+  "main": "modulocli.js",
   "scripts": {
     "test": "ava",
     "build": "./tools/build.sh"
@@ -6,10 +11,6 @@
   "devDependencies": {
     "ava": "^3.14.0"
   },
-  "name": "modulo",
-  "version": "0.1.0",
-  "description": "Minimalist Web Component based framework",
-  "main": "modulocli.js",
   "dependencies": {
     "jsdom": "^16.4.0"
   },
@@ -24,6 +25,5 @@
   "license": "LGPL-2.1",
   "bugs": {
     "url": "https://github.com/michaelpb/modulo/issues"
-  },
-  "homepage": "https://github.com/michaelpb/modulo#readme"
+  }
 }
