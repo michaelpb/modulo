@@ -10,7 +10,7 @@ test('Loader instantiates with empty args', t => {
 test('Modulo defineAll runs and registers built-in', t => {
     const Modulo = setupModulo();
     Modulo.defineAll();
-    t.is(Modulo.globals.mockRegistered.length, 4);
+    t.is(Modulo.globals.mockRegistered.length, 2);
 });
 
 test.skip('Loader loads libraries with expected properties', t => {
@@ -23,7 +23,7 @@ test.skip('Loader loads libraries with expected properties', t => {
 
 test('Loader libraries which mount components', t => {
     const {globals, document} = setupModulo('./testing/assets/loader_test.html');
-    t.is(globals.mockRegistered.length, 6);
+    t.is(globals.mockRegistered.length, 4);
     //console.log('mounted', globals.mockMounted);
     //console.log('this is innerHTML', document.body.innerHTML);
     const html = strip(document.body.innerHTML);

@@ -706,3 +706,71 @@ if (typeof customElements !== 'undefined') { // Browser
     globals.customElements = customElements;
     globals.defineAll();
 }
+
+//this.renderingObj.popThroughGroup('prepare'); // unwind back to
+//"prepare" stage -- no need if we have the "parent" system, then we
+//can just toss this one
+//this.prepend(document.createElement('render-marker'));
+//newHTML.replace(/:=(\w+)/g, `"getElementById('thisid').$1"`); // TODO, fix this, see buildProps issue
+//this.querySelector('render-marker').remove();
+
+
+Modulo.GroupedMapStack = class GroupedMapStack {
+    static groupPrefix = 'GROUP-';
+    constructor(parentStack) {
+        this.stack = [];
+        this.parentStack = parentStack;
+        this.push(''); // start with empty string..?
+    }
+    pushGroup(name) {
+        // probably will be dead code, mapstack is too powerful!
+        const {groupPrefix} = Modulo.GroupedMapStack;
+        this.stack.push([groupPrefix + name, {}]);
+    }
+    popThroughGroup(name) {
+        // dead code?
+        const {groupPrefix} = Modulo.GroupedMapStack;
+        let i = this.stack.length - 1;
+        while (i >= 0) {
+            const name = this.stack[i][0];
+            if (name === groupPrefix + name) {
+                // found!
+                break;
+            }
+            i--;
+        }
+        let j = 0;
+        while (j < i) {
+            this.pop();
+            j++;
+        }
+    }
+    push(name) {
+        const {groupPrefix} = Modulo.GroupedMapStack;
+        this.top = {};
+        assert(!name.startsWith(groupPrefix), 'invalid name');
+        this.stack.push([name, this.top]);
+    }
+    pop() {
+        // dead code?
+        const [name, obj] = this.stack.pop();
+        this.top = obj || {};
+        return name;
+    }
+    toObject() {
+        // TODO: Recurse into sub-objects and flatten, allowing for proper flattening
+        const pObj = this.parentStack ? this.parentStack.toObject() : {};
+        return Object.assign(pObj, ...this.stack.map(pair => pair[1]), this.top);
+    }
+    get(key, defaultValue) {
+        const obj = this.toObject();
+        const result = key.split('.')
+            .reduce((obj, k) => (k in obj ? obj[k] : {}), obj);
+        //return key in obj ? obj[key] : defaultValue;
+        return result;
+    }
+    set(key, value) {
+        this.top[key] = value;
+    }
+}
+
