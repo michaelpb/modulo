@@ -34,7 +34,7 @@ test('Loader libraries which mount components', t => {
         <lib-testcomponent>
             <h1>Hello Test World</h1>
         </lib-testcomponent>
-        <lib-counter><mod-state num:="1"></mod-state>
+        <lib-counter><ghost-state num:="1"></ghost-state>
             <aside onclick:="script.testClick">Test</aside>
             <button onclick:="script.count">
                 1
@@ -85,7 +85,7 @@ test('Components can alter state during click events', t => {
     t.is(strip(btn.textContent), '1');
     btn.click(); // simulate the click that increments the counter
     const html = strip(document.body.innerHTML);
-    t.regex(html, /mod-state num:="2"/i); // ensure state num increased
+    t.regex(html, /ghost-state num:="2"/i); // ensure state num increased
     buttons = Array.from(document.querySelectorAll('button'));
     t.is(buttons.length, 1);
     btn = buttons[0];

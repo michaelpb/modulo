@@ -40,7 +40,9 @@ LifeCycle:
   load // e.g. during load (generates "options" obj)
   factory // e.g. during construction (on class)
 
+  build // e.g. constructed
   initialized // e.g. mounted (on instance)
+
   prepare // about to render
   render // doing the render
   update // doing the update itself
@@ -62,6 +64,8 @@ LifeCycle:
           - "RenderingObj.setFrozen()"
           - only needs to happen once per instance
           - receive props
+      - state runs
+          - populate default_ props
 
   prepare
       - state runs
