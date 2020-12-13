@@ -3,6 +3,7 @@ if (typeof HTMLElement === 'undefined') {
 }
 const globals = {HTMLElement};
 const Modulo = {globals};
+Modulo.DEBUG = true;
 
 Modulo.MapStack = class MapStack {
     constructor(parentStack) {
@@ -54,7 +55,6 @@ Modulo.MapStack = class MapStack {
     }
 }
 
-Modulo.DEBUG = true;
 Modulo.ON_EVENTS = new Set([
     'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
     'onmousemove', 'onmouseout', 'ondragstart', 'ondrag', 'ondragenter',
@@ -685,14 +685,18 @@ Modulo.ComponentPart = class ComponentPart {
         return {options, content};
     }
 
-    get name() {
-        return this.constructor.name;
-    }
-
     constructor(component, options) {
         this.component = component;
         this.options = options.options;
         this.content = options.content;
+    }
+
+    applyPreprocessors() {
+        return this.constructor.name;
+    }
+
+    get name() {
+        return this.constructor.name;
     }
 }
 
@@ -706,7 +710,6 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
     buildProps() {
         // old todo: This logic is bad. There needs to be a concept of...
         const props = {};
-        this.component.props = props; // hack, dd
         for (let propName of Object.keys(this.options)) {
             propName = propName.replace(/:$/, ''); // normalize
             let attrName = this.component.resolveAttributeName(propName);
