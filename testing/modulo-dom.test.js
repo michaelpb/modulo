@@ -35,8 +35,8 @@ test('Loader libraries which mount components', t => {
             <h1>Hello Test World</h1>
         </lib-testcomponent>
         <lib-counter><mod-state num:="1"></mod-state>
-            <aside onclick:="testClick">Test</aside>
-            <button onclick:="count">
+            <aside onclick:="script.testClick">Test</aside>
+            <button onclick:="script.count">
                 1
             </button>
         </lib-counter>
@@ -101,7 +101,7 @@ test('Components can have other components and namespaces get rewritten', t => {
         <h1>Ignorable stuff</h1>
         <lib-parentcomponent>
             <div>
-                <lib-childcomponent clickme:="gotClicked" txt="Click me! :)">
+                <lib-childcomponent clickme:="script.gotClicked" txt="Click me! :)">
                     <button onclick:="props.clickme">
                         Click me! :)
                     </button>
@@ -150,7 +150,7 @@ Harder - event is attached to inner content, e.g.:
 
 <template name="P">
     <my-C>
-        <button onclick:=clickme>Klicky</button>
+        <button onclick:=script.clickme>Klicky</button>
     </my-C>
     <script>
         function clickme() {}

@@ -12,10 +12,12 @@ Modulo.GroupedMapStack = class GroupedMapStack {
         this.push(''); // start with empty string..?
     }
     pushGroup(name) {
+        // probably will be dead code, mapstack is too powerful!
         const {groupPrefix} = Modulo.GroupedMapStack;
         this.stack.push([groupPrefix + name, {}]);
     }
     popThroughGroup(name) {
+        // dead code?
         const {groupPrefix} = Modulo.GroupedMapStack;
         let i = this.stack.length - 1;
         while (i >= 0) {
@@ -75,22 +77,8 @@ Modulo.ON_EVENTS = new Set([
 Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:]`).join(',');
 // moedco.REWRITE_CHILD_SELECTOR = []; // TODO: Select only children with : in property name
 
-const defaultLifeCycleMethods = {
-    initialized: () => {},
-    prepare: component => component.factory.prepareDefaultRenderInfo(component),
-    render: (context, opts, renderingObj) => {
-        const compiledTemplate = renderingObj.get('template.compiledTemplate');
-        const result = compiledTemplate(context);
-        console.log('this is result', result);
-        return result
-    },
-    update: (component, newContents) => {
-        component.clearEvents();
-        component.factory.options.meta.reconcile(component, newContents);
-        component.rewriteEvents();
-    },
-    updated: () => {},
-};
+// TODO delete these noops -v
+const defaultLifeCycleMethods = {};
 const baseScript = {get: key => defaultLifeCycleMethods[key]};
 
 const middleware = {
@@ -113,11 +101,6 @@ const middleware = {
             return selector;
         });
         return {...info, content};
-    },
-    compileTemplate(info, opts) {
-        const templateCompiler = Modulo.adapters.templating[opts.templatingEngine]();
-        const compiledTemplate = templateCompiler(info.content, opts);
-        return {...info, compiledTemplate};
     },
     rewriteComponentNamespace(info, {loader}) {
         return {
@@ -187,9 +170,32 @@ function getFirstModuloAncestor(elem) {
     );
 }
 
+
+function runLifecycle(lifecycleName, partsArray, renderingObj, includeArgs = false) {
+    renderingObj.pushGroup(lifecycleName);
+    for (let cPart of partsArray) {
+        let args = [];
+        if (includeArgs) {
+            // todo: remove, when 'load' lifecycle can generate renderingObj
+            args = cPart.args;
+            cPart = cPart.cls;
+            assert(args, 'need args yo');
+        }
+        const method = cPart[lifecycleName + 'Callback'];
+        if (method) {
+            const results = method.apply(cPart, [renderingObj, ...args]);
+            if (results) {
+                renderingObj.set(cPart.name, results); // beginning of siloing?
+                renderingObj.push(lifecycleName + ':' + cPart.name);
+            }
+        }
+    }
+}
+
+
 const defaultSettings = {
     factoryMiddleware: {
-        template: [middleware.rewriteComponentNamespace],//, middleware.compileTemplate],
+        template: [middleware.rewriteComponentNamespace],
         style: [middleware.prefixAllSelectors],
         script: [],
         'mod-state': [],
@@ -506,35 +512,23 @@ class ComponentFactory {
         this.componentClass = this.createClass();
     }
 
-    /* Prepares data before render() step of lifecycle */
-    prepareDefaultRenderInfo(component) {
-        // ...(component.script.get('context') || {}), ????
-        return {
-            templateInfo: this.getSelected('template'),
-            context: component.getDefaultTemplateContext(),
-        }
-    }
-
-    prepareBaseRenderingObject() {
-        // TODO: Refactor with identical loop buildParts, and the "lifecycle"
-        // method on component (also similar)
-        const renderingObj = new Modulo.GroupedMapStack();
-        renderingObj.pushGroup('factory');
+    getComponentPartClasses() {
+        const results = [];
         for (const [partName, partOptionsArr] of Object.entries(this.options)) {
             if (partName === 'meta') { continue } // HACK // HACK // HACK // HACK
             for (const partOptions of partOptionsArr) {
-                const {factoryCallback} = Modulo.Loader.componentParts[partName]
-                if (factoryCallback) {
-                    console.log('partName', partName, partOptions);
-                    const results = factoryCallback(partOptions, renderingObj, this);
-                    if (results) {
-                        renderingObj.set(partName, results); // beginning of siloing?
-                        renderingObj.push(`factory:${partName}`);
-                        console.log('rendering obj is now:', renderingObj.toObject());
-                    }
-                }
+                const cls = Modulo.Loader.componentParts[partName];
+                const args = [this, partOptions]; // extra args
+                results.push({cls, args});
             }
         }
+        return results;
+    }
+
+    prepareBaseRenderingObject() {
+        const renderingObj = new Modulo.GroupedMapStack();
+        const cParts = this.getComponentPartClasses();
+        runLifecycle('factory', cParts, renderingObj, true);
         return renderingObj;
     }
 
@@ -576,16 +570,18 @@ class ModuloComponent extends HTMLElement {
         this.isMounted = false;
         this.isModuloComponent = true; // important
         this.originalHTML = this.innerHTML;
-        this.renderingObj = new Modulo.GroupedMapStack(this.factory.baseRenderingObj);
+        this.initRenderingObj = new Modulo.GroupedMapStack(this.factory.baseRenderingObj);
         this.componentParts = [];
     }
 
     buildParts() {
+        // TODO: Refactor with loop in factory and/or runLifecycle
+
         // Note: For testability, this is invoked on first mount, before
         // initialize.  This is so the hacky "fake-upgrade" for custom
         // components works for the automated tests. Logically, it should
         // probably be invoked in the constructor
-        this.componentParts = [];
+        this.componentParts = [this]; // hook ourselves in
         // console.log('this is facotry options', this.factory.options);
         for (const [partName, partOptionsArr] of Object.entries(this.factory.options)) {
             //if (partName !== 'props') continue; // surgery 
@@ -608,19 +604,11 @@ class ModuloComponent extends HTMLElement {
         this.specialComponents.forEach(elem => this.prepend(elem));
     }
 
-    lifecycle(lifecycleName) {
-        this.renderingObj.pushGroup(lifecycleName);
-        for (const cPart of this.componentParts) {
-            const method = cPart[lifecycleName + 'Callback'];
-            if (method) {
-                const results = method.call(cPart, this.renderingObj, this);
-                if (results) {
-                    this.renderingObj.set(cPart.name, results); // beginning of siloing?
-                    this.renderingObj.push(lifecycleName + ':' + cPart.name);
-                }
-
-            }
-        }
+    updateCallback(renderingObj) {
+        this.clearEvents();
+        const newContents = renderingObj.get('template.renderedOutput', '');
+        this.factory.options.meta.reconcile(this, newContents);
+        this.rewriteEvents();
     }
 
     rerender() {
@@ -631,40 +619,37 @@ class ModuloComponent extends HTMLElement {
         if (Modulo.DEBUG) {
             this.saveUtilityComponents();
         }
-        //this.prepend(document.createElement('render-marker'));
-        const {context, templateInfo} = this.script.get('prepare').call(this, this);
-        const newHTML = this.script.get('render').call(this, context, templateInfo, this.renderingObj);
-        //newHTML.replace(/:=(\w+)/g, `"getElementById('thisid').$1"`); // TODO, fix this, see buildProps issue
-        this.script.get('update').call(this, this, newHTML);
-        this.script.get('updated').call(this, this);
-        //this.querySelector('render-marker').remove();
+
+        this.renderingObj = new Modulo.GroupedMapStack(this.initRenderingObj);
+        const renderingObj = this.renderingObj; //dd
+        this.lifecycle('prepare', 'render', 'update', 'updated');
         if (Modulo.DEBUG) {
             this.restoreUtilityComponents();
         }
+        this.renderingObj = null; // rendering is over, set to null
+
+        //this.renderingObj.popThroughGroup('prepare'); // unwind back to
+        //"prepare" stage -- no need if we have the "parent" system, then we
+        //can just toss this one
+        //this.prepend(document.createElement('render-marker'));
+        //newHTML.replace(/:=(\w+)/g, `"getElementById('thisid').$1"`); // TODO, fix this, see buildProps issue
+        //this.querySelector('render-marker').remove();
     }
 
-    rerender2() {
-        const lifecycleMethods = ['prepare', 'render', 'update', 'updated'];
-        this.renderingObj.popThroughGroup('prepare'); // unwind back to "prepare" stage
-        for (const mName of lifecycleMethods) {
-            this.lifecycle(mName);
+    lifecycle(...names) {
+        const renderingObj = this.getCurrentRenderingObj();
+        for (const name of names) {
+            runLifecycle(name, this.componentParts, renderingObj);
         }
     }
 
+    getCurrentRenderingObj() {
+        return (this.renderingObj || this.initRenderingObj);
+    }
     resolveValue(value) {
-        const scriptValue = this.script.get(value);
-        if (scriptValue !== undefined) {
-            return scriptValue;
-        }
-        const context = this.getDefaultTemplateContext();
-        // Allow "." notation to drill down into context
-        return value.split('.').reduce((obj, key) => obj[key], context);
-        // return scopedEval(this, context, 'return ' + value);
-    }
-
-    getDefaultTemplateContext() {
-        const state = this.state && parseAttrs(this.state, true);
-        return {state, props: this.props};
+        // Shouldn't be necessary, should always know if using renderingObj or
+        // initRenderingObj
+        return this.getCurrentRenderingObj().get(value);
     }
 
     resolveAttributeName(name) {
@@ -688,10 +673,10 @@ class ModuloComponent extends HTMLElement {
                 }
                 assert(name.endsWith(':'), 'Events must be resolved attributes');
                 const listener = (ev) => {
-                    // Not sure why this doesn't work:
-                    //const currentValue = this.getAttribute(name);
+                    // TODO: get current value, switch to this:
                     //const func = this.resolveValue(currentValue);
-                    const func = this.resolveValue(value);
+                    //const currentValue = el.getAttribute(name);
+                    const func = this.getCurrentRenderingObj().get(value);
                     assert(func, `Bad ${name}, ${value} is ${func}`);
                     const payloadAttr = `${eventName}.payload`;
                     const payload = el.hasAttribute(payloadAttr) ?
@@ -727,20 +712,11 @@ class ModuloComponent extends HTMLElement {
 
     connectedCallback() {
         this.parentComponent = getFirstModuloAncestor(this);
-        //this.buildProps();
         this.buildParts();
-        this.lifecycle('initialized');
+        this.lifecycle('initialized')
         this.rerender();
         //this.script.get('initialized').call(this, this);
         this.isMounted = true;
-    }
-
-    attributeChangedCallback(attrName, oldVal, newVal) {
-        if (!this.isMounted) {
-            return;
-        }
-        this.buildProps();
-        this.rerender();
     }
 }
 
@@ -750,6 +726,10 @@ Modulo.ComponentPart = class ComponentPart {
         const content = node.tagName === 'TEMPLATE' ? node.innerHTML
                                                     : node.textContent;
         return {options, content};
+    }
+
+    get name() {
+        return this.constructor.name;
     }
 
     constructor(component, options) {
@@ -792,7 +772,7 @@ Modulo.Loader.registerComponentPart(Modulo.parts.Props);
 Modulo.parts.Style = class Style extends Modulo.ComponentPart {
     static name = 'style';
     static upgradesFrom = ['style'];
-    static factoryCallback({content}) {
+    static factoryCallback(renderingObj, factory, {content}) {
         const styling = globals.document.createElement('style');
         styling.append(content);
         globals.document.head.append(styling)
@@ -804,11 +784,17 @@ Modulo.Loader.registerComponentPart(Modulo.parts.Style);
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
     static upgradesFrom = ['template'];
-    static factoryCallback(opts, renderingObj, factory) {
+    static factoryCallback(renderingObj, factory, opts) {
         const {templatingEngine = 'Backtick'} = opts.options;
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
+    }
+    renderCallback(renderingObj) {
+        const compiledTemplate = renderingObj.get('template.compiledTemplate');
+        const context = renderingObj.toObject();
+        const result = compiledTemplate(context);
+        return {renderedOutput: result};
     }
 }
 Modulo.Loader.registerComponentPart(Modulo.parts.Template);
@@ -849,7 +835,7 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         return scopedEval(factory, scriptContextDefaults, wrappedJS);
     }
 
-    static factoryCallback(partOptions, renderingObj, factory) {
+    static factoryCallback(renderingObj, factory, partOptions) {
         // todo: possibly move part of this into loadCallback, e.g. all string
         // preprocessing -- only if we do the same for precompiled Templates
         const script = Modulo.parts.Script.evalConstructorScript(partOptions);
@@ -864,6 +850,10 @@ Modulo.Loader.registerComponentPart(Modulo.parts.Script);
 
 Modulo.parts.State = class State extends Modulo.ComponentPart {
     static name = 'state';
+    prepareCallback() {
+        const state = this.component.state && parseAttrs(this.component.state, true);
+        return state;
+    }
 }
 Modulo.Loader.registerComponentPart(Modulo.parts.State);
 
