@@ -1,5 +1,5 @@
 const test = require('ava');
-const Modulo = require('../src/Modulo2');
+const Modulo = require('../src/Modulo');
 const {strip} = require('./utils/domUtils.js');
 
 test('Loader instantiates with empty args in node.js environ', t => {
