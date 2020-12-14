@@ -1,6 +1,60 @@
 const test = require('ava');
 const {DeepMap} = require('../src/Modulo');
 
+
+// Moving these methods here, so it is still tested in case they are ever
+// needed again, but declutters Modulo.js
+DeepMap.prototype.getAll = function getAll(key) {
+    const results = [];
+    for (const dm of this.savepoints.concat([this])) {
+        const result = dm.get(key);
+        if (typeof result !== 'undefined') {
+            results.push(result);
+        }
+    }
+    return results;
+};
+
+DeepMap.prototype.getLastSavedValue = function getLastSavedValue(key, defaultValue) {
+    let i = this.savepoints.length;
+    while (i > 0) {
+        i--;
+        const val = this.savepoints[i].get(key);
+        if (val !== undefined) {
+            return val;
+        }
+    }
+    return defaultValue;
+};
+
+DeepMap.prototype.getAllKeys = function getAllKeys(level = 1) {
+    if (level === 0) {
+        return [''];
+    }
+    const results = [];
+    for (const key of this.prefixes.keys()) {
+        if (key && key.split(this.sep).length === level) {
+            results.push(key);
+        }
+    }
+    return results;
+}
+
+DeepMap.prototype.toObjectWithHistory = function toObjectWithHistory(level) {
+    const results = {};
+    for (const dm of this.savepoints.concat([this])) {
+        for (const key of dm.getAllKeys(level)) {
+            if (!(key in results)) {
+                results[key] = [];
+            }
+            results[key].push(dm.get(key));
+        }
+    }
+    return results;
+};
+
+
+
 test('DeepMap.constructor', t => {
     const dm = new DeepMap();
     t.truthy(dm);
@@ -132,7 +186,7 @@ test('DeepMap.getAllKeys(1) shows keys', t => {
 });
 
 test('DeepMap.toUnFlatObject(1) can show multiple', t => {
-    const dm = new DeepMap();
+    const dm = new DeepMap(null, 'lazy');
     dm.set('foo.biff', 'bar3');
     dm.set('foo.baz', 'bar');
     dm.set('foo.baz', 'bar2');

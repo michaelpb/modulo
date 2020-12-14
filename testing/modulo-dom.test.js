@@ -18,7 +18,6 @@ test('Loader loads libraries with expected properties', t => {
     const loader = document.querySelector('mod-load');
     t.truthy(loader);
     t.truthy(loader.componentFactoryData);
-    console.log(loader.componentFactoryData);
     t.snapshot(loader.componentFactoryData);
 });
 
