@@ -5,85 +5,123 @@ const globals = {HTMLElement};
 const Modulo = {globals};
 Modulo.DEBUG = true;
 
-Modulo.MapStack = class MapStack {
-    // NOTE: This class has a terrible internal implementation, but should
-    // eventually be a nestable, stack-based Map
-    constructor(parentStack) {
-        this.stack = [];
-        this.parentStack = parentStack;
-        this.push(''); // ensure top is set
-    }
-    push(name, data={}) {
-        this.top = data;
-        this.stack.push([name, this.top]);
-    }
-    pop() {
-        // dead code?
-        if (this.stack.length < 1) {
-            return '';
-        }
-        const [name, obj] = this.stack.pop();
-        this.top = obj;
-        return name;
-    }
-    getAllKeys(level) {
-        if (level !== 1) throw 'not implemented yet';
-        const flatObj = this.toObject();
-        return Object.keys(flatObj);
-    }
-    toUnflatObject(level) {
-        const results = {};
-        for (const key of this.getAllKeys(level)) {
-            results[key] = this.getAll(key);
-        }
-        return results;
-    }
-    toObject() {
-        // TODO: Better test / document behavior of this class, and refactor
-        // this monster
-        const pObj = this.parentStack ? this.parentStack.toObject() : {};
-        const objArr = [pObj, ...this.stack.map(pair => pair[1]), this.top];
-        const resultArr = [];
-        for (const obj of objArr) {
-            for (const [key, value] of Object.entries(obj)) {
-                const sliced = [];
-                for (const obj of objArr) {
-                    if (key in obj) {
-                        sliced.push(obj[key]);
-                    }
-                }
-                resultArr.push({[key]: Object.assign(...sliced)});
-            }
-        }
-        if (resultArr.length < 1) {
-            return {};
+function isPlainObject(obj) {
+  return obj && typeof obj === 'object' && !Array.isArray(obj);
+  return Object.prototype.toString.call(obj) === '[object Object]';
+}
+
+Modulo.DeepMap = class DeepMap {
+    constructor(copyFrom=null, autoSave='lazy') {
+        this.label = null;
+        this.readOnly = false;
+        this.sep = '.';
+        if (copyFrom) {
+            // Easiest way to setup this one -- todo: should do a deep copy
+            this.data = new Map(copyFrom.data);
+            this.prefixes = new Map(copyFrom.prefixes);
+            //for (const [key, value] of copyFrom.data) {
+            //    this.set(key, value, true);
+            //}
+            this.savepoints = Array.from(copyFrom.savepoints);
         } else {
-            return Object.assign(...resultArr);
+            this.data = new Map();
+            this.prefixes = new Map();
+            this.savepoints = [];
         }
+        this.shouldAutoSave = {
+            'lazy': key => this.data.has(key) && // autosave if not redundant
+                           (this.data.get(key) !== this.getLastSavedValue(key)),
+            'granular': key => this.data.has(key), // only autosave if conflict
+            'manual': key => false, // never autosave
+        }[autoSave || 'manual'];
     }
-    get(key, defaultValue) {
-        return getByDotNotation(this.toObject(), key, defaultValue);
+    save(label) {
+        const dm = new Modulo.DeepMap(this);
+        dm.label = label || null;
+        dm.readOnly = true;
+        this.savepoints.push(dm);
     }
-    getAll(key) {
-        const results = [];
-        for (const [_, obj] of this.stack) {
-            const result = getByDotNotation(obj, key);
-            if (typeof result !== 'undefined') {
-                results.push(result);
-            }
+    setObject(key, obj) {
+        for (const [suffix, val] of Object.entries(obj)) {
+            const sep = key && suffix ? this.sep : '';
+            const fullKey = key + sep + suffix;
+            this.set(fullKey, val);
         }
-        return results;
     }
     set(key, value) {
-        // after get tests & rethink, refactor
-        if (key.indexOf('.') === -1) {
-            this.top[key] = value;
-            return;
+        if (this.readOnly) {
+            throw new Error('Read only');
+        } else if (isPlainObject(value)) {
+            this.setObject(key, value);
+        } else {
+            if (this.shouldAutoSave(key)) {
+                this.save();
+            }
+            // assert(!this.prefixes.has(key), `Invalid: ${key} is prefix`);
+            this.data.set(key, value);
+            this._setPrefixesForKey(key);
         }
-        const subkeys = key.split('.');
+    }
+    _setPrefixesForKey(key) {
+        const keyParts = key.split(this.sep);
+        let i = 0;
+        while (i < keyParts.length + 1) {
+            const prefix = keyParts.slice(0, i).join(this.sep);
+            const suffix = keyParts.slice(i).join(this.sep);
+            if (!this.prefixes.has(prefix)) {
+                this.prefixes.set(prefix, new Set());
+            }
+            this.prefixes.get(prefix).add(suffix);
+            i++;
+        }
+    }
+    getAllKeys(level = 1) {
+        if (level === 0) {
+            return [''];
+        }
+        const results = [];
+        for (const key of this.prefixes.keys()) {
+            if (key && key.split(this.sep).length === level) {
+                results.push(key);
+            }
+        }
+        return results;
+    }
+    getLastSavedValue(key, defaultValue) {
+        let i = this.savepoints.length;
+        while (i > 0) {
+            i--;
+            const val = this.savepoints[i].get(key);
+            if (val !== undefined) {
+                return val;
+            }
+        }
+        return defaultValue;
+    }
+    get(key, defaultValue) {
+        if (!this.prefixes.has(key)) {
+            return defaultValue;
+        }
+        if (this.data.has(key)){
+            return this.data.get(key);
+        }
+
+        // This means key is a prefix, so we need to create an obj
+        const obj = {};
+        for (const suffix of Array.from(this.prefixes.get(key))) {
+            const sep = key && suffix ? this.sep : '';
+            const fullKey = key + sep + suffix;
+            if (!this.data.has(fullKey)) { // never should happen
+                throw 'dont forget the good times we had';
+            }
+            const value = this.data.get(fullKey);
+            this._setObjByDotKey(obj, suffix, value);
+        }
+        return obj;
+    }
+    _setObjByDotKey(obj, dotKey, value) {
+        const subkeys = dotKey.split(this.sep);
         const lastSubkey = subkeys.pop(); // get rid of last one
-        let obj = this.top;
-        let oldObj = this.top;
         for (const subkey of subkeys) {
             if (!(subkey in obj)) {
                 obj[subkey] = {};
@@ -92,7 +130,48 @@ Modulo.MapStack = class MapStack {
         }
         obj[lastSubkey] = value;
     }
+    toObject() {
+        //return this.get('', {}); // <-- should work
+        const obj = {};
+        for (const [key, value] of this.data) {
+            this._setObjByDotKey(obj, key, value);
+        }
+        return obj;
+    }
+    toObjectWithHistory(level) {
+        const results = {};
+        const hackSeen = new Set();
+        for (const dm of this.savepoints.concat([this])) {
+            for (const key of dm.getAllKeys(level)) {
+                if (!(key in results)) {
+                    results[key] = [];
+                }
+
+                //////// hack to prevent dupes
+                const hackString = JSON.stringify(dm.get(key));
+                if (hackSeen.has(hackString)) { continue; }
+                else { hackSeen.add(hackString); }
+                //////// TODO: Correct behavior is to have another mode that is
+                //       careful with history, at the key-level
+
+                results[key].push(dm.get(key));
+            }
+        }
+        return results;
+    }
+    getAll(key) {
+        const results = [];
+        for (const dm of this.savepoints.concat([this])) {
+            const result = dm.get(key);
+            if (typeof result !== 'undefined') {
+                results.push(result);
+            }
+        }
+        return results;
+    }
 }
+
+//Modulo.DeepMap = OldDeepMap;
 
 Modulo.ON_EVENTS = new Set([
     'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
@@ -117,14 +196,6 @@ function rewriteTemplateTagsAsScriptTags(info, opts) {
 }
 
 function getByDotNotation(obj, key, defaultValue) {
-    const specialObj = {};
-    const result = key.split('.')
-        .reduce((obj, k) => (k in obj ? obj[k] : specialObj), obj);
-    return result === specialObj ? defaultValue : result;
-}
-
-
-function setByDotNotation(obj, key, defaultValue) {
     const specialObj = {};
     const result = key.split('.')
         .reduce((obj, k) => (k in obj ? obj[k] : specialObj), obj);
@@ -211,12 +282,12 @@ function runLifecycle(lifecycleName, partsArray, renderingObj, includeArgs = fal
         if (method) {
             const results = method.apply(cPart, [renderingObj, ...args]);
             if (results) {
-                renderingObj.push(lifecycleName + ':' + cPart.name);
                 renderingObj.set(cPart.name, results); // beginning of siloing?
             }
         }
         runMiddleware(middleware, lifecycleName, cPart, 'after', renderingObj, args);
     }
+    renderingObj.save(lifecycleName);
 }
 
 function getGhostElementName(cPart){
@@ -277,7 +348,7 @@ Modulo.Loader = class Loader extends HTMLElement {
             .filter(({debugGhost}) => debugGhost);
     }
 
-    static middleware = new Modulo.MapStack();
+    static middleware = new Modulo.DeepMap();
     static registerMiddleware(key, func) {
         assert(key.split('.').filter(p => p).length === 3, 'Invalid name');
         Modulo.Loader.middleware.set(key, func);
@@ -370,10 +441,10 @@ Modulo.Loader = class Loader extends HTMLElement {
         const attrs = parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
         const cPartClasses = this.getCPartClasses(elem);
-        const renderingObj = new Modulo.MapStack();
-        renderingObj.set('component', {name});
-        runLifecycle('load', cPartClasses, renderingObj, true);
-        const partsInfo = renderingObj.toUnflatObject(1);
+        const loadingObj = new Modulo.DeepMap(null, 'manual');
+        loadingObj.set('component', {name});
+        runLifecycle('load', cPartClasses, loadingObj, true);
+        const partsInfo = loadingObj.toObjectWithHistory(1);
         delete partsInfo['component']; // no need for that anymore!
         this.defineComponent(name, partsInfo);
     }
@@ -411,7 +482,7 @@ function restoreFocus(component) {
             elem.value = '';
             elem.value = value;
         } else {
-            //console.log('Could not restore focus!', component._activeElementSelector);
+            // console.log('Could not restore focus!', component._activeElementSelector);
         }
     }
     component._activeElementSelector = null;
@@ -510,7 +581,7 @@ class ComponentFactory {
     }
 
     prepareBaseRenderingObject() {
-        const renderingObj = new Modulo.MapStack();
+        const renderingObj = new Modulo.DeepMap();
         runLifecycle('factory', this.cParts, renderingObj, true);
         return renderingObj;
     }
@@ -546,13 +617,14 @@ class ModuloComponent extends HTMLElement {
         this.isMounted = false;
         this.isModuloComponent = true; // used when finding parent
         this.originalHTML = this.innerHTML;
-        this.initRenderingObj = new Modulo.MapStack(this.factory.baseRenderingObj);
+        this.initRenderingObj = new Modulo.DeepMap(this.factory.baseRenderingObj);
         this.componentParts = [];
     }
 
     constructParts() {
         this.componentParts = [this]; // Include self, to hook into lifecycle
         for (const {cPart, partOptions} of this.factory.cParts) {
+            // console.log('this is partOptions during construction:', partOptions);
             const instance = new cPart(this, partOptions);
             this.componentParts.push(instance);
         }
@@ -600,7 +672,7 @@ class ModuloComponent extends HTMLElement {
 
     rerender() {
         // Calls all the LifeCycle functions in order
-        this.renderingObj = new Modulo.MapStack(this.initRenderingObj);
+        this.renderingObj = new Modulo.DeepMap(this.initRenderingObj);
         this.lifecycle('prepare', 'render', 'update', 'updated');
         this.renderingObj = null; // rendering is over, set to null
     }
@@ -699,6 +771,7 @@ Modulo.ComponentPart = class ComponentPart {
     }
 
     buildCallback(renderingObj, node, loader) {
+        //console.log('build stage', renderingObj);
         const {options, content} = this;
         return {options, content};
     }
@@ -757,7 +830,7 @@ Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
     static upgradesFrom = ['template'];
     static factoryCallback(renderingObj, factory, opts) {
-        const {templatingEngine = 'Backtick'} = opts.options;
+        const {templatingEngine = 'Backtick'} = renderingObj.get('template.options', {});
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
@@ -816,7 +889,6 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     }
     prepareCallback() {
         return this.data;
-        const state = this.component.state && parseAttrs(this.component.state, true);
     }
     ghostCreatedCallback(ghostElem) {
         this.ghostElem = ghostElem;

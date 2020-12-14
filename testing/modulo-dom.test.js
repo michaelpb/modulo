@@ -13,11 +13,12 @@ test('Modulo defineAll runs and registers built-in', t => {
     t.is(Modulo.globals.mockRegistered.length, 2);
 });
 
-test.skip('Loader loads libraries with expected properties', t => {
+test('Loader loads libraries with expected properties', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
     const loader = document.querySelector('mod-load');
     t.truthy(loader);
     t.truthy(loader.componentFactoryData);
+    console.log(loader.componentFactoryData);
     t.snapshot(loader.componentFactoryData);
 });
 
@@ -47,6 +48,8 @@ test('Loader libraries which mount components', t => {
 test('Loader loads correctly prefixed CSS', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
     const styles = Array.from(document.querySelectorAll('style'));
+    //console.log('this is styles', styles);
+    //console.log('this is styles', styles[0].textContent, styles[1].textContent);
     t.is(styles.length, 1);
     const expectedStyle = strip(`
         lib-Counter button {

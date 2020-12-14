@@ -11,12 +11,12 @@ function webComponentsUpgrade(dom, el, cls) {
         protos.push(Reflect.getPrototypeOf(protos[1]));
     }
     protos.reverse();
-    const allProps = [];
+    const allKeys = [];
     for (const proto of protos) {
-        allProps.push(...Reflect.ownKeys(proto));
+        allKeys.push(...Reflect.ownKeys(proto));
     }
-    // console.log(el.tagName, 'this is all props', allProps);
-    for (const key of allProps) {
+    // console.log(el.tagName, 'this is all props', allKeys);
+    for (const key of allKeys) {
         if (instance[key] instanceof Function) {
             el[key] = instance[key].bind(el);
         } else {

@@ -5,7 +5,7 @@
   "homepage": "https://github.com/michaelpb/modulo#readme",
   "main": "modulocli.js",
   "scripts": {
-    "test": "ava",
+    "test": "ava -v --serial",
     "build": "./tools/build.sh"
   },
   "devDependencies": {
