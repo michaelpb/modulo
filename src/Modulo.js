@@ -321,7 +321,11 @@ Modulo.Loader = class Loader extends HTMLElement {
         frag.append(div);
         const results = [];
         for (const tag of div.querySelectorAll('[mod-component]')) {
-            results.push(this.loadFromDOMElement(tag, alsoRegister));
+            const componentFactory = this.loadFromDOMElement(tag, alsoRegister);
+            results.push(componentFactory);
+            if (alsoRegister) {
+                componentFactory.register();
+            }
         }
         return results;
     }
@@ -375,18 +379,13 @@ Modulo.Loader = class Loader extends HTMLElement {
         const partsInfo = loadingObj.toObject();
         delete partsInfo['component']; // no need for that anymore!
         this.componentFactoryData.push([name, partsInfo]);
-        let fac;
-        if (alsoRegister) {
-            fac = this.defineComponent(name, partsInfo);
-        }
-        runMiddleware('component', {name}, 'after', [elem, this, loadingObj, fac]);
-        return fac;
+        return this.defineComponent(name, partsInfo);
     }
 
     defineComponent(name, options) {
-        const componentFactory = new ComponentFactory(this, name, options);
-        componentFactory.register();
-        return componentFactory;
+        const factory = new ComponentFactory(this, name, options);
+        runMiddleware('component', {name}, 'after', [null, this, null, factory]);
+        return factory;
     }
 }
 
