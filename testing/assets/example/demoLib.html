@@ -1,0 +1,32 @@
+<template mod-component="TestComponent">
+    <template>
+        <hr />
+        <h3>Welcome to TestComponent, sweaty</h3>
+        <button onclick:=script.increment>
+            Count
+            <hr />
+            ${state.num}
+        </button>
+    </template>
+
+    <style>
+        h2 {
+            color: blue;
+        }
+    </style>
+
+    <mod-state
+        num:=1000
+    ></mod-state>
+
+    <script>
+        console.log('TestComponent Factory');
+        function increment() {
+            console.log('okay');
+            let num = this.state.get('num');
+            num++;
+            this.state.set('num', num);
+        }
+    </script>
+</template>
+

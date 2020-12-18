@@ -1,7 +1,7 @@
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
-const globals = {HTMLElement};
+let globals = {HTMLElement};
 const Modulo = {globals};
 Modulo.DEBUG = true;
 
@@ -341,7 +341,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         }
         let cPartName = tagName.toLowerCase();
         const splitType = (node.getAttribute('type') || '').split('/');
-        if (splitType[0] && splitType[0].lower() === 'modulo') {
+        if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
             cPartName = splitType[1];
         }
         if (!(cPartName in Modulo.Loader.componentPartsByTagName)) {
@@ -826,18 +826,14 @@ Modulo.Loader.registerMiddleware(
 );
 
 Modulo.Component = ModuloComponent;
-Modulo.defineAll = Modulo.Loader.defineCoreCustomElements;
+Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
 Modulo.globals = globals;
 
 if (typeof module !== 'undefined') { // Node
     module.exports = Modulo;
 }
 if (typeof customElements !== 'undefined') { // Browser
+    globals = window;
     globals.window = window;
-    globals.document = document;
-    globals.MutationObserver = MutationObserver;
-    globals.fetch = window.fetch;
-    globals.DocumentFragment = DocumentFragment;
-    globals.customElements = customElements;
     Modulo.defineAll();
 }

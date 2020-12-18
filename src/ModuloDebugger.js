@@ -4,11 +4,11 @@ if (typeof Modulo === 'undefined' && typeof require !== 'undefined') {
     const Modulo = require('./Modulo.js'); // Node environment
 }
 if (typeof Modulo === 'undefined' || !Modulo) {
-    throw new Error('Must load Modulo first');
+    throw new Error('ModuloDebugger.js: Must load Modulo first');
 }
-
-
-const {globals} = Modulo;
+if (typeof globals === 'undefined') {
+    globals = Modulo.globals;
+}
 Modulo.DEBUG = true;
 Modulo.moddebug = {};
 
@@ -20,6 +20,17 @@ function deepEquals(a, b) {
     }
 }
 
+/*
+            ${
+                state.partTypes.map(({name}) =>
+                    \`
+                    <label><input onchange:="ghostToggle"
+                                  onchange.payload="${name}"
+                                  type="checkbox" />
+                        ${name} ghost</label>
+                    \`).join('')
+            }
+*/
 Modulo.moddebug.factories = {};
 Modulo.moddebug.reloaders = {};
 Modulo.moddebug.loader = new Modulo.Loader('moddebug');
@@ -31,15 +42,7 @@ Modulo.moddebug.Toolbar = Modulo.moddebug.loader.loadString(`
             <label><input onchange:="hotreloadToggle" type="checkbox" />
                 Hot-reloading</label>
             <h2>Ghost debug elements</h2>
-            ${
-                state.partTypes.map(({name}) =>
-                    \`
-                    <label><input onchange:="ghostToggle"
-                                  onchange.payload="${name}"
-                                  type="checkbox" />
-                        ${name} ghost</label>
-                    \`).join('')
-            }
+
         </div>
     </script>
     <style>
@@ -118,7 +121,7 @@ Modulo.moddebug.Reloader = class Reloader extends Modulo.CompontentPart {
         const deleteComponents = setDiff(oldDataObj, newDataObj);
         const updateComponents = Array.from(oldComponentSet)
             .filter(name => newComponentSet.has(name)) // intersect
-            .filter(name => !deepEquals(newDataObj[name], oldDataObj[name]);
+            .filter(name => !deepEquals(newDataObj[name], oldDataObj[name]));
 
         // CUD operations, for components
         // CREATE
