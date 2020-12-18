@@ -28,10 +28,16 @@ const expectedFuncsString = `
 const expectedWrappedScript = `
     'use strict';
     const module = {exports: {}};
+    let var1,var2;
+    function setLocalVariable(name, value) {
+        if (name === 'var1') var1 = value;
+        if (name === 'var2') var2 = value;
+    }
     ${testScript1}
     return {
         ${expectedFuncsString}
         ...module.exports,
+        setLocalVariable
     };
 `;
 
@@ -44,7 +50,7 @@ test('Script.getSymbolsAsObjectAssignment - finds functions', t => {
 
 
 test('Script.wrapJavaScriptContext - works as intended', t => {
-    const results = Modulo.parts.Script.wrapJavaScriptContext(testScript1);
+    const results = Modulo.parts.Script.wrapJavaScriptContext(testScript1, ['var1', 'var2']);
     t.truthy(results);
     t.is(strip(results), strip(expectedWrappedScript));
 });

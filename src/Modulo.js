@@ -3,7 +3,6 @@ if (typeof HTMLElement === 'undefined') {
 }
 let globals = {HTMLElement};
 const Modulo = {globals};
-Modulo.DEBUG = true;
 
 Modulo.ON_EVENTS = new Set([
     'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
@@ -130,6 +129,14 @@ Modulo.MultiMap = class MultiMap extends Map {
     }
 }
 
+function getFirstModuloAncestor(elem) {
+    // Walk up tree to first DOM node that is a modulo component
+    const node = elem.parentNode;
+    return !node ? null : (
+        node.isModuloComponent ? node : getFirstModuloAncestor(node)
+    );
+}
+
 function isPlainObject(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
@@ -172,16 +179,9 @@ function scopedEval(thisContext, namedArgs, code) {
     return func.apply(thisContext, argValues);
 }
 
-function getFirstModuloAncestor(elem) {
-    // Walk up tree to first DOM node that is a modulo component
-    const node = elem.parentNode;
-    return !node ? null : (
-        node.isModuloComponent ? node : getFirstModuloAncestor(node)
-    );
-}
-
 function runMiddleware(lifecycleName, cPart, timing, args) {
     const key = `${lifecycleName}.${cPart.name}.${timing}`;
+    //console.log('Running middleware', key);
     const middlewareArr = Modulo.Loader.middleware.get(key);
     for (const middleware of middlewareArr) {
         middleware.apply(cPart, args);
@@ -214,40 +214,6 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     }
     if (renderObj.save) {
         renderObj.save(lifecycleName);
-    }
-}
-
-function getGhostElementName(cPart){
-    return `ghost-${cPart.name}`;
-}
-
-Modulo.DebugGhostBase = class DebugGhostBase extends HTMLElement {
-    connectedCallback() {
-        if (this.isMounted) { // prevent double-registering
-            return;
-        }
-        this.isMounted = true;
-        // https://github.com/WICG/webcomponents/issues/565
-        const observer = new globals.MutationObserver(
-            mutations => mutations
-                .filter(({type}) => type === 'attributes')
-                .map(this.attributeMutated, this))
-        observer.observe(this, {attributes: true});
-    }
-    attributeMutated() {
-        const parentComponent = getFirstModuloAncestor(this);
-        const cPart = parentComponent.getPart(this.name);
-        assert(cPart.ghostAttributeMutedCallback, 'not a real ghost');
-        cPart.ghostAttributeMutedCallback(this)
-    }
-
-    static defineDebugGhost(cPartClass) {
-        const tagName = getGhostElementName(cPartClass);
-        globals.customElements.define(tagName, class extends Modulo.DebugGhostBase {
-            get name() {
-                return cPartClass.name;
-            }
-        });
     }
 }
 
@@ -307,9 +273,10 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
     connectedCallback() {
+        this.src = this.getAttribute('src');
         this.initialize(this.getAttribute('namespace'), parseAttrs(this));
         // TODO: Check if already loaded via a global / static serialized obj
-        globals.fetch(this.getAttribute('src'))
+        globals.fetch(this.src)
             .then(response => response.text())
             .then(text => this.loadString(text));
     }
@@ -357,12 +324,12 @@ Modulo.Loader = class Loader extends HTMLElement {
             .filter(obj => obj.cPartName);
     }
 
-    loadFromDOMElement(elem, alsoRegister=true) {
+    loadFromDOMElement(elem) {
         const attrs = parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
         const loadingObj = new Modulo.MultiMap();
         loadingObj.set('component', {name});
-        runMiddleware('component', {name}, 'before', [elem, this, loadingObj]);
+        runMiddleware('load', {name: 'component'}, 'before', [elem, this, loadingObj]);
 
         //const cPartsMap = new Modulo.MultiMap();
         for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
@@ -383,8 +350,8 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
     defineComponent(name, options) {
-        const factory = new ComponentFactory(this, name, options);
-        runMiddleware('component', {name}, 'after', [null, this, null, factory]);
+        const factory = new Modulo.ComponentFactory(this, name, options);
+        runMiddleware('load', {name: 'component'}, 'after', [null, this, null, factory]);
         return factory;
     }
 }
@@ -449,7 +416,12 @@ Modulo.adapters = {
     },
 };
 
-class ComponentFactory {
+Modulo.ComponentFactory = class ComponentFactory {
+    static instances = new Map();
+    static registerInstance(instance) {
+        Modulo.ComponentFactory.instances.set(instance.fullName, instance);
+    }
+
     constructor(loader, name, options) {
         assert(name, 'Name must be given.');
         this.loader = loader;
@@ -457,6 +429,7 @@ class ComponentFactory {
         this.baseRenderObj = new Modulo.DeepMap();
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
+        Modulo.ComponentFactory.registerInstance(this);
         this.componentClass = this.createClass();
         runLifecycle('factory', options, this.baseRenderObj, this);
     }
@@ -473,11 +446,13 @@ class ComponentFactory {
     }
 
     createClass() {
-        const factory = this;
+        const {fullName} = this;
         const {reconciliationEngine = 'none'} = this.options;
         const reconcile = Modulo.adapters.reconciliation[reconciliationEngine]();
         return class CustomComponent extends ModuloComponent {
-            get factory() { return factory; }
+            get factory() {
+                return Modulo.ComponentFactory.instances.get(fullName);
+            }
             get reconcile() { return reconcile; }
         };
     }
@@ -489,48 +464,37 @@ class ComponentFactory {
 }
 
 class ModuloComponent extends HTMLElement {
-    static name = 'component';
-
     constructor() {
         super();
+        this.originalHTML = this.innerHTML;
+        this.initialize();
+    }
+    initialize() {
+        this.name = 'component'; // Used by lifecycle
         this.isMounted = false;
         this.isModuloComponent = true; // used when finding parent
-        this.originalHTML = this.innerHTML;
         this.initRenderObj = new Modulo.DeepMap(this.factory.baseRenderObj);
         this.componentParts = [];
     }
 
-    constructParts() {
+    constructParts(isReload=false) {
+        const oldCParts = isReload ? this.componentParts : [];
         this.componentParts = [this]; // Include self, to hook into lifecycle
         for (const {cPart, partOptions} of this.factory.getCParts()) {
             const instance = new cPart(this, partOptions);
             this.componentParts.push(instance);
+
+            // Trigger any custom reloading code
+            const oldPart = oldCParts.find(({name}) => name === cPart.name);
+            if (oldPart && instance.reloadCallback) {
+                instance.reloadCallback(oldPart);
+            }
         }
     }
 
     getPart(searchName) {
         // TODO: Maybe should refactor this? Shouldn't be used much...
         return this.componentParts.find(({name}) => name === searchName);
-    }
-
-    prepareCallback() {
-        if (Modulo.DEBUG) {
-            if (!this.isMounted) {
-                this.createGhostElements();
-            }
-            // saveUtilityComponents
-            //const selector = this.getPartsWithGhosts()
-            //    .map(getGhostElementName).join(', ')
-            //console.log('this is selector', this.getPartsWithGhosts(), selector2);
-            const selector = Modulo.Loader.getPartsWithGhosts()
-                .map(getGhostElementName).join(', ');
-            this.ghostElements = Array.from(this.querySelectorAll(selector));
-            this.ghostElements.forEach(elem => elem.remove());
-        }
-    }
-
-    getPartsWithGhosts() {
-        return this.componentParts.filter(p => p.debugGhost || p.constructor.debugGhost);
     }
 
     updateCallback(renderObj) {
@@ -540,16 +504,10 @@ class ModuloComponent extends HTMLElement {
         this.rewriteEvents();
     }
 
-    updatedCallback() {
-        if (Modulo.DEBUG) {
-            // restoreUtilityComponents
-            this.ghostElements.forEach(elem => this.prepend(elem));
-        }
-    }
-
     rerender() {
         // Calls all the LifeCycle functions in order
         this.renderObj = new Modulo.DeepMap(this.initRenderObj);
+        // TODO: this.renderObj.set('', this.parts); // Flatten part objects into render obj
         this.lifecycle('prepare', 'render', 'update', 'updated');
         this.renderObj = null; // rendering is over, set to null
     }
@@ -596,6 +554,8 @@ class ModuloComponent extends HTMLElement {
                     const payloadAttr = `${eventName}.payload`;
                     const payload = el.hasAttribute(payloadAttr) ?
                         el.getAttribute(payloadAttr) : el.value;
+
+                    this.lifecycle('event');
                     func.call(this, ev, payload);
                 };
                 el.addEventListener(eventName.slice(2), listener);
@@ -609,15 +569,6 @@ class ModuloComponent extends HTMLElement {
             el.removeEventListener(eventName, func);
         }
         this.events = [];
-    }
-
-    createGhostElements() {
-        for (const cPart of this.getPartsWithGhosts()) {
-            const tagName = getGhostElementName(cPart);
-            const elem = globals.document.createElement(tagName);
-            cPart.ghostCreatedCallback(elem);
-            this.prepend(elem);
-        }
     }
 
     connectedCallback() {
@@ -646,10 +597,6 @@ Modulo.ComponentPart = class ComponentPart {
         this.component = component;
         this.options = options.options;
         this.content = options.content;
-    }
-
-    applyPreprocessors() {
-        return this.constructor.name;
     }
 
     get name() {
@@ -693,9 +640,12 @@ Modulo.parts.Style = class Style extends Modulo.ComponentPart {
     static name = 'style';
     static upgradesFrom = ['style'];
     static factoryCallback({content}, factory, renderObj) {
+        // Need to move into somewhere else, as there can't be side-effects here
+        /*
         const styling = globals.document.createElement('style');
         styling.append(content);
         globals.document.head.append(styling)
+        */
     }
 }
 Modulo.Loader.registerComponentPart(Modulo.parts.Style);
@@ -733,20 +683,36 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
             .join('');
     }
 
-    static wrapJavaScriptContext(contents) {
+    static wrapJavaScriptContext(contents, localVars) {
         const symbolsString = this.getSymbolsAsObjectAssignment(contents);
+        const localVarsLet = localVars.join(',') || 'noLocalVars=true';
+        const localVarsIfs = localVars.map(n => `if (name === '${n}') ${n} = value;`).join('\n');
         return `
             'use strict';
             const module = {exports: {}};
+            let ${localVarsLet};
+            function setLocalVariable(name, value) { ${localVarsIfs} }
             ${contents}
-            return { ${symbolsString} ...module.exports, };
+            return { ${symbolsString} ...module.exports, setLocalVariable };
         `;
     }
 
     static factoryCallback(partOptions, factory, renderObj) {
         const scriptContextDefaults = {...renderObj.toObject(), Modulo};
-        const wrappedJS = this.wrapJavaScriptContext(partOptions.content || '');
+        const c = partOptions.content || '';
+        const localVars = Object.keys(scriptContextDefaults);
+        const wrappedJS = this.wrapJavaScriptContext(c, localVars);
+        return scopedEval(null, {}, wrappedJS);
         return scopedEval(null, scriptContextDefaults, wrappedJS);
+    }
+
+    eventCallback() {
+        // Make sure that the local variables are all properly set
+        const renderObj = this.component.getCurrentRenderObj();
+        const script = renderObj.get('script');
+        for (const part of this.component.componentParts) {
+            script.setLocalVariable(part.name, part);
+        }
     }
 }
 Modulo.Loader.registerComponentPart(Modulo.parts.Script);
@@ -757,12 +723,20 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     get debugGhost() { return true; }
     initializedCallback(renderObj) {
         this.rawDefaults = renderObj.get('state').options || {};
-        this.data = simplifyResolvedLiterals(this.rawDefaults); // TODO: Make configurable, switch to DeepMap
-        this.component.state = this;
+        if (!this.data) {
+            this.data = simplifyResolvedLiterals(this.rawDefaults); // TODO: Make configurable, switch to DeepMap
+        }
     }
-    prepareCallback() {
+
+    prepareCallback(renderObj) {
+        this.initializedCallback(renderObj); // TODO remove this, should not have to
         return this.data;
     }
+
+    reloadCallback(oldPart) {
+        this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
+    }
+
     ghostCreatedCallback(ghostElem) {
         this.ghostElem = ghostElem;
         for (const [key, value] of Object.entries(this.rawDefaults)) {
@@ -827,7 +801,6 @@ Modulo.Loader.registerMiddleware(
 
 Modulo.Component = ModuloComponent;
 Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
-Modulo.globals = globals;
 
 if (typeof module !== 'undefined') { // Node
     module.exports = Modulo;
@@ -835,5 +808,5 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     globals = window;
     globals.window = window;
-    Modulo.defineAll();
 }
+Modulo.globals = globals;

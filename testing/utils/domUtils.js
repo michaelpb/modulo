@@ -31,8 +31,13 @@ function webComponentsUpgrade(dom, el, cls) {
     }
 }
 
-function setupModulo(path = null) {
-    const Modulo = require('../../src/Modulo');
+function setupModulo(path = null, includeDebugger = false) {
+    let Modulo;
+    if (includeDebugger) {
+        Modulo = require('../../src/ModuloDebugger');
+    } else {
+        Modulo = require('../../src/Modulo');
+    }
     const htmlCode = path ? fs.readFileSync(path, 'utf-8') : '';
     const dom = new JSDOM(htmlCode);
     Modulo.document = dom.window.document; // for easier testing

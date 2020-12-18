@@ -10,7 +10,7 @@ test('Loader instantiates with empty args', t => {
 test('Modulo defineAll runs and registers built-in', t => {
     const Modulo = setupModulo();
     Modulo.defineAll();
-    t.is(Modulo.globals.mockRegistered.length, 2);
+    t.is(Modulo.globals.mockRegistered.length, 1); // only "mod-load"
 });
 
 test('Loader loads libraries with expected properties', t => {
@@ -21,7 +21,8 @@ test('Loader loads libraries with expected properties', t => {
     t.snapshot(loader.componentFactoryData);
 });
 
-test('Loader libraries which mount components', t => {
+// TODO: When ghost is fully extricated, stop skipping
+test.skip('Loader libraries which mount components', t => {
     const {globals, document} = setupModulo('./testing/assets/loader_test.html');
     t.is(globals.mockRegistered.length, 4);
     //console.log('mounted', globals.mockMounted);
@@ -34,7 +35,7 @@ test('Loader libraries which mount components', t => {
         <lib-testcomponent>
             <h1>Hello Test World</h1>
         </lib-testcomponent>
-        <lib-counter><ghost-state num:="1"></ghost-state>
+        <lib-counter>
             <aside onclick:="script.testClick">Test</aside>
             <button onclick:="script.count">
                 1
@@ -87,7 +88,6 @@ test('Components can alter state during click events', t => {
     t.is(strip(btn.textContent), '1');
     btn.click(); // simulate the click that increments the counter
     const html = strip(document.body.innerHTML);
-    t.regex(html, /ghost-state num:="2"/i); // ensure state num increased
     buttons = Array.from(document.querySelectorAll('button'));
     t.is(buttons.length, 1);
     btn = buttons[0];

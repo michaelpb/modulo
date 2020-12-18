@@ -1,7 +1,6 @@
-// (note: all untested code)
-
 if (typeof Modulo === 'undefined' && typeof require !== 'undefined') {
-    const Modulo = require('./Modulo.js'); // Node environment
+    Modulo = require('./Modulo.js'); // Node environment
+    HTMLElement = Modulo.globals.HTMLElement;
 }
 if (typeof Modulo === 'undefined' || !Modulo) {
     throw new Error('ModuloDebugger.js: Must load Modulo first');
@@ -9,8 +8,16 @@ if (typeof Modulo === 'undefined' || !Modulo) {
 if (typeof globals === 'undefined') {
     globals = Modulo.globals;
 }
+
 Modulo.DEBUG = true;
-Modulo.moddebug = {};
+Modulo.moddebug = {pollingRate: 1000};
+
+function assert(value, ...info) {
+    if (!value) {
+        console.error(...info);
+        throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
+    }
+}
 
 function deepEquals(a, b) {
     try {
@@ -19,6 +26,34 @@ function deepEquals(a, b) {
         return null;
     }
 }
+
+function getFirstModuloAncestor(elem) {
+    // Walk up tree to first DOM node that is a modulo component
+    const node = elem.parentNode;
+    return !node ? null : (
+        node.isModuloComponent ? node : getFirstModuloAncestor(node)
+    );
+}
+
+function getGhostElementName(cPart){
+    return `ghost-${cPart.name}`;
+}
+
+function getPartsWithGhosts(component) {
+    return component.componentParts.filter(p => p.debugGhost || p.constructor.debugGhost);
+}
+
+function createGhostElements(component) {
+    for (const cPart of getPartsWithGhosts(component)) {
+        const tagName = getGhostElementName(cPart);
+        const elem = globals.document.createElement(tagName);
+        cPart.ghostCreatedCallback(elem);
+        component.prepend(elem);
+    }
+}
+
+
+const setDiff = (a, b) => new Set(Array.from(a).map(item => !b.has(item)));
 
 /*
             ${
@@ -31,10 +66,8 @@ function deepEquals(a, b) {
                     \`).join('')
             }
 */
-Modulo.moddebug.factories = {};
-Modulo.moddebug.reloaders = {};
-Modulo.moddebug.loader = new Modulo.Loader('moddebug');
-Modulo.moddebug.Toolbar = Modulo.moddebug.loader.loadString(`
+
+const debugToolbarString = `
 <template mod-component="DebugToolbar">
     <script type="modulo/template">
         <div>
@@ -42,7 +75,6 @@ Modulo.moddebug.Toolbar = Modulo.moddebug.loader.loadString(`
             <label><input onchange:="hotreloadToggle" type="checkbox" />
                 Hot-reloading</label>
             <h2>Ghost debug elements</h2>
-
         </div>
     </script>
     <style>
@@ -72,51 +104,137 @@ Modulo.moddebug.Toolbar = Modulo.moddebug.loader.loadString(`
         }
     </script>
 </template>
-`)[0];
+`;
 
+Modulo.moddebug.LoaderReloader = class LoaderReloader {
+    constructor() {
+        this.loadersByPath = new Map();
+        this.componentsByName = new Modulo.MultiMap();
+        this.factoriesByPath = new Modulo.MultiMap(); // dead code
+        this.resourceTextByPath = new Map();
+        setTimeout(this.startPolling.bind(this), Modulo.moddebug.pollingRate);
+    }
 
-// NOTE: Need to think "1 Reloader" per component, and "1 Factory Reloader"
-// total
-//Modulo.moddebug.Reloader = class Reloader extends Modulo.CompontentPart {
-Modulo.moddebug.Reloader = class Reloader extends Modulo.CompontentPart {
-    static name = 'reloader';
-    initializedCallback() {
-        const {factory} = this.component;
-        Modulo.moddebug.reloaders[factory.fullName] = this;
-        Modulo.moddebug.factories[factory.fullName] = factory;
-        const src = factory.loader.getAttribute('src');
-        const pollRate = 5000;
+    register(loader, factory) {
+        if (!loader.src) { // Loader being used programmatically
+            return;
+        }
+        this.loadersByPath.set(loader.src, loader);
+        this.factoriesByPath.set(loader.src, factory); // dead code
+    }
+
+    registerComponent(component) {
+        this.componentsByName.set(component.factory.fullName, component);
+    }
+
+    onFileChanged(filePath) {
+        // dead code/ 
+        // TODO: This is only useful for the filesystem based one
+        const loader = this.matchLongestPathSuffix(filePath);
+        if (!loader) {
+            return;
+        }
+        const factories = this.factoriesByPath.get(loader.src);
+        for (const factory of factories) {
+        }
+    }
+
+    matchLongestPathSuffix(originalPath) {
+        // dead code/ 
+        let suffix = originalPath;
+        while (suffix) {
+            for (const [path, loader] of this.loadersByPath) {
+                if (path.endsWith(suffix)) {
+                    return loader;
+                }
+            }
+            suffix = suffix.slice(suffix.indexOf('/'), suffix.length);
+        }
+        return null;
+    }
+
+    checkLongPolling() {
+        // dead code
+        const url = '/_moduloServerInfo';
+        globals.fetch(url, {cache: 'no-store'})
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.url) {
+                    this.longPollingURL = data.url;
+                }
+            });
+        setTimeout(() => {
+            if (this.longPollingURL) {
+                return; // already discovered
+            }
+            globals.fetch(url, {cache: 'no-store'})
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.url) {
+                        this.longPollingURL = data.url;
+                    }
+                });
+        }, 1000);
+    }
+
+    startPolling(loader, factory) {
         const lastText = '';
         this.pollInProgress = false;
         this.pollInterval = setInterval(() => {
             if (this.pollInProgress) {
-                return; // prevent multiples
+                return; // Throttle
             }
             this.pollInProgress = true;
             this.doPoll();
-        }, 5000);
+        }, Modulo.moddebug.pollingRate);
     }
+
     doPoll() {
-        const newLoader = new Modulo.Loader(loader.namespace, loader.options);
+        this.doReload(this.loadersByPath);
+    }
+
+    doReload(loadersByPath) {
+        const totalExpectedResponses = loadersByPath.size;
+        let responses = 0;
+        for (const [src, loader] of loadersByPath) {
+            globals.fetch(src, {cache: 'no-store'})
+                .then(response => response.text())
+                .then(text => {
+                    this.onResponseReceived(loader, text);
+                    responses++;
+                    if (responses >= totalExpectedResponses) {
+                        this.pollInProgress = false;
+                    }
+                });
+        }
+    }
+
+    onResponseReceived(loader, text) {
+        if (this.resourceTextByPath.has(loader.src)) {
+            if (this.resourceTextByPath.get(loader.src) === text) {
+                return; // if the text hasn't changed, there is no change
+            }
+        }
+        this.resourceTextByPath.set(loader.src, text);
+
+        // console.log('hey this is text', text);
         const oldFacData = loader.componentFactoryData;
         const oldFacDataS = JSON.stringify(loader.componentFactoryData);
-        globals.fetch(src)
-            .then(response => response.text())
-            .then(text => {
-                newLoader.loadString(text, false);
-                const newFacData = newLoader.componentFactoryData;
-                const newFacDataS = JSON.stringify(newFacData);
-                if (newFacDataS !== oldFacDataS) {
-                    this.reload(loader, oldFacData, newFacData);
-                }
-                this.pollInProgress = false;
-            });
+        const newLoader = new Modulo.Loader(loader.namespace, loader.options);
+        newLoader.loadString(text, false);
+        const newFacData = newLoader.componentFactoryData;
+        const newFacDataS = JSON.stringify(newFacData);
+        if (newFacDataS === oldFacDataS) {
+            return;
+        }
+        this.reload(loader, oldFacData, newFacData);
     }
+
     reload(loader, oldFacData, newFacData) {
         const newDataObj = Object.fromEntries(newFacData);
         const oldDataObj = Object.fromEntries(oldFacData);
-        const newComponentSet = new Set(newDataObj.keys());
-        const oldComponentSet = new Set(oldDataObj.keys());
+        const newComponentSet = new Set(Object.keys(newDataObj));
+        const oldComponentSet = new Set(Object.keys(oldDataObj));
         const createComponents = setDiff(newDataObj, oldDataObj);
         const deleteComponents = setDiff(oldDataObj, newDataObj);
         const updateComponents = Array.from(oldComponentSet)
@@ -139,37 +257,125 @@ Modulo.moddebug.Reloader = class Reloader extends Modulo.CompontentPart {
             this.deleteComponent(loader, name); // impossible
         }
     }
+
     defineComponent(loader, name, newOptions) {
         const factory = loader.defineComponent(name, newOptions);
         loader.componentFactoryData.push([name, newOptions]);
         factory.register();
     }
+
     updateComponent(loader, name, newOptions) {
-        const newFactory = loader.defineComponent(name, newOptions);
-        const oldOpts = loader.componentFactoryData.filter([name, newOptions]);
-        const oldFactory = Modulo.moddebug.factories[newFactory.fullName];
-        const oldClass = oldFactory.componentClass;
-        Object.assign(oldFactory, newFactory);
-        oldFactory.componentClass = Object.assign(oldClass, newFactory.componentClass);
+        const factory = loader.defineComponent(name, newOptions);
+        // Now, we need to reload existing ones
+        for (const component of this.componentsByName.get(factory.fullName)) {
+            //console.log('this is new fac comp class', factory.componentClass);
+            component.initialize();
+            component.constructParts(true); // Rebuild the component from parts
+            component.isMounted = true;
+            component.rerender();
+        }
     }
+
     deleteComponent(loader, name) {
-        // impossible, but can hot patch into no-ops
+        // Should have a global "no-op component factory" that dead
+        // components get patched into
+        // Impossible to undefined components, so instead we just update
+        // with a blank component
+        this.updateComponent(loader, name, {}); // "no-op component"
     }
+
 }
-Modulo.Loader.registerComponentPart(Modulo.moddebug.Reloader);
-Modulo.Loader.registerMiddleware(
-    'load.component.before',
-    function addReloaderCPart(node, loader, loadingObj) {
-        loadingObj.set('reloader', {content: '', options: {}});
-    },
-);
+
+function oneTimeSetup() {
+    const {Loader, moddebug} = Modulo;
+    moddebug.reloader = new moddebug.LoaderReloader();
+    moddebug.loader = new Loader('moddebug');
+    moddebug.loader.loadString(debugToolbarString);
+    moddebug.toolbar = globals.document.createElement('moddebug-toolbar');
+    globals.document.body.appendChild(moddebug.toolbar);
+}
+
 Modulo.Loader.registerMiddleware(
     'load.component.after',
     function registerFactory(node, loader, loadingObj, factory) {
+        if (!Modulo.moddebug.reloader) {
+            oneTimeSetup();
+        }
+        Modulo.moddebug.reloader.register(loader, factory);
     },
 );
 
 
-if (typeof module !== 'undefined') { // Node
-    module.exports = ModuloDebugger;
+Modulo.Loader.registerMiddleware(
+    'initialized.component.after',
+    function registerFactory() {
+        Modulo.moddebug.reloader.registerComponent(this);
+    },
+);
+
+
+Modulo.Loader.registerMiddleware(
+    'prepare.component.before',
+    function createGhosts() {
+        if (!this.isMounted) {
+            createGhostElements(this);
+        }
+    },
+)
+
+Modulo.Loader.registerMiddleware(
+    'update.component.before',
+    function hideGhosts() {
+        // saveUtilityComponents
+        //const selector = this.getPartsWithGhosts()
+        //    .map(getGhostElementName).join(', ')
+        //console.log('this is selector', this.getPartsWithGhosts(), selector2);
+        const selector = Modulo.Loader.getPartsWithGhosts()
+            .map(getGhostElementName).join(', ');
+        this.ghostElements = Array.from(this.querySelectorAll(selector));
+        this.ghostElements.forEach(elem => elem.remove());
+    },
+);
+
+Modulo.Loader.registerMiddleware(
+    'update.component.after',
+    function restoreGhosts() {
+        this.ghostElements.forEach(elem => this.prepend(elem));
+    },
+);
+
+Modulo.DebugGhostBase = class DebugGhostBase extends HTMLElement {
+    connectedCallback() {
+        if (this.isMounted) { // prevent double-registering
+            return;
+        }
+        this.isMounted = true;
+        // https://github.com/WICG/webcomponents/issues/565
+        const observer = new globals.MutationObserver(
+            mutations => mutations
+                .filter(({type}) => type === 'attributes')
+                .map(this.attributeMutated, this))
+        observer.observe(this, {attributes: true});
+    }
+    attributeMutated() {
+        const parentComponent = getFirstModuloAncestor(this);
+        const cPart = parentComponent.getPart(this.name);
+        assert(cPart.ghostAttributeMutedCallback, 'not a real ghost');
+        cPart.ghostAttributeMutedCallback(this)
+    }
+
+    static defineDebugGhost(cPartClass) {
+        const tagName = getGhostElementName(cPartClass);
+        globals.customElements.define(tagName, class extends Modulo.DebugGhostBase {
+            get name() {
+                return cPartClass.name;
+            }
+        });
+    }
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = Modulo; // Node environment
+} else if (typeof customElements !== 'undefined') {
+    Modulo.defineAll(); // Browser environment
 }
