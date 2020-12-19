@@ -31,12 +31,19 @@ function webComponentsUpgrade(dom, el, cls) {
     }
 }
 
+function clearRequireCache(searchPath) {
+    const path = pathlib.resolve(__dirname, searchPath);
+    delete require.cache[path];
+}
+
 function setupModulo(path = null, includeDebugger = false) {
     let Modulo;
+    clearRequireCache('../../src/Modulo.js');
+    clearRequireCache('../../src/ModuloDebugger.js');
     if (includeDebugger) {
-        Modulo = require('../../src/ModuloDebugger');
+        Modulo = require('../../src/ModuloDebugger.js');
     } else {
-        Modulo = require('../../src/Modulo');
+        Modulo = require('../../src/Modulo.js');
     }
     const htmlCode = path ? fs.readFileSync(path, 'utf-8') : '';
     const dom = new JSDOM(htmlCode);
@@ -47,14 +54,10 @@ function setupModulo(path = null, includeDebugger = false) {
     Modulo.globals.mockRegistered = [];
     Modulo.globals.mockMounted = [];
     Modulo.globals.mockTimeouts = [];
-    Modulo.globals.setTimeout = (func, time) => {
-        Modulo.globals.mockTimeouts.push({func, time, setTimeout: true});
-        //func();
-    };
-    Modulo.globals.setInterval = (func, time) => {
-        Modulo.globals.mockTimeouts.push({func, time, setInterval: true});
-        //func();
-    };
+    const {mockTimeouts} = Modulo.globals;
+    const mockTOPush = (func, time) => mockTimeouts.push({func, time});
+    Modulo.globals.setTimeout = mockTOPush;
+    Modulo.globals.setInterval = mockTOPush;
     Modulo.globals.MutationObserver = class {
         observe(el) {
             const {setAttribute} = el;

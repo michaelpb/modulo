@@ -8,9 +8,7 @@
     "test": "ava -v --serial"
   },
   "devDependencies": {
-    "ava": "^3.14.0"
-  },
-  "dependencies": {
+    "ava": "^3.14.0",
     "jsdom": "^16.4.0"
   },
   "repository": {

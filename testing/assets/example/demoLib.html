@@ -3,7 +3,7 @@
         <hr />
         <h3>Welcome to TestComponent, sweaty</h3>
         <button onclick:=script.increment>
-            Count
+            Increase Count
             <hr />
             ${state.num}
         </button>
@@ -22,7 +22,7 @@
     <script>
         console.log('TestComponent Factory');
         function increment() {
-            console.log('changin 50 electr');
+            console.log('changin 51 electr');
             let num = state.get('num');
             num++;
             state.set('num', num);

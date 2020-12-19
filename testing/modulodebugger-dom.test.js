@@ -1,7 +1,7 @@
 const test = require('ava');
 const {setupModulo, strip} = require('./utils/domUtils.js');
 
-test('Modulo defineAll runs and registers built-in', t => {
+test('Modulo defineAll & debugger runs and registers built-in', t => {
     const Modulo = setupModulo(null, true);
     Modulo.defineAll();
     t.is(Modulo.globals.mockRegistered.length, 2); // "mod-load" and "ghost-state"
@@ -10,8 +10,6 @@ test('Modulo defineAll runs and registers built-in', t => {
 test('Loader libraries which mount components and show ghost and toolbar', t => {
     const {globals, document} = setupModulo('./testing/assets/loader_test.html', true);
     t.is(globals.mockRegistered.length, 5); // mod-load, moddebug-toolbar, ghost-state, lib-testcomponent, lib-counter,
-    //console.log('mounted', globals.mockMounted);
-    //console.log('this is innerHTML', document.body.innerHTML);
     const html = strip(document.body.innerHTML);
     t.is(globals.mockMounted.length, 4); // loader, testcomponent, counter, and state
     t.is(html, strip(`
@@ -50,5 +48,6 @@ test('Components can alter state during click events, which is reflected in ghos
 
 test('Components can be changed and get hot-reloaded', t => {
     const {globals, document} = setupModulo('./testing/assets/loader_test.html', true);
-    t.is(globals.mockTimeouts.length, 0); // wrong
+    t.is(globals.mockRegistered.length, 5); // mod-load, moddebug-toolbar, ghost-state, lib-testcomponent, lib-counter,
+    t.is(globals.mockTimeouts.length, 1);
 });

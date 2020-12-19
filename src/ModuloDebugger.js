@@ -124,7 +124,6 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
     }
 
     registerComponent(component) {
-        console.log('registering', component);
         this.instancesByName.set(component.factory.fullName, component);
     }
 
