@@ -46,6 +46,15 @@ function setupModulo(path = null, includeDebugger = false) {
     Modulo.globals.DocumentFragment =  dom.window.DocumentFragment;
     Modulo.globals.mockRegistered = [];
     Modulo.globals.mockMounted = [];
+    Modulo.globals.mockTimeouts = [];
+    Modulo.globals.setTimeout = (func, time) => {
+        Modulo.globals.mockTimeouts.push({func, time, setTimeout: true});
+        //func();
+    };
+    Modulo.globals.setInterval = (func, time) => {
+        Modulo.globals.mockTimeouts.push({func, time, setInterval: true});
+        //func();
+    };
     Modulo.globals.MutationObserver = class {
         observe(el) {
             const {setAttribute} = el;

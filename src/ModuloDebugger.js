@@ -108,11 +108,11 @@ const debugToolbarString = `
 
 Modulo.moddebug.LoaderReloader = class LoaderReloader {
     constructor() {
-        this.loadersByPath = new Map();
-        this.componentsByName = new Modulo.MultiMap();
-        this.factoriesByPath = new Modulo.MultiMap(); // dead code
+        this.loadersByPath = new Map(); // TODO: Turn into WeakMap!
+        this.instancesByName = new Modulo.MultiMap(); // TODO: Turn into WeakMap!
+        //this.factoriesByPath = new Modulo.MultiMap(); // dead code
         this.resourceTextByPath = new Map();
-        setTimeout(this.startPolling.bind(this), Modulo.moddebug.pollingRate);
+        globals.setTimeout(this.startPolling.bind(this), Modulo.moddebug.pollingRate);
     }
 
     register(loader, factory) {
@@ -120,16 +120,24 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
             return;
         }
         this.loadersByPath.set(loader.src, loader);
-        this.factoriesByPath.set(loader.src, factory); // dead code
+        //this.factoriesByPath.set(loader.src, factory); // dead code
     }
 
     registerComponent(component) {
-        this.componentsByName.set(component.factory.fullName, component);
+        console.log('registering', component);
+        this.instancesByName.set(component.factory.fullName, component);
     }
 
     onFileChanged(filePath) {
         // dead code/ 
         // TODO: This is only useful for the filesystem based one
+        // BETTER IDEA:
+        // Move this into modulocli, and have it be in reverse.
+        // Basically, during the discovery GET, frontend reports every src it
+        // has, and then starts longpolling
+        // The backend will start watching that file (that way only relevant
+        // files get watched)
+        // Then, the frontend will attempt to reload those factories
         const loader = this.matchLongestPathSuffix(filePath);
         if (!loader) {
             return;
@@ -163,7 +171,7 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
                     this.longPollingURL = data.url;
                 }
             });
-        setTimeout(() => {
+        globals.setTimeout(() => {
             if (this.longPollingURL) {
                 return; // already discovered
             }
@@ -180,7 +188,7 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
     startPolling(loader, factory) {
         const lastText = '';
         this.pollInProgress = false;
-        this.pollInterval = setInterval(() => {
+        this.pollInterval = globals.setInterval(() => {
             if (this.pollInProgress) {
                 return; // Throttle
             }
@@ -197,9 +205,11 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
         const totalExpectedResponses = loadersByPath.size;
         let responses = 0;
         for (const [src, loader] of loadersByPath) {
+            //console.log('sending request', src);
             globals.fetch(src, {cache: 'no-store'})
                 .then(response => response.text())
                 .then(text => {
+                    //console.log('gettin response', src, text.length);
                     this.onResponseReceived(loader, text);
                     responses++;
                     if (responses >= totalExpectedResponses) {
@@ -210,27 +220,30 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
     }
 
     onResponseReceived(loader, text) {
-        if (this.resourceTextByPath.has(loader.src)) {
-            if (this.resourceTextByPath.get(loader.src) === text) {
-                return; // if the text hasn't changed, there is no change
-            }
+        if (this.resourceTextByPath.has(loader.src) &&
+                this.resourceTextByPath.get(loader.src) === text) {
+            return; // Check 1: if the text hasn't changed, there is no change
         }
         this.resourceTextByPath.set(loader.src, text);
 
-        // console.log('hey this is text', text);
-        const oldFacData = loader.componentFactoryData;
-        const oldFacDataS = JSON.stringify(loader.componentFactoryData);
         const newLoader = new Modulo.Loader(loader.namespace, loader.options);
         newLoader.loadString(text, false);
+        const oldFacData = loader.componentFactoryData;
         const newFacData = newLoader.componentFactoryData;
-        const newFacDataS = JSON.stringify(newFacData);
-        if (newFacDataS === oldFacDataS) {
-            return;
+        if (deepEquals(oldFacData, newFacData)) {
+            return; // Check 2: After load middleware applied, no change
         }
-        this.reload(loader, oldFacData, newFacData);
+
+        this.reload(loader, oldFacData, newFacData); // Actually reload
     }
 
     reload(loader, oldFacData, newFacData) {
+        // TODO: One general refactor idea: Move more nitty-gritty into factory
+        // and/or component. Then, if the factory definition is changed for any
+        // reason, trigger refreshes and reloads.
+        // PURPOSE:
+        //  - Generalize "ghost" and live editing (e.g. ghost changes cause factory refresh)
+        //  - Allows tweaking ghost-state for example, without affecting other changed values
         const newDataObj = Object.fromEntries(newFacData);
         const oldDataObj = Object.fromEntries(oldFacData);
         const newComponentSet = new Set(Object.keys(newDataObj));
@@ -244,46 +257,37 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
         // CUD operations, for components
         // CREATE
         for (const name of createComponents) {
-            this.defineComponent(loader, name, newDataObj[name]); // easy
+            const options = newDataObj[name];
+            const factory = loader.defineComponent(name, options);
+            loader.componentFactoryData.push([name, options]);
+            factory.register();
         }
 
         // UPDATE
         for (const name of updateComponents) {
-            this.updateComponent(loader, name, newDataObj[name]); // hard
+            //this.updateComponent(loader, name, newDataObj[name]);
+            const options = newDataObj[name];
+            const factory = loader.defineComponent(name, options);
+            for (const instance of this.instancesByName.get(factory.fullName)) {
+                instance.initialize(); // Re-initialize properties
+                instance.constructParts(true); // Rebuild from factory
+                instance.isMounted = true; // "Start" mounted
+                instance.rerender();
+            }
         }
 
         // DELETE
-        for (const name of updateComponents) {
-            this.deleteComponent(loader, name); // impossible
+        for (const name of deleteComponents) {
+            // Should have a global "no-op component factory" that dead
+            // components get patched into
+            // Impossible to undefined components, so instead we just update
+            // with a blank component
+            //this.updateComponent(loader, name, {}); // "no-op component"
+            for (const instance of this.instancesByName.get(name)) {
+                instance.remove(); // remove each instance
+            }
         }
     }
-
-    defineComponent(loader, name, newOptions) {
-        const factory = loader.defineComponent(name, newOptions);
-        loader.componentFactoryData.push([name, newOptions]);
-        factory.register();
-    }
-
-    updateComponent(loader, name, newOptions) {
-        const factory = loader.defineComponent(name, newOptions);
-        // Now, we need to reload existing ones
-        for (const component of this.componentsByName.get(factory.fullName)) {
-            //console.log('this is new fac comp class', factory.componentClass);
-            component.initialize();
-            component.constructParts(true); // Rebuild the component from parts
-            component.isMounted = true;
-            component.rerender();
-        }
-    }
-
-    deleteComponent(loader, name) {
-        // Should have a global "no-op component factory" that dead
-        // components get patched into
-        // Impossible to undefined components, so instead we just update
-        // with a blank component
-        this.updateComponent(loader, name, {}); // "no-op component"
-    }
-
 }
 
 function oneTimeSetup() {
@@ -308,8 +312,13 @@ Modulo.Loader.registerMiddleware(
 
 Modulo.Loader.registerMiddleware(
     'initialized.component.after',
-    function registerFactory() {
+    function registerComponent() {
         Modulo.moddebug.reloader.registerComponent(this);
+        /*
+        if (!this._modDebugReg) {
+        }
+        this._modDebugReg = true;
+        */
     },
 );
 
@@ -338,7 +347,7 @@ Modulo.Loader.registerMiddleware(
 );
 
 Modulo.Loader.registerMiddleware(
-    'update.component.after',
+    'updated.component.after',
     function restoreGhosts() {
         this.ghostElements.forEach(elem => this.prepend(elem));
     },

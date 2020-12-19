@@ -46,3 +46,9 @@ test('Components can alter state during click events, which is reflected in ghos
     btn = buttons[0];
     t.is(strip(btn.textContent), '2'); // ensure the number increased
 });
+
+
+test('Components can be changed and get hot-reloaded', t => {
+    const {globals, document} = setupModulo('./testing/assets/loader_test.html', true);
+    t.is(globals.mockTimeouts.length, 0); // wrong
+});

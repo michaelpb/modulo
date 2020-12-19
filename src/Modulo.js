@@ -466,15 +466,16 @@ Modulo.ComponentFactory = class ComponentFactory {
 class ModuloComponent extends HTMLElement {
     constructor() {
         super();
+        this.componentParts = [];
         this.originalHTML = this.innerHTML;
         this.initialize();
     }
+
     initialize() {
         this.name = 'component'; // Used by lifecycle
         this.isMounted = false;
         this.isModuloComponent = true; // used when finding parent
         this.initRenderObj = new Modulo.DeepMap(this.factory.baseRenderObj);
-        this.componentParts = [];
     }
 
     constructParts(isReload=false) {
@@ -484,10 +485,12 @@ class ModuloComponent extends HTMLElement {
             const instance = new cPart(this, partOptions);
             this.componentParts.push(instance);
 
-            // Trigger any custom reloading code
-            const oldPart = oldCParts.find(({name}) => name === cPart.name);
-            if (oldPart && instance.reloadCallback) {
-                instance.reloadCallback(oldPart);
+            if (instance.reloadCallback) {
+                // Trigger any custom reloading code
+                const oldPart = oldCParts.find(({name}) => name === cPart.name);
+                if (oldPart) {
+                    instance.reloadCallback(oldPart);
+                }
             }
         }
     }
