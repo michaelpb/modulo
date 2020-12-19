@@ -3,7 +3,7 @@ const pathlib = require('path');
 const {JSDOM} = require('jsdom');
 
 // Very simple hacky way to do mocked web-components define
-function webComponentsUpgrade(dom, el, cls) {
+function webComponentsUpgrade(dom, el, cls, secondTime=false) {
     // Manually "upgrading" the JSDOM element with the webcomponent
     const instance = new cls();
     const protos = [instance, Reflect.getPrototypeOf(instance)];
@@ -23,7 +23,7 @@ function webComponentsUpgrade(dom, el, cls) {
             el[key] = instance[key];
         }
     }
-    if (el.connectedCallback) {
+    if (el.connectedCallback && !secondTime) {
         // console.log('connected callback for:', el.tagName);
         //setTimeout(() => {
         //}, 0);
@@ -34,6 +34,14 @@ function webComponentsUpgrade(dom, el, cls) {
 function clearRequireCache(searchPath) {
     const path = pathlib.resolve(__dirname, searchPath);
     delete require.cache[path];
+    // Just clear anyhting with Modulo
+    for (const key of Object.keys(require.cache)) {
+        if (key.includes('Modulo')) {
+            // console.log('this is key', key);
+            delete require.cache[key];
+        }
+    }
+    //require.cache = {};
 }
 
 function setupModulo(path = null, includeDebugger = false) {
@@ -58,6 +66,9 @@ function setupModulo(path = null, includeDebugger = false) {
     const mockTOPush = (func, time) => mockTimeouts.push({func, time});
     Modulo.globals.setTimeout = mockTOPush;
     Modulo.globals.setInterval = mockTOPush;
+
+    Modulo.globals.mockModifyFile = [];
+
     Modulo.globals.MutationObserver = class {
         observe(el) {
             const {setAttribute} = el;
@@ -68,6 +79,7 @@ function setupModulo(path = null, includeDebugger = false) {
             };
         }
     };
+
     Modulo.globals.fetch = url => {
         // Faked version of fetch
         const rootDir = pathlib.dirname(path);
@@ -81,13 +93,34 @@ function setupModulo(path = null, includeDebugger = false) {
                 callback(response);
                 return {
                     then: callback => {
-                        const data = fs.readFileSync(fullPath, 'utf-8');
+                        let data = fs.readFileSync(fullPath, 'utf-8');
+                        for (const func of Modulo.globals.mockModifyFile) {
+                            data = func(fullPath, data);
+                        }
                         callback(data);
                     }
                 };
             },
         }
     };
+
+    if (includeDebugger) {
+        // monkey patch a call to refresh
+        Modulo.globals.defineComponentCallback = (factory) => {
+            for (const {el, cls} of Modulo.globals.mockMounted) {
+                //webComponentsUpgrade(dom, el, cls, true);
+                if (!cls.toString().includes('CustomComponent extends ModuloComponent')) {
+                    continue;
+                }
+                const instance = new cls();
+                if (instance.fullName !== factory.fullName) {
+                    continue;
+                }
+                el.factory = factory; // update factory
+            }
+        };
+    }
+
     Modulo.globals.customElements = {
         define: (name, cls) => {
             const elements = dom.window.document.querySelectorAll(name);

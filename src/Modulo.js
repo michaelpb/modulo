@@ -1,8 +1,9 @@
+'use strict';
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
-let globals = {HTMLElement};
-const Modulo = {globals};
+var globals = {HTMLElement};
+var Modulo = {globals};
 
 Modulo.ON_EVENTS = new Set([
     'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
@@ -352,6 +353,9 @@ Modulo.Loader = class Loader extends HTMLElement {
     defineComponent(name, options) {
         const factory = new Modulo.ComponentFactory(this, name, options);
         runMiddleware('load', {name: 'component'}, 'after', [null, this, null, factory]);
+        if (globals.defineComponentCallback) {
+            globals.defineComponentCallback(factory); // TODO rm when possible
+        }
         return factory;
     }
 }
@@ -366,8 +370,8 @@ Modulo.adapters = {
             return context => scopedEval(null, (context || {}), code);
         },
         TinyTiny: () => {
-            assert(globals.window.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
-            return globals.window.TinyTiny;
+            assert(globals.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
+            return globals.TinyTiny;
         },
     },
     reconciliation: {
@@ -375,7 +379,7 @@ Modulo.adapters = {
             component.innerHTML = html;
         },
         setdom: () => {
-            assert(globals.window.setDOM, 'setDOM is not loaded at window.setDOM');
+            assert(globals.setDOM, 'setDOM is not loaded at window.setDOM');
             function makeAttrString(component) {
                 return Array.from(component.attributes)
                     .map(({name, value}) => `${name}=${JSON.stringify(value)}`).join(' ');
@@ -385,7 +389,7 @@ Modulo.adapters = {
                 const attrs = makeAttrString(component);
                 return `<${component.tagName} ${attrs}>${inner}</${component.tagName}>`;
             }
-            const {setDOM} = globals.window;
+            const {setDOM} = globals;
             setDOM.KEY = 'key';
             return (component, html) => {
                 if (!component.isMounted) {
@@ -396,8 +400,8 @@ Modulo.adapters = {
             };
         },
         morphdom: () => {
-            assert(globals.window.morphdom, 'morphdom is not loaded at window.morphdom');
-            const {morphdom} = globals.window;
+            assert(globals.morphdom, 'morphdom is not loaded at window.morphdom');
+            const {morphdom} = globals;
             const opts = {
                 getNodeKey: el => el.getAttribute && el.getAttribute('key'),
                 onBeforeElChildrenUpdated: (fromEl, toEl) => {
@@ -473,6 +477,7 @@ class ModuloComponent extends HTMLElement {
 
     initialize() {
         this.name = 'component'; // Used by lifecycle
+        this.fullName = this.factory.fullName;
         this.isMounted = false;
         this.isModuloComponent = true; // used when finding parent
         this.initRenderObj = new Modulo.DeepMap(this.factory.baseRenderObj);
@@ -810,6 +815,5 @@ if (typeof module !== 'undefined') { // Node
 }
 if (typeof customElements !== 'undefined') { // Browser
     globals = window;
-    globals.window = window;
 }
 Modulo.globals = globals;

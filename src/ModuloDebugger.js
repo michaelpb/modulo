@@ -1,12 +1,13 @@
-if (typeof Modulo === 'undefined' && typeof require !== 'undefined') {
-    Modulo = require('./Modulo.js'); // Node environment
-    HTMLElement = Modulo.globals.HTMLElement;
+'use strict';
+if (typeof require !== 'undefined' && typeof Modulo === 'undefined') {
+    var Modulo = require('./Modulo.js'); // Node environment
+    var HTMLElement = Modulo.globals.HTMLElement;
 }
 if (typeof Modulo === 'undefined' || !Modulo) {
     throw new Error('ModuloDebugger.js: Must load Modulo first');
 }
 if (typeof globals === 'undefined') {
-    globals = Modulo.globals;
+    var {globals} = Modulo;
 }
 
 Modulo.DEBUG = true;
@@ -67,6 +68,19 @@ const setDiff = (a, b) => new Set(Array.from(a).map(item => !b.has(item)));
             }
 */
 
+// TODO: Instead of doing this, finish with ghost two-way binding, then
+// console.log the ghost-reloader! Then users can look in their console to
+// modify properties and activate / deactivate stuff
+// ALSO look 
+// https://developers.google.com/web/tools/chrome-devtools/console/api#consoledirobject
+// https://developers.google.com/web/updates/2015/08/5-tricks-to-use-in-the-console-panel
+// - Could have a tool that's a "picker", changes the cursor to X or
+//   something, then whatever is selected is console.logged with all its
+//   different parts based on ghost elements
+// - Then, for debugging, it's just modifying the ghost-elements in the debug
+//   panel
+// - Finally, the ghosts then should maybe get unique IDs so there can be
+//   several in the console
 const debugToolbarString = `
 <template mod-component="DebugToolbar">
     <script type="modulo/template">
@@ -219,6 +233,7 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
     }
 
     onResponseReceived(loader, text) {
+        // console.log('This is new text', text);
         if (this.resourceTextByPath.has(loader.src) &&
                 this.resourceTextByPath.get(loader.src) === text) {
             return; // Check 1: if the text hasn't changed, there is no change
