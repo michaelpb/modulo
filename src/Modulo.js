@@ -648,12 +648,15 @@ Modulo.parts.Style = class Style extends Modulo.ComponentPart {
     static name = 'style';
     static upgradesFrom = ['style'];
     static factoryCallback({content}, factory, renderObj) {
-        // Need to move into somewhere else, as there can't be side-effects here
-        /*
-        const styling = globals.document.createElement('style');
-        styling.append(content);
-        globals.document.head.append(styling)
-        */
+        const {fullName} = factory;
+        const id = `${fullName}_style`;
+        let elem = globals.document.getElementById(id);
+        if (!elem) {
+            elem = globals.document.createElement('style');
+            elem.id = id;
+            globals.document.head.append(elem)
+        }
+        elem.textContent = content;
     }
 }
 Modulo.Loader.registerComponentPart(Modulo.parts.Style);

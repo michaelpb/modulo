@@ -45,7 +45,7 @@ test.skip('Loader libraries which mount components', t => {
     `));
 });
 
-test.skip('Loader loads correctly prefixed CSS', t => {
+test('Loader loads correctly prefixed CSS', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
     const styles = Array.from(document.querySelectorAll('style'));
     //console.log('this is styles', styles);
