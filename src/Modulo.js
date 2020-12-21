@@ -17,6 +17,29 @@ Modulo.ON_EVENTS = new Set([
 // TODO: Decide on ':' vs ''
 Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:]`).join(',');
 
+
+Modulo.DefaultMap = class DefaultMap extends Map {
+    constructor(getDefault) {
+        super();
+        this.getDefault = getDefault;
+    }
+    get(key) {
+        if (!this.has(key)) {
+            super.set(key, this.getDefault());
+        }
+        return super.get(key);
+    }
+    set(key, value, optionalVal) {
+        if (optionalVal !== undefined) {
+            this.get(key).set(value, optionalVal);
+        } else {
+            super.set(key, value);
+        }
+    }
+}
+
+Modulo.registry = new Modulo.DefaultMap(() => new Modulo.MultiMap());
+
 Modulo.DeepMap = class DeepMap {
     constructor(copyFrom=null, autoSave=false) {
         // TODO: Move the full version of this class into ModuloDebugger, make
@@ -26,7 +49,7 @@ Modulo.DeepMap = class DeepMap {
         this.readOnly = false;
         this.sep = '.';
         if (copyFrom) {
-            // Easiest way to setup this one -- todo: should do a deep copy
+            // Easiest way to setup this one -- todo: deep copy?
             this.data = new Map(copyFrom.data);
             this.prefixes = new Map(Array.from(copyFrom.prefixes)
                     .map(([key, set]) => ([key, new Set(set)])));
@@ -115,12 +138,27 @@ Modulo.DeepMap = class DeepMap {
     }
 }
 
+
 Modulo.MultiMap = class MultiMap extends Map {
     get(key) {
         if (!this.has(key)) {
             super.set(key, []);
         }
         return super.get(key);
+        // v--- daedcode
+        let subkey = null;
+        if (key.includes('.')) {
+            subkey = key.slice(key.indexOf('.') + 1);
+            key = key.split('.')[0];
+        }
+        if (!this.has(key)) {
+            super.set(key, []);
+        }
+        const result = super.get(key);
+        if (subkey) {
+            return result[result.length - 1][subkey];
+        }
+        return result;
     }
     set(key, value) {
         this.get(key).push(value);
@@ -181,9 +219,9 @@ function scopedEval(thisContext, namedArgs, code) {
 }
 
 function runMiddleware(lifecycleName, cPart, timing, args) {
-    const key = `${lifecycleName}.${cPart.name}.${timing}`;
+    const key = `${lifecycleName}_${cPart.name}_${timing}`;
     //console.log('Running middleware', key);
-    const middlewareArr = Modulo.Loader.middleware.get(key);
+    const middlewareArr = Modulo.registry.get('middleware').get(key); // new
     for (const middleware of middlewareArr) {
         middleware.apply(cPart, args);
     }
@@ -239,11 +277,6 @@ Modulo.Loader = class Loader extends HTMLElement {
     static getPartsWithGhosts() {
         return Object.values(Modulo.Loader.componentParts)
             .filter(({debugGhost}) => debugGhost);
-    }
-    static middleware = new Modulo.MultiMap();
-    static registerMiddleware(key, func) {
-        assert(key.split('.').filter(p => p).length === 3, 'Invalid name');
-        Modulo.Loader.middleware.set(key, func);
     }
 
     constructor(...args) {
@@ -778,8 +811,9 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
 }
 Modulo.Loader.registerComponentPart(Modulo.parts.State);
 
-Modulo.Loader.registerMiddleware(
-    'load.template.after',
+Modulo.registry.set(
+    'middleware',
+    'load_template_after',
     function rewriteComponentNamespace(node, loader, loadingObj, info) {
         let content = info.content || '';
         content = content.replace(/(<\/?)my-/ig, '$1' + loader.namespace + '-')
@@ -787,8 +821,9 @@ Modulo.Loader.registerMiddleware(
     },
 );
 
-Modulo.Loader.registerMiddleware(
-    'load.style.after',
+Modulo.registry.set(
+    'middleware',
+    'load_style_after',
     function prefixAllSelectors(node, loader, loadingObj, info) {
         const {name} = loadingObj.get('component')[0];
         const fullName = `${loader.namespace}-${name}`;

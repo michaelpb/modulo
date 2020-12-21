@@ -313,8 +313,9 @@ function oneTimeSetup() {
     globals.document.body.appendChild(moddebug.toolbar);
 }
 
-Modulo.Loader.registerMiddleware(
-    'load.component.after',
+Modulo.registry.set(
+    'middleware',
+    'load_component_after',
     function registerFactory(node, loader, loadingObj, factory) {
         if (!Modulo.moddebug.reloader) {
             oneTimeSetup();
@@ -324,8 +325,9 @@ Modulo.Loader.registerMiddleware(
 );
 
 
-Modulo.Loader.registerMiddleware(
-    'initialized.component.after',
+Modulo.registry.set(
+    'middleware',
+    'initialized_component_after',
     function registerComponent() {
         Modulo.moddebug.reloader.registerComponent(this);
         /*
@@ -337,8 +339,9 @@ Modulo.Loader.registerMiddleware(
 );
 
 
-Modulo.Loader.registerMiddleware(
-    'prepare.component.before',
+Modulo.registry.set(
+    'middleware',
+    'prepare_component_before',
     function createGhosts() {
         if (!this.isMounted) {
             createGhostElements(this);
@@ -346,8 +349,9 @@ Modulo.Loader.registerMiddleware(
     },
 )
 
-Modulo.Loader.registerMiddleware(
-    'update.component.before',
+Modulo.registry.set(
+    'middleware',
+    'update_component_before',
     function hideGhosts() {
         // saveUtilityComponents
         //const selector = this.getPartsWithGhosts()
@@ -360,8 +364,9 @@ Modulo.Loader.registerMiddleware(
     },
 );
 
-Modulo.Loader.registerMiddleware(
-    'updated.component.after',
+Modulo.registry.set(
+    'middleware',
+    'updated_component_after',
     function restoreGhosts() {
         this.ghostElements.forEach(elem => this.prepend(elem));
     },

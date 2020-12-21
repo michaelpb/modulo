@@ -125,6 +125,27 @@ section {
     display: flex;
 }
 
+aside strong {
+    color: #B90183;
+}
+
+aside h3 {
+    font-size: 30px;
+}
+
+aside h3 span {
+    font-size: 80px;
+    font-weight: bold;
+    color: #B90183;
+}
+
+aside.TitleAside {
+    text-align: right;
+}
+aside.TitleAside a {
+    font-size: 18px;
+}
+
 aside {
     border: 1px solid black;
     margin-right: 10px;
@@ -135,6 +156,7 @@ aside {
 aside:last-of-type {
     margin-right: 0;
 }
+
 
 
 a {
