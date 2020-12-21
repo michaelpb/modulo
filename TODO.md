@@ -1,3 +1,11 @@
+Todo notes: 2020-12-20
+
+- Before official release, make sure well tested, then re-order entire code
+  base to sort by lifecycle. Then, I can do literate coding to fully document
+  the entire library, for hyper well-documented code.
+
+---
+
 Todo notes: 2020-12-13
 
 What works & has tests:

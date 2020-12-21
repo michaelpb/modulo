@@ -7,14 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="icon" type="image/png" href="./img/mono_logo.png">
+
+    <script src="./js/Modulo.js"></script>
+    <script src="./js/ModuloDebugger.js"></script>
+    <mod-load namespace="mdu" src="./components/core.html"></mod-load>
 </head>
+
 <body>
 
-<div class="Hero">
-    <img src="./img/logo_sans_stroke_white.png" alt="Percent sign logo" />
-    <br />
-    <img src="./img/text_logo.png" alt="Modulo.js" />
-</div>
+<mdu-Hero></mdu-Hero>
 
 <div class="Tagline">
     <!--<h1>Modulo.js is a 1000 line <br />JavaScript UI framework</h1>-->
@@ -58,9 +59,7 @@
     &lt;/state&gt;
     &lt;script&gt;
         function increment() {
-            let num = state.get('num');
-            num++;
-            state.set('num', num);
+            state.num++;
         }
     &lt;/script&gt;
 &lt;/mod-component&gt;
@@ -239,12 +238,14 @@
 
         </aside>
     </section>
+    <!--
     <p class="codepen" data-height="330" data-theme-id="light" data-default-tab="html,result" data-user="kickstartcoding" data-slug-hash="KKgqOzg" style="height: 330px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="ModuloTest">
     <span>See the Pen <a href="https://codepen.io/kickstartcoding/pen/KKgqOzg">
     ModuloTest</a> by Kickstart Coding (<a href="https://codepen.io/kickstartcoding">@kickstartcoding</a>)
     on <a href="https://codepen.io">CodePen</a>.</span>
     </p>
     <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+    -->
 </main>
 
 </body>

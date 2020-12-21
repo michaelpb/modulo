@@ -5,6 +5,7 @@
   "homepage": "https://github.com/michaelpb/modulo#readme",
   "main": "modulocli.js",
   "scripts": {
+    "update-docs-js": "cp ./src/Modulo.js docs/js/Modulo.js && cp ./src/ModuloDebugger.js docs/js/ModuloDebugger.js",
     "test": "ava -v --serial"
   },
   "devDependencies": {

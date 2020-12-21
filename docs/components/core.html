@@ -1,0 +1,57 @@
+<template mod-component="Hero">
+    <template>
+        <div>
+            <img src="./img/logo_sans_stroke_white.png" alt="Percent sign logo" />
+            <br />
+            <img src="./img/text_logo.png" alt="Modulo.js" />
+        </div>
+    </template>
+    <style>
+      h1 {
+          font-size: 120px;
+          color: rgba(255, 255, 255, 1);
+          /*text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+          /*text-shadow: 0px -5px 5px rgba(0, 0, 0, 0.3);*/
+          text-shadow: 0px -3px 0 rgba(0, 0, 0, 0.3);
+          font-weight: bold;
+          height: 120px;
+      }
+      img:first-child {
+          margin-bottom: -40px;
+          margin-top: 50px;
+          max-width: 256px;
+      }
+
+      img:last-child {
+          margin-bottom: -62px;
+          margin-top: 50px;
+          z-index: 1;
+          position: relative;
+          max-width: none;
+          height: 196px;
+      }
+
+      div {
+          /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          /*background-size: 600% 600%;*/
+          background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
+              url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
+          /*animation: BGAnimTwo 10s linear infinite;*/
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+
+      div .dsiabled {
+          background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          background-size: 600% 600%;
+          animation: BGAnimation 20s ease infinite;
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+    </style>
+</template>
+
+
+

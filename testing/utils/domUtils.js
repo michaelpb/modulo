@@ -58,6 +58,9 @@ function setupModulo(path = null, includeDebugger = false) {
     Modulo.document = dom.window.document; // for easier testing
     Modulo.globals.window =  dom.window;
     Modulo.globals.document =  dom.window.document;
+    Modulo.globals.mockConsole = [];
+    const {mockConsole} = Modulo.globals;
+    Modulo.globals.console = {log: mockConsole.push.bind(mockConsole)};
     Modulo.globals.DocumentFragment =  dom.window.DocumentFragment;
     Modulo.globals.mockRegistered = [];
     Modulo.globals.mockMounted = [];
