@@ -25,147 +25,12 @@ function deepEquals(a, b) {
 // TODO: Decide on ':' vs ''
 Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:]`).join(',');
 
-Modulo.DefaultMap = class DefaultMap extends Map {
-    constructor(getDefault) {
-        super();
-        this.getDefault = getDefault;
-    }
-    get(key) {
-        if (!this.has(key)) {
-            super.set(key, this.getDefault());
-        }
-        return super.get(key);
-    }
-    set(key, value, optionalVal) {
-        if (optionalVal !== undefined) {
-            this.get(key).set(value, optionalVal);
-        } else {
-            super.set(key, value);
-        }
-    }
-}
-
-Modulo.registry = new Modulo.DefaultMap(() => new Modulo.MultiMap());
-
-Modulo.DeepMap = class DeepMap {
-    constructor(copyFrom=null, autoSave=false) {
-        // TODO: Move the full version of this class into ModuloDebugger, make
-        // it extend Map (for better introspection). The history / savepoints
-        // mostly just good for debugging.
-        this.label = null;
-        this.readOnly = false;
-        this.sep = '.';
-        if (copyFrom) {
-            // Easiest way to setup this one -- todo: deep copy?
-            this.data = new Map(copyFrom.data);
-            this.prefixes = new Map(Array.from(copyFrom.prefixes)
-                    .map(([key, set]) => ([key, new Set(set)])));
-            this.savepoints = Array.from(copyFrom.savepoints);
-        } else {
-            this.data = new Map();
-            this.prefixes = new Map();
-            this.savepoints = [];
-        }
-        this.shouldAutoSave = {
-            'lazy': key => this.data.has(key) && // autosave if not redundant
-                           (this.data.get(key) !== this.getLastSavedValue(key)),
-            'granular': key => this.data.has(key), // only autosave if conflict
-            'manual': key => false, // never autosave
-        }[autoSave || 'manual'];
-    }
-    save(label) {
-        const dm = new Modulo.DeepMap(this);
-        dm.label = label || null;
-        dm.readOnly = true;
-        this.savepoints.push(dm);
-    }
-    _getKey(prefix, suffix) {
-        const sep = prefix && suffix ? this.sep : '';
-        return prefix + sep + suffix;
-    }
-    setObject(key, obj) {
-        for (const [suffix, val] of Object.entries(obj)) {
-            this.set(this._getKey(key, suffix), val);
-        }
-    }
-    set(key, value) {
-        if (this.readOnly) {
-            throw new Error('Read only');
-        } else if (isPlainObject(value)) {
-            this.setObject(key, value);
-        } else {
-            if (this.shouldAutoSave(key)) {
-                this.save();
-            }
-            this.data.set(key, value);
-            this._updatePrefixesForKey(key);
-        }
-    }
-    _updatePrefixesForKey(key) {
-        const keyParts = key.split(this.sep);
-        let i = 0;
-        while (i < keyParts.length + 1) {
-            const prefix = keyParts.slice(0, i).join(this.sep);
-            const suffix = keyParts.slice(i).join(this.sep);
-            if (!this.prefixes.has(prefix)) {
-                this.prefixes.set(prefix, new Set());
-            }
-            this.prefixes.get(prefix).add(suffix);
-            i++;
-        }
-    }
-    get(key, defaultValue) {
-        if (!this.prefixes.has(key)) {
-            return defaultValue;
-        }
-        if (this.data.has(key)){
-            return this.data.get(key);
-        }
-        // This means key is a prefix, so we need to create an obj
-        const newObject = {};
-        for (const suffix of this.prefixes.get(key)) {
-            const [obj, finalInfix] = this._fillInObj(newObject, suffix);
-            obj[finalInfix] = this.data.get(this._getKey(key, suffix));
-        }
-        return newObject;
-    }
-    _fillInObj(obj, key) {
-        const infixes = key.split(this.sep);
-        const finalInfix = infixes.pop(); // handle last one separately
-        for (const infix of infixes) {
-            if (!(infix in obj)) {
-                obj[infix] = {};
-            }
-            obj = obj[infix];
-        }
-        return [obj, finalInfix];
-    }
-    toObject() {
-        return this.get('', {});
-    }
-}
-
-
 Modulo.MultiMap = class MultiMap extends Map {
     get(key) {
         if (!this.has(key)) {
             super.set(key, []);
         }
         return super.get(key);
-        // v--- daedcode
-        let subkey = null;
-        if (key.includes('.')) {
-            subkey = key.slice(key.indexOf('.') + 1);
-            key = key.split('.')[0];
-        }
-        if (!this.has(key)) {
-            super.set(key, []);
-        }
-        const result = super.get(key);
-        if (subkey) {
-            return result[result.length - 1][subkey];
-        }
-        return result;
     }
     set(key, value) {
         this.get(key).push(value);
@@ -173,7 +38,74 @@ Modulo.MultiMap = class MultiMap extends Map {
     toObject() {
         return Object.fromEntries(this);
     }
+    // Idea: Can implement TaggedObjectMap with MultiMap:
+    //   - save(tagName) - Savepoints are looping through values,
+    //                     and saving an obj of lengths
+    //   - modifyTag(tagName, key, value) - get tagName array, then insert value
+    //                                      at savepoint[key].length
 }
+
+function getValue(obj, path) {
+    return path.split('.').reduce((obj, name) => obj[name], obj);
+}
+
+Modulo.TaggedObjectMap = class TaggedObjectMap extends Map {
+    constructor(otherMap) {
+        super(otherMap)
+        this.tags = Object.assign({}, (otherMap || {}).tags || {});
+        this.tagNames = Array.from((otherMap || {}).tagNames || {});
+    }
+
+    get(key) {
+        if (!this.has(key)) {
+            super.set(key, {});
+        }
+        return super.get(key);
+    }
+
+    resolve(key) {
+        return getValue(this.toObject(), key);
+    }
+
+    set(key, value) {
+        // maybe todo: possibly bind objects here (?)
+        super.set(key, Object.assign(value, this.get(key), value));
+    }
+
+    save(tagName) {
+        if (!this.tags) {
+            this.tags = {};
+            this.tagNames = [];
+        }
+        this.tags[tagName] = this.toObject();
+        this.tagNames.push(tagName); // deadcode
+    }
+
+    getTagsSince(tagName) {// deadcode
+        const index = this.tagNames.findIndex(tagName);
+        if (index === -1) {
+            throw Error(`Unknown tagName "${tagName}" for TaggedMap`)
+        }
+        return this.tagNames.slice(index);
+    }
+
+    modifyTag(tagName, key, value) {
+        // Note: This changes how it was in history at the point of tagging,
+        // and possibly the current value too
+        const historicalValue = (this.tags || {})[tagName] || {};
+        const existing = this.get(key);
+        this.set(key, Object.assign(historicalValue, value, existing));
+    }
+
+    toObject() {
+        // Possibly: Need binding here
+        return Object.fromEntries(this);
+    }
+
+    // OKAY, this data type still needs more work. Ultimately, we'll need:
+    //  - For "hot reloading", to set at 'initalized', then replay lifecycle since? ugh
+}
+
 
 function getFirstModuloAncestor(elem) {
     // Walk up tree to first DOM node that is a modulo component
@@ -209,6 +141,7 @@ function parseAttrs(elem) {
     }
     return obj;
 }
+Modulo.parseAttrs = parseAttrs;
 
 function assert(value, ...info) {
     if (!value) {
@@ -227,7 +160,7 @@ function scopedEval(thisContext, namedArgs, code) {
 
 function runMiddleware(lifecycleName, cPart, timing, args) {
     const key = `${lifecycleName}_${cPart.name}_${timing}`;
-    const middlewareArr = Modulo.registry.get('middleware').get(key); // new
+    const middlewareArr = Modulo.middleware.get(key); // new
     for (const middleware of middlewareArr) {
         middleware.apply(cPart, args);
     }
@@ -237,7 +170,7 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     let partsArray = [];
     if (isPlainObject(parts)) {
         for (const [partName, partOptionsArr] of Object.entries(parts)) {
-            const cPart = Modulo.Loader.componentParts[partName];
+            const cPart = Modulo.cparts.get(partName);
             for (const data of partOptionsArr) {
                 partsArray.push({cPart, cPartArgs: [data]});
                 renderObj.set(cPart.name, data);
@@ -262,27 +195,12 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     }
 }
 
+Modulo.middleware = new Modulo.MultiMap();
+Modulo.cparts = new Map();
+
 Modulo.Loader = class Loader extends HTMLElement {
-    static componentParts = {};
-    static componentPartsByTagName = {};
-    static registerComponentPart(cPartClass) {
-        const {name, upgradesFrom = []} = cPartClass;
-        Modulo.Loader.componentParts[name] = cPartClass;
-        const names = [`mod-${name}`, ...upgradesFrom];
-        for (const name of names) {
-            Modulo.Loader.componentPartsByTagName[name] = cPartClass;
-        }
-    }
     static defineCoreCustomElements() {
         globals.customElements.define('mod-load', Modulo.Loader);
-        if (Modulo.DEBUG) {
-            const {defineDebugGhost} = Modulo.DebugGhostBase;
-            Modulo.Loader.getPartsWithGhosts().forEach(defineDebugGhost);
-        }
-    }
-    static getPartsWithGhosts() {
-        return Object.values(Modulo.Loader.componentParts)
-            .filter(({debugGhost}) => debugGhost);
     }
 
     constructor(...args) {
@@ -351,7 +269,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
             cPartName = splitType[1];
         }
-        if (!(cPartName in Modulo.Loader.componentPartsByTagName)) {
+        if (!(Modulo.cparts.has(cPartName))) {
             console.error('Unexpected tag in component def:', tagName);
             return null;
         }
@@ -374,7 +292,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         //const cPartsMap = new Modulo.MultiMap();
         for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
             //cPartsMap.set(cPartName, node);
-            const cPart = Modulo.Loader.componentPartsByTagName[cPartName];
+            const cPart = Modulo.cparts.get(cPartName);
             runMiddleware('load', cPart, 'before', [node, this, loadingObj]);
             const results = cPart.loadCallback(node, this, loadingObj);
             runMiddleware('load', cPart, 'after', [node, this, loadingObj, results]);
@@ -469,7 +387,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         assert(name, 'Name must be given.');
         this.loader = loader;
         this.options = options;
-        this.baseRenderObj = new Modulo.DeepMap();
+        this.baseRenderObj = new Modulo.TaggedObjectMap();
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
         Modulo.ComponentFactory.registerInstance(this);
@@ -481,7 +399,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         const results = [];
         for (const [partName, partOptionsArr] of Object.entries(this.options)) {
             for (const partOptions of partOptionsArr) {
-                const cPart = Modulo.Loader.componentParts[partName];
+                const cPart = Modulo.cparts.get(partName);
                 results.push({cPart, partOptions});
             }
         }
@@ -519,7 +437,8 @@ class ModuloComponent extends HTMLElement {
         this.fullName = this.factory.fullName;
         this.isMounted = false;
         this.isModuloComponent = true; // used when finding parent
-        this.initRenderObj = new Modulo.DeepMap(this.factory.baseRenderObj);
+        this.initRenderObj = new Modulo.TaggedObjectMap(this.factory.baseRenderObj);
+        // this.cparts = new Modulo.TaggedObjectMap();
     }
 
     constructParts(isReload=false) {
@@ -528,6 +447,7 @@ class ModuloComponent extends HTMLElement {
         for (const {cPart, partOptions} of this.factory.getCParts()) {
             const instance = new cPart(this, partOptions);
             this.componentParts.push(instance);
+            // this.cparts.set(cPart.name, instance);
 
             if (instance.reloadCallback) {
                 // Trigger any custom reloading code
@@ -546,27 +466,24 @@ class ModuloComponent extends HTMLElement {
 
     updateCallback(renderObj) {
         this.clearEvents();
-        const newContents = renderObj.get('template.renderedOutput', '');
+        const newContents = renderObj.get('template').renderedOutput || '';
         this.reconcile(this, newContents);
         this.rewriteEvents();
     }
 
-    mergeCallback(newData) {
-        Object.assign(this, newData);
-    }
-
     rerender() {
         // Calls all the LifeCycle functions in order
-        this.renderObj = new Modulo.DeepMap(this.getCurrentRenderObj());
-        // TODO: this.renderObj.set('', this.parts); // Flatten part objects into render obj
-        this.lifecycle('prepare', 'render', 'update', 'updated');
+        this.renderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
+        this.lifecycle('prepare', 'render', 'update');
         this.renderObj = null; // rendering is over, set to null
     }
 
     handleEvent(func, ev, payload) {
+        //this.eventRenderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
         this.lifecycle('event');
         func.call(this, ev, payload);
         this.lifecycle('eventCleanup');
+        //this.eventRenderObj = null;
     }
 
     rerenderOnce() {
@@ -591,9 +508,7 @@ class ModuloComponent extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
     resolveValue(value) {
-        // ^-- Shouldn't be necessary, should always know if using renderObj
-        // or initRenderObj
-        return this.getCurrentRenderObj().get(value);
+        return this.getCurrentRenderObj().resolve(value);
     }
 
     resolveAttributeName(name) {
@@ -617,7 +532,7 @@ class ModuloComponent extends HTMLElement {
                 assert(name.endsWith(':'), 'Events must be resolved attr');
                 const listener = (ev) => {
                     const value = el.getAttribute(name);
-                    const func = this.getCurrentRenderObj().get(value);
+                    const func = this.getCurrentRenderObj().resolve(value);
                     assert(func, `Bad ${name}, ${value} is ${func}`);
                     const payloadAttr = `${eventName}.payload`;
                     const payload = el.hasAttribute(payloadAttr) ?
@@ -665,10 +580,6 @@ Modulo.ComponentPart = class ComponentPart {
         this.content = options.content;
     }
 
-    mergeCallback(newData) {
-        Object.assign(this, newData);
-    }
-
     get name() {
         return this.constructor.name;
     }
@@ -704,11 +615,10 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
         return props;
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Props);
+Modulo.cparts.set('props', Modulo.parts.Props);
 
 Modulo.parts.Style = class Style extends Modulo.ComponentPart {
     static name = 'style';
-    static upgradesFrom = ['style'];
     static factoryCallback({content}, factory, renderObj) {
         const {fullName} = factory;
         const id = `${fullName}_style`;
@@ -721,31 +631,29 @@ Modulo.parts.Style = class Style extends Modulo.ComponentPart {
         elem.textContent = content;
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Style);
+Modulo.cparts.set('style', Modulo.parts.Style);
 
 
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
-    static upgradesFrom = ['template'];
     static factoryCallback(opts, factory, renderObj) {
-        const {templatingEngine = 'Backtick'} = renderObj.get('template.options', {});
+        const {templatingEngine = 'Backtick'} = renderObj.get('template').options || {};
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
     }
     renderCallback(renderObj) {
-        const compiledTemplate = renderObj.get('template.compiledTemplate');
+        const compiledTemplate = renderObj.get('template').compiledTemplate;
         const context = renderObj.toObject();
         const result = compiledTemplate(context);
         return {renderedOutput: result};
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Template);
+Modulo.cparts.set('template', Modulo.parts.Template);
 
 
 Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     static name = 'script';
-    static upgradesFrom = ['script'];
 
     static getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
@@ -771,24 +679,26 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     }
 
     static factoryCallback(partOptions, factory, renderObj) {
-        const scriptContextDefaults = {...renderObj.toObject(), Modulo};
+        //const scriptContextDefaults = {...renderObj.toObject(), Modulo};
+        const scriptContextDefaults = renderObj.toObject();
         const c = partOptions.content || '';
         const localVars = Object.keys(scriptContextDefaults);
         const wrappedJS = this.wrapJavaScriptContext(c, localVars);
+        return (new Function('Modulo', wrappedJS)).call(null, Modulo);
+        //return (new Function(wrappedJS)).call(null);
         return scopedEval(null, {}, wrappedJS);
         return scopedEval(null, scriptContextDefaults, wrappedJS);
     }
 
-    eventCallback() {
+    eventCallback(renderObj) {
         // Make sure that the local variables are all properly set
-        const renderObj = this.component.getCurrentRenderObj();
         const script = renderObj.get('script');
         for (const part of this.component.componentParts) {
             script.setLocalVariable(part.name, part);
         }
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Script);
+Modulo.cparts.set('script', Modulo.parts.Script);
 
 Modulo.parts.State = class State extends Modulo.ComponentPart {
     static name = 'state';
@@ -797,7 +707,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         this.rawDefaults = renderObj.get('state').options || {};
         if (!this.data) {
-            this.data = simplifyResolvedLiterals(this.rawDefaults); // TODO: Make configurable, switch to DeepMap
+            this.data = simplifyResolvedLiterals(this.rawDefaults);
         }
     }
 
@@ -825,22 +735,14 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
                 this.set(name, this[name]); // update
             }
         }
+        // ToDo: Clean this up, maybe have data be what's returned for
+        // prepareEventCallback, just like with prepareCallback?
     }
 
-    ghostCreatedCallback(ghostElem) {
-        this.ghostElem = ghostElem;
-        for (const [key, value] of Object.entries(this.rawDefaults)) {
-            ghostElem.setAttribute(key, value);
-        }
-    }
-    ghostAttributeMutedCallback(ghostElem) {
-        const data = parseAttrs(ghostElem);
-        this.data = Object.assign({}, this.data, data);
-        this.component.rerender();
-    }
     get(key) {
         return this.data[key];
     }
+
     set(key, value) {
         const data = {[key]: value};
         this.data = Object.assign({}, this.data, data);
@@ -855,10 +757,9 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
         }
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.State);
+Modulo.cparts.set('state', Modulo.parts.State);
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'load_template_after',
     function rewriteComponentNamespace(node, loader, loadingObj, info) {
         let content = info.content || '';
@@ -867,8 +768,7 @@ Modulo.registry.set(
     },
 );
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'load_style_after',
     function prefixAllSelectors(node, loader, loadingObj, info) {
         const {name} = loadingObj.get('component')[0];

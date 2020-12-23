@@ -1,5 +1,108 @@
 const test = require('ava');
-const {DeepMap} = require('../src/Modulo');
+
+function isPlainObject(obj) {
+  return obj && typeof obj === 'object' && !Array.isArray(obj);
+}
+
+class DeepMap {
+    constructor(copyFrom=null, autoSave=false) {
+        // TODO: Move the full version of this class into ModuloDebugger, make
+        // it extend Map (for better introspection). The history / savepoints
+        // mostly just good for debugging.
+        this.label = null;
+        this.readOnly = false;
+        this.sep = '.';
+        if (copyFrom) {
+            // Easiest way to setup this one -- todo: deep copy?
+            this.data = new Map(copyFrom.data);
+            this.prefixes = new Map(Array.from(copyFrom.prefixes)
+                    .map(([key, set]) => ([key, new Set(set)])));
+            this.savepoints = Array.from(copyFrom.savepoints);
+        } else {
+            this.data = new Map();
+            this.prefixes = new Map();
+            this.savepoints = [];
+        }
+        this.shouldAutoSave = {
+            'lazy': key => this.data.has(key) && // autosave if not redundant
+                           (this.data.get(key) !== this.getLastSavedValue(key)),
+            'granular': key => this.data.has(key), // only autosave if conflict
+            'manual': key => false, // never autosave
+        }[autoSave || 'manual'];
+    }
+    save(label) {
+        const dm = new DeepMap(this);
+        dm.label = label || null;
+        dm.readOnly = true;
+        this.savepoints.push(dm);
+    }
+    _getKey(prefix, suffix) {
+        const sep = prefix && suffix ? this.sep : '';
+        return prefix + sep + suffix;
+    }
+    setObject(key, obj) {
+        for (const [suffix, val] of Object.entries(obj)) {
+            this.set(this._getKey(key, suffix), val);
+        }
+    }
+    set(key, value) {
+        if (this.readOnly) {
+            throw new Error('Read only');
+        } else if (isPlainObject(value)) {
+            this.setObject(key, value);
+        } else {
+            if (this.shouldAutoSave(key)) {
+                this.save();
+            }
+            this.data.set(key, value);
+            this._updatePrefixesForKey(key);
+        }
+    }
+    _updatePrefixesForKey(key) {
+        const keyParts = key.split(this.sep);
+        let i = 0;
+        while (i < keyParts.length + 1) {
+            const prefix = keyParts.slice(0, i).join(this.sep);
+            const suffix = keyParts.slice(i).join(this.sep);
+            if (!this.prefixes.has(prefix)) {
+                this.prefixes.set(prefix, new Set());
+            }
+            this.prefixes.get(prefix).add(suffix);
+            i++;
+        }
+    }
+    resolve(key) { return this.get(key) }
+    get(key, defaultValue) {
+        if (!this.prefixes.has(key)) {
+            return defaultValue;
+        }
+        if (this.data.has(key)){
+            return this.data.get(key);
+        }
+        // This means key is a prefix, so we need to create an obj
+        const newObject = {};
+        for (const suffix of this.prefixes.get(key)) {
+            const [obj, finalInfix] = this._fillInObj(newObject, suffix);
+            obj[finalInfix] = this.data.get(this._getKey(key, suffix));
+        }
+        return newObject;
+    }
+    _fillInObj(obj, key) {
+        const infixes = key.split(this.sep);
+        const finalInfix = infixes.pop(); // handle last one separately
+        for (const infix of infixes) {
+            if (!(infix in obj)) {
+                obj[infix] = {};
+            }
+            obj = obj[infix];
+        }
+        return [obj, finalInfix];
+    }
+    toObject() {
+        return this.get('', {});
+    }
+}
+
 
 
 // Moving these methods here, so it is still tested in case they are ever

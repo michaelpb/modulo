@@ -179,12 +179,12 @@ const debugToolbarString = `
             cursor: crosshair;
         }
     </style>
-    <mod-state
+    <state
         state-saveto="localstorage"
         visible:=true
         ghost:=true
         hotreload:=true
-    ></mod-state>
+    ></state>
     <!--<script>
         console.log('Mod debug toolbar!');
     </script>-->
@@ -356,6 +356,10 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
         for (const name of updateComponents) {
             //this.updateComponent(loader, name, newDataObj[name]);
             const options = newDataObj[name];
+
+            // defineComponent, as a side-effect, will replace the factory of
+            // all existing components (e.g. an upgrade "in place"), we then
+            // just need to re-initialize
             const factory = loader.defineComponent(name, options);
             for (const instance of this.instancesByName.get(factory.fullName)) {
                 instance.initialize(); // Re-initialize properties
@@ -390,8 +394,7 @@ function oneTimeSetup() {
     //console.log('toolbar is appended', moddebug.toolbar);
 }
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'load_component_after',
     function registerFactory(node, loader, loadingObj, factory) {
         if (!Modulo.moddebug.reloader) {
@@ -402,8 +405,7 @@ Modulo.registry.set(
 );
 
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'initialized_component_after',
     function registerComponent() {
         Modulo.moddebug.reloader.registerComponent(this);
@@ -416,8 +418,7 @@ Modulo.registry.set(
 );
 
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'prepare_component_before',
     function createGhosts() {
         if (!this.isMounted) {
@@ -426,8 +427,7 @@ Modulo.registry.set(
     },
 )
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'update_component_before',
     function hideGhosts() {
         // saveUtilityComponents
@@ -441,13 +441,36 @@ Modulo.registry.set(
     },
 );
 
-Modulo.registry.set(
-    'middleware',
-    'updated_component_after',
+Modulo.middleware.set(
+    'update_component_after',
     function restoreGhosts() {
         this.ghostElements.forEach(elem => this.prepend(elem));
     },
 );
+
+Modulo.Loader.getPartsWithGhosts = () => {
+    return Array.from(Modulo.cparts.values())
+        .filter(({debugGhost}) => debugGhost);
+};
+
+Modulo.Loader.defineCoreCustomElements = () => {
+    globals.customElements.define('mod-load', Modulo.Loader);
+    const {defineDebugGhost} = Modulo.DebugGhostBase;
+    Modulo.Loader.getPartsWithGhosts().forEach(defineDebugGhost);
+};
+
+Modulo.cparts.get('state').prototype.ghostCreatedCallback = function (ghostElem) {
+    this.ghostElem = ghostElem;
+    for (const [key, value] of Object.entries(this.rawDefaults)) {
+        ghostElem.setAttribute(key, value);
+    }
+};
+
+Modulo.cparts.get('state').prototype.ghostAttributeMutedCallback = function (ghostElem) {
+    const data = Modulo.parseAttrs(ghostElem);
+    this.data = Object.assign({}, this.data, data);
+    this.component.rerender();
+};
 
 Modulo.DebugGhostBase = class DebugGhostBase extends HTMLElement {
     connectedCallback() {
