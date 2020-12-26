@@ -38,6 +38,12 @@ Modulo.MultiMap = class MultiMap extends Map {
     toObject() {
         return Object.fromEntries(this);
     }
+    register(value) {
+        // deadcode, todo finish after multimap merge for cleaner extension syntax
+        const {name} = value; // works for Functions, need to work for Classes
+        assert(name, `Invalid register type "{value}"`);
+        this.set(key, value);
+    }
     // Idea: Can implement TaggedObjectMap with MultiMap:
     //   - save(tagName) - Savepoints are looping through values,
     //                     and saving an obj of lengths
@@ -192,6 +198,40 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     }
     if (renderObj.save) {
         renderObj.save(lifecycleName);
+    }
+}
+
+Modulo.applyDirectives = function applyDirectives(component, el) {
+    const directives = [];
+    for (const rawName of el.getAttributeNames()) {
+        // todo: optimize skipping most attributes
+
+        let name = rawName;
+        let value = el.getAttribute(rawName);
+        if (name.startsWith('@')) {
+            // @ is syntactic sugar for component.event directive
+            name = '[component.event]' + name.slice(1);
+        }
+        if (name.endsWith(':')) {
+            // Is ':' meta-directive (resolves value)
+            name = name.slice(0, -1);
+            value = component.resolveValue(value);
+        }
+        if (name.startsWith('[')) {
+            // Is '[' meta-directive (resolves attribute name as method)
+            const funcName = name.slice(1).split(']')[0]; // get between '[]'
+            const directiveFunction = component.resolveValue(funcName);
+            directiveFunction(el, value, rawName, component);
+        }
+    }
+    for (const child of el.children) {
+        Modulo.applyDirectives(component, child); // tail recursion into children
+    }
+}
+Modulo.cleanupDirectives = function cleanupDirectives(el) {
+    if (el.moduloDirectives) {
+    }
+    for (const child of el.children) {
     }
 }
 
@@ -433,7 +473,7 @@ class ModuloComponent extends HTMLElement {
     }
 
     initialize() {
-        this.name = 'component'; // Used by lifecycle
+        this.name = 'component'; // Used by lifecycle // TODO: Replace with lifecycleName
         this.fullName = this.factory.fullName;
         this.isMounted = false;
         this.isModuloComponent = true; // used when finding parent
@@ -468,6 +508,7 @@ class ModuloComponent extends HTMLElement {
         this.clearEvents();
         const newContents = renderObj.get('template').renderedOutput || '';
         this.reconcile(this, newContents);
+        Modulo.applyDirectives(this, this);
         this.rewriteEvents();
     }
 
@@ -590,6 +631,7 @@ Modulo.parts = {};
 Modulo.parts.Props = class Props extends Modulo.ComponentPart {
     static name = 'props';
     static factoryCallback({options}, {componentClass}, renderObj) {
+        // untested / daedcode ---v
         componentClass.observedAttributes = Object.keys(options);
     }
     initializedCallback(renderObj) {
@@ -756,6 +798,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
             this.ghostElem.setAttribute(key, value);
         }
     }
+
 }
 Modulo.cparts.set('state', Modulo.parts.State);
 
@@ -790,6 +833,8 @@ Modulo.middleware.set(
         info.content = content;
     },
 );
+
+
 
 Modulo.Component = ModuloComponent;
 Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
