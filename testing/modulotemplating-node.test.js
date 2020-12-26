@@ -249,8 +249,7 @@ test("Test order", t => {
             'b': function (s, a) { return s[a]; },
             'caps': function (s) { return s.toUpperCase(); },
         }, tags: {
-            // TODO -- is the index of S actually 3???
-            'lol': function (n, G) { return "OUT.push(" + G.expression(n) + ".indexOf('S'));"; },
+            'lol': function (n, G) { return "OUT.push(" + G.parseExpr(n) + ".indexOf('S'));"; },
         }
     });
     const result = template.render({'test': 'tester'});
