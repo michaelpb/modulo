@@ -50,7 +50,7 @@ defaultOptions.filters = {
     length: s => s.length,
     safe: s => Object.assign(new String(s), {safe: true}),
     join: (s, arg) => s.join(arg),
-    pluralize: (s, arg, b) => arg.split(',')[(s === 1) * 1],
+    pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
     add: (s, arg) => s + arg,
     subtract: (s, arg) => s - arg,
     default: (s, arg) => s || arg,
@@ -106,7 +106,7 @@ Modulo.Template = class Template {
 
     compile(text) {
         this.stack = []; // Template tag stack
-        let output = 'var OUT=[], FILTERS=G.filters;';
+        let output = 'var OUT=[];';
         let mode = 'text'; // Start in text mode
         for (const token of this.tokenizeText(text)) {
             if (mode) {
@@ -127,7 +127,7 @@ Modulo.Template = class Template {
         let results = this.parseVal(filters.shift());
         for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
             const argList = arg ? ',' + this.parseVal(arg) : '';
-            results = `FILTERS["${fName}"](${results}${argList})`;
+            results = `G.filters["${fName}"](${results}${argList})`;
         }
         return results;
     }

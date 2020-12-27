@@ -6,8 +6,8 @@
 
 <template mod-component="Counter">
     <template>
-        <aside onclick:=script.testClick>Test</aside>
-        <button onclick:=script.count>
+        <aside @click:=script.testClick>Test</aside>
+        <button @click:=script.count>
             ${state.num}
         </button>
     </template>
@@ -26,7 +26,7 @@
         }
 
         function testClick() {
-            this.wasClicked = true;
+            component.wasClicked = true;
         }
     </script>
 </template>

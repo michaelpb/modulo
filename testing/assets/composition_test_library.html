@@ -7,14 +7,14 @@
     </template>
     <script>
         function gotClicked() {
-            this.wasClicked = true;
+            component.wasClicked = true;
         }
     </script>
 </template>
 
 <template mod-component="ChildComponent">
     <template>
-        <button onclick:=props.clickme>
+        <button @click:=props.clickme>
             ${props.txt}
         </button>
     </template>

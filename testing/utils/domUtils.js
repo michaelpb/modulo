@@ -44,7 +44,7 @@ function clearRequireCache(searchPath) {
     //require.cache = {};
 }
 
-function setupModulo(path = null, includeDebugger = false) {
+function setupModulo(path = null, includeDebugger = false, html = '') {
     let Modulo;
     clearRequireCache('../../src/Modulo.js');
     clearRequireCache('../../src/ModuloDebugger.js');
@@ -53,7 +53,7 @@ function setupModulo(path = null, includeDebugger = false) {
     } else {
         Modulo = require('../../src/Modulo.js');
     }
-    const htmlCode = path ? fs.readFileSync(path, 'utf-8') : '';
+    const htmlCode = path ? fs.readFileSync(path, 'utf-8') : html;
     const dom = new JSDOM(htmlCode);
     Modulo.document = dom.window.document; // for easier testing
     Modulo.globals.window =  dom.window;

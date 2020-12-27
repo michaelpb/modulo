@@ -13,6 +13,7 @@ test('Modulo defineAll runs and registers built-in', t => {
     t.is(Modulo.globals.mockRegistered.length, 1); // only "mod-load"
 });
 
+
 test('Loader loads libraries with expected properties', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
     const loader = document.querySelector('mod-load');

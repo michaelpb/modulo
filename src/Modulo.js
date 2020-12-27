@@ -14,15 +14,6 @@ Modulo.ON_EVENTS = new Set([
     'onfocus', 'onblur',
 ]);
 
-function deepEquals(a, b) {
-    try {
-        return JSON.stringify(a) === JSON.stringify(b);
-    } catch {
-        return null;
-    }
-}
-
-// TODO: Decide on ':' vs ''
 Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:]`).join(',');
 
 Modulo.MultiMap = class MultiMap extends Map {
@@ -53,6 +44,10 @@ Modulo.MultiMap = class MultiMap extends Map {
 
 function getValue(obj, path) {
     return path.split('.').reduce((obj, name) => obj[name], obj);
+}
+
+function parseWord(text) {
+    return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
 }
 
 Modulo.TaggedObjectMap = class TaggedObjectMap extends Map {
@@ -201,32 +196,44 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     }
 }
 
-Modulo.applyDirectives = function applyDirectives(component, el) {
-    const directives = [];
+Modulo.collectDirectives = function collectDirectives(component, el, arr = null) {
+    if (!arr) {
+        arr = [];
+    }
+    // TODO: for "pre-load" directives, possibly just pass in "Loader" as
+    // "component" so we can have load-time directives
     for (const rawName of el.getAttributeNames()) {
-        // todo: optimize skipping most attributes
+        // todo: optimize skipping most elements or attributes
 
         let name = rawName;
-        let value = el.getAttribute(rawName);
-        if (name.startsWith('@')) {
-            // @ is syntactic sugar for component.event directive
-            name = '[component.event]' + name.slice(1);
-        }
         if (name.endsWith(':')) {
-            // Is ':' meta-directive (resolves value)
-            name = name.slice(0, -1);
-            value = component.resolveValue(value);
+            // : is syntactic sugar for component.resolve directive
+            name = `[${component.name}.resolve]` + name.slice(0, -1);
         }
-        if (name.startsWith('[')) {
-            // Is '[' meta-directive (resolves attribute name as method)
-            const funcName = name.slice(1).split(']')[0]; // get between '[]'
-            const directiveFunction = component.resolveValue(funcName);
-            directiveFunction(el, value, rawName, component);
+        // @ is syntactic sugar for component.event directive
+        name = name.replace('@', `[${component.name}.event]`);
+
+        // [ means there is at least 1 directive
+        if (!name.startsWith('[')) {
+            continue;
+        }
+        const value = el.getAttribute(rawName);
+        const attrName = parseWord((name.match(/\][^\]]+$/) || [''])[0]);
+        for (const dName of name.split(']').map(parseWord)) {
+            if (dName === attrName) {
+                continue; // Skip bare name
+            }
+            const setUp = component.resolveValue(dName + 'Mount');
+            const tearDown = component.resolveValue(dName + 'Unmount');
+            assert(setUp || tearDown, `Unknown directive: "${dName}"`);
+            arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
         }
     }
     for (const child of el.children) {
-        Modulo.applyDirectives(component, child); // tail recursion into children
+        // tail recursion into children
+        Modulo.collectDirectives(component, child, arr);
     }
+    return arr;
 }
 Modulo.cleanupDirectives = function cleanupDirectives(el) {
     if (el.moduloDirectives) {
@@ -402,6 +409,7 @@ Modulo.adapters = {
             const opts = {
                 getNodeKey: el => el.getAttribute && el.getAttribute('key'),
                 onBeforeElChildrenUpdated: (fromEl, toEl) => {
+                    // TODO: Possibly add directives here-ish
                     return !toEl.tagName.includes('-');
                 },
                 childrenOnly: true,
@@ -505,11 +513,40 @@ class ModuloComponent extends HTMLElement {
     }
 
     updateCallback(renderObj) {
-        this.clearEvents();
+        //this.clearEvents();
         const newContents = renderObj.get('template').renderedOutput || '';
         this.reconcile(this, newContents);
-        Modulo.applyDirectives(this, this);
-        this.rewriteEvents();
+        const directives = Modulo.collectDirectives(this, this);
+        this.applyDirectives(directives);
+        //this.rewriteEvents();
+    }
+
+    applyDirectives(directives) {
+        for (const args of directives) {
+            const {setUp, tearDown, el, rawName, hasRun, value, dName} = args;
+            if (!setUp) {
+                console.error('TMP Skipping:', dName, rawName, value);
+                continue;
+            }
+            // TODO fix this with truly predictable context
+            args.resolutionContext = this.moduloRenderContext || getFirstModuloAncestor(this) || this; // INCORRECT
+            if (hasRun) {
+                if (!tearDown) {
+                    console.error('TMP NO TEAR DOWN ERR:', rawName);
+                }
+                tearDown(args);
+            }
+            args.hasRun = true;
+            setUp(args);
+            /*
+            if (setUp) {
+                el.onload = setUp.bind(thisContext, [args]);
+            }
+            if (tearDown) {
+                el.onunload = tearDown.bind(thisContext, [args]);
+            }
+            */
+        }
     }
 
     rerender() {
@@ -525,6 +562,40 @@ class ModuloComponent extends HTMLElement {
         func.call(this, ev, payload);
         this.lifecycle('eventCleanup');
         //this.eventRenderObj = null;
+    }
+
+    prepareCallback() {
+        return {
+            eventMount: this.eventMount.bind(this),
+            eventUnmount: this.eventUnmount.bind(this),
+            resolveMount: this.resolveMount.bind(this),
+            resolveUnmount: this.resolveUnmount.bind(this),
+        };
+    }
+
+    eventMount(info) {
+        const {el, value, attrName, rawName} = info;
+        el.getAttr = el.getAttr || el.getAttribute;
+        const listener = (ev) => {
+            info.func = el.getAttr(attrName, el.getAttr(rawName));
+            assert(info.func, `Bad ${attrName}, ${value} is ${info.func}`);
+            const payload = el.getAttr(`${attrName}.payload`, el.value);
+            this.handleEvent(info.func, ev, payload);
+        };
+        el.addEventListener(attrName, listener);
+    }
+
+    eventUnmount({attrName, func}) {
+        el.removeEventListener(attrName, func);
+    }
+
+    resolveMount({el, value, attrName, resolutionContext}) {
+        const resolvedValue = resolutionContext.resolveValue(value);
+        el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
+        el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
+    }
+    resolveUnmount({el, value}) {
+        el.attrs = {};
     }
 
     rerenderOnce() {
@@ -725,7 +796,9 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         const scriptContextDefaults = renderObj.toObject();
         const c = partOptions.content || '';
         const localVars = Object.keys(scriptContextDefaults);
+        localVars.push('component'); // add in component as a local var
         const wrappedJS = this.wrapJavaScriptContext(c, localVars);
+        console.log('wrappedJS ', wrappedJS);
         return (new Function('Modulo', wrappedJS)).call(null, Modulo);
         //return (new Function(wrappedJS)).call(null);
         return scopedEval(null, {}, wrappedJS);
@@ -735,6 +808,7 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     eventCallback(renderObj) {
         // Make sure that the local variables are all properly set
         const script = renderObj.get('script');
+        script.setLocalVariable('component', this.component);
         for (const part of this.component.componentParts) {
             script.setLocalVariable(part.name, part);
         }
@@ -833,8 +907,6 @@ Modulo.middleware.set(
         info.content = content;
     },
 );
-
-
 
 Modulo.Component = ModuloComponent;
 Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
