@@ -406,7 +406,7 @@ Modulo.middleware.set(
 
 
 Modulo.middleware.set(
-    'initialized_component_after',
+    'initialized_element_after',
     function registerComponent() {
         Modulo.moddebug.reloader.registerComponent(this);
         /*
@@ -419,7 +419,7 @@ Modulo.middleware.set(
 
 
 Modulo.middleware.set(
-    'prepare_component_before',
+    'prepare_element_before',
     function createGhosts() {
         if (!this.isMounted) {
             createGhostElements(this);
@@ -428,7 +428,7 @@ Modulo.middleware.set(
 )
 
 Modulo.middleware.set(
-    'update_component_before',
+    'update_element_before',
     function hideGhosts() {
         // saveUtilityComponents
         //const selector = this.getPartsWithGhosts()
@@ -442,7 +442,7 @@ Modulo.middleware.set(
 );
 
 Modulo.middleware.set(
-    'update_component_after',
+    'update_element_after',
     function restoreGhosts() {
         this.ghostElements.forEach(elem => this.prepend(elem));
     },

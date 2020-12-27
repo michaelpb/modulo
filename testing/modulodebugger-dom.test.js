@@ -19,8 +19,8 @@ test('Loader mounts components and shows ghost and toolbar', t => {
             <h1>Hello Test World</h1>
         </lib-testcomponent>
         <lib-counter><ghost-state num:="1"></ghost-state>
-            <aside onclick:="script.testClick">Test</aside>
-            <button onclick:="script.count">
+            <aside @click:="script.testClick">Test</aside>
+            <button @click:="script.count">
                 1
             </button>
         </lib-counter>
