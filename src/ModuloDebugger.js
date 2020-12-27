@@ -442,7 +442,7 @@ Modulo.middleware.set(
 );
 
 Modulo.middleware.set(
-    'update_element_after',
+    'updated_element_after',
     function restoreGhosts() {
         this.ghostElements.forEach(elem => this.prepend(elem));
     },

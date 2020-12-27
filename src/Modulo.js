@@ -1,3 +1,23 @@
+/*
+  What's done:
+    - Directives + syntactic sugar
+    - Moving core functionality into Component CPart
+  Next steps:
+    - Figure out "Directive Resolution Context"
+        - Best case: Hook into reconciliation / morphdom, do clean-up and
+          tear-down
+        - Possibly will need render stack, or will be entirely with morphdom
+        - Write tests around this
+        - Stop skipping tests that test parents passing down props
+    - Copy ModuloTemplate into this file, make default template language
+    - Start use as soon as above is finished to uncover typical usage + bugs
+  Refactoring needed:
+    - Finish / test / refactor extends
+    - Rename ModuloComponent to "ModuloElement" consistently
+    - Possibly:
+      - Refactor Component CPart, maybe rename to "lifecycle" or "base"
+      - Think about how extension / getSuper('state') etc might work
+*/
 'use strict';
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -196,7 +216,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
         let name = rawName;
         for (const [regexp, dSuffix] of Modulo.directiveShortcuts) {
             if (rawName.match(regexp)) {
-                name = `[${component.name}.${dSuffix}]` + name.replace(regexp, '');
+                name = `[component.${dSuffix}]` + name.replace(regexp, '');
             }
         }
         if (!name.startsWith('[')) {
@@ -328,7 +348,7 @@ Modulo.Loader = class Loader extends HTMLElement {
                 }
             }
         }
-        loadingObj.set('component', {name});
+        loadingObj.set('component', {name}); // Everything gets implicit Component CPart
         runMiddleware('load', {name: 'component'}, 'before', [elem, this, loadingObj]);
 
         //const cPartsMap = new Modulo.MultiMap();
@@ -344,7 +364,6 @@ Modulo.Loader = class Loader extends HTMLElement {
         // lifecycle behave the same as the others --v
         //runLifecycle('load', cPartsMap.toObject(), loadingObj, this);
         const partsInfo = loadingObj.toObject();
-        //delete partsInfo['component']; // no need for that anymore!
         this.componentFactoryData.push([name, partsInfo]);
         return this.defineComponent(name, partsInfo);
     }
@@ -510,13 +529,6 @@ class ModuloComponent extends HTMLElement {
         return this.componentParts.find(({name}) => name === searchName);
     }
 
-    updateCallback(renderObj) {
-        const newContents = renderObj.get('template').renderedOutput || '';
-        this.reconcile(this, newContents);
-        const directives = Modulo.collectDirectives(this, this);
-        this.applyDirectives(directives);
-    }
-
     applyDirectives(directives) {
         for (const args of directives) {
             const {setUp, tearDown, el, rawName, hasRun, value, dName} = args;
@@ -548,51 +560,8 @@ class ModuloComponent extends HTMLElement {
     rerender() {
         // Calls all the LifeCycle functions in order
         this.renderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
-        this.lifecycle('prepare', 'render', 'update');
+        this.lifecycle('prepare', 'render', 'update', 'updated');
         this.renderObj = null; // rendering is over, set to null
-    }
-
-    handleEvent(func, ev, payload) {
-        //this.eventRenderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
-        this.lifecycle('event');
-        func.call(this, ev, payload);
-        this.lifecycle('eventCleanup');
-        //this.eventRenderObj = null;
-    }
-
-    prepareCallback() {
-        return {
-            eventMount: this.eventMount.bind(this),
-            eventUnmount: this.eventUnmount.bind(this),
-            resolveMount: this.resolveMount.bind(this),
-            resolveUnmount: this.resolveUnmount.bind(this),
-        };
-    }
-
-    eventMount(info) {
-        const {el, value, attrName, rawName} = info;
-        el.getAttr = el.getAttr || el.getAttribute;
-        const listener = (ev) => {
-            const func = el.getAttr(attrName, el.getAttr(rawName));
-            assert(func, `Bad ${attrName}, ${value} is ${func}`);
-            const payload = el.getAttr(`${attrName}.payload`, el.value);
-            this.handleEvent(func, ev, payload);
-        };
-        info.listener = listener;
-        el.addEventListener(attrName, listener);
-    }
-
-    eventUnmount({attrName, listener}) {
-        el.removeEventListener(attrName, listener);
-    }
-
-    resolveMount({el, value, attrName, resolutionContext}) {
-        const resolvedValue = resolutionContext.resolveValue(value);
-        el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
-        el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
-    }
-    resolveUnmount({el, value}) {
-        el.attrs = {};
     }
 
     lifecycle(...names) {
@@ -654,6 +623,55 @@ Modulo.ComponentPart = class ComponentPart {
 Modulo.parts = {};
 Modulo.parts.Component = class Component extends Modulo.ComponentPart {
     static name = 'component';
+    prepareCallback() {
+        // TODO shouldn't have to do this ---v
+        return {
+            eventMount: this.eventMount.bind(this),
+            eventUnmount: this.eventUnmount.bind(this),
+            resolveMount: this.resolveMount.bind(this),
+            resolveUnmount: this.resolveUnmount.bind(this),
+        };
+    }
+
+    updateCallback(renderObj) {
+        const {component} = this;
+        const newContents = renderObj.get('template').renderedOutput || '';
+        component.reconcile(component, newContents);
+        const directives = Modulo.collectDirectives(component, component);
+        component.applyDirectives(directives);
+    }
+
+    handleEvent(func, ev, payload) {
+        this.component.lifecycle('event');
+        func.call(this.component, ev, payload);
+        this.component.lifecycle('eventCleanup');
+    }
+
+    eventMount(info) {
+        const {el, value, attrName, rawName} = info;
+        el.getAttr = el.getAttr || el.getAttribute;
+        const listener = (ev) => {
+            const func = el.getAttr(attrName, el.getAttr(rawName));
+            assert(func, `Bad ${attrName}, ${value} is ${func}`);
+            const payload = el.getAttr(`${attrName}.payload`, el.value);
+            this.handleEvent(func, ev, payload);
+        };
+        info.listener = listener;
+        el.addEventListener(attrName, listener);
+    }
+
+    eventUnmount({attrName, listener}) {
+        el.removeEventListener(attrName, listener);
+    }
+
+    resolveMount({el, value, attrName, resolutionContext}) {
+        const resolvedValue = resolutionContext.resolveValue(value);
+        el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
+        el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
+    }
+    resolveUnmount({el, value}) {
+        el.attrs = {};
+    }
 }
 Modulo.cparts.set('component', Modulo.parts.Component);
 

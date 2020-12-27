@@ -48,7 +48,7 @@ test('collectDirectives applies syntactic sugar', t => {
     t.is(directives.length, 2);
     t.deepEqual(directives[0], {
         attrName: 'c',
-        dName: 'mockComponent.resolve',
+        dName: 'component.resolve',
         el: el,
         rawName: 'c:',
         setUp: 1,
@@ -56,10 +56,10 @@ test('collectDirectives applies syntactic sugar', t => {
         value: 'valc',
     });
     t.deepEqual(mockComponent.rvCalls, [
-        ['mockComponent.resolveMount'],
-        ['mockComponent.resolveUnmount'],
-        ['mockComponent.eventMount'],
-        ['mockComponent.eventUnmount'],
+        ['component.resolveMount'],
+        ['component.resolveUnmount'],
+        ['component.eventMount'],
+        ['component.eventUnmount'],
     ]);
 });
 
@@ -75,7 +75,7 @@ test('collectDirectives can find multiple directives on one attribute with synta
     t.is(directives.length, 2);
     t.deepEqual(directives[0], {
         attrName: 'e',
-        dName: 'mockComponent.resolve',
+        dName: 'component.resolve',
         el: el,
         rawName: '@e:',
         setUp: 1,
@@ -83,10 +83,10 @@ test('collectDirectives can find multiple directives on one attribute with synta
         value: 'vale',
     });
     t.deepEqual(mockComponent.rvCalls, [
-        ['mockComponent.resolveMount'],
-        ['mockComponent.resolveUnmount'],
-        ['mockComponent.eventMount'],
-        ['mockComponent.eventUnmount'],
+        ['component.resolveMount'],
+        ['component.resolveUnmount'],
+        ['component.eventMount'],
+        ['component.eventUnmount'],
     ]);
 });
 
@@ -158,7 +158,7 @@ test('collectDirectives can search children for multiple directives', t => {
     t.deepEqual(directives, [
         {
             attrName: 'click',
-            dName: 'mockComponent.resolve',
+            dName: 'component.resolve',
             el: el.querySelector('button'),
             rawName: '@click:',
             setUp: 1,
@@ -167,7 +167,7 @@ test('collectDirectives can search children for multiple directives', t => {
         },
         {
             attrName: 'click',
-            dName: 'mockComponent.event',
+            dName: 'component.event',
             el: el.querySelector('button'),
             rawName: '@click:',
             setUp: 3,
@@ -176,10 +176,10 @@ test('collectDirectives can search children for multiple directives', t => {
         },
     ]);
     t.deepEqual(mockComponent.rvCalls, [
-        ['mockComponent.resolveMount'],
-        ['mockComponent.resolveUnmount'],
-        ['mockComponent.eventMount'],
-        ['mockComponent.eventUnmount'],
+        ['component.resolveMount'],
+        ['component.resolveUnmount'],
+        ['component.eventMount'],
+        ['component.eventUnmount'],
     ]);
 });
 
