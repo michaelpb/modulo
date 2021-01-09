@@ -54,4 +54,21 @@
 </template>
 
 
+<template mod-component="Todo">
+    <template>
+        <ol>
+           <li>Testing</li>
+           <button @click:=script.increment>
+              ${state.num}
+           </button>
+        </ol>
+    </template>
+    <state num:=1>
+    </state>
+    <script>
+        function increment() {
+            state.num++;
+        }
+    </script>
+</template>
 

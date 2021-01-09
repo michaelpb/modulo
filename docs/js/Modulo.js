@@ -1,3 +1,24 @@
+/*
+  What's done:
+    - Directives + syntactic sugar
+    - Moving core functionality into Component CPart
+  Next steps:
+    - Figure out "Directive Resolution Context"
+        - Best case: Hook into reconciliation / morphdom, do clean-up and
+          tear-down
+        - Possibly will need render stack, or will be entirely with morphdom
+        - Write tests around this
+        - Stop skipping tests that test parents passing down props
+    - Copy ModuloTemplate into this file, make default template language
+    - Start use as soon as above is finished to uncover typical usage + bugs
+  Refactoring needed:
+    - Finish / test / refactor extends
+    - DONE: Rename ModuloComponent to "ModuloElement" consistently
+    - Possibly:
+      - Refactor Component CPart, maybe rename to "lifecycle" or "base"
+      - Remove the [this] -- remove Element / Component "lifecycle" step
+      - Think about how extension / getSuper('state') etc might work
+*/
 'use strict';
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -5,167 +26,12 @@ if (typeof HTMLElement === 'undefined') {
 var globals = {HTMLElement};
 var Modulo = {globals};
 
-Modulo.ON_EVENTS = new Set([
-    'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
-    'onmousemove', 'onmouseout', 'ondragstart', 'ondrag', 'ondragenter',
-    'ondragleave', 'ondragover', 'ondrop', 'ondragend', 'onkeydown',
-    'onkeypress', 'onkeyup', 'onload', 'onunload', 'onabort', 'onerror',
-    'onresize', 'onscroll', 'onselect', 'onchange', 'onsubmit', 'onreset',
-    'onfocus', 'onblur',
-]);
-
-function deepEquals(a, b) {
-    try {
-        return JSON.stringify(a) === JSON.stringify(b);
-    } catch {
-        return null;
-    }
-}
-
-// TODO: Decide on ':' vs ''
-Modulo.ON_EVENT_SELECTOR = Array.from(Modulo.ON_EVENTS).map(name => `[${name}\\:]`).join(',');
-
-Modulo.DefaultMap = class DefaultMap extends Map {
-    constructor(getDefault) {
-        super();
-        this.getDefault = getDefault;
-    }
-    get(key) {
-        if (!this.has(key)) {
-            super.set(key, this.getDefault());
-        }
-        return super.get(key);
-    }
-    set(key, value, optionalVal) {
-        if (optionalVal !== undefined) {
-            this.get(key).set(value, optionalVal);
-        } else {
-            super.set(key, value);
-        }
-    }
-}
-
-Modulo.registry = new Modulo.DefaultMap(() => new Modulo.MultiMap());
-
-Modulo.DeepMap = class DeepMap {
-    constructor(copyFrom=null, autoSave=false) {
-        // TODO: Move the full version of this class into ModuloDebugger, make
-        // it extend Map (for better introspection). The history / savepoints
-        // mostly just good for debugging.
-        this.label = null;
-        this.readOnly = false;
-        this.sep = '.';
-        if (copyFrom) {
-            // Easiest way to setup this one -- todo: deep copy?
-            this.data = new Map(copyFrom.data);
-            this.prefixes = new Map(Array.from(copyFrom.prefixes)
-                    .map(([key, set]) => ([key, new Set(set)])));
-            this.savepoints = Array.from(copyFrom.savepoints);
-        } else {
-            this.data = new Map();
-            this.prefixes = new Map();
-            this.savepoints = [];
-        }
-        this.shouldAutoSave = {
-            'lazy': key => this.data.has(key) && // autosave if not redundant
-                           (this.data.get(key) !== this.getLastSavedValue(key)),
-            'granular': key => this.data.has(key), // only autosave if conflict
-            'manual': key => false, // never autosave
-        }[autoSave || 'manual'];
-    }
-    save(label) {
-        const dm = new Modulo.DeepMap(this);
-        dm.label = label || null;
-        dm.readOnly = true;
-        this.savepoints.push(dm);
-    }
-    _getKey(prefix, suffix) {
-        const sep = prefix && suffix ? this.sep : '';
-        return prefix + sep + suffix;
-    }
-    setObject(key, obj) {
-        for (const [suffix, val] of Object.entries(obj)) {
-            this.set(this._getKey(key, suffix), val);
-        }
-    }
-    set(key, value) {
-        if (this.readOnly) {
-            throw new Error('Read only');
-        } else if (isPlainObject(value)) {
-            this.setObject(key, value);
-        } else {
-            if (this.shouldAutoSave(key)) {
-                this.save();
-            }
-            this.data.set(key, value);
-            this._updatePrefixesForKey(key);
-        }
-    }
-    _updatePrefixesForKey(key) {
-        const keyParts = key.split(this.sep);
-        let i = 0;
-        while (i < keyParts.length + 1) {
-            const prefix = keyParts.slice(0, i).join(this.sep);
-            const suffix = keyParts.slice(i).join(this.sep);
-            if (!this.prefixes.has(prefix)) {
-                this.prefixes.set(prefix, new Set());
-            }
-            this.prefixes.get(prefix).add(suffix);
-            i++;
-        }
-    }
-    get(key, defaultValue) {
-        if (!this.prefixes.has(key)) {
-            return defaultValue;
-        }
-        if (this.data.has(key)){
-            return this.data.get(key);
-        }
-        // This means key is a prefix, so we need to create an obj
-        const newObject = {};
-        for (const suffix of this.prefixes.get(key)) {
-            const [obj, finalInfix] = this._fillInObj(newObject, suffix);
-            obj[finalInfix] = this.data.get(this._getKey(key, suffix));
-        }
-        return newObject;
-    }
-    _fillInObj(obj, key) {
-        const infixes = key.split(this.sep);
-        const finalInfix = infixes.pop(); // handle last one separately
-        for (const infix of infixes) {
-            if (!(infix in obj)) {
-                obj[infix] = {};
-            }
-            obj = obj[infix];
-        }
-        return [obj, finalInfix];
-    }
-    toObject() {
-        return this.get('', {});
-    }
-}
-
-
 Modulo.MultiMap = class MultiMap extends Map {
     get(key) {
         if (!this.has(key)) {
             super.set(key, []);
         }
         return super.get(key);
-        // v--- daedcode
-        let subkey = null;
-        if (key.includes('.')) {
-            subkey = key.slice(key.indexOf('.') + 1);
-            key = key.split('.')[0];
-        }
-        if (!this.has(key)) {
-            super.set(key, []);
-        }
-        const result = super.get(key);
-        if (subkey) {
-            return result[result.length - 1][subkey];
-        }
-        return result;
     }
     set(key, value) {
         this.get(key).push(value);
@@ -173,13 +39,90 @@ Modulo.MultiMap = class MultiMap extends Map {
     toObject() {
         return Object.fromEntries(this);
     }
+    register(value) {
+        // deadcode, todo finish after multimap merge for cleaner extension syntax
+        const {name} = value; // works for Functions, need to work for Classes
+        assert(name, `Invalid register type "{value}"`);
+        this.set(key, value);
+    }
+    // Idea: Can implement TaggedObjectMap with MultiMap:
+    //   - save(tagName) - Savepoints are looping through values,
+    //                     and saving an obj of lengths
+    //   - modifyTag(tagName, key, value) - get tagName array, then insert value
+    //                                      at savepoint[key].length
 }
+
+function getValue(obj, path) {
+    return path.split('.').reduce((obj, name) => obj[name], obj);
+}
+
+function parseWord(text) {
+    return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
+}
+
+Modulo.TaggedObjectMap = class TaggedObjectMap extends Map {
+    constructor(otherMap) {
+        super(otherMap)
+        this.tags = Object.assign({}, (otherMap || {}).tags || {});
+        this.tagNames = Array.from((otherMap || {}).tagNames || {});
+    }
+
+    get(key) {
+        if (!this.has(key)) {
+            super.set(key, {});
+        }
+        return super.get(key);
+    }
+
+    resolve(key) {
+        return getValue(this.toObject(), key);
+    }
+
+    set(key, value) {
+        // maybe todo: possibly bind objects here (?)
+        super.set(key, Object.assign(value, this.get(key), value));
+    }
+
+    save(tagName) {
+        if (!this.tags) {
+            this.tags = {};
+            this.tagNames = [];
+        }
+        this.tags[tagName] = this.toObject();
+        this.tagNames.push(tagName); // deadcode
+    }
+
+    getTagsSince(tagName) {// deadcode
+        const index = this.tagNames.findIndex(tagName);
+        if (index === -1) {
+            throw Error(`Unknown tagName "${tagName}" for TaggedMap`)
+        }
+        return this.tagNames.slice(index);
+    }
+
+    modifyTag(tagName, key, value) {
+        // Note: This changes how it was in history at the point of tagging,
+        // and possibly the current value too
+        const historicalValue = (this.tags || {})[tagName] || {};
+        const existing = this.get(key);
+        this.set(key, Object.assign(historicalValue, value, existing));
+    }
+
+    toObject() {
+        // Possibly: Need binding here
+        return Object.fromEntries(this);
+    }
+
+    // OKAY, this data type still needs more work. Ultimately, we'll need:
+    //  - For "hot reloading", to set at 'initalized', then replay lifecycle since? ugh
+}
+
 
 function getFirstModuloAncestor(elem) {
     // Walk up tree to first DOM node that is a modulo component
     const node = elem.parentNode;
     return !node ? null : (
-        node.isModuloComponent ? node : getFirstModuloAncestor(node)
+        node.isModuloElement ? node : getFirstModuloAncestor(node)
     );
 }
 
@@ -209,6 +152,7 @@ function parseAttrs(elem) {
     }
     return obj;
 }
+Modulo.parseAttrs = parseAttrs;
 
 function assert(value, ...info) {
     if (!value) {
@@ -227,7 +171,7 @@ function scopedEval(thisContext, namedArgs, code) {
 
 function runMiddleware(lifecycleName, cPart, timing, args) {
     const key = `${lifecycleName}_${cPart.name}_${timing}`;
-    const middlewareArr = Modulo.registry.get('middleware').get(key); // new
+    const middlewareArr = Modulo.middleware.get(key); // new
     for (const middleware of middlewareArr) {
         middleware.apply(cPart, args);
     }
@@ -237,7 +181,7 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     let partsArray = [];
     if (isPlainObject(parts)) {
         for (const [partName, partOptionsArr] of Object.entries(parts)) {
-            const cPart = Modulo.Loader.componentParts[partName];
+            const cPart = Modulo.cparts.get(partName);
             for (const data of partOptionsArr) {
                 partsArray.push({cPart, cPartArgs: [data]});
                 renderObj.set(cPart.name, data);
@@ -262,27 +206,51 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     }
 }
 
-Modulo.Loader = class Loader extends HTMLElement {
-    static componentParts = {};
-    static componentPartsByTagName = {};
-    static registerComponentPart(cPartClass) {
-        const {name, upgradesFrom = []} = cPartClass;
-        Modulo.Loader.componentParts[name] = cPartClass;
-        const names = [`mod-${name}`, ...upgradesFrom];
-        for (const name of names) {
-            Modulo.Loader.componentPartsByTagName[name] = cPartClass;
+Modulo.collectDirectives = function collectDirectives(component, el, arr = null) {
+    if (!arr) {
+        arr = [];
+    }
+    // TODO: for "pre-load" directives, possibly just pass in "Loader" as
+    // "component" so we can have load-time directives
+    for (const rawName of el.getAttributeNames()) {
+        // todo: optimize skipping most elements or attributes
+        let name = rawName;
+        for (const [regexp, dSuffix] of Modulo.directiveShortcuts) {
+            if (rawName.match(regexp)) {
+                name = `[component.${dSuffix}]` + name.replace(regexp, '');
+            }
+        }
+        if (!name.startsWith('[')) {
+            continue; // There are no directives, skip
+        }
+        const value = el.getAttribute(rawName);
+        const attrName = parseWord((name.match(/\][^\]]+$/) || [''])[0]);
+        for (const dName of name.split(']').map(parseWord)) {
+            if (dName === attrName) {
+                continue; // Skip bare name
+            }
+            const setUp = component.resolveValue(dName + 'Mount');
+            const tearDown = component.resolveValue(dName + 'Unmount');
+            assert(setUp || tearDown, `Unknown directive: "${dName}"`);
+            arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
         }
     }
+    for (const child of el.children) {
+        // tail recursion into children
+        Modulo.collectDirectives(component, child, arr);
+    }
+    return arr;
+}
+
+Modulo.middleware = new Modulo.MultiMap();
+Modulo.cparts = new Map();
+Modulo.directiveShortcuts = new Map();
+Modulo.directiveShortcuts.set(/^@/, 'event');
+Modulo.directiveShortcuts.set(/:$/, 'resolve');
+
+Modulo.Loader = class Loader extends HTMLElement {
     static defineCoreCustomElements() {
         globals.customElements.define('mod-load', Modulo.Loader);
-        if (Modulo.DEBUG) {
-            const {defineDebugGhost} = Modulo.DebugGhostBase;
-            Modulo.Loader.getPartsWithGhosts().forEach(defineDebugGhost);
-        }
-    }
-    static getPartsWithGhosts() {
-        return Object.values(Modulo.Loader.componentParts)
-            .filter(({debugGhost}) => debugGhost);
     }
 
     constructor(...args) {
@@ -322,12 +290,13 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
     loadString(text, alsoRegister=true) {
+        // TODO - Maybe use DOMParser here instead
         const frag = new globals.DocumentFragment();
         const div = globals.document.createElement('div');
         div.innerHTML = text;
         frag.append(div);
         const results = [];
-        for (const tag of div.querySelectorAll('[mod-component]')) {
+        for (const tag of div.querySelectorAll('[mod-component],component')) {
             const componentFactory = this.loadFromDOMElement(tag, alsoRegister);
             results.push(componentFactory);
             if (alsoRegister) {
@@ -351,7 +320,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
             cPartName = splitType[1];
         }
-        if (!(cPartName in Modulo.Loader.componentPartsByTagName)) {
+        if (!(Modulo.cparts.has(cPartName))) {
             console.error('Unexpected tag in component def:', tagName);
             return null;
         }
@@ -367,14 +336,26 @@ Modulo.Loader = class Loader extends HTMLElement {
     loadFromDOMElement(elem) {
         const attrs = parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
+        const extend = attrs['extends'];
         const loadingObj = new Modulo.MultiMap();
-        loadingObj.set('component', {name});
+        if (extend) {
+            for (const [name, data] of this.componentFactoryData) {
+                // TODO: Change this.componentFactoryData to be a map
+                // Also, refactor this mess in general
+                if (name === extend) {
+                    for (const key of Object.keys(data)) {
+                        loadingObj.get(key).push(...data[key]);
+                    }
+                }
+            }
+        }
+        loadingObj.set('component', {name}); // Everything gets implicit Component CPart
         runMiddleware('load', {name: 'component'}, 'before', [elem, this, loadingObj]);
 
         //const cPartsMap = new Modulo.MultiMap();
         for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
             //cPartsMap.set(cPartName, node);
-            const cPart = Modulo.Loader.componentPartsByTagName[cPartName];
+            const cPart = Modulo.cparts.get(cPartName);
             runMiddleware('load', cPart, 'before', [node, this, loadingObj]);
             const results = cPart.loadCallback(node, this, loadingObj);
             runMiddleware('load', cPart, 'after', [node, this, loadingObj, results]);
@@ -384,7 +365,6 @@ Modulo.Loader = class Loader extends HTMLElement {
         // lifecycle behave the same as the others --v
         //runLifecycle('load', cPartsMap.toObject(), loadingObj, this);
         const partsInfo = loadingObj.toObject();
-        delete partsInfo['component']; // no need for that anymore!
         this.componentFactoryData.push([name, partsInfo]);
         return this.defineComponent(name, partsInfo);
     }
@@ -398,6 +378,190 @@ Modulo.Loader = class Loader extends HTMLElement {
         return factory;
     }
 }
+
+const nanomorph = (function () {
+    var events = [
+      'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
+      'onmousemove', 'onmouseout', 'onmouseenter', 'onmouseleave',
+      'ontouchcancel', 'ontouchend', 'ontouchmove', 'ontouchstart',
+      'ondragstart', 'ondrag', 'ondragenter', 'ondragleave', 'ondragover',
+      'ondrop', 'ondragend', 'onkeydown', 'onkeypress', 'onkeyup', 'onunload',
+      'onabort', 'onerror', 'onresize', 'onscroll', 'onselect', 'onchange',
+      'onsubmit', 'onreset', 'onfocus', 'onblur', 'oninput', 'oncontextmenu',
+      'onfocusin', 'onfocusout'
+    ]
+    var eventsLength = events.length
+
+    var ELEMENT_NODE = 1
+    var TEXT_NODE = 3
+    var COMMENT_NODE = 8
+    // diff elements and apply the resulting patch to the old node
+    // (obj, obj) -> null
+    function morph (newNode, oldNode) {
+      var nodeType = newNode.nodeType
+      var nodeName = newNode.nodeName
+
+      if (nodeType === ELEMENT_NODE) {
+        copyAttrs(newNode, oldNode)
+      }
+
+      if (nodeType === TEXT_NODE || nodeType === COMMENT_NODE) {
+        if (oldNode.nodeValue !== newNode.nodeValue) {
+          oldNode.nodeValue = newNode.nodeValue
+        }
+      }
+
+      // Some DOM nodes are weird
+      // https://github.com/patrick-steele-idem/morphdom/blob/master/src/specialElHandlers.js
+      if (nodeName === 'INPUT') updateInput(newNode, oldNode)
+      else if (nodeName === 'OPTION') updateOption(newNode, oldNode)
+      else if (nodeName === 'TEXTAREA') updateTextarea(newNode, oldNode)
+
+      copyEvents(newNode, oldNode)
+    }
+
+    function copyAttrs (newNode, oldNode) {
+      var oldAttrs = oldNode.attributes
+      var newAttrs = newNode.attributes
+      var attrNamespaceURI = null
+      var attrValue = null
+      var fromValue = null
+      var attrName = null
+      var attr = null
+
+      for (var i = newAttrs.length - 1; i >= 0; --i) {
+        attr = newAttrs[i]
+        attrName = attr.name
+        attrNamespaceURI = attr.namespaceURI
+        attrValue = attr.value
+        if (attrNamespaceURI) {
+          attrName = attr.localName || attrName
+          fromValue = oldNode.getAttributeNS(attrNamespaceURI, attrName)
+          if (fromValue !== attrValue) {
+            oldNode.setAttributeNS(attrNamespaceURI, attrName, attrValue)
+          }
+        } else {
+          if (!oldNode.hasAttribute(attrName)) {
+            oldNode.setAttribute(attrName, attrValue)
+          } else {
+            fromValue = oldNode.getAttribute(attrName)
+            if (fromValue !== attrValue) {
+              // apparently values are always cast to strings, ah well
+              if (attrValue === 'null' || attrValue === 'undefined') {
+                oldNode.removeAttribute(attrName)
+              } else {
+                oldNode.setAttribute(attrName, attrValue)
+              }
+            }
+          }
+        }
+      }
+
+      // Remove any extra attributes found on the original DOM element that
+      // weren't found on the target element.
+      for (var j = oldAttrs.length - 1; j >= 0; --j) {
+        attr = oldAttrs[j]
+        if (attr.specified !== false) {
+          attrName = attr.name
+          attrNamespaceURI = attr.namespaceURI
+
+          if (attrNamespaceURI) {
+            attrName = attr.localName || attrName
+            if (!newNode.hasAttributeNS(attrNamespaceURI, attrName)) {
+              oldNode.removeAttributeNS(attrNamespaceURI, attrName)
+            }
+          } else {
+            if (!newNode.hasAttributeNS(null, attrName)) {
+              oldNode.removeAttribute(attrName)
+            }
+          }
+        }
+      }
+    }
+
+    function copyEvents (newNode, oldNode) {
+      for (var i = 0; i < eventsLength; i++) {
+        var ev = events[i]
+        if (newNode[ev]) {           // if new element has a whitelisted attribute
+          oldNode[ev] = newNode[ev]  // update existing element
+        } else if (oldNode[ev]) {    // if existing element has it and new one doesnt
+          oldNode[ev] = undefined    // remove it from existing element
+        }
+      }
+    }
+
+    function updateOption (newNode, oldNode) {
+      updateAttribute(newNode, oldNode, 'selected')
+    }
+
+    // The "value" attribute is special for the <input> element since it sets the
+    // initial value. Changing the "value" attribute without changing the "value"
+    // property will have no effect since it is only used to the set the initial
+    // value. Similar for the "checked" attribute, and "disabled".
+    function updateInput (newNode, oldNode) {
+      var newValue = newNode.value
+      var oldValue = oldNode.value
+
+      updateAttribute(newNode, oldNode, 'checked')
+      updateAttribute(newNode, oldNode, 'disabled')
+
+      // The "indeterminate" property can not be set using an HTML attribute.
+      // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox
+      if (newNode.indeterminate !== oldNode.indeterminate) {
+        oldNode.indeterminate = newNode.indeterminate
+      }
+
+      // Persist file value since file inputs can't be changed programatically
+      if (oldNode.type === 'file') return
+
+      if (newValue !== oldValue) {
+        oldNode.setAttribute('value', newValue)
+        oldNode.value = newValue
+      }
+
+      if (newValue === 'null') {
+        oldNode.value = ''
+        oldNode.removeAttribute('value')
+      }
+
+      if (!newNode.hasAttributeNS(null, 'value')) {
+        oldNode.removeAttribute('value')
+      } else if (oldNode.type === 'range') {
+        // this is so elements like slider move their UI thingy
+        oldNode.value = newValue
+      }
+    }
+
+    function updateTextarea (newNode, oldNode) {
+      var newValue = newNode.value
+      if (newValue !== oldNode.value) {
+        oldNode.value = newValue
+      }
+
+      if (oldNode.firstChild && oldNode.firstChild.nodeValue !== newValue) {
+        // Needed for IE. Apparently IE sets the placeholder as the
+        // node value and vise versa. This ignores an empty update.
+        if (newValue === '' && oldNode.firstChild.nodeValue === oldNode.placeholder) {
+          return
+        }
+
+        oldNode.firstChild.nodeValue = newValue
+      }
+    }
+
+    function updateAttribute (newNode, oldNode, name) {
+      if (newNode[name] !== oldNode[name]) {
+        oldNode[name] = newNode[name]
+        if (newNode[name]) {
+          oldNode.setAttribute(name, '')
+        } else {
+          oldNode.removeAttribute(name)
+        }
+      }
+    }
+    return morph;
+})();
+
 
 Modulo.adapters = {
     templating: {
@@ -444,6 +608,7 @@ Modulo.adapters = {
             const opts = {
                 getNodeKey: el => el.getAttribute && el.getAttribute('key'),
                 onBeforeElChildrenUpdated: (fromEl, toEl) => {
+                    // TODO: Possibly add directives here-ish
                     return !toEl.tagName.includes('-');
                 },
                 childrenOnly: true,
@@ -455,6 +620,17 @@ Modulo.adapters = {
                     morphdom(component, `<div>${html}</div>`, opts);
                 }
             };
+        },
+        nanomorph: () => (component, html) => {
+            if (!component.isMounted) {
+                component.innerHTML = html;
+                return;
+            }
+            const frag = new globals.DocumentFragment();
+            const div = globals.document.createElement('div');
+            div.innerHTML = html;
+            frag.append(div);
+            nanomorph(frag.firstChild, component);
         },
     },
 };
@@ -469,7 +645,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         assert(name, 'Name must be given.');
         this.loader = loader;
         this.options = options;
-        this.baseRenderObj = new Modulo.DeepMap();
+        this.baseRenderObj = new Modulo.TaggedObjectMap();
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
         Modulo.ComponentFactory.registerInstance(this);
@@ -481,7 +657,10 @@ Modulo.ComponentFactory = class ComponentFactory {
         const results = [];
         for (const [partName, partOptionsArr] of Object.entries(this.options)) {
             for (const partOptions of partOptionsArr) {
-                const cPart = Modulo.Loader.componentParts[partName];
+                const cPart = Modulo.cparts.get(partName);
+                if (!cPart) {
+                    console.log('this is unknown cpart', partName);
+                }
                 results.push({cPart, partOptions});
             }
         }
@@ -490,9 +669,9 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     createClass() {
         const {fullName} = this;
-        const {reconciliationEngine = 'none'} = this.options;
+        const {reconciliationEngine = 'nanomorph'} = this.options;
         const reconcile = Modulo.adapters.reconciliation[reconciliationEngine]();
-        return class CustomComponent extends ModuloComponent {
+        return class CustomComponent extends Modulo.Element {
             get factory() {
                 return Modulo.ComponentFactory.instances.get(fullName);
             }
@@ -506,7 +685,7 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 }
 
-class ModuloComponent extends HTMLElement {
+Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
         this.componentParts = [];
@@ -515,11 +694,12 @@ class ModuloComponent extends HTMLElement {
     }
 
     initialize() {
-        this.name = 'component'; // Used by lifecycle
+        this.name = 'element'; // Used by lifecycle // TODO: Replace with lifecycleName
         this.fullName = this.factory.fullName;
         this.isMounted = false;
-        this.isModuloComponent = true; // used when finding parent
-        this.initRenderObj = new Modulo.DeepMap(this.factory.baseRenderObj);
+        this.isModuloElement = true; // used when finding parent
+        this.initRenderObj = new Modulo.TaggedObjectMap(this.factory.baseRenderObj);
+        // this.cparts = new Modulo.TaggedObjectMap();
     }
 
     constructParts(isReload=false) {
@@ -528,6 +708,7 @@ class ModuloComponent extends HTMLElement {
         for (const {cPart, partOptions} of this.factory.getCParts()) {
             const instance = new cPart(this, partOptions);
             this.componentParts.push(instance);
+            // this.cparts.set(cPart.name, instance);
 
             if (instance.reloadCallback) {
                 // Trigger any custom reloading code
@@ -544,40 +725,39 @@ class ModuloComponent extends HTMLElement {
         return this.componentParts.find(({name}) => name === searchName);
     }
 
-    updateCallback(renderObj) {
-        this.clearEvents();
-        const newContents = renderObj.get('template.renderedOutput', '');
-        this.reconcile(this, newContents);
-        this.rewriteEvents();
-    }
-
-    mergeCallback(newData) {
-        Object.assign(this, newData);
+    applyDirectives(directives) {
+        for (const args of directives) {
+            const {setUp, tearDown, el, rawName, hasRun, value, dName} = args;
+            if (!setUp) {
+                console.error('TMP Skipping:', dName, rawName, value);
+                continue;
+            }
+            // TODO fix this with truly predictable context
+            args.resolutionContext = this.moduloRenderContext || getFirstModuloAncestor(this) || this; // INCORRECT
+            if (hasRun) {
+                if (!tearDown) {
+                    console.error('TMP NO TEAR DOWN ERR:', rawName);
+                }
+                tearDown(args);
+            }
+            args.hasRun = true;
+            setUp(args);
+            /*
+            if (setUp) {
+                el.onload = setUp.bind(thisContext, [args]);
+            }
+            if (tearDown) {
+                el.onunload = tearDown.bind(thisContext, [args]);
+            }
+            */
+        }
     }
 
     rerender() {
         // Calls all the LifeCycle functions in order
-        this.renderObj = new Modulo.DeepMap(this.getCurrentRenderObj());
-        // TODO: this.renderObj.set('', this.parts); // Flatten part objects into render obj
+        this.renderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
         this.lifecycle('prepare', 'render', 'update', 'updated');
         this.renderObj = null; // rendering is over, set to null
-    }
-
-    handleEvent(func, ev, payload) {
-        this.lifecycle('event');
-        func.call(this, ev, payload);
-        this.lifecycle('eventCleanup');
-    }
-
-    rerenderOnce() {
-        if (this._rerenderTimeout) {
-            return false;
-        }
-        this._rerenderTimeout = globals.setTimeout(() => {
-            this.rerender();
-            this._rerenderTimeout = null;
-        }, 0);
-        return true;
     }
 
     lifecycle(...names) {
@@ -591,9 +771,7 @@ class ModuloComponent extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
     resolveValue(value) {
-        // ^-- Shouldn't be necessary, should always know if using renderObj
-        // or initRenderObj
-        return this.getCurrentRenderObj().get(value);
+        return this.getCurrentRenderObj().resolve(value);
     }
 
     resolveAttributeName(name) {
@@ -605,45 +783,13 @@ class ModuloComponent extends HTMLElement {
         return null;
     }
 
-    rewriteEvents() {
-        const elements = this.querySelectorAll(Modulo.ON_EVENT_SELECTOR);
-        this.clearEvents(); // just in case, also setup events array
-        for (const el of elements) {
-            for (const name of el.getAttributeNames()) {
-                const eventName = name.slice(0, -1);
-                if (!Modulo.ON_EVENTS.has(eventName)) {
-                    continue;
-                }
-                assert(name.endsWith(':'), 'Events must be resolved attr');
-                const listener = (ev) => {
-                    const value = el.getAttribute(name);
-                    const func = this.getCurrentRenderObj().get(value);
-                    assert(func, `Bad ${name}, ${value} is ${func}`);
-                    const payloadAttr = `${eventName}.payload`;
-                    const payload = el.hasAttribute(payloadAttr) ?
-                        el.getAttribute(payloadAttr) : el.value;
-                    this.handleEvent(func, ev, payload);
-                };
-                el.addEventListener(eventName.slice(2), listener);
-                this.events.push([el, eventName.slice(2), listener]);
-            }
-        }
-    }
-
-    clearEvents() {
-        for (const [el, eventName, func] of (this.events || [])) {
-            el.removeEventListener(eventName, func);
-        }
-        this.events = [];
-    }
-
     connectedCallback() {
         // TODO: Properly determine the render context component
         this.moduloRenderContext = getFirstModuloAncestor(this); // INCORRECT
         // Note: For testability, constructParts is invoked on first mount,
         // before initialize.  This is so the hacky "fake-upgrade" for custom
         // components works for the automated tests. Logically, it should
-        // probably be invoked in the constructor
+        // probably be invoked in the constructor.
         this.constructParts();
         this.lifecycle('initialized')
         this.rerender();
@@ -665,24 +811,80 @@ Modulo.ComponentPart = class ComponentPart {
         this.content = options.content;
     }
 
-    mergeCallback(newData) {
-        Object.assign(this, newData);
-    }
-
     get name() {
         return this.constructor.name;
     }
 }
 
 Modulo.parts = {};
+Modulo.parts.Component = class Component extends Modulo.ComponentPart {
+    static name = 'component';
+    prepareCallback() {
+        // TODO shouldn't have to do this ---v
+        return {
+            eventMount: this.eventMount.bind(this),
+            eventUnmount: this.eventUnmount.bind(this),
+            resolveMount: this.resolveMount.bind(this),
+            resolveUnmount: this.resolveUnmount.bind(this),
+        };
+    }
+
+    updateCallback(renderObj) {
+        const {component} = this;
+        const newContents = renderObj.get('template').renderedOutput || '';
+        component.reconcile(component, newContents);
+        const directives = Modulo.collectDirectives(component, component);
+        component.applyDirectives(directives);
+    }
+
+    handleEvent(func, ev, payload) {
+        this.component.lifecycle('event');
+        func.call(this.component, ev, payload);
+        this.component.lifecycle('eventCleanup');
+    }
+
+    eventMount(info) {
+        const {el, value, attrName, rawName} = info;
+        el.getAttr = el.getAttr || el.getAttribute;
+        const listener = (ev) => {
+            const func = el.getAttr(attrName, el.getAttr(rawName));
+            assert(func, `Bad ${attrName}, ${value} is ${func}`);
+            const payload = el.getAttr(`${attrName}.payload`, el.value);
+            this.handleEvent(func, ev, payload);
+        };
+        info.listener = listener;
+        el.addEventListener(attrName, listener);
+    }
+
+    eventUnmount({attrName, listener}) {
+        el.removeEventListener(attrName, listener);
+    }
+
+    resolveMount({el, value, attrName, resolutionContext}) {
+        const resolvedValue = resolutionContext.resolveValue(value);
+        el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
+        el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
+    }
+    resolveUnmount({el, value}) {
+        el.attrs = {};
+    }
+}
+Modulo.cparts.set('component', Modulo.parts.Component);
 
 Modulo.parts.Props = class Props extends Modulo.ComponentPart {
     static name = 'props';
     static factoryCallback({options}, {componentClass}, renderObj) {
+        // untested / daedcode ---v
         componentClass.observedAttributes = Object.keys(options);
     }
     initializedCallback(renderObj) {
         return this.buildProps();
+    }
+    copyMount({el}) {
+        // change to "this.element"
+        for (const attr of this.component.getAttributeNames()) {
+            el.setAttribute(attr, this.component.getAttribute(attr));
+        }
     }
     buildProps() {
         // old todo: This logic is bad. There needs to be a concept of...
@@ -704,11 +906,10 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
         return props;
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Props);
+Modulo.cparts.set('props', Modulo.parts.Props);
 
 Modulo.parts.Style = class Style extends Modulo.ComponentPart {
     static name = 'style';
-    static upgradesFrom = ['style'];
     static factoryCallback({content}, factory, renderObj) {
         const {fullName} = factory;
         const id = `${fullName}_style`;
@@ -721,31 +922,29 @@ Modulo.parts.Style = class Style extends Modulo.ComponentPart {
         elem.textContent = content;
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Style);
+Modulo.cparts.set('style', Modulo.parts.Style);
 
 
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
-    static upgradesFrom = ['template'];
     static factoryCallback(opts, factory, renderObj) {
-        const {templatingEngine = 'Backtick'} = renderObj.get('template.options', {});
+        const {templatingEngine = 'Backtick'} = renderObj.get('template').options || {};
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
     }
     renderCallback(renderObj) {
-        const compiledTemplate = renderObj.get('template.compiledTemplate');
+        const compiledTemplate = renderObj.get('template').compiledTemplate;
         const context = renderObj.toObject();
         const result = compiledTemplate(context);
         return {renderedOutput: result};
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Template);
+Modulo.cparts.set('template', Modulo.parts.Template);
 
 
 Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     static name = 'script';
-    static upgradesFrom = ['script'];
 
     static getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
@@ -771,24 +970,30 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     }
 
     static factoryCallback(partOptions, factory, renderObj) {
-        const scriptContextDefaults = {...renderObj.toObject(), Modulo};
+        //const scriptContextDefaults = {...renderObj.toObject(), Modulo};
+        const scriptContextDefaults = renderObj.toObject();
         const c = partOptions.content || '';
         const localVars = Object.keys(scriptContextDefaults);
+        localVars.push('element'); // add in element as a local var
+        localVars.push('parent'); // add in access to previous versions of renderObj // TODO: finish, currently dead code
         const wrappedJS = this.wrapJavaScriptContext(c, localVars);
+        return (new Function('Modulo', wrappedJS)).call(null, Modulo);
+        //return (new Function(wrappedJS)).call(null);
         return scopedEval(null, {}, wrappedJS);
         return scopedEval(null, scriptContextDefaults, wrappedJS);
     }
 
-    eventCallback() {
+    eventCallback(renderObj) {
         // Make sure that the local variables are all properly set
-        const renderObj = this.component.getCurrentRenderObj();
         const script = renderObj.get('script');
         for (const part of this.component.componentParts) {
             script.setLocalVariable(part.name, part);
         }
+        script.setLocalVariable('element', this.component);
+        script.setLocalVariable('component', this.component);
     }
 }
-Modulo.Loader.registerComponentPart(Modulo.parts.Script);
+Modulo.cparts.set('script', Modulo.parts.Script);
 
 Modulo.parts.State = class State extends Modulo.ComponentPart {
     static name = 'state';
@@ -797,7 +1002,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         this.rawDefaults = renderObj.get('state').options || {};
         if (!this.data) {
-            this.data = simplifyResolvedLiterals(this.rawDefaults); // TODO: Make configurable, switch to DeepMap
+            this.data = simplifyResolvedLiterals(this.rawDefaults);
         }
     }
 
@@ -825,22 +1030,14 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
                 this.set(name, this[name]); // update
             }
         }
+        // ToDo: Clean this up, maybe have data be what's returned for
+        // prepareEventCallback, just like with prepareCallback?
     }
 
-    ghostCreatedCallback(ghostElem) {
-        this.ghostElem = ghostElem;
-        for (const [key, value] of Object.entries(this.rawDefaults)) {
-            ghostElem.setAttribute(key, value);
-        }
-    }
-    ghostAttributeMutedCallback(ghostElem) {
-        const data = parseAttrs(ghostElem);
-        this.data = Object.assign({}, this.data, data);
-        this.component.rerender();
-    }
     get(key) {
         return this.data[key];
     }
+
     set(key, value) {
         const data = {[key]: value};
         this.data = Object.assign({}, this.data, data);
@@ -854,11 +1051,11 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
             this.ghostElem.setAttribute(key, value);
         }
     }
-}
-Modulo.Loader.registerComponentPart(Modulo.parts.State);
 
-Modulo.registry.set(
-    'middleware',
+}
+Modulo.cparts.set('state', Modulo.parts.State);
+
+Modulo.middleware.set(
     'load_template_after',
     function rewriteComponentNamespace(node, loader, loadingObj, info) {
         let content = info.content || '';
@@ -867,8 +1064,7 @@ Modulo.registry.set(
     },
 );
 
-Modulo.registry.set(
-    'middleware',
+Modulo.middleware.set(
     'load_style_after',
     function prefixAllSelectors(node, loader, loadingObj, info) {
         const {name} = loadingObj.get('component')[0];
@@ -891,7 +1087,6 @@ Modulo.registry.set(
     },
 );
 
-Modulo.Component = ModuloComponent;
 Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
 
 if (typeof module !== 'undefined') { // Node

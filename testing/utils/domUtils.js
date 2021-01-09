@@ -112,7 +112,7 @@ function setupModulo(path = null, includeDebugger = false, html = '') {
         Modulo.globals.defineComponentCallback = (factory) => {
             for (const {el, cls} of Modulo.globals.mockMounted) {
                 //webComponentsUpgrade(dom, el, cls, true);
-                if (!cls.toString().includes('CustomComponent extends ModuloComponent')) {
+                if (!cls.toString().includes('CustomComponent extends Modulo.Element')) {
                     continue;
                 }
                 const instance = new cls();

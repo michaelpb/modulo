@@ -28,6 +28,7 @@ docs/build
 *.pyo
 *.swp
 *.swo
+*.swn
 *.po
 *.egg*
 *.log

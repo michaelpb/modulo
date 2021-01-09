@@ -106,7 +106,7 @@ function getFirstModuloAncestor(elem) {
     // Walk up tree to first DOM node that is a modulo component
     const node = elem.parentNode;
     return !node ? null : (
-        node.isModuloComponent ? node : getFirstModuloAncestor(node)
+        node.isModuloElement ? node : getFirstModuloAncestor(node)
     );
 }
 
