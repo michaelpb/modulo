@@ -401,7 +401,7 @@ const nanomorph = (function () {
       var nodeType = newNode.nodeType
       var nodeName = newNode.nodeName
 
-      if (nodeType === ELEMENT_NODE) {
+      if (nodeType === ELEMENT_NODE && oldNode.nodeType === ELEMENT_NODE) {
         copyAttrs(newNode, oldNode)
       }
 
@@ -418,6 +418,21 @@ const nanomorph = (function () {
       else if (nodeName === 'TEXTAREA') updateTextarea(newNode, oldNode)
 
       copyEvents(newNode, oldNode)
+
+      if (oldNode.childNodes && newNode.childNodes && newNode.append) {
+          for (let i = 0; i < oldNode.childNodes.length; i++) {
+              let oldNodeChild = oldNode.childNodes[i];
+              let newNodeChild = newNode.childNodes[i];
+              if (newNodeChild) {
+                  console.log('morphing child');
+                  morph(newNodeChild, oldNodeChild);
+              } else {
+                  console.log('appending child');
+                  console.log('this is newNode', newNode);
+                  newNode.append(oldNodeChild);
+              }
+          }
+      }
     }
 
     function copyAttrs (newNode, oldNode) {
@@ -626,11 +641,16 @@ Modulo.adapters = {
                 component.innerHTML = html;
                 return;
             }
-            const frag = new globals.DocumentFragment();
-            const div = globals.document.createElement('div');
-            div.innerHTML = html;
-            frag.append(div);
-            nanomorph(frag.firstChild, component);
+            //const frag = new globals.DocumentFragment();
+            //const div = globals.document.createElement('div');
+            //div.innerHTML = html;
+            //frag.append(div);
+            const parser = new globals.DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newDomElem = doc.body;
+            //console.log('this is frag', frag.firstChild.innerHTML);
+            //component.innerHTML = frag.firstChild.innerHTML;
+            nanomorph(component, newDomElem);
         },
     },
 };
@@ -669,7 +689,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     createClass() {
         const {fullName} = this;
-        const {reconciliationEngine = 'nanomorph'} = this.options;
+        const {reconciliationEngine = 'setdom'} = this.options;
         const reconcile = Modulo.adapters.reconciliation[reconciliationEngine]();
         return class CustomComponent extends Modulo.Element {
             get factory() {
