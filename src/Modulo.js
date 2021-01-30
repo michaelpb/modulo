@@ -247,6 +247,7 @@ Modulo.cparts = new Map();
 Modulo.directiveShortcuts = new Map();
 Modulo.directiveShortcuts.set(/^@/, 'event');
 Modulo.directiveShortcuts.set(/:$/, 'resolve');
+//Modulo.directiveShortcuts.set(/\.$/, 'json'); // idea for JSON literals
 
 Modulo.Loader = class Loader extends HTMLElement {
     static defineCoreCustomElements() {
@@ -254,7 +255,7 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
     constructor(...args) {
-        super()
+        super();
         this.initialize.apply(this, args);
     }
 
@@ -379,218 +380,9 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 }
 
-const nanomorph = (function () {
-    var events = [
-      'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
-      'onmousemove', 'onmouseout', 'onmouseenter', 'onmouseleave',
-      'ontouchcancel', 'ontouchend', 'ontouchmove', 'ontouchstart',
-      'ondragstart', 'ondrag', 'ondragenter', 'ondragleave', 'ondragover',
-      'ondrop', 'ondragend', 'onkeydown', 'onkeypress', 'onkeyup', 'onunload',
-      'onabort', 'onerror', 'onresize', 'onscroll', 'onselect', 'onchange',
-      'onsubmit', 'onreset', 'onfocus', 'onblur', 'oninput', 'oncontextmenu',
-      'onfocusin', 'onfocusout'
-    ]
-    var eventsLength = events.length
-
-    var ELEMENT_NODE = 1
-    var TEXT_NODE = 3
-    var COMMENT_NODE = 8
-    // diff elements and apply the resulting patch to the old node
-    // (obj, obj) -> null
-    function morph (newNode, oldNode) {
-      var nodeType = newNode.nodeType
-      var nodeName = newNode.nodeName
-
-      if (nodeType === ELEMENT_NODE && oldNode.nodeType === ELEMENT_NODE) {
-        copyAttrs(newNode, oldNode)
-      }
-
-      if (nodeType === TEXT_NODE || nodeType === COMMENT_NODE) {
-        if (oldNode.nodeValue !== newNode.nodeValue) {
-          oldNode.nodeValue = newNode.nodeValue
-        }
-      }
-
-      // Some DOM nodes are weird
-      // https://github.com/patrick-steele-idem/morphdom/blob/master/src/specialElHandlers.js
-      if (nodeName === 'INPUT') updateInput(newNode, oldNode)
-      else if (nodeName === 'OPTION') updateOption(newNode, oldNode)
-      else if (nodeName === 'TEXTAREA') updateTextarea(newNode, oldNode)
-
-      copyEvents(newNode, oldNode)
-
-      if (oldNode.childNodes && newNode.childNodes && newNode.append) {
-          for (let i = 0; i < oldNode.childNodes.length; i++) {
-              let oldNodeChild = oldNode.childNodes[i];
-              let newNodeChild = newNode.childNodes[i];
-              if (newNodeChild) {
-                  console.log('morphing child');
-                  morph(newNodeChild, oldNodeChild);
-              } else {
-                  console.log('appending child');
-                  console.log('this is newNode', newNode);
-                  newNode.append(oldNodeChild);
-              }
-          }
-      }
-    }
-
-    function copyAttrs (newNode, oldNode) {
-      var oldAttrs = oldNode.attributes
-      var newAttrs = newNode.attributes
-      var attrNamespaceURI = null
-      var attrValue = null
-      var fromValue = null
-      var attrName = null
-      var attr = null
-
-      for (var i = newAttrs.length - 1; i >= 0; --i) {
-        attr = newAttrs[i]
-        attrName = attr.name
-        attrNamespaceURI = attr.namespaceURI
-        attrValue = attr.value
-        if (attrNamespaceURI) {
-          attrName = attr.localName || attrName
-          fromValue = oldNode.getAttributeNS(attrNamespaceURI, attrName)
-          if (fromValue !== attrValue) {
-            oldNode.setAttributeNS(attrNamespaceURI, attrName, attrValue)
-          }
-        } else {
-          if (!oldNode.hasAttribute(attrName)) {
-            oldNode.setAttribute(attrName, attrValue)
-          } else {
-            fromValue = oldNode.getAttribute(attrName)
-            if (fromValue !== attrValue) {
-              // apparently values are always cast to strings, ah well
-              if (attrValue === 'null' || attrValue === 'undefined') {
-                oldNode.removeAttribute(attrName)
-              } else {
-                oldNode.setAttribute(attrName, attrValue)
-              }
-            }
-          }
-        }
-      }
-
-      // Remove any extra attributes found on the original DOM element that
-      // weren't found on the target element.
-      for (var j = oldAttrs.length - 1; j >= 0; --j) {
-        attr = oldAttrs[j]
-        if (attr.specified !== false) {
-          attrName = attr.name
-          attrNamespaceURI = attr.namespaceURI
-
-          if (attrNamespaceURI) {
-            attrName = attr.localName || attrName
-            if (!newNode.hasAttributeNS(attrNamespaceURI, attrName)) {
-              oldNode.removeAttributeNS(attrNamespaceURI, attrName)
-            }
-          } else {
-            if (!newNode.hasAttributeNS(null, attrName)) {
-              oldNode.removeAttribute(attrName)
-            }
-          }
-        }
-      }
-    }
-
-    function copyEvents (newNode, oldNode) {
-      for (var i = 0; i < eventsLength; i++) {
-        var ev = events[i]
-        if (newNode[ev]) {           // if new element has a whitelisted attribute
-          oldNode[ev] = newNode[ev]  // update existing element
-        } else if (oldNode[ev]) {    // if existing element has it and new one doesnt
-          oldNode[ev] = undefined    // remove it from existing element
-        }
-      }
-    }
-
-    function updateOption (newNode, oldNode) {
-      updateAttribute(newNode, oldNode, 'selected')
-    }
-
-    // The "value" attribute is special for the <input> element since it sets the
-    // initial value. Changing the "value" attribute without changing the "value"
-    // property will have no effect since it is only used to the set the initial
-    // value. Similar for the "checked" attribute, and "disabled".
-    function updateInput (newNode, oldNode) {
-      var newValue = newNode.value
-      var oldValue = oldNode.value
-
-      updateAttribute(newNode, oldNode, 'checked')
-      updateAttribute(newNode, oldNode, 'disabled')
-
-      // The "indeterminate" property can not be set using an HTML attribute.
-      // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox
-      if (newNode.indeterminate !== oldNode.indeterminate) {
-        oldNode.indeterminate = newNode.indeterminate
-      }
-
-      // Persist file value since file inputs can't be changed programatically
-      if (oldNode.type === 'file') return
-
-      if (newValue !== oldValue) {
-        oldNode.setAttribute('value', newValue)
-        oldNode.value = newValue
-      }
-
-      if (newValue === 'null') {
-        oldNode.value = ''
-        oldNode.removeAttribute('value')
-      }
-
-      if (!newNode.hasAttributeNS(null, 'value')) {
-        oldNode.removeAttribute('value')
-      } else if (oldNode.type === 'range') {
-        // this is so elements like slider move their UI thingy
-        oldNode.value = newValue
-      }
-    }
-
-    function updateTextarea (newNode, oldNode) {
-      var newValue = newNode.value
-      if (newValue !== oldNode.value) {
-        oldNode.value = newValue
-      }
-
-      if (oldNode.firstChild && oldNode.firstChild.nodeValue !== newValue) {
-        // Needed for IE. Apparently IE sets the placeholder as the
-        // node value and vise versa. This ignores an empty update.
-        if (newValue === '' && oldNode.firstChild.nodeValue === oldNode.placeholder) {
-          return
-        }
-
-        oldNode.firstChild.nodeValue = newValue
-      }
-    }
-
-    function updateAttribute (newNode, oldNode, name) {
-      if (newNode[name] !== oldNode[name]) {
-        oldNode[name] = newNode[name]
-        if (newNode[name]) {
-          oldNode.setAttribute(name, '')
-        } else {
-          oldNode.removeAttribute(name)
-        }
-      }
-    }
-    return morph;
-})();
-
-
 Modulo.adapters = {
     templating: {
-        Backtick: () => str => {
-            // TODO: Need to clean this up
-            let html = JSON.stringify(str).replace(/`/g, "\`").slice(1, -1);
-            html = html.replace(/&amp;/g, '&'); // probably not needed
-            const code = `return \`${html.trim()}\`;`
-            return context => scopedEval(null, (context || {}), code);
-        },
-        TinyTiny: () => {
-            assert(globals.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
-            return globals.TinyTiny;
-        },
+        ModuloTemplate: () => text => ctx => new Modulo.Template(text).render(ctx),
     },
     reconciliation: {
         none: () => (component, html) => {
@@ -636,22 +428,6 @@ Modulo.adapters = {
                 }
             };
         },
-        nanomorph: () => (component, html) => {
-            if (!component.isMounted) {
-                component.innerHTML = html;
-                return;
-            }
-            //const frag = new globals.DocumentFragment();
-            //const div = globals.document.createElement('div');
-            //div.innerHTML = html;
-            //frag.append(div);
-            const parser = new globals.DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newDomElem = doc.body;
-            //console.log('this is frag', frag.firstChild.innerHTML);
-            //component.innerHTML = frag.firstChild.innerHTML;
-            nanomorph(component, newDomElem);
-        },
     },
 };
 
@@ -689,7 +465,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     createClass() {
         const {fullName} = this;
-        const {reconciliationEngine = 'setdom'} = this.options;
+        const {reconciliationEngine = 'none'} = this.options;
         const reconcile = Modulo.adapters.reconciliation[reconciliationEngine]();
         return class CustomComponent extends Modulo.Element {
             get factory() {
@@ -948,7 +724,7 @@ Modulo.cparts.set('style', Modulo.parts.Style);
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
     static factoryCallback(opts, factory, renderObj) {
-        const {templatingEngine = 'Backtick'} = renderObj.get('template').options || {};
+        const {templatingEngine = 'ModuloTemplate'} = renderObj.get('template').options || {};
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
@@ -1106,6 +882,153 @@ Modulo.middleware.set(
         info.content = content;
     },
 );
+
+// ModuloTemplate
+const defaultOptions = {
+    modeTokens: ['{% %}', '{{ }}', '{# #}'],
+    opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not',
+    opAliases: {
+        'is': 'X === Y',
+        'is not': 'X !== Y',
+        'not': '!(Y)',
+        'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
+    },
+};
+
+defaultOptions.modes = {
+    '{%': (text, tmplt, stack) => {
+        const tTag = text.trim().split(' ')[0];
+        const tagFunc = tmplt.tags[tTag];
+        if (stack.length && tTag === stack[stack.length - 1].close) {
+            return stack.pop().end; // Closing tag, return it's end code
+        } else if (!tagFunc) { // Undefined template tag
+            throw new Error(`Unknown template tag "${tTag}": ${text}`);
+        } // Normal opening tag
+        const result = tagFunc(text.slice(tTag.length + 1), tmplt);
+        if (result.end) { // Not self-closing, push to stack
+            stack.push({close: `end${tTag}`, ...result});
+        }
+        return result.start || result;
+    },
+    '{#': (text, tmplt) => {},
+    '{{': (text, tmplt) => `OUT.push(G.escapeHTML(${tmplt.parseExpr(text)}));`,
+    text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
+};
+
+defaultOptions.filters = {
+    upper: s => s.toUpperCase(),
+    lower: s => s.toLowerCase(),
+    escapejs: s => JSON.stringify(s),
+    first: s => s[0],
+    last: s => s[s.length - 1],
+    length: s => s.length,
+    safe: s => Object.assign(new String(s), {safe: true}),
+    join: (s, arg) => s.join(arg),
+    pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+    add: (s, arg) => s + arg,
+    subtract: (s, arg) => s - arg,
+    default: (s, arg) => s || arg,
+    divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+};
+
+defaultOptions.tags = {
+    'if': (text, tmplt) => {
+        const [lHand, op, rHand] = tmplt.parseCondExpr(text);
+        const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
+        const condition = condStructure.replace(/([XY])/g,
+            (k, m) => tmplt.parseExpr(m === 'X' ? lHand : rHand));
+        const start = `if (${condition}){`;
+        return {start, end: '}'};
+    },
+    'else': () => '} else {',
+    'elif': (s, tmplt) => '} else ' + tmplt.tags['if'](s, tmplt).start,
+    'comment': () => ({ start: "/*", end: "*/"}),
+    'for': (text, tmplt) => {
+        // Keeps unique arr ids to get over JS's quirky scoping
+        const arrName = 'ARR' + tmplt.stack.length;
+        const [varExp, arrExp] = text.split(' in ');
+        let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
+        start += `for (var KEY in ${arrName}) {`;
+        const [keyVar, valVar] = varExp.split(',').map(tmplt.parseWord);
+        if (valVar) {
+            start += `CTX.${keyVar}=KEY;`;
+        }
+        start += `CTX.${valVar ? valVar : varExp}=${arrName}[KEY];`;
+        return {start, end: '}'};
+    },
+    'empty': (text, {stack}) => {
+        // Make not_empty be based on nested-ness of tag stack
+        const varName = 'G.FORLOOP_NOT_EMPTY' + stack.length;
+        const oldEndCode = stack.pop().end; // get rid of dangling for
+        const start = `${varName}=true; ${oldEndCode} if (!${varName}) {`;
+        const end = `}${varName} = false;`;
+        return {start, end, close: 'endfor'};
+    },
+};
+
+Modulo.Template = class Template {
+    constructor(text, options = {}) {
+        Object.assign(this, defaultOptions, options);
+        this.opAliases['not in'] = `!(${this.opAliases['in']})`;
+        this.renderFunc = this.compile(text);
+    }
+
+    tokenizeText(text) {
+        const re = '(' + this.modeTokens.join('|(').replace(/ +/g, ')(.+?)');
+        return text.split(RegExp(re)).filter(token => token !== undefined);
+    }
+
+    compile(text) {
+        this.stack = []; // Template tag stack
+        let output = 'var OUT=[];';
+        let mode = 'text'; // Start in text mode
+        for (const token of this.tokenizeText(text)) {
+            if (mode) {
+                const result = this.modes[mode](token, this, this.stack);
+                output += result || '';
+            }
+            mode = (mode === 'text') ? null : (mode ? 'text' : token);
+        }
+        return new Function('CTX,G', output + ';return OUT.join("");');
+    }
+
+    render(renderContext) {
+        return this.renderFunc(Object.assign({}, renderContext), this);
+    }
+
+    parseExpr(text) {
+        const filters = text.split('|');
+        let results = this.parseVal(filters.shift());
+        for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
+            const argList = arg ? ',' + this.parseVal(arg) : '';
+            results = `G.filters["${fName}"](${results}${argList})`;
+        }
+        return results;
+    }
+
+    parseCondExpr(text) {
+        const reText = ` (${this.opTokens.split(',').join('|')}) `;
+        return text.split(RegExp(reText));
+    }
+
+    parseVal(s) {
+        s = s.trim();
+        if (s.match(/^('.*'|".*")$/)) { // String literal
+            return JSON.stringify(s.substr(1, s.length - 2));
+        }
+        return s.match(/^\d+$/) ? s : `CTX.${this.parseWord(s)}`
+    }
+
+    parseWord(text) {
+        return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '_';
+    }
+
+    escapeHTML(text = '') {
+        return text.safe ? text : (text + '').replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+}
+
 
 Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
 

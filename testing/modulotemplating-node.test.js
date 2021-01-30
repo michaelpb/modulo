@@ -1,5 +1,5 @@
 const test = require('ava');
-const {Template} = require('../src/ModuloTemplate');
+const {Template} = require('../src/Modulo');
 
 const makeTest = (templateText, context, expected) => t => {
     const template = new Template(templateText);
@@ -259,8 +259,8 @@ test("Test order", t => {
 
 
 /*
-// TODO bug: when variables have portions of things in them, or quotes. need to
-// "consume" as opposed to just blindly split
+// TODO bug-ish: when variables have portions of things in them, or lead with
+// quoted reserved words. Need to "consume" as opposed to just blindly split
 test("Reserved word in quotes BREAKING",
     makeTest([
         '{% if " is not " != "not in" %}0{% endif %}',
