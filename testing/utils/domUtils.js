@@ -1,6 +1,8 @@
 const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
+const {DOMParser} = require('xmldom');
+
 
 // Very simple hacky way to do mocked web-components define
 function webComponentsUpgrade(dom, el, cls, secondTime=false) {
@@ -56,6 +58,7 @@ function setupModulo(path = null, includeDebugger = false, html = '') {
     const htmlCode = path ? fs.readFileSync(path, 'utf-8') : html;
     const dom = new JSDOM(htmlCode);
     Modulo.document = dom.window.document; // for easier testing
+    Modulo.globals.DOMParser = DOMParser;
     Modulo.globals.window =  dom.window;
     Modulo.globals.document =  dom.window.document;
     Modulo.globals.mockConsole = [];

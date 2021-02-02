@@ -2,6 +2,8 @@
   What's done:
     - Directives + syntactic sugar
     - Moving core functionality into Component CPart
+    - Copy ModuloTemplate into this file, make default template language
+    - DONE: Rename ModuloComponent to "ModuloElement" consistently
   Next steps:
     - Figure out "Directive Resolution Context"
         - Best case: Hook into reconciliation / morphdom, do clean-up and
@@ -9,11 +11,10 @@
         - Possibly will need render stack, or will be entirely with morphdom
         - Write tests around this
         - Stop skipping tests that test parents passing down props
-    - Copy ModuloTemplate into this file, make default template language
     - Start use as soon as above is finished to uncover typical usage + bugs
   Refactoring needed:
     - Finish / test / refactor extends
-    - DONE: Rename ModuloComponent to "ModuloElement" consistently
+    - Full documentation (Idea: For templating language, copy from jinja or liquid)
     - Possibly:
       - Refactor Component CPart, maybe rename to "lifecycle" or "base"
       - Remove the [this] -- remove Element / Component "lifecycle" step
@@ -62,7 +63,7 @@ function parseWord(text) {
 
 Modulo.TaggedObjectMap = class TaggedObjectMap extends Map {
     constructor(otherMap) {
-        super(otherMap)
+        super(otherMap);
         this.tags = Object.assign({}, (otherMap || {}).tags || {});
         this.tagNames = Array.from((otherMap || {}).tagNames || {});
     }
@@ -215,9 +216,9 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
     for (const rawName of el.getAttributeNames()) {
         // todo: optimize skipping most elements or attributes
         let name = rawName;
-        for (const [regexp, dSuffix] of Modulo.directiveShortcuts) {
+        for (const [regexp, dir] of Modulo.directiveShortcuts) {
             if (rawName.match(regexp)) {
-                name = `[component.${dSuffix}]` + name.replace(regexp, '');
+                name = `[${dir}]` + name.replace(regexp, '');
             }
         }
         if (!name.startsWith('[')) {
@@ -245,8 +246,9 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
 Modulo.middleware = new Modulo.MultiMap();
 Modulo.cparts = new Map();
 Modulo.directiveShortcuts = new Map();
-Modulo.directiveShortcuts.set(/^@/, 'event');
-Modulo.directiveShortcuts.set(/:$/, 'resolve');
+Modulo.directiveShortcuts.set(/^@/, 'component.event');
+Modulo.directiveShortcuts.set(/:$/, 'component.resolve');
+//Modulo.directiveShortcuts.set(/\.$/, 'json'); // idea for JSON literals
 
 Modulo.Loader = class Loader extends HTMLElement {
     static defineCoreCustomElements() {
@@ -254,7 +256,7 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
     constructor(...args) {
-        super()
+        super();
         this.initialize.apply(this, args);
     }
 
@@ -381,41 +383,16 @@ Modulo.Loader = class Loader extends HTMLElement {
 
 Modulo.adapters = {
     templating: {
-        Backtick: () => str => {
-            // TODO: Need to clean this up
-            let html = JSON.stringify(str).replace(/`/g, "\`").slice(1, -1);
-            html = html.replace(/&amp;/g, '&'); // probably not needed
-            const code = `return \`${html.trim()}\`;`
-            return context => scopedEval(null, (context || {}), code);
-        },
-        TinyTiny: () => {
-            assert(globals.TinyTiny, 'TinyTiny is not loaded at window.TinyTiny');
-            return globals.TinyTiny;
-        },
+        ModuloTemplate: () => text => ctx => new Modulo.Template(text).render(ctx),
     },
     reconciliation: {
         none: () => (component, html) => {
             component.innerHTML = html;
         },
         setdom: () => {
-            assert(globals.setDOM, 'setDOM is not loaded at window.setDOM');
-            function makeAttrString(component) {
-                return Array.from(component.attributes)
-                    .map(({name, value}) => `${name}=${JSON.stringify(value)}`).join(' ');
-            }
-
-            function wrapHTML(component, inner) {
-                const attrs = makeAttrString(component);
-                return `<${component.tagName} ${attrs}>${inner}</${component.tagName}>`;
-            }
-            const {setDOM} = globals;
-            setDOM.KEY = 'key';
+            const reconciler = new Modulo.SetDomReconciler();
             return (component, html) => {
-                if (!component.isMounted) {
-                    component.innerHTML = html;
-                } else {
-                    setDOM(component, wrapHTML(component, html));
-                }
+                reconciler.reconcile(component, html);
             };
         },
         morphdom: () => {
@@ -638,8 +615,6 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         const {component} = this;
         const newContents = renderObj.get('template').renderedOutput || '';
         component.reconcile(component, newContents);
-        const directives = Modulo.collectDirectives(component, component);
-        component.applyDirectives(directives);
     }
 
     handleEvent(func, ev, payload) {
@@ -733,7 +708,7 @@ Modulo.cparts.set('style', Modulo.parts.Style);
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
     static factoryCallback(opts, factory, renderObj) {
-        const {templatingEngine = 'Backtick'} = renderObj.get('template').options || {};
+        const {templatingEngine = 'ModuloTemplate'} = renderObj.get('template').options || {};
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
@@ -891,6 +866,394 @@ Modulo.middleware.set(
         info.content = content;
     },
 );
+
+// ModuloTemplate
+const defaultOptions = {
+    modeTokens: ['{% %}', '{{ }}', '{# #}'],
+    opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not',
+    opAliases: {
+        'is': 'X === Y',
+        'is not': 'X !== Y',
+        'not': '!(Y)',
+        'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
+    },
+};
+
+defaultOptions.modes = {
+    '{%': (text, tmplt, stack) => {
+        const tTag = text.trim().split(' ')[0];
+        const tagFunc = tmplt.tags[tTag];
+        if (stack.length && tTag === stack[stack.length - 1].close) {
+            return stack.pop().end; // Closing tag, return it's end code
+        } else if (!tagFunc) { // Undefined template tag
+            throw new Error(`Unknown template tag "${tTag}": ${text}`);
+        } // Normal opening tag
+        const result = tagFunc(text.slice(tTag.length + 1), tmplt);
+        if (result.end) { // Not self-closing, push to stack
+            stack.push({close: `end${tTag}`, ...result});
+        }
+        return result.start || result;
+    },
+    '{#': (text, tmplt) => {},
+    '{{': (text, tmplt) => `OUT.push(G.escapeHTML(${tmplt.parseExpr(text)}));`,
+    text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
+};
+
+defaultOptions.filters = {
+    upper: s => s.toUpperCase(),
+    lower: s => s.toLowerCase(),
+    escapejs: s => JSON.stringify(s),
+    first: s => s[0],
+    last: s => s[s.length - 1],
+    length: s => s.length,
+    safe: s => Object.assign(new String(s), {safe: true}),
+    join: (s, arg) => s.join(arg),
+    pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+    add: (s, arg) => s + arg,
+    subtract: (s, arg) => s - arg,
+    default: (s, arg) => s || arg,
+    divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+};
+
+defaultOptions.tags = {
+    'if': (text, tmplt) => {
+        const [lHand, op, rHand] = tmplt.parseCondExpr(text);
+        const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
+        const condition = condStructure.replace(/([XY])/g,
+            (k, m) => tmplt.parseExpr(m === 'X' ? lHand : rHand));
+        const start = `if (${condition}){`;
+        return {start, end: '}'};
+    },
+    'else': () => '} else {',
+    'elif': (s, tmplt) => '} else ' + tmplt.tags['if'](s, tmplt).start,
+    'comment': () => ({ start: "/*", end: "*/"}),
+    'for': (text, tmplt) => {
+        // Keeps unique arr ids to get over JS's quirky scoping
+        const arrName = 'ARR' + tmplt.stack.length;
+        const [varExp, arrExp] = text.split(' in ');
+        let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
+        start += `for (var KEY in ${arrName}) {`;
+        const [keyVar, valVar] = varExp.split(',').map(tmplt.parseWord);
+        if (valVar) {
+            start += `CTX.${keyVar}=KEY;`;
+        }
+        start += `CTX.${valVar ? valVar : varExp}=${arrName}[KEY];`;
+        return {start, end: '}'};
+    },
+    'empty': (text, {stack}) => {
+        // Make not_empty be based on nested-ness of tag stack
+        const varName = 'G.FORLOOP_NOT_EMPTY' + stack.length;
+        const oldEndCode = stack.pop().end; // get rid of dangling for
+        const start = `${varName}=true; ${oldEndCode} if (!${varName}) {`;
+        const end = `}${varName} = false;`;
+        return {start, end, close: 'endfor'};
+    },
+};
+
+Modulo.Template = class Template {
+    constructor(text, options = {}) {
+        Object.assign(this, defaultOptions, options);
+        this.opAliases['not in'] = `!(${this.opAliases['in']})`;
+        this.renderFunc = this.compile(text);
+    }
+
+    tokenizeText(text) {
+        const re = '(' + this.modeTokens.join('|(').replace(/ +/g, ')(.+?)');
+        return text.split(RegExp(re)).filter(token => token !== undefined);
+    }
+
+    compile(text) {
+        this.stack = []; // Template tag stack
+        let output = 'var OUT=[];';
+        let mode = 'text'; // Start in text mode
+        for (const token of this.tokenizeText(text)) {
+            if (mode) {
+                const result = this.modes[mode](token, this, this.stack);
+                output += result || '';
+            }
+            mode = (mode === 'text') ? null : (mode ? 'text' : token);
+        }
+        return new Function('CTX,G', output + ';return OUT.join("");');
+    }
+
+    render(renderContext) {
+        return this.renderFunc(Object.assign({}, renderContext), this);
+    }
+
+    parseExpr(text) {
+        const filters = text.split('|');
+        let results = this.parseVal(filters.shift());
+        for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
+            const argList = arg ? ',' + this.parseVal(arg) : '';
+            results = `G.filters["${fName}"](${results}${argList})`;
+        }
+        return results;
+    }
+
+    parseCondExpr(text) {
+        const reText = ` (${this.opTokens.split(',').join('|')}) `;
+        return text.split(RegExp(reText));
+    }
+
+    parseVal(s) {
+        s = s.trim();
+        if (s.match(/^('.*'|".*")$/)) { // String literal
+            return JSON.stringify(s.substr(1, s.length - 2));
+        }
+        return s.match(/^\d+$/) ? s : `CTX.${this.parseWord(s)}`
+    }
+
+    parseWord(text) {
+        return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '_';
+    }
+
+    escapeHTML(text = '') {
+        return text.safe ? text : (text + '').replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+}
+
+// ModuloDomReconcile
+
+// setDOM ------------------
+Modulo.SetDomReconciler = class SetDomReconciler {
+    constructor() {
+        this.KEY = 'key'
+        this.IGNORE = 'modulo-ignore'
+        this.CHECKSUM = 'modulo-checksum'
+        this.KEY_PREFIX = '_set-dom-'
+        this.mockBody = globals.document.implementation.createHTMLDocument('').body;
+        this.componentContext = null;
+    }
+
+    reconcile(component, newHTML) {
+        this.componentContext = component;
+        if (!component.isMounted) {
+            component.innerHTML = newHTML;
+            this.findAndApplyDirectives(component);
+        } else {
+            this.mockBody.innerHTML = `<div>${newHTML}</div>`;
+            this.setChildNodes(component, this.mockBody.firstChild);
+        }
+        this.componentContext = null;
+    }
+
+    findAndApplyDirectives(element) {
+        const directives = Modulo.collectDirectives(this.componentContext, element);
+        this.componentContext.applyDirectives(directives);
+    }
+
+    /**
+    * @private
+    * @description
+    * Updates a specific htmlNode and does whatever it takes to convert it to another one.
+    *
+    * @param {Node} oldNode - The previous HTMLNode.
+    * @param {Node} newNode - The updated HTMLNode.
+    */
+    setNode(oldNode, newNode) {
+        if (oldNode.nodeType !== newNode.nodeType || oldNode.nodeName !== newNode.nodeName) {
+            // We have to fully replace the node --- the tag or type doesn't match
+            //this.dismount(oldNode);
+            oldNode.parentNode.replaceChild(newNode, oldNode)
+            this.mount(newNode);
+        } else if (oldNode.nodeType !== 1) { // 1 === ELEMENT_TYPE
+            // Handle other types of node updates (text/comments/etc).
+            // TODO: Is this if statement a useful optimization..?
+            //if (oldNode.nodeValue !== newNode.nodeValue) {
+            //}
+            oldNode.nodeValue = newNode.nodeValue;
+        } else if (!this.isEqualNode(oldNode, newNode)) {
+            // Update children & attributes
+            this.setChildNodes(oldNode, newNode);
+            this.setAttributes(oldNode.attributes, newNode.attributes);
+            // TODO: do dismounts as necessary
+        }
+    }
+
+    /**
+    * @private
+    * @description
+    * Utility that will update one list of attributes to match another.
+    *
+    * @param {NamedNodeMap} oldAttributes - The previous attributes.
+    * @param {NamedNodeMap} newAttributes - The updated attributes.
+    */
+    setAttributes (oldAttributes, newAttributes) {
+      let i, a, b, ns, name
+
+      // Remove old attributes.
+      for (i = oldAttributes.length; i--;) {
+        a = oldAttributes[i]
+        ns = a.namespaceURI
+        name = a.localName
+        b = newAttributes.getNamedItemNS(ns, name)
+        if (!b) oldAttributes.removeNamedItemNS(ns, name)
+      }
+
+      // Set new attributes.
+      for (i = newAttributes.length; i--;) {
+        a = newAttributes[i]
+        ns = a.namespaceURI
+        name = a.localName
+        b = oldAttributes.getNamedItemNS(ns, name)
+        if (!b) {
+          // Add a new attribute.
+          newAttributes.removeNamedItemNS(ns, name)
+          oldAttributes.setNamedItemNS(a)
+        } else if (b.value !== a.value) {
+          // Update existing attribute.
+          b.value = a.value
+        }
+      }
+    }
+
+    /**
+    * @private
+    * @description
+    * Utility that will nodes childern to match another nodes children.
+    *
+    * @param {Node} oldParent - The existing parent node.
+    * @param {Node} newParent - The new parent node.
+    */
+    setChildNodes (oldParent, newParent) {
+      const keyedNodes = {};
+      let checkOld, oldKey, checkNew, newKey, foundNode
+      let oldNode = oldParent.firstChild
+      let newNode = newParent.firstChild
+      let extra = 0
+
+      // Extract keyed nodes from previous children and keep track of total count.
+      while (oldNode) {
+          extra++
+          checkOld = oldNode
+          oldKey = this.getKey(checkOld)
+          oldNode = oldNode.nextSibling
+
+          if (oldKey) {
+              keyedNodes[oldKey] = checkOld
+          }
+      }
+
+      // Loop over new nodes and perform updates.
+      oldNode = oldParent.firstChild
+      while (newNode) {
+          extra--
+          checkNew = newNode
+          newNode = newNode.nextSibling
+
+          const newKey = this.getKey(checkNew);
+          const foundNode = newKey ? keyedNodes[newKey] : null;
+          if (foundNode) {
+              delete keyedNodes[newKey]
+              // If we have a key and it existed before we move the previous node to the new position if needed and diff it.
+              if (foundNode !== oldNode) {
+                  oldParent.insertBefore(foundNode, oldNode)
+              } else {
+                  oldNode = oldNode.nextSibling
+              }
+
+              this.setNode(foundNode, checkNew)
+          } else if (oldNode) {
+              checkOld = oldNode
+              oldNode = oldNode.nextSibling
+              if (this.getKey(checkOld)) {
+                  // If the old child had a key we skip over it until the end.
+                  oldParent.insertBefore(checkNew, checkOld)
+                  this.mount(checkNew)
+              } else {
+                  // Otherwise we diff the two non-keyed nodes.
+                  this.setNode(checkOld, checkNew)
+              }
+          } else {
+              // Finally if there was no old node we add the new node.
+              oldParent.appendChild(checkNew)
+              this.mount(checkNew)
+          }
+      }
+
+      // Remove old keyed nodes.
+      for (oldKey in keyedNodes) {
+        extra--
+        oldParent.removeChild(this.dismount(keyedNodes[oldKey]))
+      }
+
+      // If we have any remaining unkeyed nodes remove them from the end.
+      while (--extra >= 0) {
+        oldParent.removeChild(this.dismount(oldParent.lastChild))
+      }
+    }
+
+    /**
+    * @private
+    * @description
+    * Utility to try to pull a key out of an element.
+    * Uses 'data-key' if possible and falls back to 'id'.
+    *
+    * @param {Node} node - The node to get the key for.
+    * @return {string|void}
+    */
+    getKey (node) {
+      if (node.nodeType !== 1) return // 1 === ELEMENT_TYPE
+      let key = node.getAttribute(this.KEY) || node.id
+      if (key) return this.KEY_PREFIX + key
+    }
+
+    /**
+    * Checks if nodes are equal using the following by checking if
+    * they are both ignored, have the same checksum, or have the
+    * same contents.
+    *
+    * @param {Node} a - One of the nodes to compare.
+    * @param {Node} b - Another node to compare.
+    */
+    isEqualNode (a, b) {
+      return (
+        // Check if both nodes are ignored.
+        (this.isIgnored(a) && this.isIgnored(b)) ||
+        // Check if both nodes have the same checksum.
+        (this.getCheckSum(a) === this.getCheckSum(b)) ||
+        // Fall back to native isEqualNode check.
+        a.isEqualNode(b)
+      )
+    }
+
+    /**
+    * @private
+    * @description
+    * Utility to try to pull a checksum attribute from an element.
+    * Uses 'data-checksum' or user specified checksum property.
+    *
+    * @param {Node} node - The node to get the checksum for.
+    * @return {string|NaN}
+    */
+    getCheckSum (node) {
+      return node.getAttribute(this.CHECKSUM) || NaN
+    }
+
+    /**
+    * @private
+    * @description
+    * Utility to try to check if an element should be ignored by the algorithm.
+    * Uses 'data-ignore' or user specified ignore property.
+    *
+    * @param {Node} node - The node to check if it should be ignored.
+    * @return {boolean}
+    */
+    isIgnored (node) {
+      return node.getAttribute(this.IGNORE) != null
+    }
+
+    mount (node) {
+        this.findAndApplyDirectives(node);
+        console.log('Mounting happening!');
+        return node;
+    }
+    dismount(node) {
+        return node;
+    }
+}
+// /setDOM ------------------
 
 Modulo.defineAll = () => Modulo.Loader.defineCoreCustomElements();
 

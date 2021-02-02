@@ -57,17 +57,24 @@
 <template mod-component="Todo">
     <template>
         <ol>
-           <li>Testing</li>
-           <button @click:=script.increment>
-              {{ state.num }}
-           </button>
+            {% for item in state.list %}
+                <li>{{ item }}</li>
+            {% endfor %}
+            <li>
+                <input />
+                <button @click:=script.addItem>
+                    Add
+                </button>
+            </li>
         </ol>
     </template>
-    <state num:=1>
-    </state>
+    <state
+        list:='["Milk", "Bread", "Candy"]'
+    ></state>
     <script>
-        function increment() {
-            state.num++;
+        function addItem() {
+            const newList = state.list.concat(['Beer']);
+            state.list = newList;
         }
     </script>
 </template>

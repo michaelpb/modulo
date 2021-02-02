@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "ava": "^3.14.0",
-    "jsdom": "^16.4.0"
+    "jsdom": "^16.4.0",
+    "xmldom": "^0.4.0"
   },
   "repository": {
     "type": "git",

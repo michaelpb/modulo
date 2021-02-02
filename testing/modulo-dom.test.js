@@ -81,6 +81,22 @@ test('Components register click events', t => {
     t.is(component.wasClicked, true);
 });
 
+test('Components register click events after rerendering', t => {
+    const {document} = setupModulo('./testing/assets/loader_test.html');
+    const comps = Array.from(document.querySelectorAll('lib-Counter'));
+    t.is(comps.length, 1);
+    const component = comps[0];
+    component.querySelector('aside').click();
+    t.is(component.wasClicked, true);
+    component.wasClicked = false;
+    component.rerender();
+    t.is(component.wasClicked, false);
+    component.getPart('state').set('num', 10);
+    component.querySelector('aside').click();
+    t.is(component.wasClicked, true);
+});
+
+
 test('Components can alter state during click events', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
     let buttons = Array.from(document.querySelectorAll('button'));
@@ -127,6 +143,10 @@ test.skip('Parent components can pass down functions as props', t => {
     const component = comps[0];
     t.is(component.wasClicked, true);
 });
+
+
+
+
 
 /*
 Tough composition scenarios:
