@@ -112,7 +112,7 @@ test('Components can alter state during click events', t => {
 });
 
 
-test.skip('Components can have other components and namespaces get rewritten', t => {
+test('Components can have other components and namespaces get rewritten', t => {
     const {document} = setupModulo('./testing/assets/composition_test.html');
     const html = strip(document.body.innerHTML);
     t.is(html, strip(`

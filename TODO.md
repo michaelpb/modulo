@@ -3,6 +3,9 @@ Todo notes: 2020-12-20
 - Before official release, make sure well tested, then re-order entire code
   base to sort by lifecycle. Then, I can do literate coding to fully document
   the entire library, for hyper well-documented code.
+    - "Docco" is the name of the literate coding library I forgot:
+    - https://github.com/jashkenas/docco/
+    - "Pycco" is a python clone: https://pycco-docs.github.io/pycco/
 
 ---
 

@@ -18,6 +18,7 @@
 
 <mdu-Hero></mdu-Hero>
 
+
 <div class="Tagline">
     <!--<h1>Modulo.js is a 1000 line <br />JavaScript UI framework</h1>-->
     <h1>A tiny JavaScript UI framework</h1>
@@ -43,6 +44,7 @@
     <section>
         <aside class="TitleAside">
             <h1>Example: ToDo App</h1>
+            <mdu-NestingTest></mdu-NestingTest>
         </aside>
         <aside>
             <mdu-Todo></mdu-Todo>
@@ -62,19 +64,19 @@
 &lt;script src="https://unpkg... TODO"&gt;&lt;/script&gt;
 
 &lt;!-- Define a component named TestThing --&gt;
-&lt;mod-component name="TestThing"&gt;
+&lt;template modulo-component="TestThing"&gt;
     &lt;template&gt;
-        &lt;p&gt;Hello counting world: ${count}&lt;/p&gt;
-        &lt;button onclick:="script.increment"&gt;Increment&lt;/p&gt;
+        &lt;p&gt;Hello counting world: {{ state.num }}&lt;/p&gt;
+        &lt;button @click:=script.increment&gt;Increment&lt;/p&gt;
     &lt;/template&gt;
-    &lt;state num:=10&gt;
-    &lt;/state&gt;
+    &lt;state num:=10
+    &gt;&lt;/state&gt;
     &lt;script&gt;
         function increment() {
             state.num++;
         }
     &lt;/script&gt;
-&lt;/mod-component&gt;
+&lt;/template&gt;
 
 &lt;!-- Now we can use it, anywhere, as often as we want! --&gt;
 &lt;x-TestThing&gt;&lt;/x-TestThing&gt;

@@ -440,9 +440,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         for (const [partName, partOptionsArr] of Object.entries(this.options)) {
             for (const partOptions of partOptionsArr) {
                 const cPart = Modulo.cparts.get(partName);
-                if (!cPart) {
-                    console.log('this is unknown cpart', partName);
-                }
+                assert(cPart, `Unknown cPart: ${partName}`);
                 results.push({cPart, partOptions});
             }
         }
@@ -515,7 +513,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 continue;
             }
             // TODO fix this with truly predictable context
-            args.resolutionContext = this.moduloRenderContext || getFirstModuloAncestor(this) || this; // INCORRECT
+            //args.resolutionContext = this.moduloRenderContext || getFirstModuloAncestor(this) || this; // INCORRECT
+            args.resolutionContext = this;
             if (hasRun) {
                 if (!tearDown) {
                     console.error('TMP NO TEAR DOWN ERR:', rawName);
@@ -645,8 +644,8 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
         el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
     }
-    resolveUnmount({el, value}) {
-        el.attrs = {};
+    resolveUnmount({el, attrName}) {
+        delete el.attrs[attrName];
     }
 }
 Modulo.cparts.set('component', Modulo.parts.Component);
@@ -781,13 +780,34 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     get debugGhost() { return true; }
     initializedCallback(renderObj) {
         this.rawDefaults = renderObj.get('state').options || {};
+        this.boundElements = {};
         if (!this.data) {
             this.data = simplifyResolvedLiterals(this.rawDefaults);
         }
     }
 
+    bindMount({el}) {
+        el.getAttr = el.getAttr || el.getAttribute;
+        const name = el.getAttr('name');
+        assert(name in this.data, `[state.bind]: "${name}" not in state`);
+        const func = () => this.set(name, el.value);
+        const evName = 'keyup'; // eventually
+        this.boundElements[name] = [el, evName, func];
+        el.value = this.data[name];
+        el.addEventListener(evName, func);
+    }
+
+    bindUnmount({elem}) {
+        const name = elem.getAttr('name');
+        const [el, func, evName] = this.boundElements[name];
+        delete this.boundElements[name];
+        el.removeEventListener(evName, func);
+    }
+
     prepareCallback(renderObj) {
         this.initializedCallback(renderObj); // TODO remove this, should not have to
+        this.data.bindMount = this.bindMount.bind(this);// Ugh hack
+        this.data.bindUnmount = this.bindUnmount.bind(this);// Ugh hack
         return this.data;
     }
 
@@ -820,6 +840,10 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
 
     set(key, value) {
         const data = {[key]: value};
+        if (this.boundElements[key]) {
+            const [el, func, evName] = this.boundElements[key];
+            el.value = value;
+        }
         this.data = Object.assign({}, this.data, data);
         this.component.rerender();
         if (this.ghostElem) {
@@ -1023,6 +1047,7 @@ Modulo.SetDomReconciler = class SetDomReconciler {
         this.CHECKSUM = 'modulo-checksum'
         this.KEY_PREFIX = '_set-dom-'
         this.mockBody = globals.document.implementation.createHTMLDocument('').body;
+        //this.componentContextStack = [];
         this.componentContext = null;
     }
 
@@ -1059,7 +1084,7 @@ Modulo.SetDomReconciler = class SetDomReconciler {
             this.mount(newNode);
         } else if (oldNode.nodeType !== 1) { // 1 === ELEMENT_TYPE
             // Handle other types of node updates (text/comments/etc).
-            // TODO: Is this if statement a useful optimization..?
+            // TODO: Is this if statement even a useful optimization..?
             //if (oldNode.nodeValue !== newNode.nodeValue) {
             //}
             oldNode.nodeValue = newNode.nodeValue;
@@ -1123,13 +1148,13 @@ Modulo.SetDomReconciler = class SetDomReconciler {
       let newNode = newParent.firstChild
       let extra = 0
 
-      // Extract keyed nodes from previous children and keep track of total count.
+      // Extract keyed nodes from previous children and keep track of total
+      // count.
       while (oldNode) {
           extra++
           checkOld = oldNode
           oldKey = this.getKey(checkOld)
           oldNode = oldNode.nextSibling
-
           if (oldKey) {
               keyedNodes[oldKey] = checkOld
           }
@@ -1168,7 +1193,9 @@ Modulo.SetDomReconciler = class SetDomReconciler {
           } else {
               // Finally if there was no old node we add the new node.
               oldParent.appendChild(checkNew)
-              this.mount(checkNew)
+              if (checkNew.nodeType === 1) { // 1 === ELEMENT_TYPE
+                  this.mount(checkNew)
+              }
           }
       }
 
@@ -1246,7 +1273,6 @@ Modulo.SetDomReconciler = class SetDomReconciler {
 
     mount (node) {
         this.findAndApplyDirectives(node);
-        console.log('Mounting happening!');
         return node;
     }
     dismount(node) {
