@@ -2,7 +2,6 @@
 
 function isPlainObject(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
-  return Object.prototype.toString.call(obj) === '[object Object]';
 }
 
 Modulo.DeepMap = class DeepMap {
@@ -155,5 +154,63 @@ Modulo.DeepMap = class DeepMap {
         }
         return results;
     }
+}
+
+
+Modulo.TaggedObjectMap = class TaggedObjectMap extends Map {
+    constructor(otherMap) {
+        super(otherMap);
+        this.tags = Object.assign({}, (otherMap || {}).tags || {});
+        this.tagNames = Array.from((otherMap || {}).tagNames || {});
+    }
+
+    get(key) {
+        if (!this.has(key)) {
+            super.set(key, {});
+        }
+        return super.get(key);
+    }
+
+    resolve(key) {
+        return getValue(this.toObject(), key);
+    }
+
+    set(key, value) {
+        // maybe todo: possibly bind objects here (?)
+        super.set(key, Object.assign(value, this.get(key), value));
+    }
+
+    save(tagName) {
+        if (!this.tags) {
+            this.tags = {};
+            this.tagNames = [];
+        }
+        this.tags[tagName] = this.toObject();
+        this.tagNames.push(tagName); // deadcode
+    }
+
+    getTagsSince(tagName) {// deadcode
+        const index = this.tagNames.findIndex(tagName);
+        if (index === -1) {
+            throw Error(`Unknown tagName "${tagName}" for TaggedMap`)
+        }
+        return this.tagNames.slice(index);
+    }
+
+    modifyTag(tagName, key, value) {
+        // Note: This changes how it was in history at the point of tagging,
+        // and possibly the current value too
+        const historicalValue = (this.tags || {})[tagName] || {};
+        const existing = this.get(key);
+        this.set(key, Object.assign(historicalValue, value, existing));
+    }
+
+    toObject() {
+        // Possibly: Need binding here
+        return Object.fromEntries(this);
+    }
+
+    // OKAY, this data type still needs more work. Ultimately, we'll need:
+    //  - For "hot reloading", to set at 'initalized', then replay lifecycle since? ugh
 }
 

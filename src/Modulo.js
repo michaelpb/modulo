@@ -27,6 +27,21 @@ if (typeof HTMLElement === 'undefined') {
 var globals = {HTMLElement};
 var Modulo = {globals};
 
+function tmpRObjCreator(original) {
+    function getValue(obj, path) {
+        return path.split('.').reduce((obj, name) => obj[name], obj);
+    }
+    const renderObj = original ? original.toObject() : {};
+    renderObj.resolve = key => getValue(renderObj, key);
+    //renderObj.get = renderObj.resolve;
+    renderObj.get = key => renderObj[key];
+    renderObj.set = (key, value) => {
+        renderObj[key] = value;
+    };
+    renderObj.toObject = () => Object.assign({}, renderObj); // duplicate
+    return renderObj;
+}
+
 Modulo.MultiMap = class MultiMap extends Map {
     get(key) {
         if (!this.has(key)) {
@@ -44,7 +59,7 @@ Modulo.MultiMap = class MultiMap extends Map {
         // deadcode, todo finish after multimap merge for cleaner extension syntax
         const {name} = value; // works for Functions, need to work for Classes
         assert(name, `Invalid register type "{value}"`);
-        this.set(key, value);
+        this.set(name, value);
     }
     // Idea: Can implement TaggedObjectMap with MultiMap:
     //   - save(tagName) - Savepoints are looping through values,
@@ -53,71 +68,10 @@ Modulo.MultiMap = class MultiMap extends Map {
     //                                      at savepoint[key].length
 }
 
-function getValue(obj, path) {
-    return path.split('.').reduce((obj, name) => obj[name], obj);
-}
 
 function parseWord(text) {
     return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
 }
-
-Modulo.TaggedObjectMap = class TaggedObjectMap extends Map {
-    constructor(otherMap) {
-        super(otherMap);
-        this.tags = Object.assign({}, (otherMap || {}).tags || {});
-        this.tagNames = Array.from((otherMap || {}).tagNames || {});
-    }
-
-    get(key) {
-        if (!this.has(key)) {
-            super.set(key, {});
-        }
-        return super.get(key);
-    }
-
-    resolve(key) {
-        return getValue(this.toObject(), key);
-    }
-
-    set(key, value) {
-        // maybe todo: possibly bind objects here (?)
-        super.set(key, Object.assign(value, this.get(key), value));
-    }
-
-    save(tagName) {
-        if (!this.tags) {
-            this.tags = {};
-            this.tagNames = [];
-        }
-        this.tags[tagName] = this.toObject();
-        this.tagNames.push(tagName); // deadcode
-    }
-
-    getTagsSince(tagName) {// deadcode
-        const index = this.tagNames.findIndex(tagName);
-        if (index === -1) {
-            throw Error(`Unknown tagName "${tagName}" for TaggedMap`)
-        }
-        return this.tagNames.slice(index);
-    }
-
-    modifyTag(tagName, key, value) {
-        // Note: This changes how it was in history at the point of tagging,
-        // and possibly the current value too
-        const historicalValue = (this.tags || {})[tagName] || {};
-        const existing = this.get(key);
-        this.set(key, Object.assign(historicalValue, value, existing));
-    }
-
-    toObject() {
-        // Possibly: Need binding here
-        return Object.fromEntries(this);
-    }
-
-    // OKAY, this data type still needs more work. Ultimately, we'll need:
-    //  - For "hot reloading", to set at 'initalized', then replay lifecycle since? ugh
-}
-
 
 function getFirstModuloAncestor(elem) {
     // Walk up tree to first DOM node that is a modulo component
@@ -178,6 +132,7 @@ function runMiddleware(lifecycleName, cPart, timing, args) {
     }
 }
 
+/*
 function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
     let partsArray = [];
     if (isPlainObject(parts)) {
@@ -206,6 +161,7 @@ function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
         renderObj.save(lifecycleName);
     }
 }
+*/
 
 Modulo.collectDirectives = function collectDirectives(component, el, arr = null) {
     if (!arr) {
@@ -427,12 +383,24 @@ Modulo.ComponentFactory = class ComponentFactory {
         assert(name, 'Name must be given.');
         this.loader = loader;
         this.options = options;
-        this.baseRenderObj = new Modulo.TaggedObjectMap();
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
         Modulo.ComponentFactory.registerInstance(this);
         this.componentClass = this.createClass();
-        runLifecycle('factory', options, this.baseRenderObj, this);
+        //runLifecycle('factory', options, this.baseRenderObj, this);
+        this.runFactoryLifecycle(options);
+    }
+
+    runFactoryLifecycle(parts) {
+        this.baseRenderObj = tmpRObjCreator();
+        for (const [partName, partOptionsArr] of Object.entries(parts)) {
+            const cPart = Modulo.cparts.get(partName);
+            let d = {};
+            for (d of partOptionsArr) {
+                d = cPart.factoryCallback(d, this, this.baseRenderObj) || d;
+            }
+            this.baseRenderObj.set(cPart.name, d);
+        }
     }
 
     getCParts() {
@@ -478,7 +446,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.fullName = this.factory.fullName;
         this.isMounted = false;
         this.isModuloElement = true; // used when finding parent
-        this.initRenderObj = new Modulo.TaggedObjectMap(this.factory.baseRenderObj);
+        this.initRenderObj = tmpRObjCreator(this.factory.baseRenderObj);
+        // this.initRenderObj = new Modulo.TaggedObjectMap(this.factory.baseRenderObj);
         // this.cparts = new Modulo.TaggedObjectMap();
     }
 
@@ -534,23 +503,49 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
     }
 
-    rerender() {
+    rerenderOld() {
         // Calls all the LifeCycle functions in order
-        this.renderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
-        this.lifecycle('prepare', 'render', 'update', 'updated');
+        //this.renderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
+        //this.lifecycle('prepare', 'render', 'update', 'updated');
+        //this.renderObj = null; // rendering is over, set to null
+    }
+
+    rerender() {
+        this.lifecycleNew(['prepare', 'render', 'update', 'updated']);
+    }
+
+    lifecycleNew(lifecycleNames) {
+        // NEW CODE: This is a quick re-implementation of lifecycle
+        this.renderObj = tmpRObjCreator(this.getCurrentRenderObj());
+        // todo: maybe sort cparts ahead of time based on lifecycles?
+        for (const lcMethodName of lifecycleNames) {
+            for (const cPart of this.componentParts) {
+                const method = cPart[lcMethodName + 'Callback'];
+                if (!this.renderObj) {
+                    console.log('lolwut - renderobj is falsy', this.renderObj);
+                    break;
+                }
+                if (method) {
+                    this.renderObj[cPart.name] = method.call(cPart, this.renderObj);
+                } else if (!(cPart.name in this.renderObj)) {
+                    this.renderObj[cPart.name] = cPart;
+                }
+            }
+        }
         this.renderObj = null; // rendering is over, set to null
     }
 
-    lifecycle(...names) {
+    lifecycleOld(...names) {
         const renderObj = this.getCurrentRenderObj();
         for (const name of names) {
-            runLifecycle(name, this.componentParts, renderObj);
+            //runLifecycle(name, this.componentParts, renderObj);
         }
     }
 
     getCurrentRenderObj() {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
+
     resolveValue(value) {
         return this.getCurrentRenderObj().resolve(value);
     }
@@ -572,7 +567,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         // components works for the automated tests. Logically, it should
         // probably be invoked in the constructor.
         this.constructParts();
-        this.lifecycle('initialized')
+        this.lifecycleNew(['initialized'])
         this.rerender();
         this.isMounted = true;
     }
@@ -585,6 +580,8 @@ Modulo.ComponentPart = class ComponentPart {
                                                     : node.textContent;
         return {options, content};
     }
+
+    static factoryCallback() {}
 
     constructor(component, options) {
         this.component = component;
@@ -617,9 +614,9 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
     }
 
     handleEvent(func, ev, payload) {
-        this.component.lifecycle('event');
+        this.component.lifecycleNew(['event']);
         func.call(this.component, ev, payload);
-        this.component.lifecycle('eventCleanup');
+        this.component.lifecycleNew(['eventCleanup']);
     }
 
     eventMount(info) {
@@ -707,7 +704,7 @@ Modulo.cparts.set('style', Modulo.parts.Style);
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
     static factoryCallback(opts, factory, renderObj) {
-        const {templatingEngine = 'ModuloTemplate'} = renderObj.get('template').options || {};
+        const {templatingEngine = 'ModuloTemplate'} = (renderObj.get('template') || {}).options || {};
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
         const compiledTemplate = templateCompiler(opts.content, opts);
         return {compiledTemplate};
@@ -758,8 +755,8 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         const wrappedJS = this.wrapJavaScriptContext(c, localVars);
         return (new Function('Modulo', wrappedJS)).call(null, Modulo);
         //return (new Function(wrappedJS)).call(null);
-        return scopedEval(null, {}, wrappedJS);
-        return scopedEval(null, scriptContextDefaults, wrappedJS);
+        //return scopedEval(null, {}, wrappedJS);
+        //return scopedEval(null, scriptContextDefaults, wrappedJS);
     }
 
     eventCallback(renderObj) {
