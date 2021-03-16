@@ -27,17 +27,15 @@ const expectedFuncsString = `
 `;
 const expectedWrappedScript = `
     'use strict';
-    const module = {exports: {}};
-    let var1,var2;
-    function setLocalVariable(name, value) {
+    var var1,var2;
+    function __set(name, value) {
         if (name === 'var1') var1 = value;
         if (name === 'var2') var2 = value;
     }
     ${testScript1}
     return {
         ${expectedFuncsString}
-        ...module.exports,
-        setLocalVariable
+        setLocalVariable: __set
     };
 `;
 

@@ -1,41 +1,8 @@
-/*
+// Todo:
 
-Modulo todo:
-1. Think about big rewrite of main flow
-    - How can I make it simple, un-convoluted, no extra functions, etc?
-    - Remove middleware?
+// - Replace all mention of 'options' with 'attrs' or something
+// equally consistent / accurate
 
-2. think about simpler code for the context objecy / flow, eg:
-    - this.contextObj = this.cparts.findFirst(obj => obj.prepareCallback).prepareCallback()
-  
-----
-
-One more option:
-  
-----
-
-
-  What's done:
-    - Directives + syntactic sugar
-    - Moving core functionality into Component CPart
-    - Copy ModuloTemplate into this file, make default template language
-    - DONE: Rename ModuloComponent to "ModuloElement" consistently
-  Next steps:
-    - Figure out "Directive Resolution Context"
-        - Best case: Hook into reconciliation / morphdom, do clean-up and
-          tear-down
-        - Possibly will need render stack, or will be entirely with morphdom
-        - Write tests around this
-        - Stop skipping tests that test parents passing down props
-    - Start use as soon as above is finished to uncover typical usage + bugs
-  Refactoring needed:
-    - Finish / test / refactor extends
-    - Full documentation (Idea: For templating language, copy from jinja or liquid)
-    - Possibly:
-      - Refactor Component CPart, maybe rename to "lifecycle" or "base"
-      - Remove the [this] -- remove Element / Component "lifecycle" step
-      - Think about how extension / getSuper('state') etc might work
-*/
 'use strict';
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -43,49 +10,25 @@ if (typeof HTMLElement === 'undefined') {
 var globals = {HTMLElement};
 var Modulo = {globals};
 
-function tmpRObjCreator(original) {
-    function getValue(obj, path) {
-        return path.split('.').reduce((obj, name) => obj[name], obj);
-    }
-    const renderObj = original ? original.toObject() : {};
-    renderObj.resolve = key => getValue(renderObj, key);
-    //renderObj.get = renderObj.resolve;
-    renderObj.get = key => renderObj[key];
-    renderObj.set = (key, value) => {
-        renderObj[key] = value;
-    };
-    renderObj.toObject = () => Object.assign({}, renderObj); // duplicate
-    return renderObj;
-}
-
-Modulo.MultiMap = class MultiMap extends Map {
-    get(key) {
-        if (!this.has(key)) {
-            super.set(key, []);
+function prefixAllSelectors(namespace, name, text='') {
+    const fullName = `${namespace}-${name}`;
+    let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
+    content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
+        selector = selector.trim();
+        if (selector.startsWith('@') || selector.startsWith(fullName)) {
+            // Skip, is @media or @keyframes, or already prefixed
+            return selector;
         }
-        return super.get(key);
-    }
-    set(key, value) {
-        this.get(key).push(value);
-    }
-    toObject() {
-        return Object.fromEntries(this);
-    }
-    register(value) {
-        // deadcode, todo finish after multimap merge for cleaner extension syntax
-        const {name} = value; // works for Functions, need to work for Classes
-        assert(name, `Invalid register type "{value}"`);
-        this.set(name, value);
-    }
-    // Idea: Can implement TaggedObjectMap with MultiMap:
-    //   - save(tagName) - Savepoints are looping through values,
-    //                     and saving an obj of lengths
-    //   - modifyTag(tagName, key, value) - get tagName array, then insert value
-    //                                      at savepoint[key].length
+        selector = selector.replace(new RegExp(name, 'ig'), fullName);
+        if (!selector.startsWith(fullName)) {
+            selector = `${fullName} ${selector}`;
+        }
+        return selector;
+    });
+    return content;
 }
 
-
-function parseWord(text) {
+function cleanWord(text) {
     return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
 }
 
@@ -95,10 +38,6 @@ function getFirstModuloAncestor(elem) {
     return !node ? null : (
         node.isModuloElement ? node : getFirstModuloAncestor(node)
     );
-}
-
-function isPlainObject(obj) {
-  return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
 function simplifyResolvedLiterals(attrs) {
@@ -132,53 +71,6 @@ function assert(value, ...info) {
     }
 }
 
-function scopedEval(thisContext, namedArgs, code) {
-    const argPairs = Array.from(Object.entries(namedArgs));
-    const argNames = argPairs.map(pair => pair[0]);
-    const argValues = argPairs.map(pair => pair[1]);
-    const func = new Function(...argNames, code);
-    return func.apply(thisContext, argValues);
-}
-
-function runMiddleware(lifecycleName, cPart, timing, args) {
-    const key = `${lifecycleName}_${cPart.name}_${timing}`;
-    const middlewareArr = Modulo.middleware.get(key); // new
-    for (const middleware of middlewareArr) {
-        middleware.apply(cPart, args);
-    }
-}
-
-/*
-function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
-    let partsArray = [];
-    if (isPlainObject(parts)) {
-        for (const [partName, partOptionsArr] of Object.entries(parts)) {
-            const cPart = Modulo.cparts.get(partName);
-            for (const data of partOptionsArr) {
-                partsArray.push({cPart, cPartArgs: [data]});
-                renderObj.set(cPart.name, data);
-            }
-        }
-    } else {
-        partsArray = parts.map(cPart => ({cPart, cPartArgs: []}));
-    }
-    for (const {cPart, cPartArgs} of partsArray) {
-        const args = [...cPartArgs, ...extraArgs, renderObj];
-        runMiddleware(lifecycleName, cPart, 'before', args);
-        let results = {};
-        const method = cPart[lifecycleName + 'Callback'];
-        if (method) {
-            results = method.apply(cPart, args) || results;
-        }
-        runMiddleware(lifecycleName, cPart, 'after', args.concat([results]));
-        renderObj.set(cPart.name, results);
-    }
-    if (renderObj.save) {
-        renderObj.save(lifecycleName);
-    }
-}
-*/
-
 Modulo.collectDirectives = function collectDirectives(component, el, arr = null) {
     if (!arr) {
         arr = [];
@@ -197,8 +89,8 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
             continue; // There are no directives, skip
         }
         const value = el.getAttribute(rawName);
-        const attrName = parseWord((name.match(/\][^\]]+$/) || [''])[0]);
-        for (const dName of name.split(']').map(parseWord)) {
+        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
+        for (const dName of name.split(']').map(cleanWord)) {
             if (dName === attrName) {
                 continue; // Skip bare name
             }
@@ -215,7 +107,6 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
     return arr;
 }
 
-Modulo.middleware = new Modulo.MultiMap();
 Modulo.cparts = new Map();
 Modulo.directiveShortcuts = new Map();
 Modulo.directiveShortcuts.set(/^@/, 'component.event');
@@ -310,42 +201,41 @@ Modulo.Loader = class Loader extends HTMLElement {
     loadFromDOMElement(elem) {
         const attrs = parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
+        /*
+        // Untested
         const extend = attrs['extends'];
-        const loadingObj = new Modulo.MultiMap();
         if (extend) {
             for (const [name, data] of this.componentFactoryData) {
                 // TODO: Change this.componentFactoryData to be a map
                 // Also, refactor this mess in general
                 if (name === extend) {
                     for (const key of Object.keys(data)) {
-                        loadingObj.get(key).push(...data[key]);
+                        loadingObj[name] = [data[key]];
                     }
                 }
             }
         }
-        loadingObj.set('component', {name}); // Everything gets implicit Component CPart
-        runMiddleware('load', {name: 'component'}, 'before', [elem, this, loadingObj]);
+        */
+        const loadingObj = {};
+        loadingObj.component = [{name}]; // Everything gets implicit Component CPart
 
-        //const cPartsMap = new Modulo.MultiMap();
         for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
-            //cPartsMap.set(cPartName, node);
             const cPart = Modulo.cparts.get(cPartName);
-            runMiddleware('load', cPart, 'before', [node, this, loadingObj]);
             const results = cPart.loadCallback(node, this, loadingObj);
-            runMiddleware('load', cPart, 'after', [node, this, loadingObj, results]);
-            loadingObj.set(cPart.name, results);
+
+            // Multiple parts of the same type, push onto array
+            if (cPart.name in loadingObj) {
+                loadingObj[cPart.name].push(results);
+            } else {
+                loadingObj[cPart.name] = [results];
+            }
         }
-        // TODO: finish this, possibly, or give up on trying to make load
-        // lifecycle behave the same as the others --v
-        //runLifecycle('load', cPartsMap.toObject(), loadingObj, this);
-        const partsInfo = loadingObj.toObject();
-        this.componentFactoryData.push([name, partsInfo]);
-        return this.defineComponent(name, partsInfo);
+        this.componentFactoryData.push([name, loadingObj]);
+        return this.defineComponent(name, loadingObj);
     }
 
     defineComponent(name, options) {
         const factory = new Modulo.ComponentFactory(this, name, options);
-        runMiddleware('load', {name: 'component'}, 'after', [null, this, null, factory]);
         if (globals.defineComponentCallback) {
             globals.defineComponentCallback(factory); // TODO rm when possible
         }
@@ -409,14 +299,14 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 
     runFactoryLifecycle(parts) {
-        this.baseRenderObj = tmpRObjCreator();
+        this.baseRenderObj = {};
         for (const [partName, partOptionsArr] of Object.entries(parts)) {
             const cPart = Modulo.cparts.get(partName);
-            let d = {};
-            for (d of partOptionsArr) {
-                d = cPart.factoryCallback(d, this, this.baseRenderObj) || d;
+            let data = {};
+            for (data of partOptionsArr) {
+                data = cPart.factoryCallback(data, this, this.baseRenderObj) || data;
             }
-            this.baseRenderObj.set(cPart.name, d);
+            this.baseRenderObj[cPart.name] = data;
         }
     }
 
@@ -463,7 +353,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.fullName = this.factory.fullName;
         this.isMounted = false;
         this.isModuloElement = true; // used when finding parent
-        this.initRenderObj = tmpRObjCreator(this.factory.baseRenderObj);
+        this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
         // this.initRenderObj = new Modulo.TaggedObjectMap(this.factory.baseRenderObj);
         // this.cparts = new Modulo.TaggedObjectMap();
     }
@@ -474,7 +364,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         for (const {cPart, partOptions} of this.factory.getCParts()) {
             const instance = new cPart(this, partOptions);
             this.componentParts.push(instance);
-            // this.cparts.set(cPart.name, instance);
 
             if (instance.reloadCallback) {
                 // Trigger any custom reloading code
@@ -520,20 +409,13 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
     }
 
-    rerenderOld() {
-        // Calls all the LifeCycle functions in order
-        //this.renderObj = new Modulo.TaggedObjectMap(this.getCurrentRenderObj());
-        //this.lifecycle('prepare', 'render', 'update', 'updated');
-        //this.renderObj = null; // rendering is over, set to null
-    }
-
     rerender() {
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
     lifecycle(lifecycleNames) {
         // NEW CODE: This is a quick re-implementation of lifecycle
-        this.renderObj = tmpRObjCreator(this.getCurrentRenderObj());
+        this.renderObj = Object.assign({}, this.getCurrentRenderObj());
         // todo: maybe sort cparts ahead of time based on lifecycles?
         for (const lcName of lifecycleNames) {
             for (const cPart of this.componentParts) {
@@ -563,8 +445,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
-    resolveValue(value) {
-        return this.getCurrentRenderObj().resolve(value);
+    resolveValue(key) {
+        const rObj = this.getCurrentRenderObj();
+        return key.split('.').reduce((o, name) => o[name], rObj);
     }
 
     resolveAttributeName(name) {
@@ -578,7 +461,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     connectedCallback() {
         // TODO: Properly determine the render context component
-        this.moduloRenderContext = getFirstModuloAncestor(this); // INCORRECT
+        // this.moduloRenderContext = getFirstModuloAncestor(this); // INCORRECT
+
         // Note: For testability, constructParts is invoked on first mount,
         // before initialize.  This is so the hacky "fake-upgrade" for custom
         // components works for the automated tests. Logically, it should
@@ -680,7 +564,6 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
         }
     }
     buildProps() {
-        // old todo: This logic is bad. There needs to be a concept of...
         const props = {};
         for (let propName of Object.keys(this.options)) {
             propName = propName.replace(/:$/, ''); // normalize
@@ -690,10 +573,13 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
                 continue;
             }
             let value = this.component.getAttribute(attrName);
+            /*
+            // dead code: since should be handled now by directive
             if (attrName.endsWith(':')) {
                 attrName = attrName.slice(0, -1); // trim ':'
                 value = this.component.moduloRenderContext.resolveValue(value);
             }
+            */
             props[propName] = value;
         }
         return props;
@@ -714,6 +600,13 @@ Modulo.parts.Style = class Style extends Modulo.ComponentPart {
         }
         elem.textContent = content;
     }
+
+    static loadCallback(node, loader, loadingObj) {
+        let {content, options} = super.loadCallback(node, loader, loadingObj);
+        const {name} = loadingObj.component[0];
+        content = prefixAllSelectors(loader.namespace, name, content);
+        return {options, content};
+    }
 }
 Modulo.cparts.set('style', Modulo.parts.Style);
 
@@ -721,14 +614,17 @@ Modulo.cparts.set('style', Modulo.parts.Style);
 Modulo.parts.Template = class Template extends Modulo.ComponentPart {
     static name = 'template';
     static factoryCallback(opts, factory, renderObj) {
-        const {templatingEngine = 'ModuloTemplate'} = (renderObj.get('template') || {}).options || {};
+        const {loader} = factory;
+        const tagPref = '$1' + loader.namespace + '-';
+        const content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
+        const {templatingEngine = 'ModuloTemplate'} = (renderObj.template || {}).options || {};
         const templateCompiler = Modulo.adapters.templating[templatingEngine]();
-        const compiledTemplate = templateCompiler(opts.content, opts);
+        const compiledTemplate = templateCompiler(content, opts);
         return {compiledTemplate};
     }
     renderCallback(renderObj) {
-        const compiledTemplate = renderObj.get('template').compiledTemplate;
-        const context = renderObj.toObject();
+        const compiledTemplate = renderObj.template.compiledTemplate;
+        const context = renderObj;
         const result = compiledTemplate(context);
         return {renderedOutput: result};
     }
@@ -754,31 +650,25 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         const localVarsIfs = localVars.map(n => `if (name === '${n}') ${n} = value;`).join('\n');
         return `
             'use strict';
-            const module = {exports: {}};
-            let ${localVarsLet};
-            function setLocalVariable(name, value) { ${localVarsIfs} }
+            var ${localVarsLet};
+            function __set(name, value) { ${localVarsIfs} }
             ${contents}
-            return { ${symbolsString} ...module.exports, setLocalVariable };
+            return { ${symbolsString} setLocalVariable: __set };
         `;
     }
 
     static factoryCallback(partOptions, factory, renderObj) {
-        //const scriptContextDefaults = {...renderObj.toObject(), Modulo};
-        const scriptContextDefaults = renderObj.toObject();
-        const c = partOptions.content || '';
-        const localVars = Object.keys(scriptContextDefaults);
+        const code = partOptions.content || '';
+        const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
         localVars.push('parent'); // add in access to previous versions of renderObj // TODO: finish, currently dead code
-        const wrappedJS = this.wrapJavaScriptContext(c, localVars);
+        const wrappedJS = this.wrapJavaScriptContext(code, localVars);
         return (new Function('Modulo', wrappedJS)).call(null, Modulo);
-        //return (new Function(wrappedJS)).call(null);
-        //return scopedEval(null, {}, wrappedJS);
-        //return scopedEval(null, scriptContextDefaults, wrappedJS);
     }
 
     eventCallback(renderObj) {
         // Make sure that the local variables are all properly set
-        const script = renderObj.get('script');
+        const script = renderObj.script;
         for (const part of this.component.componentParts) {
             script.setLocalVariable(part.name, part);
         }
@@ -793,7 +683,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     static debugGhost = true;
     get debugGhost() { return true; }
     initializedCallback(renderObj) {
-        this.rawDefaults = renderObj.get('state').options || {};
+        this.rawDefaults = renderObj.state.options || {};
         this.boundElements = {};
         if (!this.data) {
             this.data = simplifyResolvedLiterals(this.rawDefaults);
@@ -873,38 +763,6 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
 }
 Modulo.cparts.set('state', Modulo.parts.State);
 
-Modulo.middleware.set(
-    'load_template_after',
-    function rewriteComponentNamespace(node, loader, loadingObj, info) {
-        let content = info.content || '';
-        content = content.replace(/(<\/?)my-/ig, '$1' + loader.namespace + '-')
-        info.content = content;
-    },
-);
-
-Modulo.middleware.set(
-    'load_style_after',
-    function prefixAllSelectors(node, loader, loadingObj, info) {
-        const {name} = loadingObj.get('component')[0];
-        const fullName = `${loader.namespace}-${name}`;
-        let content = info.content || '';
-        content = content.replace(/\*\/.*?\*\//ig, ''); // strip comments
-        content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
-            selector = selector.trim();
-            if (selector.startsWith('@') || selector.startsWith(fullName)) {
-                // Skip, is @media or @keyframes, or already prefixed
-                return selector;
-            }
-            selector = selector.replace(new RegExp(name, 'ig'), fullName);
-            if (!selector.startsWith(fullName)) {
-                selector = `${fullName} ${selector}`;
-            }
-            return selector;
-        });
-        info.content = content;
-    },
-);
-
 // ModuloTemplate
 const defaultOptions = {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
@@ -959,7 +817,7 @@ defaultOptions.tags = {
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
         const condition = condStructure.replace(/([XY])/g,
             (k, m) => tmplt.parseExpr(m === 'X' ? lHand : rHand));
-        const start = `if (${condition}){`;
+        const start = `if (${condition}) {`;
         return {start, end: '}'};
     },
     'else': () => '} else {',
@@ -971,7 +829,7 @@ defaultOptions.tags = {
         const [varExp, arrExp] = text.split(' in ');
         let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
         start += `for (var KEY in ${arrName}) {`;
-        const [keyVar, valVar] = varExp.split(',').map(tmplt.parseWord);
+        const [keyVar, valVar] = varExp.split(',').map(cleanWord);
         if (valVar) {
             start += `CTX.${keyVar}=KEY;`;
         }
@@ -1038,11 +896,7 @@ Modulo.Template = class Template {
         if (s.match(/^('.*'|".*")$/)) { // String literal
             return JSON.stringify(s.substr(1, s.length - 2));
         }
-        return s.match(/^\d+$/) ? s : `CTX.${this.parseWord(s)}`
-    }
-
-    parseWord(text) {
-        return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '_';
+        return s.match(/^\d+$/) ? s : `CTX.${cleanWord(s)}`
     }
 
     escapeHTML(text = '') {
