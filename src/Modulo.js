@@ -1,4 +1,20 @@
 /*
+
+Modulo todo:
+1. Think about big rewrite of main flow
+    - How can I make it simple, un-convoluted, no extra functions, etc?
+    - Remove middleware?
+
+2. think about simpler code for the context objecy / flow, eg:
+    - this.contextObj = this.cparts.findFirst(obj => obj.prepareCallback).prepareCallback()
+  
+----
+
+One more option:
+  
+----
+
+
   What's done:
     - Directives + syntactic sugar
     - Moving core functionality into Component CPart
@@ -347,6 +363,7 @@ Modulo.adapters = {
         },
         setdom: () => {
             const reconciler = new Modulo.SetDomReconciler();
+            // TODO: Maybe, move into function, so instantiate each time??
             return (component, html) => {
                 reconciler.reconcile(component, html);
             };
@@ -511,16 +528,16 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     rerender() {
-        this.lifecycleNew(['prepare', 'render', 'update', 'updated']);
+        this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
-    lifecycleNew(lifecycleNames) {
+    lifecycle(lifecycleNames) {
         // NEW CODE: This is a quick re-implementation of lifecycle
         this.renderObj = tmpRObjCreator(this.getCurrentRenderObj());
         // todo: maybe sort cparts ahead of time based on lifecycles?
-        for (const lcMethodName of lifecycleNames) {
+        for (const lcName of lifecycleNames) {
             for (const cPart of this.componentParts) {
-                const method = cPart[lcMethodName + 'Callback'];
+                const method = cPart[lcName + 'Callback'];
                 if (!this.renderObj) {
                     console.log('lolwut - renderobj is falsy', this.renderObj);
                     break;
@@ -567,7 +584,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         // components works for the automated tests. Logically, it should
         // probably be invoked in the constructor.
         this.constructParts();
-        this.lifecycleNew(['initialized'])
+        this.lifecycle(['initialized'])
         this.rerender();
         this.isMounted = true;
     }
@@ -609,14 +626,14 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
 
     updateCallback(renderObj) {
         const {component} = this;
-        const newContents = renderObj.get('template').renderedOutput || '';
+        const newContents = (renderObj.template || {}).renderedOutput || '';
         component.reconcile(component, newContents);
     }
 
     handleEvent(func, ev, payload) {
-        this.component.lifecycleNew(['event']);
+        this.component.lifecycle(['event']);
         func.call(this.component, ev, payload);
-        this.component.lifecycleNew(['eventCleanup']);
+        this.component.lifecycle(['eventCleanup']);
     }
 
     eventMount(info) {
