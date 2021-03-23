@@ -5,11 +5,13 @@
   "homepage": "https://github.com/michaelpb/modulo#readme",
   "main": "modulocli.js",
   "scripts": {
+    "build-docs": "docco ./src/Modulo.js --output ./docs/documentation",
     "update-docs-js": "cp ./src/Modulo.js docs/js/Modulo.js && cp ./src/ModuloDebugger.js docs/js/ModuloDebugger.js",
     "test": "ava -v --serial"
   },
   "devDependencies": {
     "ava": "3.14.0",
+    "docco": "0.8.1",
     "jsdom": "16.4.0",
     "xmldom": "0.4.0"
   },
