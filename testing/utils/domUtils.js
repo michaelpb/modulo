@@ -59,6 +59,7 @@ function setupModulo(path = null, includeDebugger = false, html = '') {
     const dom = new JSDOM(htmlCode);
     Modulo.document = dom.window.document; // for easier testing
     Modulo.globals.DOMParser = DOMParser;
+    //Modulo.globals.HTMLElement.prototype.getAttribute = a => 'xyzyx getAttribute plcholder hack';
     Modulo.globals.window =  dom.window;
     Modulo.globals.document =  dom.window.document;
     Modulo.globals.mockConsole = [];

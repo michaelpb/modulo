@@ -621,3 +621,12 @@ function scopedEval(thisContext, namedArgs, code) {
 function isPlainObject(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
+
+function hash(str) {
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+        hash = ((hash<<5)-hash)+str.charCodeAt(i);
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+}

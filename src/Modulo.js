@@ -326,7 +326,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         const {fullName} = this;
         const {reconciliationEngine = 'setdom'} = this.options;
         const reconcile = Modulo.adapters.reconciliation[reconciliationEngine]();
-        return class CustomComponent extends Modulo.Element {
+        return class CustomElement extends Modulo.Element {
             get factory() {
                 return Modulo.ComponentFactory.instances.get(fullName);
             }
@@ -344,6 +344,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
         this.componentParts = [];
+        //console.log('this is this', this);
+        //console.log('this is this', this.getAttribute);
+        this.getAttr = a => this.getAttribute(a); // provide default behavior, in lieu of resolved values
         this.originalHTML = this.innerHTML;
         this.initialize();
     }
@@ -447,6 +450,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     resolveValue(key) {
         const rObj = this.getCurrentRenderObj();
+        //console.log('this is rObj', rObj);
         return key.split('.').reduce((o, name) => o[name], rObj);
     }
 
@@ -541,6 +545,7 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         const resolvedValue = resolutionContext.resolveValue(value);
         el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
         el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
+        console.log('this is attrs', el.attrs);
     }
     resolveUnmount({el, attrName}) {
         delete el.attrs[attrName];
@@ -558,12 +563,23 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
         return this.buildProps();
     }
     copyMount({el}) {
+        // dead code?
         // change to "this.element"
         for (const attr of this.component.getAttributeNames()) {
             el.setAttribute(attr, this.component.getAttribute(attr));
         }
     }
+
     buildProps() {
+        const props = {};
+        for (let propName of Object.keys(this.options)) {
+            propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
+            props[propName] = this.component.getAttr(propName);
+        }
+        console.log('this is props', props);
+        return props;
+
+        /*
         const props = {};
         for (let propName of Object.keys(this.options)) {
             propName = propName.replace(/:$/, ''); // normalize
@@ -573,16 +589,13 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
                 continue;
             }
             let value = this.component.getAttribute(attrName);
-            /*
-            // dead code: since should be handled now by directive
             if (attrName.endsWith(':')) {
                 attrName = attrName.slice(0, -1); // trim ':'
                 value = this.component.moduloRenderContext.resolveValue(value);
             }
-            */
             props[propName] = value;
         }
-        return props;
+        */
     }
 }
 Modulo.cparts.set('props', Modulo.parts.Props);
@@ -666,14 +679,14 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         return (new Function('Modulo', wrappedJS)).call(null, Modulo);
     }
 
-    eventCallback(renderObj) {
+    initializedCallback(renderObj) {
         // Make sure that the local variables are all properly set
-        const script = renderObj.script;
+        const {setLocalVariable} = renderObj.script;
         for (const part of this.component.componentParts) {
-            script.setLocalVariable(part.name, part);
+            setLocalVariable(part.name, part);
         }
-        script.setLocalVariable('element', this.component);
-        script.setLocalVariable('component', this.component);
+        setLocalVariable('element', this.component);
+        //setLocalVariable('component', this.component);
     }
 }
 Modulo.cparts.set('script', Modulo.parts.Script);
@@ -695,7 +708,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
         const name = el.getAttr('name');
         assert(name in this.data, `[state.bind]: "${name}" not in state`);
         const func = () => this.set(name, el.value);
-        const evName = 'keyup'; // eventually
+        const evName = 'keyup'; // eventually customizable
         this.boundElements[name] = [el, evName, func];
         el.value = this.data[name];
         el.addEventListener(evName, func);

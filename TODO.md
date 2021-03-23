@@ -1,3 +1,15 @@
+More notes: 2021
+
+- Uniquely identifying components:
+    - component-hash: a7efa90
+    - mutation-hash: 1a3a4f9
+    - mutation-hash: 0000000 # for immutable, or initial state
+    - mutation-hash is only implemented for State CPart
+
+---
+
+- Mutation ideas:
+
 Todo notes: 2020-12-20
 
 - Before official release, make sure well tested, then re-order entire code
@@ -6,6 +18,7 @@ Todo notes: 2020-12-20
     - "Docco" is the name of the literate coding library I forgot:
     - https://github.com/jashkenas/docco/
     - "Pycco" is a python clone: https://pycco-docs.github.io/pycco/
+
 
 ---
 
@@ -68,7 +81,7 @@ What's left:
       already exist) and then hash the JSON file and truncate to 8
       digits
     - In the final built copy, maybe do something like
-      MyComponent-x7aerf as the rewritten references
+      x7aerf-MyComponent as the rewritten references
     - Idea
       - On front-end, every time Loader loads something, it should
         fetch or say on WebSocket "Loaded /static/whatevs.js"
