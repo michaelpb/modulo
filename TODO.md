@@ -1,4 +1,4 @@
-More notes: 2021
+# More notes: 2021
 
 - Uniquely identifying components:
     - component-hash: a7efa90
@@ -6,11 +6,13 @@ More notes: 2021
     - mutation-hash: 0000000 # for immutable, or initial state
     - mutation-hash is only implemented for State CPart
 
+
+- Skypack "ecosystem" for example deployment:
+    - https://www.skypack.dev/
+
 ---
 
-- Mutation ideas:
-
-Todo notes: 2020-12-20
+# Todo notes: 2020-12-20
 
 - Before official release, make sure well tested, then re-order entire code
   base to sort by lifecycle. Then, I can do literate coding to fully document

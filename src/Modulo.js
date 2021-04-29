@@ -252,9 +252,9 @@ Modulo.adapters = {
             component.innerHTML = html;
         },
         setdom: () => {
-            const reconciler = new Modulo.SetDomReconciler();
             // TODO: Maybe, move into function, so instantiate each time??
             return (component, html) => {
+                const reconciler = new Modulo.SetDomReconciler();
                 reconciler.reconcile(component, html);
             };
         },
@@ -346,7 +346,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.componentParts = [];
         //console.log('this is this', this);
         //console.log('this is this', this.getAttribute);
-        this.getAttr = a => this.getAttribute(a); // provide default behavior, in lieu of resolved values
         this.originalHTML = this.innerHTML;
         this.initialize();
     }
@@ -464,9 +463,12 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     connectedCallback() {
-        // TODO: Properly determine the render context component
-        // this.moduloRenderContext = getFirstModuloAncestor(this); // INCORRECT
+        if (!this.getAttr) {
+            // TODO - make a generalized "getAttr" that props/etc hooks into (perhaps resolveAttr?)
+            this.getAttr = a => this.getAttribute(a); // provide default behavior, in lieu of resolved values
+        }
 
+        // this.moduloRenderContext = getFirstModuloAncestor(this); // INCORRECT
         // Note: For testability, constructParts is invoked on first mount,
         // before initialize.  This is so the hacky "fake-upgrade" for custom
         // components works for the automated tests. Logically, it should
@@ -541,11 +543,16 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         el.removeEventListener(attrName, listener);
     }
 
+    brokenHackYuck() {
+        console.log(this.component.parentNode.parentNode);
+    }
+
     resolveMount({el, value, attrName, resolutionContext}) {
+        //console.log('this is it', resolutionContext);
+        //resolutionContext = this.brokenHackYuck(); // only to get tests passing
         const resolvedValue = resolutionContext.resolveValue(value);
         el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
         el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
-        console.log('this is attrs', el.attrs);
     }
     resolveUnmount({el, attrName}) {
         delete el.attrs[attrName];
@@ -559,26 +566,13 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
         // untested / daedcode ---v
         componentClass.observedAttributes = Object.keys(options);
     }
-    initializedCallback(renderObj) {
-        return this.buildProps();
-    }
+
     copyMount({el}) {
         // dead code?
         // change to "this.element"
         for (const attr of this.component.getAttributeNames()) {
             el.setAttribute(attr, this.component.getAttribute(attr));
         }
-    }
-
-    buildProps() {
-        const props = {};
-        for (let propName of Object.keys(this.options)) {
-            propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
-            props[propName] = this.component.getAttr(propName);
-        }
-        console.log('this is props', props);
-        return props;
-
         /*
         const props = {};
         for (let propName of Object.keys(this.options)) {
@@ -596,6 +590,16 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
             props[propName] = value;
         }
         */
+    }
+
+    initializedCallback(renderObj) {
+        const props = {};
+        for (let propName of Object.keys(this.options)) {
+            propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
+            props[propName] = this.component.getAttr(propName);
+        }
+        //console.log('this is props', props);
+        return props;
     }
 }
 Modulo.cparts.set('props', Modulo.parts.Props);
@@ -928,12 +932,13 @@ Modulo.SetDomReconciler = class SetDomReconciler {
         this.CHECKSUM = 'modulo-checksum'
         this.KEY_PREFIX = '_set-dom-'
         this.mockBody = globals.document.implementation.createHTMLDocument('').body;
-        //this.componentContextStack = [];
-        this.componentContext = null;
+        this.componentContextStack = [];
+        //this.componentContext = null;
     }
 
     reconcile(component, newHTML) {
-        this.componentContext = component;
+        //this.componentContext = component;
+        this.componentContextStack.push(component);
         if (!component.isMounted) {
             component.innerHTML = newHTML;
             this.findAndApplyDirectives(component);
@@ -941,12 +946,15 @@ Modulo.SetDomReconciler = class SetDomReconciler {
             this.mockBody.innerHTML = `<div>${newHTML}</div>`;
             this.setChildNodes(component, this.mockBody.firstChild);
         }
-        this.componentContext = null;
+        this.componentContextStack.pop();
+        //this.componentContext = null;
     }
 
     findAndApplyDirectives(element) {
+        this.componentContext = this.componentContextStack[this.componentContextStack.length - 1];
         const directives = Modulo.collectDirectives(this.componentContext, element);
         this.componentContext.applyDirectives(directives);
+        //this.componentContext.applyDirectives(directives);
     }
 
     /**
