@@ -552,16 +552,15 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
     }
 
     eventMount(info) {
-      // TODO: Errors around here??
         const {el, value, attrName, rawName} = info;
-        el.getAttr = el.getAttr || el.getAttribute; // <-- prolly should delete
+        const getAttr = getGetAttr(el);
         //console.log('this is eventMount', info);
         const listener = (ev) => {
             //window.C = this;
             console.log('this is rawName', rawName, value);
-            const func = el.getAttr(attrName, el.getAttr(rawName));
+            const func = getAttr(attrName, getAttr(rawName));
             assert(func, `Bad ${attrName}, ${value} is ${func}`);
-            const payload = el.getAttr(`${attrName}.payload`, el.value);
+            const payload = getAttr(`${attrName}.payload`, el.value);
             this.handleEvent(func, ev, payload);
         };
         info.listener = listener;
@@ -678,6 +677,9 @@ Modulo.parts.Template = class Template extends Modulo.ComponentPart {
         const compiledTemplate = renderObj.template.compiledTemplate;
         const context = renderObj;
         const result = compiledTemplate(context);
+        if (result.includes('undefined')) {
+            console.log('undefined me', renderObj);
+        }
         return {renderedOutput: result, compiledTemplate};
     }
 }
@@ -738,12 +740,14 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     static debugGhost = true;
     get debugGhost() { return true; }
     initializedCallback(renderObj) {
+        console.log('initialized callback (1)', this.data);
         this.rawDefaults = renderObj.state.options || {};
+        console.log('initialized callback (2)', renderObj);
         this.boundElements = {};
         if (!this.data) {
             this.data = simplifyResolvedLiterals(this.rawDefaults);
         }
-        return this;
+        console.log('initialized callback (3)', this.data);
     }
 
     bindMount({el}) {
@@ -765,6 +769,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     }
 
     prepareCallback(renderObj) {
+        console.log('this is data', this.data);
         this.initializedCallback(renderObj); // TODO remove this, should not have to
         this.data.bindMount = this.bindMount.bind(this);// Ugh hack
         this.data.bindUnmount = this.bindUnmount.bind(this);// Ugh hack
