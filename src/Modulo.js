@@ -27,6 +27,15 @@ function cleanWord(text) {
     return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
 }
 
+function getGetAttr(element) {
+    // HACK
+    if (element.getAttr) {
+        return element.getAttr;
+    } else {
+        return (...args) => element.getAttribute(...args);
+    }
+}
+
 function getFirstModuloAncestor(elem) {
     // Walk up tree to first DOM node that is a modulo component
     const node = elem.parentNode;
@@ -351,7 +360,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
         this.originalChildren = [];
         if (this.hasChildNodes()) {
-            for (const child of this.childNodes) {
+            const dupedChildren = Array.from(this.childNodes); // necessary
+            for (const child of dupedChildren) {
                 this.originalChildren.push(this.removeChild(child));
             }
         }
@@ -447,13 +457,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         //this.renderObj = null; // rendering is over, set to null
     }
 
-    lifecycleOld(...names) {
-        const renderObj = this.getCurrentRenderObj();
-        for (const name of names) {
-            //runLifecycle(name, this.componentParts, renderObj);
-        }
-    }
-
     getCurrentRenderObj() {
         //console.log('this is initRenderObj', this.initRenderObj);
         //console.log('this is renderObj', this.renderObj);
@@ -502,7 +505,7 @@ Modulo.ComponentPart = class ComponentPart {
     static factoryCallback() {}
 
     constructor(component, options) {
-        this.component = component;
+        this.component = component; // TODO: Change to this.element
         this.options = options.options;
         this.content = options.content;
     }
@@ -530,30 +533,12 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
     updateCallback(renderObj) {
         const {component} = this;
         let newContents = (renderObj.template || {}).renderedOutput || '';
-
-        //move elsewhere
-        //console.log('rendering for', renderObj.element.factory.name);
-        //console.log('rendering for', moduloInstID);
-
-        // HACKS
-        /*
-        const loader = renderObj.element.factory.loader;
-        const moduloInstID = renderObj.element.moduloInstID;
-        const tagRe = new RegExp('(<' + loader.namespace + '-)', 'ig');
-        const dirCtxHtml = `<${DIRTX_TAG} ${DIRTX_ATTR}="${moduloInstID}"></${DIRTX_TAG}>`;
-        newContents = newContents.replace(tagRe, `${dirCtxHtml}$1`);
-        */
-        //console.log('this is dirCtxHtml', dirCtxHtml);
-        //console.log('this is tagRe', tagRe);
-        //console.log('this is new dirCtxHtml', newContents, component);
-        // HACKS
-
         component.reconcile(component, newContents);
     }
 
     handleEvent(func, ev, payload) {
         this.component.lifecycle(['event']);
-        func.call(this.component, ev, payload);
+        func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
         this.component.lifecycle(['eventCleanup']);
     }
 
@@ -572,7 +557,8 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         el.getAttr = el.getAttr || el.getAttribute; // <-- prolly should delete
         //console.log('this is eventMount', info);
         const listener = (ev) => {
-            //console.log('this is rawName', rawName);
+            //window.C = this;
+            console.log('this is rawName', rawName, value);
             const func = el.getAttr(attrName, el.getAttr(rawName));
             assert(func, `Bad ${attrName}, ${value} is ${func}`);
             const payload = el.getAttr(`${attrName}.payload`, el.value);
@@ -642,9 +628,10 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
 
     initializedCallback(renderObj) {
         const props = {};
+        const getAttr = getGetAttr(this.component);
         for (let propName of Object.keys(this.options)) {
             propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
-            props[propName] = this.component.getAttr(propName);
+            props[propName] = getAttr(propName);
         }
         //console.log('this is props', props);
         return props;
@@ -738,8 +725,10 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
             setLocalVariable(part.name, part);
         }
         setLocalVariable('element', this.component);
-        //setLocalVariable('component', this.component);
-        return renderObj.script;
+    }
+
+    eventCallback(renderObj) {
+        this.initializedCallback(renderObj);
     }
 }
 Modulo.cparts.set('script', Modulo.parts.Script);
@@ -801,6 +790,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
                 this.set(name, this[name]); // update
             }
         }
+        this.component.rerender(); // HACK
         // ToDo: Clean this up, maybe have data be what's returned for
         // prepareEventCallback, just like with prepareCallback?
     }
@@ -966,8 +956,11 @@ Modulo.Template = class Template {
         return s.match(/^\d+$/) ? s : `CTX.${cleanWord(s)}`
     }
 
-    escapeHTML(text = '') {
-        return text.safe ? text : (text + '').replace(/&/g, '&amp;')
+    escapeHTML(text) {
+        if (text && text.safe) {
+            return text;
+        }
+        return (text + '').replace(/&/g, '&amp;')
             .replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 }
@@ -1107,7 +1100,8 @@ Modulo.SetDomReconciler = class SetDomReconciler {
           const foundNode = newKey ? keyedNodes[newKey] : null;
           if (foundNode) {
               delete keyedNodes[newKey]
-              // If we have a key and it existed before we move the previous node to the new position if needed and diff it.
+              // If we have a key and it existed before we move the previous
+              // node to the new position if needed and diff it.
               if (foundNode !== oldNode) {
                   oldParent.insertBefore(foundNode, oldNode)
               } else {

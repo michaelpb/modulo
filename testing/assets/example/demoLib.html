@@ -4,23 +4,39 @@
             <h1>Hi</h1>
             <my-ChildComponent clickme:=script.gotClicked txt="Click me! :)">
             </my-ChildComponent>
+            <my-ChildComponent clickme:=script.gotClicked txt="or me! :)">
+            </my-ChildComponent>
             <h1>Counter</h1>
+            <my-Counter></my-Counter>
+            <my-Counter></my-Counter>
+            <my-Counter stuff="ok"></my-Counter>
+            <my-Counter></my-Counter>
+            <my-Counter></my-Counter>
             <my-Counter></my-Counter>
 
 
-            <h1>Nested</h1>
+            <h1>Nested ({{ state.lol }})</h1>
             <my-NestedComponent>
                 <h2>Inside the component</h2>
                 <my-Counter></my-Counter>
             </my-NestedComponent>
         </div>
     </template>
+
+    <state
+      lol:=5
+    ></state>
+
     <script>
         function gotClicked() {
             element.wasClicked = true;
             console.log('gettin clickified');
+            state.lol++;
+            console.log('this is state', state);
+            //element.rerender();
         }
     </script>
+
 </template>
 
 <template mod-component="ChildComponent">
@@ -40,6 +56,7 @@
     <template>
         <button @click:=script.increment>
             Count: {{ state.num }}
+            ({{ props.stuff }})
         </button>
     </template>
 
@@ -47,11 +64,13 @@
       num:=1
     ></state>
 
+    <props
+      stuff
+    ></props>
     <script>
         function increment() {
-            console.log('increment happening');
-            const num = state.get('num');
-            state.set('num', num + 1);
+            console.log('increment happening', state);
+            state.num++;
         }
     </script>
 </template>
@@ -65,6 +84,7 @@
         .LOL {
             background-color: green;
             padding: 30px;
+            color: white;
         }
     </style>
 </template>
