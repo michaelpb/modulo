@@ -70,6 +70,9 @@ function assert(value, ...info) {
 }
 
 Modulo.collectDirectives = function collectDirectives(component, el, arr) {
+    if (!arr) {
+        arr = []; // HACK for testability
+    }
     // TODO: for "pre-load" directives, possibly just pass in "Loader" as
     // "component" so we can have load-time directives
     for (const rawName of el.getAttributeNames()) {
@@ -100,6 +103,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
         // tail recursion into children
         Modulo.collectDirectives(component, child, arr);
     }
+    return arr; // HACK for testability
 }
 
 Modulo.cparts = new Map();
@@ -344,9 +348,12 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         //console.log('this is this', this);
         //console.log('this is this', this.getAttribute);
         this.originalHTML = this.innerHTML;
-        this.originalChildren = [];//Array.from(this.children);
-        for (const child of Array.from(this.children)) {
-            this.originalChildren.push(this.removeChild(child));
+
+        this.originalChildren = [];
+        if (this.hasChildNodes()) {
+            for (const child of this.childNodes) {
+                this.originalChildren.push(this.removeChild(child));
+            }
         }
         this.initialize();
     }
@@ -981,7 +988,6 @@ Modulo.SetDomReconciler = class SetDomReconciler {
         this.componentContext = component;
         if (!component.isMounted) {
             component.innerHTML = newHTML;
-            console.log('initial', newHTML, component);
             this.findAndApplyDirectives(component);
         } else {
             this.mockBody.innerHTML = `<div>${newHTML}</div>`;

@@ -60,6 +60,7 @@ function setupModulo(path = null, includeDebugger = false, html = '') {
     Modulo.document = dom.window.document; // for easier testing
     Modulo.globals.DOMParser = DOMParser;
     Modulo.globals.HTMLElement.prototype.getAttribute = a => 'XYZYX getAttribute plcholder hack';
+    Modulo.globals.HTMLElement.prototype.hasChildNodes = a => false; // HACK
     Modulo.globals.window =  dom.window;
     Modulo.globals.document =  dom.window.document;
     Modulo.globals.mockConsole = [];
