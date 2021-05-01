@@ -33,3 +33,4 @@ docs/build
 *.egg*
 *.log
 
+tmp

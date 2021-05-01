@@ -1,8 +1,3 @@
-// Todo:
-
-// - Replace all mention of 'options' with 'attrs' or something
-// equally consistent / accurate
-
 'use strict';
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -395,8 +390,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 console.error('TMP Skipping:', dName, rawName, value);
                 continue;
             }
-            // TODO fix this with truly predictable context
-            args.resolutionContext = this.moduloDirectiveContext;
+            args.resolutionContext = this; // TODO fix this with truly predictable context
             if (hasRun) {
                 if (!tearDown) {
                     console.error('TMP NO TEAR DOWN ERR:', rawName);
@@ -479,35 +473,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     connectedCallback() {
-
-        this.moduloDirectiveContext = this;
-        // <HACK> ----------------------
-        // Get next ID
-        /*
-        this.moduloInstID = Modulo.ComponentFactory.nextInstanceId;
-        Modulo.ComponentFactory.nextInstanceId++;
-        Modulo.ComponentFactory.componentInstances[this.moduloInstID] = this;
-        this.moduloDirectiveContext = this;
-        if (this.previousSibling && this.previousSibling.tagName === DIRTX_TAG) {
-            console.log(DIRTX_TAG);
-            const id = this.previousSibling.getAttribute(DIRTX_ATTR);
-            this.moduloDirectiveContext =
-                Modulo.ComponentFactory.componentInstances[id];
-            console.log(DIRTX_TAG, id);
-            console.log(DIRTX_TAG, id, this.moduloDirectiveContext);
-            this.previousSibling.remove();
-        }
-
-        const hackName = this.factory.name;
-        console.log(`<${hackName}> -- START (${this.moduloInstID})`);
-        if (!this.getAttr) {
-            // TODO - make a generalized "getAttr" that props/etc hooks into (perhaps resolveAttr?)
-            this.getAttr = a => this.getAttribute(a); // provide default behavior, in lieu of resolved values
-        }
-        console.log(`</${hackName}> -- END (${this.moduloInstID})`); // HACK
-        */
-        // </HACK> ----------------------
-
         // Note: For testability, constructParts is invoked on first mount,
         // before initialize.  This is so the hacky "fake-upgrade" for custom
         // components works for the automated tests. Logically, it should
@@ -1013,7 +978,7 @@ Modulo.SetDomReconciler = class SetDomReconciler {
     }
 
     reconcile(component, newHTML) {
-        this.componentContext = component.moduloDirectiveContext;
+        this.componentContext = component;
         if (!component.isMounted) {
             component.innerHTML = newHTML;
             console.log('initial', newHTML, component);
@@ -1022,6 +987,7 @@ Modulo.SetDomReconciler = class SetDomReconciler {
             this.mockBody.innerHTML = `<div>${newHTML}</div>`;
             this.setChildNodes(component, this.mockBody.firstChild);
         }
+        this.componentContext = null;
     }
 
     findAndApplyDirectives(element) {

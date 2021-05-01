@@ -5,6 +5,10 @@
             <my-ChildComponent clickme:=script.gotClicked txt="Click me! :)">
             </my-ChildComponent>
             <h1>Counter</h1>
+            <my-Counter></my-Counter>
+
+
+            <h1>Nested</h1>
             <my-NestedComponent>
                 <h2>Inside the component</h2>
                 <my-Counter></my-Counter>
@@ -45,7 +49,9 @@
 
     <script>
         function increment() {
-            state.num += 1;
+            console.log('increment happening');
+            const num = state.get('num');
+            state.set('num', num + 1);
         }
     </script>
 </template>

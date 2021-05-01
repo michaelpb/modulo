@@ -1,9 +1,7 @@
 # More notes: 2021
 
-- Main "render context" issue: render is synchronous, so connectedCallback
-  happens AFTER
-    - Solutions: Figure out a dependable order?
-    - Solutions: Do some template mangling to pass in a reference?
+- Replace all mention of 'options' with 'attrs' or something equally consistent
+  / accurate
 
 - Uniquely identifying components:
     - component-hash: a7efa90
@@ -18,7 +16,15 @@
   domUtils. Use that to template the site.
 
 
+
 ---
+
+# Older notes
+
+- "Render context" issue: render is synchronous, so connectedCallback happens
+  AFTER
+    - Solutions: Figure out a dependable order? (DONE)
+    - Solutions: Do some template mangling to pass in a reference? (Not necessary)
 
 
 # Todo notes: 2020-12-20
