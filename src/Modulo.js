@@ -74,10 +74,7 @@ function assert(value, ...info) {
     }
 }
 
-Modulo.collectDirectives = function collectDirectives(component, el, arr = null) {
-    if (!arr) {
-        arr = [];
-    }
+Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     // TODO: for "pre-load" directives, possibly just pass in "Loader" as
     // "component" so we can have load-time directives
     for (const rawName of el.getAttributeNames()) {
@@ -108,7 +105,6 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
         // tail recursion into children
         Modulo.collectDirectives(component, child, arr);
     }
-    return arr;
 }
 
 Modulo.cparts = new Map();
@@ -353,6 +349,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         //console.log('this is this', this);
         //console.log('this is this', this.getAttribute);
         this.originalHTML = this.innerHTML;
+        this.originalChildren = [];//Array.from(this.children);
+        for (const child of Array.from(this.children)) {
+            this.originalChildren.push(this.removeChild(child));
+        }
         this.initialize();
     }
 
@@ -462,7 +462,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     resolveValue(key) {
         const rObj = this.getCurrentRenderObj();
-        //const hackName = this.factory.name;
+        const hackName = this.factory.name;
         //console.log(`   ${hackName} -- GET   ${key}`, rObj);
         const result = key.split('.').reduce((o, name) => o[name], rObj);
         //console.log(`   ${hackName} -- VALUE ${key} <<${result}>>`);
@@ -550,6 +550,8 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
             eventUnmount: this.eventUnmount.bind(this),
             resolveMount: this.resolveMount.bind(this),
             resolveUnmount: this.resolveUnmount.bind(this),
+            childrenMount: this.childrenMount.bind(this),
+            childrenUnmount: this.childrenUnmount.bind(this),
         };
     }
 
@@ -581,6 +583,15 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         this.component.lifecycle(['event']);
         func.call(this.component, ev, payload);
         this.component.lifecycle(['eventCleanup']);
+    }
+
+    childrenMount({el}) {
+        el.append(...this.component.originalChildren);
+        this.component.originalChildren = [];
+    }
+
+    childrenUnmount() {
+        this.component.innerHTML = '';
     }
 
     eventMount(info) {
@@ -708,7 +719,7 @@ Modulo.parts.Template = class Template extends Modulo.ComponentPart {
         const compiledTemplate = renderObj.template.compiledTemplate;
         const context = renderObj;
         const result = compiledTemplate(context);
-        return {renderedOutput: result};
+        return {renderedOutput: result, compiledTemplate};
     }
 }
 Modulo.cparts.set('template', Modulo.parts.Template);
@@ -1005,6 +1016,7 @@ Modulo.SetDomReconciler = class SetDomReconciler {
         this.componentContext = component.moduloDirectiveContext;
         if (!component.isMounted) {
             component.innerHTML = newHTML;
+            console.log('initial', newHTML, component);
             this.findAndApplyDirectives(component);
         } else {
             this.mockBody.innerHTML = `<div>${newHTML}</div>`;
@@ -1013,14 +1025,10 @@ Modulo.SetDomReconciler = class SetDomReconciler {
     }
 
     findAndApplyDirectives(element) {
-        //const directives = Modulo.collectDirectives(this.componentContext, element);
-        // <HACK>
         const directives = [];
         for (const child of element.children) {
             Modulo.collectDirectives(this.componentContext, child, directives);
         }
-        // </HACK>
-        //console.log('This is directives', directives);
         this.componentContext.applyDirectives(directives);
     }
 

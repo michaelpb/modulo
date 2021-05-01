@@ -1,14 +1,20 @@
 <template mod-component="ParentComponent">
     <template>
         <div>
+            <h1>Hi</h1>
             <my-ChildComponent clickme:=script.gotClicked txt="Click me! :)">
             </my-ChildComponent>
+            <h1>Counter</h1>
+            <my-NestedComponent>
+                <h2>Inside the component</h2>
+                <my-Counter></my-Counter>
+            </my-NestedComponent>
         </div>
     </template>
     <script>
         function gotClicked() {
             element.wasClicked = true;
-            console.log('element', element);
+            console.log('gettin clickified');
         }
     </script>
 </template>
@@ -24,3 +30,36 @@
       txt:=String
     ></props>
 </template>
+
+
+<template mod-component="Counter">
+    <template>
+        <button @click:=script.increment>
+            Count: {{ state.num }}
+        </button>
+    </template>
+
+    <state
+      num:=1
+    ></state>
+
+    <script>
+        function increment() {
+            state.num += 1;
+        }
+    </script>
+</template>
+
+
+<template mod-component="NestedComponent">
+    <template>
+        <div class="LOL" [component.children]></div>
+    </template>
+    <style>
+        .LOL {
+            background-color: green;
+            padding: 30px;
+        }
+    </style>
+</template>
+
