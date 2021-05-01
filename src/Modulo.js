@@ -64,6 +64,9 @@ function parseAttrs(elem) {
 }
 Modulo.parseAttrs = parseAttrs;
 
+const DIRTX_TAG = 'MTMP-DCTX';
+const DIRTX_ATTR = 'mtmp-dctx-id';
+
 function assert(value, ...info) {
     if (!value) {
         console.error(...info);
@@ -96,6 +99,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr = null)
             }
             const setUp = component.resolveValue(dName + 'Mount');
             const tearDown = component.resolveValue(dName + 'Unmount');
+            //console.log('dName', dName, attrName, component);
             assert(setUp || tearDown, `Unknown directive: "${dName}"`);
             arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
         }
@@ -186,7 +190,7 @@ Modulo.Loader = class Loader extends HTMLElement {
             cPartName = splitType[1];
         }
         if (!(Modulo.cparts.has(cPartName))) {
-            console.error('Unexpected tag in component def:', tagName);
+            console.error('Unknown CPart in component def:', tagName);
             return null;
         }
         return cPartName;
@@ -281,6 +285,8 @@ Modulo.adapters = {
 };
 
 Modulo.ComponentFactory = class ComponentFactory {
+    static nextInstanceId = 0;
+    static componentInstances = {};
     static instances = new Map();
     static registerInstance(instance) {
         Modulo.ComponentFactory.instances.set(instance.fullName, instance);
@@ -390,8 +396,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 continue;
             }
             // TODO fix this with truly predictable context
-            //args.resolutionContext = this.moduloRenderContext || getFirstModuloAncestor(this) || this; // INCORRECT
-            args.resolutionContext = this;
+            args.resolutionContext = this.moduloDirectiveContext;
             if (hasRun) {
                 if (!tearDown) {
                     console.error('TMP NO TEAR DOWN ERR:', rawName);
@@ -426,14 +431,19 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                     console.log('lolwut - renderobj is falsy', this.renderObj);
                     break;
                 }
-                if (method) {
-                    this.renderObj[cPart.name] = method.call(cPart, this.renderObj);
-                } else if (!(cPart.name in this.renderObj)) {
+                if (!(cPart.name in this.renderObj)) {
                     this.renderObj[cPart.name] = cPart;
+                }
+                if (method) {
+                    const results = method.call(cPart, this.renderObj);
+                    if (results) {
+                        this.renderObj[cPart.name] = results;
+                    }
                 }
             }
         }
-        this.renderObj = null; // rendering is over, set to null
+        // TODO: should probably be nulling this after
+        //this.renderObj = null; // rendering is over, set to null
     }
 
     lifecycleOld(...names) {
@@ -444,13 +454,19 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     getCurrentRenderObj() {
+        //console.log('this is initRenderObj', this.initRenderObj);
+        //console.log('this is renderObj', this.renderObj);
+        //console.log('this is eventRenderObj', this.eventRenderObj);
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
     resolveValue(key) {
         const rObj = this.getCurrentRenderObj();
-        //console.log('this is rObj', rObj);
-        return key.split('.').reduce((o, name) => o[name], rObj);
+        //const hackName = this.factory.name;
+        //console.log(`   ${hackName} -- GET   ${key}`, rObj);
+        const result = key.split('.').reduce((o, name) => o[name], rObj);
+        //console.log(`   ${hackName} -- VALUE ${key} <<${result}>>`);
+        return result;
     }
 
     resolveAttributeName(name) {
@@ -463,12 +479,35 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     connectedCallback() {
+
+        this.moduloDirectiveContext = this;
+        // <HACK> ----------------------
+        // Get next ID
+        /*
+        this.moduloInstID = Modulo.ComponentFactory.nextInstanceId;
+        Modulo.ComponentFactory.nextInstanceId++;
+        Modulo.ComponentFactory.componentInstances[this.moduloInstID] = this;
+        this.moduloDirectiveContext = this;
+        if (this.previousSibling && this.previousSibling.tagName === DIRTX_TAG) {
+            console.log(DIRTX_TAG);
+            const id = this.previousSibling.getAttribute(DIRTX_ATTR);
+            this.moduloDirectiveContext =
+                Modulo.ComponentFactory.componentInstances[id];
+            console.log(DIRTX_TAG, id);
+            console.log(DIRTX_TAG, id, this.moduloDirectiveContext);
+            this.previousSibling.remove();
+        }
+
+        const hackName = this.factory.name;
+        console.log(`<${hackName}> -- START (${this.moduloInstID})`);
         if (!this.getAttr) {
             // TODO - make a generalized "getAttr" that props/etc hooks into (perhaps resolveAttr?)
             this.getAttr = a => this.getAttribute(a); // provide default behavior, in lieu of resolved values
         }
+        console.log(`</${hackName}> -- END (${this.moduloInstID})`); // HACK
+        */
+        // </HACK> ----------------------
 
-        // this.moduloRenderContext = getFirstModuloAncestor(this); // INCORRECT
         // Note: For testability, constructParts is invoked on first mount,
         // before initialize.  This is so the hacky "fake-upgrade" for custom
         // components works for the automated tests. Logically, it should
@@ -516,7 +555,25 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
 
     updateCallback(renderObj) {
         const {component} = this;
-        const newContents = (renderObj.template || {}).renderedOutput || '';
+        let newContents = (renderObj.template || {}).renderedOutput || '';
+
+        //move elsewhere
+        //console.log('rendering for', renderObj.element.factory.name);
+        //console.log('rendering for', moduloInstID);
+
+        // HACKS
+        /*
+        const loader = renderObj.element.factory.loader;
+        const moduloInstID = renderObj.element.moduloInstID;
+        const tagRe = new RegExp('(<' + loader.namespace + '-)', 'ig');
+        const dirCtxHtml = `<${DIRTX_TAG} ${DIRTX_ATTR}="${moduloInstID}"></${DIRTX_TAG}>`;
+        newContents = newContents.replace(tagRe, `${dirCtxHtml}$1`);
+        */
+        //console.log('this is dirCtxHtml', dirCtxHtml);
+        //console.log('this is tagRe', tagRe);
+        //console.log('this is new dirCtxHtml', newContents, component);
+        // HACKS
+
         component.reconcile(component, newContents);
     }
 
@@ -527,9 +584,12 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
     }
 
     eventMount(info) {
+      // TODO: Errors around here??
         const {el, value, attrName, rawName} = info;
-        el.getAttr = el.getAttr || el.getAttribute;
+        el.getAttr = el.getAttr || el.getAttribute; // <-- prolly should delete
+        //console.log('this is eventMount', info);
         const listener = (ev) => {
+            //console.log('this is rawName', rawName);
             const func = el.getAttr(attrName, el.getAttr(rawName));
             assert(func, `Bad ${attrName}, ${value} is ${func}`);
             const payload = el.getAttr(`${attrName}.payload`, el.value);
@@ -543,16 +603,21 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         el.removeEventListener(attrName, listener);
     }
 
-    brokenHackYuck() {
-        console.log(this.component.parentNode.parentNode);
-    }
-
     resolveMount({el, value, attrName, resolutionContext}) {
         //console.log('this is it', resolutionContext);
-        //resolutionContext = this.brokenHackYuck(); // only to get tests passing
+        //console.log('this is resolve mount', attrName, value);
         const resolvedValue = resolutionContext.resolveValue(value);
         el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
-        el.getAttr = (n, def) => n in el.attrs ? el.attrs[n] : el.getAttribute(n) || def;
+        el.getAttr = (n, def) => {
+            let val;
+            if (n in el.attrs) {
+                val = el.attrs[n];
+            } else {
+                val = el.getAttribute(n) || def;
+            }
+            //console.log('-------------------', n, val);
+            return val;
+        };
     }
     resolveUnmount({el, attrName}) {
         delete el.attrs[attrName];
@@ -691,6 +756,7 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         }
         setLocalVariable('element', this.component);
         //setLocalVariable('component', this.component);
+        return renderObj.script;
     }
 }
 Modulo.cparts.set('script', Modulo.parts.Script);
@@ -705,6 +771,7 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
         if (!this.data) {
             this.data = simplifyResolvedLiterals(this.rawDefaults);
         }
+        return this;
     }
 
     bindMount({el}) {
@@ -932,13 +999,10 @@ Modulo.SetDomReconciler = class SetDomReconciler {
         this.CHECKSUM = 'modulo-checksum'
         this.KEY_PREFIX = '_set-dom-'
         this.mockBody = globals.document.implementation.createHTMLDocument('').body;
-        this.componentContextStack = [];
-        //this.componentContext = null;
     }
 
     reconcile(component, newHTML) {
-        //this.componentContext = component;
-        this.componentContextStack.push(component);
+        this.componentContext = component.moduloDirectiveContext;
         if (!component.isMounted) {
             component.innerHTML = newHTML;
             this.findAndApplyDirectives(component);
@@ -946,15 +1010,18 @@ Modulo.SetDomReconciler = class SetDomReconciler {
             this.mockBody.innerHTML = `<div>${newHTML}</div>`;
             this.setChildNodes(component, this.mockBody.firstChild);
         }
-        this.componentContextStack.pop();
-        //this.componentContext = null;
     }
 
     findAndApplyDirectives(element) {
-        this.componentContext = this.componentContextStack[this.componentContextStack.length - 1];
-        const directives = Modulo.collectDirectives(this.componentContext, element);
+        //const directives = Modulo.collectDirectives(this.componentContext, element);
+        // <HACK>
+        const directives = [];
+        for (const child of element.children) {
+            Modulo.collectDirectives(this.componentContext, child, directives);
+        }
+        // </HACK>
+        //console.log('This is directives', directives);
         this.componentContext.applyDirectives(directives);
-        //this.componentContext.applyDirectives(directives);
     }
 
     /**

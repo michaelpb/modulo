@@ -154,14 +154,18 @@ Tough composition scenarios:
 Basic - event is passed down as prop, e.g.:
 
 <template name="P">
-    <my-C clicky:=clickme></my-C>
+    <template>
+        <my-C clicky:=clickme></my-C>
+    </template>
     <script>
         function clickme() {}
     </script>
 </template>
 
 <template name="C">
-    <button @click:=props.clicky>Klicky</button>
+    <template>
+        <button @click:=props.clicky>Klicky</button>
+    </template>
     <script>
         function clickme() {}
     </script>
@@ -171,21 +175,25 @@ Basic - event is passed down as prop, e.g.:
 
 Harder - event is attached to inner content, e.g.:
 
-<template name="P">
-    <my-C>
-        <button @click:=script.clickme>Klicky</button>
-    </my-C>
+<component name="P">
+    <template>
+      <my-C>
+          <button @click:=script.clickme>Klicky</button>
+      </my-C>
+    </template>
     <script>
         function clickme() {}
     </script>
-</template>
+</component>
 
-<template name="C">
-    ${props.content}
+<component name="C">
+    <template>
+      {{props.content}}
+    </template>
     <script>
         function clickme() {}
     </script>
-</template>
+</component>
 
 
 

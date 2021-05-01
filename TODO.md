@@ -1,16 +1,25 @@
 # More notes: 2021
 
+- Main "render context" issue: render is synchronous, so connectedCallback
+  happens AFTER
+    - Solutions: Figure out a dependable order?
+    - Solutions: Do some template mangling to pass in a reference?
+
 - Uniquely identifying components:
     - component-hash: a7efa90
     - mutation-hash: 1a3a4f9
     - mutation-hash: 0000000 # for immutable, or initial state
     - mutation-hash is only implemented for State CPart
 
-
 - Skypack "ecosystem" for example deployment:
     - https://www.skypack.dev/
 
+- SSG: Possibly make (undocumented) SSG based on jsdom and existing
+  domUtils. Use that to template the site.
+
+
 ---
+
 
 # Todo notes: 2020-12-20
 

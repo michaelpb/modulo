@@ -87,13 +87,6 @@ function make(text, ...others) {
 Modulo.DEBUG = true;
 Modulo.moddebug = {pollingRate: 1000};
 
-function assert(value, ...info) {
-    if (!value) {
-        console.error(...info);
-        throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
-    }
-}
-
 function deepEquals(a, b) {
     try {
         return JSON.stringify(a) === JSON.stringify(b);

@@ -1,32 +1,26 @@
-<template mod-component="TestComponent">
+<template mod-component="ParentComponent">
     <template>
-        <hr />
-        <h3>Welcome to TestComponent, sweaty</h3>
-        <button onclick:=script.increment>
-            Increase Count
-            <hr />
-            ${state.num}
-        </button>
+        <div>
+            <my-ChildComponent clickme:=script.gotClicked txt="Click me! :)">
+            </my-ChildComponent>
+        </div>
     </template>
-
-    <style>
-        h2 {
-            color: blue;
-        }
-    </style>
-
-    <mod-state
-        num:=1000
-    ></mod-state>
-
     <script>
-        console.log('TestComponent Factory');
-        function increment() {
-            console.log('changin 51 electr');
-            let num = state.get('num');
-            num++;
-            state.set('num', num);
+        function gotClicked() {
+            element.wasClicked = true;
+            console.log('element', element);
         }
     </script>
 </template>
 
+<template mod-component="ChildComponent">
+    <template>
+        <button @click:=props.clickme>
+            {{ props.txt }}
+        </button>
+    </template>
+    <props
+      clickme:=Function
+      txt:=String
+    ></props>
+</template>
