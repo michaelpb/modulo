@@ -12,9 +12,26 @@
 - Skypack "ecosystem" for example deployment:
     - https://www.skypack.dev/
 
-- SSG: Possibly make (undocumented) SSG based on jsdom and existing
-  domUtils. Use that to template the site.
+- SSG: Possibly make (undocumented) SSG based on jsdom and existing domUtils.
+  Use that to template the site.
+    - Usage example:
+        modulo-ssg ./docs-src output=docs/ --markdown=lib-Markdown
+    - Will copy everything, templating HTML files, and handle anything of
+      --xyz= type with the given component
+    - Ex:
 
+      <component name="Markdown">
+        <template>
+            {{ text|markdown }}
+        </template>
+        <props
+            text:=String
+        ></props>
+        <script>
+        </script>
+      </component>
+
+- Site structure:
 
 
 ---
