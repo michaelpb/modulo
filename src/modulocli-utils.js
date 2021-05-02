@@ -198,7 +198,7 @@ function loadModuloDocument(path) {
 }
 
 function walkSync(basePath) {
-    const results = [];
+    let results = [];
     const bareFileNames = fs.readdirSync(basePath);
     for (const baseName of bareFileNames) {
         file = basePath + '/' + baseName;
@@ -212,9 +212,19 @@ function walkSync(basePath) {
     return results;
 }
 
+function mkdirToContain(path) {
+    const pathPrefix = path.slice(0, path.lastIndexOf('/');
+    const mkdirOpts = {
+        mode: 0o777,
+        recursive: true,
+    };
+    fs.mkdirSync(pathPrefix, mkdirOpts);
+}
+
 module.exports = {
-  assert,
-  checkArgs,
-  parseArgs,
-  walkSync,
+    assert,
+    checkArgs,
+    mkdirToContain,
+    parseArgs,
+    walkSync,
 }

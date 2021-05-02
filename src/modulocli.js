@@ -17,7 +17,8 @@ const commands = {
         utils.assert(outputDir, 'Specify output dir, e.g. --output=docs/');
         const filenames = utils.walkSync(inputDir);
         for (const inputPath of filenames) {
-            const outputPath = ouputDir + inputPath.slice(inputDir.length);
+            const outputPath = outputDir + inputPath.slice(inputDir.length);
+            utils.mkdirToContain(outputPath);
             console.log(outputPath);
         }
         //utils.loadModuloDocument(
