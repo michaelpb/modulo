@@ -13,7 +13,6 @@
 
 <!-- <mdu-Hero></mdu-Hero> -->
 
-<mdu-Navbar></mdu-Navbar>
 
 <div class="Tagline">
     <h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>
@@ -25,6 +24,8 @@
     <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
     <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
 </div>
+
+<mdu-Navbar></mdu-Navbar>
 
 <main>
     <section>
@@ -38,38 +39,6 @@
     </section>
 </main>
 
-<main id="About">
-    <section>
-        <aside class="TitleAside">
-            <h1>Try it now</h1>
-            <p>Copy the code to the right into any HTML file:</p>
-        </aside>
-
-        <aside>
-<pre>
-&lt;script src="https://unpkg... TODO"&gt;&lt;/script&gt;
-
-&lt;!-- Define a component named TestThing --&gt;
-&lt;template modulo-component="TestThing"&gt;
-    &lt;template&gt;
-        &lt;p&gt;Hello counting world: {{ state.num }}&lt;/p&gt;
-        &lt;button @click:=script.increment&gt;Increment&lt;/p&gt;
-    &lt;/template&gt;
-    &lt;state num:=10
-    &gt;&lt;/state&gt;
-    &lt;script&gt;
-        function increment() {
-            state.num++;
-        }
-    &lt;/script&gt;
-&lt;/template&gt;
-
-&lt;!-- Now we can use it, anywhere, as often as we want! --&gt;
-&lt;x-TestThing&gt;&lt;/x-TestThing&gt;
-</pre>
-        </aside>
-    </section>
-</main>
 
 <main id="About">
     <section>
