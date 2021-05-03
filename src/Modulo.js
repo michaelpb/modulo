@@ -692,8 +692,8 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     static getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
-        return contents.match(regexpG)
-            .map(s => s.match(regexp2)[1])
+        const matches = contents.match(regexpG) || [];
+        return matches.map(s => s.match(regexp2)[1])
             .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
             .join('');
     }
@@ -705,9 +705,10 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
         return `
             'use strict';
             var ${localVarsLet};
+            var module = {exports: {}};
             function __set(name, value) { ${localVarsIfs} }
             ${contents}
-            return { ${symbolsString} setLocalVariable: __set };
+            return { ${symbolsString} setLocalVariable: __set, exports: module.exports};
         `;
     }
 

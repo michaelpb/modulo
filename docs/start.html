@@ -1,0 +1,72 @@
+<head>
+    <meta charset="utf8">
+    <title>Modulo.js</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" type="image/png" href="./img/mono_logo.png">
+    <!--<script src="./js/Modulo.js"></script>-->
+    <style id="mdu-Hero_style">
+mdu-Hero h1 {
+          font-size: 120px;
+          color: rgba(255, 255, 255, 1);
+          /*text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+          /*text-shadow: 0px -5px 5px rgba(0, 0, 0, 0.3);*/
+          text-shadow: 0px -3px 0 rgba(0, 0, 0, 0.3);
+          font-weight: bold;
+          height: 120px;
+      }
+mdu-Hero img:first-child {
+          margin-bottom: -40px;
+          margin-top: 50px;
+          max-width: 256px;
+      }
+
+mdu-Hero img:last-child {
+          margin-bottom: -62px;
+          margin-top: 50px;
+          z-index: 1;
+          position: relative;
+          max-width: none;
+          height: 196px;
+      }
+
+mdu-Hero div {
+          /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          /*background-size: 600% 600%;*/
+          background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
+              url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
+          /*animation: BGAnimTwo 10s linear infinite;*/
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+
+mdu-Hero div .dsiabled {
+          background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          background-size: 600% 600%;
+          animation: BGAnimation 20s ease infinite;
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+    </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
+
+
+
+
+<mdu-navbar selected="start">
+        <nav class="Navbar">
+            <a href="index.html"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li><a href="about.html">About</a></li>
+                <li><a href="start.html" class="Navbar--selected">Start</a></li>
+                <li><a href="docs.html">Docs</a></li>
+                <li><a href="https://github.com/michaelpb/modulo/">Source</a></li>
+                <li>v0.0.1</li>
+            </ul>
+        </nav>
+    </mdu-navbar>
+
+
+
+
+</body>

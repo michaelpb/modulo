@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf8" />
+    <title>Modulo.js</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="icon" type="image/png" href="./img/mono_logo.png" />
+    <!--<script src="./js/Modulo.js"></script>-->
+    <mod-load namespace="mdu" src="./components/core.html"></mod-load>
+</head>
+
+<body>
+
+<mdu-Navbar selected="about"></mdu-Navbar>
+
+
+
+<main>
+    <section>
+        <aside class="TitleAside">
+            <h3><span alt="Null set">?</span></h3>
+            <h3>FAQ</h3>
+        </aside>
+        <aside>
+
+            <p><strong>Q: Why call it Modulo?</strong></p>
+            <p>A: From Wikipeda: &ldquo;In mathematics, the term modulo is often
+            used to assert that two distinct mathematical objects can be
+            regarded as equivalent if their difference is accounted for by an
+            additional factor.&rdquo; Basically, it's math jargon to say two
+            things are equivalent in a given condition or context.</p>
+            <br />
+            <p>So, maybe the goal of Modulo is provide that context, making a
+            natural way to integrate the new and the old! Or maybe it sounded
+            cool. Maybe that!</p>
+
+            <br />
+            <p><strong>Q: Isn't <em>Modulo</em> already a thing in
+            JavaScript?</strong></p>
+            <p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
+            Instead, it uses the percent sign as a <em>remainder operator</em>,
+            which behaves similarly for some numbers, but differs for negative
+            numbers. So, while Modulo.js is not the first thing to be called
+            <abbr title="At the time of picking the name, there were a couple
+            similarly named projects, though none seem to be in active use or
+            development for years.">"Modulo" in JS</abbr> it <em>is not</em>
+            named after the <code>%</code> operator in JavaScript, making both
+            the logo and name are a bit of a tongue-in-cheek jab at our
+            favorite (but often deficient) computer language.</p>
+            <!--You can think of it as the missing modulo! (Except not at all.)-->
+
+            <br />
+            <p><strong>Q: Why yet another JavaScript framework?</strong></p>
+            <p>A: To me, the very idea of writing YET ANOTHER JavaScript framework
+            is vomit inducing.<br />And yet here I am.</p>
+            <br />
+            <p>While working at Kickstart Coding, developing our Django-based
+            LMS, nothing quite fit the bill for a very simple JS framework to
+            sprinkle in some extra interactive features to an otherwise very
+            straight-forward multi-page web app. The current solution was a
+            mess of Vue and scattered vanilla JavaScript (okay, and a few old
+            jQuery plugins, that we'll totally get rid of ASAP totally), with
+            the build-step and mounting code for the Vue code getting almost as
+            complicated as the little it was even doing.</p> <br />
+            <p>We didn't have the developer bandwidth needed for a SPA, and the
+            poor state of JS code was slowing down building features, not to
+            mention the brittle mounting process was hard to test.  If only I
+            could just <em>go in there and do some JS</em> without any more
+            fuss... but also develop using hot-reloading and a bundle in the
+            end. So, I gave up, gave in, and became the problem. I wrote yet
+            another JavaScript component framework.</p>
+
+            <br />
+            <p><strong>Q: Isn't custom DOM-resolution good / bad?</strong></p>
+            <p>Maybe. But the good news is, with Modulo you get both!</p>
+
+
+
+        </aside>
+    </section>
+</main>
+
+</body>
+</html>
