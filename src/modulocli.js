@@ -1,16 +1,10 @@
 //const Modulo = require('./src/Modulo');
 const utils = require('./modulocli-utils');
+const path = require('path');
 
-const ssgHandlers = {
-    html: (input, output, filenames) => {
-    },
-    default: (input, output, filenames) => {
-    },
-}
 
 const commands = {
     ssg: args => {
-        console.log('this is args', args);
         const inputDir = args.positional[0];
         const outputDir = args.flags.output;
         utils.assert(inputDir, 'Specify a source directory');
@@ -19,9 +13,19 @@ const commands = {
         for (const inputPath of filenames) {
             const outputPath = outputDir + inputPath.slice(inputDir.length);
             utils.mkdirToContain(outputPath);
-            console.log(outputPath);
+            const ext = path.extname(inputPath);
+            if (ext === '.html') {
+                utils.renderModuloHtml(inputPath, outputPath, () => {
+                    console.log('RENDER:', inputPath, '->', outputPath);
+                });
+            } else if (ext === '.md') {
+                console.error('Markdown not yet supported');
+            } else {
+                utils.copyIfDifferent(inputPath, outputPath, () => {
+                    console.log('COPIED:', inputPath, '->', outputPath);
+                });
+            }
         }
-        //utils.loadModuloDocument(
     },
     buildjs: args => {
         // BROKEN

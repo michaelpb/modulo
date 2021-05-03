@@ -65,12 +65,12 @@ function checkArgs(args, commands) {
     }
 }
 
-function loadModuloDocument(path) {
+function loadModuloDocument(path, html) {
     /*
       Very hacky function to load Modulo and mock set it up with a path to
       a given HTML file. The JSDOM document is returned.
     */
-    return setupModulo(path);
+    return setupModulo(path, false, html);
 
     // Very simple hacky way to do mocked web-components define
     function webComponentsUpgrade(dom, el, cls, secondTime=false) {
@@ -101,19 +101,6 @@ function loadModuloDocument(path) {
         }
     }
 
-    function clearRequireCache(searchPath) {
-        const path = pathlib.resolve(__dirname, searchPath);
-        delete require.cache[path];
-        // Just clear anyhting with Modulo
-        for (const key of Object.keys(require.cache)) {
-            if (key.includes('Modulo')) {
-                // console.log('this is key', key);
-                delete require.cache[key];
-            }
-        }
-        //require.cache = {};
-    }
-
     function setupModulo(path = null, includeDebugger = false, html = '') {
         let Modulo;
         if (includeDebugger) {
@@ -121,7 +108,12 @@ function loadModuloDocument(path) {
         } else {
             Modulo = require('./Modulo.js');
         }
-        const htmlCode = path ? fs.readFileSync(path, 'utf-8') : html;
+
+        let htmlCode = html;
+        if (html === '') {
+            htmlCode = fs.readFileSync(path, 'utf-8');
+        }
+
         const dom = new JSDOM(htmlCode);
         Modulo.document = dom.window.document; // for easier testing
         Modulo.globals.DOMParser = DOMParser;
@@ -172,6 +164,18 @@ function loadModuloDocument(path) {
                                 data = func(fullPath, data);
                             }
                             callback(data);
+                            /*
+                            fs.readFile(fullPath, 'utf-8', (err, data) => {
+                                if (err) {
+                                    console.error('ERROR', err);
+                                    return;
+                                }
+                                for (const func of Modulo.globals.mockModifyFile) {
+                                    data = func(fullPath, data);
+                                }
+                                callback(data);
+                            });
+                            */
                         }
                     };
                 },
@@ -213,7 +217,7 @@ function walkSync(basePath) {
 }
 
 function mkdirToContain(path) {
-    const pathPrefix = path.slice(0, path.lastIndexOf('/');
+    const pathPrefix = path.slice(0, path.lastIndexOf('/'));
     const mkdirOpts = {
         mode: 0o777,
         recursive: true,
@@ -221,10 +225,58 @@ function mkdirToContain(path) {
     fs.mkdirSync(pathPrefix, mkdirOpts);
 }
 
+function copyIfDifferent(inputPath, outputPath, callback) {
+    fs.stat(inputPath, (err1, inputStats) => fs.stat(outputPath,
+        (err2, outputStats) => {
+            let shouldCopy = false;
+            if (err1 || err2 || !inputStats || !outputStats) {
+                shouldCopy = true; // if doesn't exist or inaccessible
+            } else if (inputStats.size !== outputStats.size) {
+                shouldCopy = true;
+            } else if (String(inputStats.mtime) !== String(outputStats.mtime)) {
+                shouldCopy = true;
+            }
+
+            if (shouldCopy) {
+                fs.copyFile(inputPath, outputPath, () => {
+                    // Copy over mtime to new file
+                    fs.utimes(outputPath, outputStats.atime, inputStats.mtime, (err) => {
+                        if (err) {
+                            console.error('ERROR', err);
+                        } else if (callback) {
+                            callback();
+                        }
+                    });
+                });
+            }
+        })
+    );
+}
+
+function renderModuloHtml(inputPath, outputPath, callback) {
+    fs.readFile(inputPath, (err, inputContents) => {
+        if (err) {
+            console.error('ERROR', err);
+            return;
+        }
+        const {document} = loadModuloDocument(inputPath, inputContents);
+        const html = document.documentElement.innerHTML;
+        fs.writeFile(outputPath, html, {encoding: 'utf8'}, err => {
+            if (err) {
+                console.error('ERROR', err);
+            } else if (callback) {
+                callback();
+            }
+        });
+    });
+}
+
 module.exports = {
     assert,
     checkArgs,
+    copyIfDifferent,
     mkdirToContain,
     parseArgs,
+    renderModuloHtml,
     walkSync,
 }

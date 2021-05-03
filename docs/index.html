@@ -1,0 +1,342 @@
+<head>
+    <meta charset="utf8">
+    <title>Modulo.js</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" type="image/png" href="./img/mono_logo.png">
+
+    <script src="http://unpkg.com/set-dom/dist/set-dom.js"></script>
+    <script src="./js/Modulo.js"></script>
+    <script src="./js/ModuloDebugger.js"></script>
+    <style id="mdu-Hero_style">
+mdu-Hero h1 {
+          font-size: 120px;
+          color: rgba(255, 255, 255, 1);
+          /*text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+          /*text-shadow: 0px -5px 5px rgba(0, 0, 0, 0.3);*/
+          text-shadow: 0px -3px 0 rgba(0, 0, 0, 0.3);
+          font-weight: bold;
+          height: 120px;
+      }
+mdu-Hero img:first-child {
+          margin-bottom: -40px;
+          margin-top: 50px;
+          max-width: 256px;
+      }
+
+mdu-Hero img:last-child {
+          margin-bottom: -62px;
+          margin-top: 50px;
+          z-index: 1;
+          position: relative;
+          max-width: none;
+          height: 196px;
+      }
+
+mdu-Hero div {
+          /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          /*background-size: 600% 600%;*/
+          background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
+              url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
+          /*animation: BGAnimTwo 10s linear infinite;*/
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+
+mdu-Hero div .dsiabled {
+          background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          background-size: 600% 600%;
+          animation: BGAnimation 20s ease infinite;
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+    </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
+
+
+
+
+<mdu-hero>
+        <div>
+            <img src="./img/logo_sans_stroke_white.png" alt="Percent sign logo">
+            <br>
+            <img src="./img/text_logo.png" alt="Modulo.js">
+        </div>
+    </mdu-hero>
+
+
+<div class="Tagline">
+    <!--<h1>Modulo.js is a 1000 line <br />JavaScript UI framework</h1>-->
+    <h1>A tiny JavaScript UI framework</h1>
+    <br> <br>
+    <h2>☑ 1000 lines of code as a thin layer over vanilla Web Components</h2>
+    <h2>☑ Components system inspired by React, Svelte, and Polymer</h2>
+    <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
+    <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
+</div>
+
+<nav class="Navbar">
+    <a href="index"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li><a href="#About">About</a></li>
+        <li><a href="#start">Start</a></li>
+        <li><a href="#docs">Docs</a></li>
+        <li><a href="https://github.com/michaelpb/modulo/">GitHub</a></li>
+        <li>v0.1.0</li>
+    </ul>
+</nav>
+
+<main>
+    <section>
+        <aside class="TitleAside">
+            <h1>Example: ToDo App</h1>
+            <mdu-nestingtest>
+        <div>
+            <mdu-childcomponent clickme:="script.gotClicked" txt="Click me! :)">
+        <button @click:="props.clickme">
+            Click me! :)
+        </button>
+    </mdu-childcomponent>
+        </div>
+    </mdu-nestingtest>
+        </aside>
+        <aside>
+            <mdu-todo>
+        <ol>
+            <li><h1>To Do!</h1></li>
+            
+                <li>Milk</li>
+            
+                <li>Bread</li>
+            
+                <li>Candy</li>
+            
+            <li>
+                <input [state.bind]="" name="text">
+                <button @click:="script.addItem">
+                    Add
+                </button>
+            </li>
+        </ol>
+    </mdu-todo>
+        </aside>
+    </section>
+</main>
+
+<main id="About">
+    <section>
+        <aside class="TitleAside">
+            <h1>Try it now</h1>
+            <p>Copy the code to the right into any HTML file:</p>
+        </aside>
+
+        <aside>
+<pre>&lt;script src="https://unpkg... TODO"&gt;&lt;/script&gt;
+
+&lt;!-- Define a component named TestThing --&gt;
+&lt;template modulo-component="TestThing"&gt;
+    &lt;template&gt;
+        &lt;p&gt;Hello counting world: {{ state.num }}&lt;/p&gt;
+        &lt;button @click:=script.increment&gt;Increment&lt;/p&gt;
+    &lt;/template&gt;
+    &lt;state num:=10
+    &gt;&lt;/state&gt;
+    &lt;script&gt;
+        function increment() {
+            state.num++;
+        }
+    &lt;/script&gt;
+&lt;/template&gt;
+
+&lt;!-- Now we can use it, anywhere, as often as we want! --&gt;
+&lt;x-TestThing&gt;&lt;/x-TestThing&gt;
+</pre>
+        </aside>
+    </section>
+</main>
+
+<main id="About">
+    <section>
+        <aside class="TitleAside">
+            <h3><span alt="Null set">∅</span></h3>
+            <h3>Fewer</h3>
+            <h3>assumptions</h3>
+            <p><a href="getting_started">Get started now</a></p>
+        </aside>
+        <aside>
+            <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
+            just drop it into any HTML file.  Unlike jQuery, that 1 file packs
+            in a component system, hot-reloading, a tiny build system to pack
+            your CSS and JS for production, and even debug tools.</p>
+
+            <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
+            wheels. Like Polymer (LitElement) or Skate.js, Modulo is built as a
+            thin-layer over web standards that are now well-supported. In fact,
+            if used purely for stateless components, it's all HTML and CSS!</p>
+
+            <p><strong>Progressive enhancement</strong> - JAMStack is fine and
+            all, but what about all our existing server-side apps in Ruby on
+            Rails, Python and Django, or that one home-grown PHP monster that
+            will never go away? Modulo was made to give structure and
+            convenience to that extra sprinkle of JavaScript that will make
+            your "traditional" web apps <em>shine</em>.</p>
+        </aside>
+    </section>
+
+    <section>
+        <aside>
+            <p><strong>CParts</strong> - Create components by putting together
+            one or more Component Parts or <em>CParts</em>. Mix Script, Style,
+            State, Props, and Templates to make components that have one or
+            all, or multiples, of these features. Combine CParts between
+            components for a powerful system of "composition-based" inheritance
+            that's more familiar to web developers.</p>
+            <p><strong>Everything is swappable</strong> - Components configure
+            themselves, meaning you can "mix and match" templating languages,
+            or try out DOM-resolution on or off per-component basis.</p>
+            <p><strong>Lifecycle hooks and directives</strong> - Hook your
+            own code into the component rendering lifecycle, either through
+            callbacks, or by defining custom attribute-based directives.</p>
+        </aside>
+        <aside>
+            <h3><span alt="Sigma">Σ</span></h3>
+            <h3>More<br>modular</h3>
+            <p><a href="getting_started">Read the docs</a></p>
+        </aside>
+    </section>
+
+
+
+    <section>
+        <aside class="TitleAside">
+            <h3><span alt="Modulo operator">%</span></h3>
+            <h3>Similar<br>(but&nbsp;simpler)</h3>
+            <p><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Read Modulo.js</a></p>
+        </aside>
+
+        <aside>
+            <p><strong>"It's like React"</strong> - Modulo has components,
+            props, state, lifecycle methods, virtual DOM (if you want it),
+            hot-reloading, debugging tools with introspection - get the
+            creature comforts of React or Vue, but with a compatible syntax and
+            a shorter time to integrate.</p>
+            <p><strong>Concise</strong> - The code-base is intentionally kept
+            short &amp; sweet, so when something goes wrong you can always
+            <tt>git blame</tt> Modulo.</p>
+            <p><strong>Opinionated defaults</strong> - Modulo is cohesive,
+            coming with a templating system and DOM resolution out-of-the-box.
+            Modulo is for people who like the consistency of following the
+            rules, but we're all adults now so it's okay to break 'em if they
+            get in the way, meaning any of these defaults can be replaced.  But
+            like your parents always warned you, "Don't directly mutate state!"
+            </p>
+            <!--<p><strong>No more of "this"</strong> - OOP in JavaScript? Not a
+            fan.</p>
+            <p><strong>Fork it</strong> - It's small so you can make it your
+            own.</p>-->
+        </aside>
+    </section>
+
+
+    <section>
+        <aside>
+            <img src="https://i.imgur.com/BLbcneR.jpg" alt="Michael at a laptop" style="float: left; margin-right: 10px; width: 100px;"><br>
+            <h3>Learn JavaScript from me</h3>
+            <p><strong>Shameless plug:</strong>
+            Hi, I'm Michael. I also teach coding courses covering Python
+            fundamentals, Python / Django, the cutting-edge of React
+            JavaScript, and Computer Science for job interview prep.
+            Modulo is my thing. Kickstart Coding is
+            also my thing. Check it out and use discount code: #MODULO</p>
+        </aside>
+        <aside style="border: none" class="TitleAside">
+            <p>
+                <a href="https://kickstartcoding.com/">
+                    <img src="https://i.imgur.com/JTGfM2r.png"><br>
+                </a>
+            </p>
+            <h3><small>SPONSORED BY</small> Kickstart&nbsp;Coding</h3>
+            <p><a href="">$299 / month, for "custom paced" full-stack
+            training</a></p>
+        </aside>
+    </section>
+
+
+
+    <section>
+        <aside class="TitleAside">
+            <h3><span alt="Null set">?</span></h3>
+            <h3>FAQ</h3>
+        </aside>
+        <aside>
+
+            <p><strong>Q: Why call it Modulo?</strong></p>
+            <p>A: From Wikipeda: “In mathematics, the term modulo is often
+            used to assert that two distinct mathematical objects can be
+            regarded as equivalent if their difference is accounted for by an
+            additional factor.” Basically, it's math jargon to say two
+            things are equivalent in a given condition or context.</p>
+            <br>
+            <p>So, maybe the goal of Modulo is provide that context, making a
+            natural way to integrate the new and the old! Or maybe it sounded
+            cool. Maybe that!</p>
+
+            <br>
+            <p><strong>Q: Isn't <em>Modulo</em> already a thing in
+            JavaScript?</strong></p>
+            <p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
+            Instead, it uses the percent sign as a <em>remainder operator</em>,
+            which behaves similarly for some numbers, but differs for negative
+            numbers. So, while Modulo.js is not the first thing to be called
+            <abbr title="At the time of picking the name, there were a couple
+            similarly named projects, though none seem to be in active use or
+            development for years.">"Modulo" in JS</abbr> it <em>is not</em>
+            named after the <code>%</code> operator in JavaScript, making both
+            the logo and name are a bit of a tongue-in-cheek jab at our
+            favorite (but often deficient) computer language.</p>
+            <!--You can think of it as the missing modulo! (Except not at all.)-->
+
+            <br>
+            <p><strong>Q: Why yet another JavaScript framework?</strong></p>
+            <p>A: To me, the very idea of writing YET ANOTHER JavaScript framework
+            is vomit inducing.<br>And yet here I am.</p>
+            <br>
+            <p>While working at Kickstart Coding, developing our Django-based
+            LMS, nothing quite fit the bill for a very simple JS framework to
+            sprinkle in some extra interactive features to an otherwise very
+            straight-forward multi-page web app. The current solution was a
+            mess of Vue and scattered vanilla JavaScript (okay, and a few old
+            jQuery plugins, that we'll totally get rid of ASAP totally), with
+            the build-step and mounting code for the Vue code getting almost as
+            complicated as the little it was even doing.</p> <br>
+            <p>We didn't have the developer bandwidth needed for a SPA, and the
+            poor state of JS code was slowing down building features, not to
+            mention the brittle mounting process was hard to test.  If only I
+            could just <em>go in there and do some JS</em> without any more
+            fuss... but also develop using hot-reloading and a bundle in the
+            end. So, I gave up, gave in, and became the problem. I wrote yet
+            another JavaScript component framework.</p>
+
+            <br>
+            <p><strong>Q: Isn't custom DOM-resolution good / bad?</strong></p>
+            <p>Maybe. But the good news is, with Modulo you get both!</p>
+
+
+
+        </aside>
+    </section>
+    <!--
+    <p class="codepen" data-height="330" data-theme-id="light" data-default-tab="html,result" data-user="kickstartcoding" data-slug-hash="KKgqOzg" style="height: 330px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="ModuloTest">
+    <span>See the Pen <a href="https://codepen.io/kickstartcoding/pen/KKgqOzg">
+    ModuloTest</a> by Kickstart Coding (<a href="https://codepen.io/kickstartcoding">@kickstartcoding</a>)
+    on <a href="https://codepen.io">CodePen</a>.</span>
+    </p>
+    <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+    -->
+</main>
+
+
+
+</body>
