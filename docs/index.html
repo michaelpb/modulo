@@ -55,47 +55,25 @@ mdu-Hero div .dsiabled {
 
 <!-- <mdu-Hero></mdu-Hero> -->
 
+<div class="IndexWrapper">
+    <div class="Tagline">
+        <h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>
+        <h1 class="Tagline-title">MODULO</h1>
+        <h2>A tiny JavaScript UI framework</h2>
+        <br> <br>
+        <h2>☑ 1000 lines of code as a thin layer over vanilla Web Components</h2>
+        <h2>☑ Components system inspired by React, Svelte, and Polymer</h2>
+        <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
+        <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
+    </div>
 
-<div class="Tagline">
-    <h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>
-    <h1 class="Tagline-title">MODULO</h1>
-    <h2>A tiny JavaScript UI framework</h2>
-    <br> <br>
-    <h2>☑ 1000 lines of code as a thin layer over vanilla Web Components</h2>
-    <h2>☑ Components system inspired by React, Svelte, and Polymer</h2>
-    <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
-    <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
-</div>
-
-<mdu-navbar>
-        <nav class="Navbar">
-            <a href="index.html"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li><a href="about.html">About</a></li>
-                <li><a href="start.html">Start</a></li>
-                <li><a href="docs.html">Docs</a></li>
-                <li><a href="https://github.com/michaelpb/modulo/">Source</a></li>
-                <li>v0.0.1</li>
-            </ul>
-        </nav>
-    </mdu-navbar>
-
-<main>
-    <section>
-        <aside class="TitleAside">
-            <h1>Example: ToDo App</h1>
-            <mdu-nestingtest>
-        <div>
-            <mdu-childcomponent clickme:="script.gotClicked" txt="Click me! :)">
-        <button @click:="props.clickme">
-            Click me! :)
-        </button>
-    </mdu-childcomponent>
-        </div>
-    </mdu-nestingtest>
-        </aside>
-        <aside>
-            <mdu-todo>
+    <main>
+        <section>
+            <aside class="TitleAside">
+                <h1>Example: ToDo App</h1>
+            </aside>
+            <aside>
+                <mdu-todo>
         <ol>
             <li><h1>To Do!</h1></li>
             
@@ -113,94 +91,26 @@ mdu-Hero div .dsiabled {
             </li>
         </ol>
     </mdu-todo>
-        </aside>
-    </section>
-</main>
+            </aside>
+        </section>
+    </main>
+</div>
+
+<mdu-navbar>
+        <nav class="Navbar">
+            <a href="index.html"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li><a href="about.html">About</a></li>
+                <li><a href="start.html">Start</a></li>
+                <li><a href="docs.html">Docs</a></li>
+                <li><a href="https://github.com/michaelpb/modulo/">Source</a></li>
+                <li>v0.0.1</li>
+            </ul>
+        </nav>
+    </mdu-navbar>
 
 
-<main id="About">
-    <section>
-        <aside class="TitleAside">
-            <h3><span alt="Null set">∅</span></h3>
-            <h3>Fewer</h3>
-            <h3>assumptions</h3>
-            <p><a href="start.html">Get started now</a></p>
-        </aside>
-        <aside>
-            <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
-            just drop it into any HTML file.  Unlike jQuery, that 1 file packs
-            in a component system, hot-reloading, a tiny build system to pack
-            your CSS and JS for production, and even debug tools.</p>
-
-            <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
-            wheels. Like Polymer (LitElement) or Skate.js, Modulo is built as a
-            thin-layer over web standards that are now well-supported. In fact,
-            if used purely for stateless components, it's all HTML and CSS!</p>
-
-            <p><strong>Progressive enhancement</strong> - JAMStack is fine and
-            all, but what about all our existing server-side apps in Ruby on
-            Rails, Python and Django, or that one home-grown PHP monster that
-            will never go away? Modulo was made to give structure and
-            convenience to that extra sprinkle of JavaScript that will make
-            your "traditional" web apps <em>shine</em>.</p>
-        </aside>
-    </section>
-
-    <section>
-        <aside>
-            <p><strong>CParts</strong> - Create components by putting together
-            one or more Component Parts or <em>CParts</em>. Mix Script, Style,
-            State, Props, and Templates to make components that have one or
-            all, or multiples, of these features. Combine CParts between
-            components for a powerful system of "composition-based" inheritance
-            that's more familiar to web developers.</p>
-            <p><strong>Everything is swappable</strong> - Components configure
-            themselves, meaning you can "mix and match" templating languages,
-            or try out DOM-resolution on or off per-component basis.</p>
-            <p><strong>Lifecycle hooks and directives</strong> - Hook your
-            own code into the component rendering lifecycle, either through
-            callbacks, or by defining custom attribute-based directives.</p>
-        </aside>
-        <aside>
-            <h3><span alt="Sigma">Σ</span></h3>
-            <h3>More<br>modular</h3>
-            <p><a href="docs.html">Read the docs</a></p>
-        </aside>
-    </section>
-
-
-
-    <section>
-        <aside class="TitleAside">
-            <h3><span alt="Modulo operator">%</span></h3>
-            <h3>Similar<br>(but&nbsp;simpler)</h3>
-            <p><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Read Modulo.js</a></p>
-        </aside>
-
-        <aside>
-            <p><strong>"It's like React"</strong> - Modulo has components,
-            props, state, lifecycle methods, virtual DOM (if you want it),
-            hot-reloading, debugging tools with introspection - get the
-            creature comforts of React or Vue, but with a compatible syntax and
-            a shorter time to integrate.</p>
-            <p><strong>Concise</strong> - The code-base is intentionally kept
-            short &amp; sweet, so when something goes wrong you can always
-            <tt>git blame</tt> Modulo.</p>
-            <p><strong>Opinionated defaults</strong> - Modulo is cohesive,
-            coming with a templating system and DOM resolution out-of-the-box.
-            Modulo is for people who like the consistency of following the
-            rules, but we're all adults now so it's okay to break 'em if they
-            get in the way, meaning any of these defaults can be replaced.  But
-            like your parents always warned you, "Don't directly mutate state!"
-            </p>
-            <!--<p><strong>No more of "this"</strong> - OOP in JavaScript? Not a
-            fan.</p>
-            <p><strong>Fork it</strong> - It's small so you can make it your
-            own.</p>-->
-        </aside>
-    </section>
-
-
+<main>
     <section>
         <aside>
             <img src="https://i.imgur.com/BLbcneR.jpg" alt="Michael at a laptop" style="float: left; margin-right: 10px; width: 100px;"><br>

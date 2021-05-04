@@ -192,11 +192,11 @@ nav.Navbar ul {
 }
 
 
-div.Tagline {
-    padding-top: 100px;
-    padding-bottom: 100px;
-    text-align: center;
+div.IndexWrapper {
     min-height: calc(100vh - 100px);
+}
+div.Tagline {
+    text-align: center;
 }
 
 h1.Tagline-title {
