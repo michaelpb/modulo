@@ -12,15 +12,22 @@ const commands = {
         for (const inputPath of filenames) {
             const outputPath = outputDir + inputPath.slice(inputDir.length);
             utils.mkdirToContain(outputPath);
-            const ext = path.extname(inputPath);
-            if (ext === '.html') {
-                utils.renderModuloHtml(inputPath, outputPath, () => {
+            const ext = path.extname(inputPath).slice(1).lower();
+            if (ext === 'html') {
+                utils.renderModuloHtml(inputPath, outputPath, null, () => {
                     console.log('RENDER:', inputPath, '->', outputPath);
                 });
-            } else if (ext === '.md') {
-                console.error('Markdown not yet supported');
+            } else if (ext in args.flags) {
+                const tmpltPath = args.flags[ext];
+                fs.readFile(inputPath, 'utf8', (err, content) => {
+                    const args = {inputPath, outputPath, filenames, content};
+                    utils.renderModuloHtml(tmpltPath, outputPath, args, () => {
+                        console.log('TEMPLATE:', inputPath, '->', outputPath,
+                                    `(USING: ${tmpltPath})`);
+                    });
+                });
             } else {
-                utils.copyIfDifferent(inputPath, outputPath, () => {
+                utils.copyIfDifferent(inputPath, outputPath, null, () => {
                     console.log('COPIED:', inputPath, '->', outputPath);
                 });
             }
