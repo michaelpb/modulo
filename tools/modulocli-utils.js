@@ -16,10 +16,20 @@ function assert(value, ...info) {
 
 function parseArgs(argArray) {
     argArray.shift(); // always get rid of first argument
-    if (argArray[0].endsWith('modulocli.js')) {
+    if (argArray[0].endsWith('modulocli.js')
+          || argArray[0].endsWith('modulocli')) {
         argArray.shift(); // shift again, if necessary
     }
-    const args = {flags: {}, positional: [], command: null};
+
+    const confPath = process.env.MODCLI_CONF || './modulocli.json';
+    const stat = fs.statSync(confPath);
+    const flags = {};
+    if (stat && !stat.isDirectory()) {
+        const jsonText = fs.readFileSync(confPath, 'utf-8');
+        flags = JSON.parse(jsonText);
+    }
+
+    const args = {flags, positional: [], command: null};
     let currentFlag = null;
     for (const arg of argArray) {
         if (arg.startsWith('-')) {
@@ -104,9 +114,9 @@ function loadModuloDocument(path, html) {
     function setupModulo(path = null, includeDebugger = false, html = '') {
         let Modulo;
         if (includeDebugger) {
-            Modulo = require('./ModuloDebugger.js');
+            Modulo = require('../src/ModuloDebugger.js');
         } else {
-            Modulo = require('./Modulo.js');
+            Modulo = require('../src/Modulo.js');
         }
 
         let htmlCode = html;

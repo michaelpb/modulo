@@ -2,7 +2,6 @@
 const utils = require('./modulocli-utils');
 const path = require('path');
 
-
 const commands = {
     ssg: args => {
         const inputDir = args.positional[0];
@@ -40,7 +39,6 @@ const commands = {
         });
     },
 };
-
 
 function main(argv) {
     const args = utils.parseArgs(Array.from(argv));
