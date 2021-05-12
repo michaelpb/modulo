@@ -1,8 +1,12 @@
+:root {
+    --highlight-color: #B90183;
+}
+
 html {
   box-sizing: border-box;
   font-size: 16px;
   line-height: 1.5;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: sans-serif;
 }
 
 *, *:before, *:after {
@@ -51,8 +55,12 @@ nav.Navbar li {
 nav.Navbar li a {
     font-size: 30px;
     text-transform: uppercase;
+    color: black;
 }
 
+nav.Navbar li a.Navbar--selected {
+    text-decoration: overline underline;
+}
 
 main {
     max-width: 800px;
@@ -174,7 +182,7 @@ nav.Navbar {
     top: 0;
     z-index: 2;
     /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/
-    border-bottom: 1px dotted #aaa;
+    border-bottom: 1px solid black;
 }
 
 nav.Navbar ul {
@@ -184,21 +192,30 @@ nav.Navbar ul {
 }
 
 
+div.IndexWrapper {
+    min-height: calc(100vh - 100px);
+}
 div.Tagline {
-    position: relative;
-    z-index: 2;
-    background-color: white;
-    top: 0;
-    padding: 70px;
-    height: calc(50vh - 100px);
     text-align: center;
 }
 
-div.Tagline h1 {
-    text-align: left;
+h1.Tagline-title {
     text-align: center;
-    font-size: 50px;
+    font-size: 60px;
     line-height: 1.0;
+    font-weight: bold;
+    color: var(--highlight-color);
+}
+
+h1.Tagline-logo {
+    text-align: center;
+    font-size: 200px;
+    line-height: 1.0;
+    /*text-shadow: 0 0 27px var(--highlight-color);*/
+    text-shadow: 0 0 27px #000;
+    color: white;
+    background: white;
+    font-weight: bold;
 }
 
 main {
@@ -243,6 +260,10 @@ a:visited {
     nav.Navbar ul {
         flex-wrap: wrap;
         justify-content: flex-start;
+    }
+
+    div.Tagline {
+        padding: 5px;
     }
 
 }

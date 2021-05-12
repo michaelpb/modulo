@@ -76,6 +76,7 @@ function checkArgs(args, commands) {
 }
 
 function loadModuloDocument(path, html) {
+    const includeRequire = true;
     /*
       Very hacky function to load Modulo and mock set it up with a path to
       a given HTML file. The JSDOM document is returned.
@@ -125,6 +126,9 @@ function loadModuloDocument(path, html) {
         }
 
         const dom = new JSDOM(htmlCode);
+        if (includeRequire) {
+            Modulo.require = require; // for ssg
+        }
         Modulo.document = dom.window.document; // for easier testing
         Modulo.globals.DOMParser = DOMParser;
         Modulo.globals.HTMLElement.prototype.getAttribute = a => 'XYZYX getAttribute plcholder hack';
@@ -250,7 +254,7 @@ function copyIfDifferent(inputPath, outputPath, callback) {
             if (shouldCopy) {
                 fs.copyFile(inputPath, outputPath, () => {
                     // Copy over mtime to new file
-                    fs.utimes(outputPath, outputStats.atime, inputStats.mtime, (err) => {
+                    fs.utimes(outputPath, inputStats.atime, inputStats.mtime, (err) => {
                         if (err) {
                             console.error('ERROR', err);
                         } else if (callback) {
