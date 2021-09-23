@@ -2,19 +2,18 @@
 <html>
 <head>
     <meta charset="utf8" />
-    <title>Modulo.js</title>
+    <title>Source - Modulo.js</title>
     <link rel="stylesheet" media="all" href="<%= css %>" /> <!-- for doccu css -->
     <link rel="stylesheet" href="../../css/style.css" />
-    <link rel="icon" type="image/png" href="./img/mono_logo.png" />
-    <script src="../js/Modulo.js"></script>
+    <link rel="icon" type="image/png" href="../../img/mono_logo.png" />
+    <script src="../../js/Modulo.js"></script>
     <mod-load namespace="mdu" src="../../components/core.html"></mod-load>
     <mod-load namespace="mdu" src="../../components/pageparts.html"></mod-load>
 </head>
 
 <body>
   <mdu-Navbar selected="source"></mdu-Navbar>
-
-  <h1>Modulo!!</h1>
+  <script>Modulo.defineAll();</script>
 
   <div id="container">
     <div id="background"></div>

@@ -1,16 +1,24 @@
 'use strict';
 
-// # % Modulo - Introduction
+// # Introduction
 // Welcome to the Modulo.js source code.
 
-// Unlike most code files, this one is arranged in a very deliberate way. It's
-// arranged in a top-down manner, reflecting the lifecycle of a Modulo
+/* tl;dr: Modulo.globals is the same thing as "window" */
+if (typeof HTMLElement === 'undefined') {
+    var HTMLElement = class {}; // Node.js compatibilty
+}
+var globals = {HTMLElement};
+var Modulo = {globals};
+
+
+// **Unlike most code files, this one is arranged in a very deliberate way.**
+// It's arranged in a top-down manner, reflecting the lifecycle of a Modulo
 // component, such that the earlier and more important code is at the top, and
 // later and less important code is at the bottom. Thus, it is written like a
-// linear "story" of how Modulo works. Modulo employs "literate programming", or
-// interweaving Markdown-formatted comments on to tell this story, and using a
-// tool to extract all these comments for easy reading (if you are viewing this
-// as an HTML file, what you are reading right now!). Excluding this
+// linear "story" of how Modulo works. Modulo employs
+// [literate programming](https://en.wikipedia.org/wiki/Literate_programming),
+// or interweaving Markdown-formatted comments on to tell this story, and using
+// a tool to extract all these comments for easy reading. Excluding this
 // documentation you are reading now, the Modulo source code remains under 1000
 // lines of code.
 
@@ -25,13 +33,6 @@
 // - Modulo.globals - Identical to "window", helps keep unit-tests simpler
 
 
-/* tl;dr: Modulo.globals is the same thing as "window" */
-if (typeof HTMLElement === 'undefined') {
-    var HTMLElement = class {}; // Node.js compatibilty
-}
-var globals = {HTMLElement};
-var Modulo = {globals};
-
 
 // ## Modulo.defineAll()
 // Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
@@ -42,23 +43,23 @@ Modulo.defineAll = function defineAll() {
 };
 
 // # Modulo.Loader
-// Once registered by defineAll(), the Modulo.Loader will do the rest of the
-// heavy lifting of fetching & registering Modulo components.
+// Once registered by `defineAll()`, the `Modulo.Loader` will do the rest of
+// the heavy lifting of fetching & registering Modulo components.
 Modulo.Loader = class Loader extends HTMLElement {
 
     // ## Loader: connectedCallback()
 
-    // The web components specifies the definition of a "connectedCallback"
-    // function. In this case, this function will be invoked as soon as the DOM
-    // is loaded with a `<mod-load>` tag in it.
-
-    // The function initializes starting data & sends a new request to the URL
-    // specified by the src attribute. When the response is received, it loads
-    // the text as a Modulo component module definition.
+    // The Web Components specifies the use of a "connectedCallback" function.
+    // In this case, this function will be invoked as soon as the DOM is loaded
+    // with a `<mod-load>` tag in it.
     connectedCallback() {
         this.src = this.getAttribute('src');
         this.initialize(this.getAttribute('namespace'), Modulo.utils.parseAttrs(this));
         /* TODO: Check if already loaded via a global / static serialized obj */
+
+        // After initializing data, send a new request to the URL specified by
+        // the src attribute. When the response is received, load the text as a
+        // Modulo component module definition.
         Modulo.globals.fetch(this.src)
             .then(response => response.text())
             .then(text => this.loadString(text));

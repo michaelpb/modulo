@@ -1,39 +1,6 @@
-/*--------------------- Typography ----------------------------*/
-
-@font-face {
-    font-family: 'aller-light';
-    src: url('public/fonts/aller-light.eot');
-    src: url('public/fonts/aller-light.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/aller-light.woff') format('woff'),
-         url('public/fonts/aller-light.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'aller-bold';
-    src: url('public/fonts/aller-bold.eot');
-    src: url('public/fonts/aller-bold.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/aller-bold.woff') format('woff'),
-         url('public/fonts/aller-bold.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'roboto-black';
-    src: url('public/fonts/roboto-black.eot');
-    src: url('public/fonts/roboto-black.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/roboto-black.woff') format('woff'),
-         url('public/fonts/roboto-black.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 /*--------------------- Layout ----------------------------*/
 html { height: 100%; }
 body {
-  font-family: "aller-light";
   font-size: 14px;
   line-height: 18px;
   color: #30404f;
@@ -41,6 +8,11 @@ body {
   height:100%;
 }
 #container { min-height: 100%; }
+div.annotation {
+    overflow-x: hidden;
+    overflow-y: visible !important; /* mpsb */
+  }
+
 
 a {
   color: #000;
@@ -48,7 +20,6 @@ a {
 
 b, strong {
   font-weight: normal;
-  font-family: "aller-bold";
 }
 
 p {
@@ -67,8 +38,6 @@ h1, h2, h3, h4, h5, h6 {
   color: #112233;
   line-height: 1em;
   font-weight: normal;
-  font-family: "roboto-black";
-  text-transform: uppercase;
   margin: 30px 0 15px 0;
 }
 
@@ -88,7 +57,6 @@ hr {
 
 pre, tt, code {
   font-size: 12px; line-height: 16px;
-  font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
   margin: 0; padding: 0;
 }
   .annotation pre {
@@ -114,7 +82,6 @@ blockquote {
   padding: 1px 0 1px 1em;
 }
   .sections blockquote p {
-    font-family: Menlo, Consolas, Monaco, monospace;
     font-size: 12px; line-height: 16px;
     color: #999;
     margin: 10px 0 0;
@@ -313,6 +280,7 @@ ul.sections > li > div {
     min-height: 5px;
     padding: 13px;
     overflow-x: hidden;
+    overflow-y: visible; /* mpsb */
     white-space: normal;
     vertical-align: top;
     text-align: left;
