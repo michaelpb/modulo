@@ -21,13 +21,16 @@ const testScript1 = `
         // etc
     }
 `;
+
 const expectedFuncsString = `
     "testing123": typeof testing123 !== "undefined" ? testing123 : undefined,
     "testing321": typeof testing321 !== "undefined" ? testing321 : undefined,
 `;
+
 const expectedWrappedScript = `
     'use strict';
     var var1,var2;
+    var module = {exports: {}};
     function __set(name, value) {
         if (name === 'var1') var1 = value;
         if (name === 'var2') var2 = value;
@@ -35,8 +38,8 @@ const expectedWrappedScript = `
     ${testScript1}
     return {
         ${expectedFuncsString}
-        setLocalVariable: __set
-    };
+        setLocalVariable: __set,
+        exports: module.exports};
 `;
 
 
