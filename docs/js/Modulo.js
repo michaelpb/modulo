@@ -1,87 +1,76 @@
 'use strict';
-/*
-           %
-         MODULO
 
-  Welcome to the Modulo.js source code.
+// # % Modulo - Introduction
+// Welcome to the Modulo.js source code.
 
-  Unlike most code files, this one is arranged in a very deliberate way. It's
-  arranged in a top-down manner, reflecting the lifecycle of a Modulo
-  component, such that the earlier and more important code is at the top, and
-  later and less important code is at the bottom. Thus, it is written like a
-  linear "story" of how Modulo works. Modulo employs "literate programming", or
-  interweaving Markdown-formatted comments on to tell this story, and using a
-  tool to extract all these comments for easy reading (if you are viewing this
-  as an HTML file, what you are reading right now!). Excluding this
-  documentation you are reading now, the Modulo source code remains under 1000
-  lines of code.
+// Unlike most code files, this one is arranged in a very deliberate way. It's
+// arranged in a top-down manner, reflecting the lifecycle of a Modulo
+// component, such that the earlier and more important code is at the top, and
+// later and less important code is at the bottom. Thus, it is written like a
+// linear "story" of how Modulo works. Modulo employs "literate programming", or
+// interweaving Markdown-formatted comments on to tell this story, and using a
+// tool to extract all these comments for easy reading (if you are viewing this
+// as an HTML file, what you are reading right now!). Excluding this
+// documentation you are reading now, the Modulo source code remains under 1000
+// lines of code.
 
-  Quick definitions:
-    - Component - A discrete, re-usable bit of code, typically used to show a
-      graphical UI element (eg a button, or a rich-text area). Components can
-      also use other components (eg a form).
-    - ComponentPart, or CPart - Each component consists of a "bag" or "bundle"
-      of CParts, each CPart being a "pluggable" module that supplies different
-      functionality for that component.
-    - customElement - The term used for a custom HTML5 web component
-    - Modulo.globals - Identical to "window", helps keep unit-tests simpler
-*/
+// ## Quick definitions:
+// - Component - A discrete, re-usable bit of code, typically used to show a
+//   graphical UI element (eg a button, or a rich-text area). Components can
+//   also use other components (eg a form).
+// - ComponentPart, or CPart - Each component consists of a "bag" or "bundle"
+//   of CParts, each CPart being a "pluggable" module that supplies different
+//   functionality for that component.
+// - customElement - The term used for a custom HTML5 web component
+// - Modulo.globals - Identical to "window", helps keep unit-tests simpler
 
-// tl;dr: Modulo.globals is the same thing as "window"
+
+/* tl;dr: Modulo.globals is the same thing as "window" */
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
 var globals = {HTMLElement};
 var Modulo = {globals};
 
-/*
-# Modulo.defineAll()
 
-Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
-"activate" all of Modulo by defining the "mod-load" web component. This
-constructs a Loader object for every `<mod-load ...>` tag it encounters.
-*/
+// ## Modulo.defineAll()
+// Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
+// "activate" all of Modulo by defining the "mod-load" web component. This
+// constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
     Modulo.globals.customElements.define('mod-load', Modulo.Loader);
 };
 
-/*
-# Modulo.Loader
-
-Once registered by defineAll(), the Modulo.Loader will do the rest of the heavy
-lifting of fetching & registering Modulo components.
-*/
+// # Modulo.Loader
+// Once registered by defineAll(), the Modulo.Loader will do the rest of the
+// heavy lifting of fetching & registering Modulo components.
 Modulo.Loader = class Loader extends HTMLElement {
-    /*
-    # Modulo.Loader.connectedCallback()
 
-    The web components specifies the definition of a "connectedCallback"
-    function. In this case, this function will be invoked as soon as the DOM is
-    loaded with a `<mod-load>` tag in it.
+    // ## Loader: connectedCallback()
 
-    The function initializes starting data & sends a new request to the URL
-    specified by the src attribute. When the response is received, it loads the
-    text as a Modulo component module definition.
-    */
+    // The web components specifies the definition of a "connectedCallback"
+    // function. In this case, this function will be invoked as soon as the DOM
+    // is loaded with a `<mod-load>` tag in it.
+
+    // The function initializes starting data & sends a new request to the URL
+    // specified by the src attribute. When the response is received, it loads
+    // the text as a Modulo component module definition.
     connectedCallback() {
         this.src = this.getAttribute('src');
         this.initialize(this.getAttribute('namespace'), Modulo.utils.parseAttrs(this));
-        // TODO: Check if already loaded via a global / static serialized obj
+        /* TODO: Check if already loaded via a global / static serialized obj */
         Modulo.globals.fetch(this.src)
             .then(response => response.text())
             .then(text => this.loadString(text));
     }
 
-    /*
-    ## Loader.loadString
-
-    The main loading method. This will take a string with the source code to a
-    module as an argument and loop through all `<component ...>` style
-    definitions. Then, it uses `Loader.loadFromDOMElement` to create a
-    `ComponentFactory` instance for each component definition.
-    */
+    // ## Loader: loadString
+    // The main loading method. This will take a string with the source code to
+    // a module as an argument and loop through all `<component ...>` style
+    // definitions. Then, it uses `Loader.loadFromDOMElement` to create a
+    // `ComponentFactory` instance for each component definition.
     loadString(text, alsoRegister=true) {
-        // TODO - Maybe use DOMParser here instead
+        /* TODO - Maybe use DOMParser here instead */
         const frag = new Modulo.globals.DocumentFragment();
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = text;
@@ -97,28 +86,19 @@ Modulo.Loader = class Loader extends HTMLElement {
         return results;
     }
 
-    /*
-    ## Loader.loadFromDOMElement
-
-    Create a ComponentFactory instance from a given `<component>` definition.
-    */
+    // ## Loader: loadFromDOMElement
+    // Create a ComponentFactory instance from a given `<component>` definition.
     loadFromDOMElement(elem) {
-        /*
-          ### Step 1: Config
-
-          Get any custom component configuration (e.g. attributes `name=` or
-          `extends=`)
-        */
-        // Get any custom component configuration (e.g. `name=` or `extends=`)
+        // ### Step 1: Config
+        // Get any custom component configuration (e.g. attributes `name=` or
+        // `extends=`)
         const attrs = Modulo.utils.parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
-        /*
-        // Untested
+        /* Untested TODO: Change this.componentFactoryData to be a map, also,
+                 refactor this mess in general
         const extend = attrs['extends'];
         if (extend) {
             for (const [name, data] of this.componentFactoryData) {
-                // TODO: Change this.componentFactoryData to be a map
-                // Also, refactor this mess in general
                 if (name === extend) {
                     for (const key of Object.keys(data)) {
                         loadingObj[name] = [data[key]];
@@ -128,35 +108,32 @@ Modulo.Loader = class Loader extends HTMLElement {
         }
         */
 
-        /*
-          ### Step 2: Set-up `loadingObj`
+        // ### Step 2: Set-up `loadingObj`
+        // Modulo often uses plain objects to "pass around" during the lifecycle
+        // of each component. At this stage, we set up `loadingObj`.
 
-          Modulo often uses plain objects to "pass around" during the lifecycle
-          of each component. At this stage, we set up `loadingObj`.
+        // At the end of this method, the loadingObj will be populated with a
+        // complete, parsed, component definition -- enough information to
+        // instantiate a "factory" for this component -- in the following
+        // structure:
 
-          At the end of this method, the loadingObj will be populated with a
-          complete, parsed, component definition -- enough information to
-          instantiate a "factory" for this component -- in the following structure:
-
-                loadingObj = {
-                    template: [...], // array of parsed objects for "Template" CPart
-                    state: [...], // array of parsed objects for "State" CPart
-                    ...etc
-                }
-        */
+        // ```javascript
+        // loadingObj = {
+        //     template: [...], // array of parsed objects for "Template" CPart
+        //     state: [...], // array of parsed objects for "State" CPart
+        //     ...etc
+        // }
+        // ```
         const loadingObj = {};
         loadingObj.component = [{name}]; // Everything gets implicit Component CPart
 
-        /*
-          ### Step 3: define CParts
-
-          Loop through each CPart DOM definition within the component (e.g.
-          `<state>`), invoking the `loadCallback` on each definition (e.g.
-          `Modulo.cparts.State.loadCallback` will get invoked for each
-          `<state>`). This `loadCallback` in turn will do any pre-processing
-          necessary to transform the attributes of the DOM element into the
-          data necessary to define this CPart.
-        */
+        // ### Step 3: define CParts
+        // Loop through each CPart DOM definition within the component (e.g.
+        // `<state>`), invoking the `loadCallback` on each definition (e.g.
+        // `Modulo.cparts.State.loadCallback` will get invoked for each
+        // `<state>`). This `loadCallback` in turn will do any pre-processing
+        // necessary to transform the attributes of the DOM element into the
+        // data necessary to define this CPart.
         for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
             const cPart = Modulo.cparts.get(cPartName);
             const results = cPart.loadCallback(node, this, loadingObj);
@@ -173,12 +150,9 @@ Modulo.Loader = class Loader extends HTMLElement {
         return this.defineComponent(name, loadingObj);
     }
 
-    /*
-      ## Loader.defineComponent
-
-      Helper function that constructs a new ComponentFactory for a component,
-      based on a loadingObj data structure.
-    */
+    // ## Loader: defineComponent
+    // Helper function that constructs a new ComponentFactory for a component,
+    // based on a loadingObj data structure.
     defineComponent(name, loadingObj) {
         const factory = new Modulo.ComponentFactory(this, name, loadingObj);
         if (Modulo.globals.defineComponentCallback) {
@@ -187,11 +161,8 @@ Modulo.Loader = class Loader extends HTMLElement {
         return factory;
     }
 
-    /*
-      ## Loader.getNodeCPartName
-
-      Helper function that determines the CPart name from a DOM node.
-    */
+    // ## Loader.getNodeCPartName
+    // Helper function that determines the CPart name from a DOM node.
     getNodeCPartName(node) {
         const {tagName, nodeType, textContent} = node;
 
@@ -220,12 +191,9 @@ Modulo.Loader = class Loader extends HTMLElement {
         return cPartName;
     }
 
-    /*
-      ## Loader.getCPartNamesFromDOM
-
-      Helper function that loops through a component definitions children,
-      generating an array of objects containing the node and CPart name.
-    */
+    // ## Loader.getCPartNamesFromDOM
+    // Helper function that loops through a component definitions children,
+    // generating an array of objects containing the node and CPart name.
     getCPartNamesFromDOM(elem) {
         return Array.from(elem.content.childNodes)
             .map(node => ({node, cPartName: this.getNodeCPartName(node)}))
@@ -233,11 +201,8 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
 
-    /*
-    ## Loader: constructor, initialize
-
-    Constructor functions to get initial / default data set-up.
-    */
+    // ## Loader: constructor, initialize
+    // Constructor functions to get initial / default data set-up.
     constructor(...args) {
         super();
         this.initialize.apply(this, args);
@@ -251,12 +216,9 @@ Modulo.Loader = class Loader extends HTMLElement {
         this.loadAll();
     }
 
-    /*
-    ## Loader: loadAll, serialize
-
-    Utility functions used for serializing / deserializing a set of Modulo
-    component definition.
-    */
+    // ## Loader: loadAll, serialize
+    // Utility functions used for serializing / deserializing a set of Modulo
+    // component definition.
     loadAll() {
         for (const [name, options] of this.componentFactoryData) {
             this.defineComponent(name, options);
@@ -264,7 +226,7 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 
     serialize() {
-        // Note: Will probably rewrite thsi when working on "modulo-cli build"
+        /* Note: Will probably rewrite thsi when working on "modulo-cli build"*/
         const arg0 = JSON.stringify(this.namespace);
         const arg1 = JSON.stringify(this.customizedSettings);
         const arg2 = JSON.stringify(this.componentFactoryData);
@@ -272,27 +234,22 @@ Modulo.Loader = class Loader extends HTMLElement {
     }
 }
 
-/*
-# Modulo.ComponentFactory
+// # Modulo.ComponentFactory
 
-Now that we have traversed the jungle of loading Modulo component definitions,
-what happens next? Well, for each component is defined, a ComponentFactory
-instance is created. This class enables instantiating and setting up components
-whenever they are encountered on an HTML page.
+// Now that we have traversed the jungle of loading Modulo component definitions,
+// what happens next? Well, for each component is defined, a ComponentFactory
+// instance is created. This class enables instantiating and setting up components
+// whenever they are encountered on an HTML page.
 
-In Modulo, each component definition can be thought of as a collection of CPart
-configurations. Thus, the ComponentFactory stores the configuration of the
-CParts.
-*/
+// In Modulo, each component definition can be thought of as a collection of
+// CPart configurations. Thus, the ComponentFactory stores the configuration of
+// the CParts.
 Modulo.ComponentFactory = class ComponentFactory {
 
-    /*
-    ## ComponentFactory constructor
-
-    When a ComponentFactory gets constructed (that is, by the Loader), it in
-    turn sets up expected properties, and then invokes its methods createClass
-    and runFactoryLifeCycle explained next.
-    */
+    // ## ComponentFactory constructor
+    // When a ComponentFactory gets constructed (that is, by the Loader), it in
+    // turn sets up expected properties, and then invokes its methods
+    // createClass and runFactoryLifeCycle explained next.
     constructor(loader, name, options) {
         Modulo.assert(name, 'Name must be given.');
         this.loader = loader;
@@ -304,37 +261,36 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.runFactoryLifecycle(options);
     }
 
-    /*
-    ## ComponentFactory: Factory lifecycle
+    // ## ComponentFactory: Factory lifecycle
 
-    This "factory" lifecycle is a special lifecycle for any global or one-time
-    setup, after component definitions are loaded, but before before any
-    components are constructed. Examples: the Style CPart uses this stage to
-    set up global CSS, the Template CPart uses this to compile the template,
-    and the Script CPart will actually wrap the script-tag & invoke it now.
+    // This "factory" lifecycle is a special lifecycle for any global or one-time
+    // setup, after component definitions are loaded, but before before any
+    // components are constructed. Examples: the Style CPart uses this stage to
+    // set up global CSS, the Template CPart uses this to compile the template,
+    // and the Script CPart will actually wrap the script-tag & invoke it now.
 
-    Like every other "lifecycle" in Modulo, it passes around a "renderObj"
-    called baseRenderObj. After this method, this baseRenderObj is not
-    modified, but instead gets copied into every other renderObj to form, as
-    the name implies, the "base" of future renderObj.
+    // Like every other "lifecycle" in Modulo, it passes around a "renderObj"
+    // called baseRenderObj. After this method, this baseRenderObj is not
+    // modified, but instead gets copied into every other renderObj to form, as
+    // the name implies, the "base" of future renderObj.
 
-    In total, this method loops through all the CPart names, finding each
-    relevant CPart Classes, and then invoking each CPart static method
-    "factoryCallback", which is what does the necessary preprocessing. If there
-    are multiples of the same CPart, then whichever appears last will overwrite
-    and/or merge data with the previous ones.  However, that particular
-    behavior can be controlled from within each CPart factoryCallback itself.
+    // In total, this method loops through all the CPart names, finding each
+    // relevant CPart Classes, and then invoking each CPart static method
+    // "factoryCallback", which is what does the necessary preprocessing. If
+    // there are multiples of the same CPart, then whichever appears last will
+    // overwrite and/or merge data with the previous ones.  However, that
+    // particular behavior can be controlled from within each CPart
+    // factoryCallback itself.
 
-    At the end of this method, baseRenderObj will look like this:
+    // At the end of this method, baseRenderObj will look like this:
 
-    ```javascript
-    this.baseRenderObj = {
-        script: {text: '"use static"\nvar state;\nfunction onReload(....etc)'},
-        template: {compiledTemplate: function () { ...etc... }},
-        (...etc...)
-    }
-    ```
-    */
+    // ```javascript
+    // this.baseRenderObj = {
+    //     script: {text: '"use static"\nvar state;\nfunction inpCh(....etc)'},
+    //     template: {compiledTemplate: function () { ...etc... }},
+    //     (...etc...)
+    // }
+    // ```
     runFactoryLifecycle(cPartOpts) {
         this.baseRenderObj = {};
         for (const [partName, partOptionsArr] of Object.entries(cPartOpts)) {
@@ -347,36 +303,29 @@ Modulo.ComponentFactory = class ComponentFactory {
         }
     }
 
-    /*
-    ## ComponentFactory: createClass
-
-    Finally, we are ready to create the class that the browser will use to
-    actually instantiate each Component.
-
-    At this stage, we set up the reconciliation engine, since that's a
-    component-wide option, create a "back reference" to the factory from the
-    component, and then return a brand-new class definition.
-    */
+    // ## ComponentFactory: createClass
+    // Finally, we are ready to create the class that the browser will use to
+    // actually instantiate each Component. At this stage, we set up the
+    // reconciliation engine, since that's a component-wide option, create a
+    // "back reference" to the factory from the component, and then return a
+    // brand-new class definition.
     createClass() {
         const {fullName} = this;
         const {reconciliationEngine = 'setdom'} = this.options;
         const reconcile = Modulo.adapters.reconciliation[reconciliationEngine]();
         return class CustomElement extends Modulo.Element {
             get factory() {
-                // Gets current registered component factory (for hot-reloading)
+                /* Gets current registered component factory (for hot-reloading) */
                 return Modulo.ComponentFactory.instances.get(fullName);
             }
             get reconcile() { return reconcile; }
         };
     }
 
-    /*
-    ## ComponentFactory: getCParts, register, instances & registerInstance
-
-    These are minor helper functions. The first rearranges the options data,
-    the second registers with window.customElements, and the third keeps a
-    central location for every ComponentFactory instance.
-    */
+    // ## ComponentFactory: getCParts, register, instances & registerInstance
+    // These are minor helper functions. The first rearranges the options data,
+    // the second registers with window.customElements, and the third keeps a
+    // central location for every ComponentFactory instance.
     getCParts() {
         const results = [];
         for (const [partName, partOptionsArr] of Object.entries(this.options)) {
@@ -402,8 +351,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
         this.componentParts = [];
-        //console.log('this is this', this);
-        //console.log('this is this', this.getAttribute);
+        /*
+        console.log('this is this', this);
+        console.log('this is this', this.getAttribute);
+        */
         this.originalHTML = this.innerHTML;
 
         this.originalChildren = [];
@@ -444,7 +395,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     getPart(searchName) {
-        // TODO: Maybe should refactor this? Shouldn't be used much...
+        /* TODO: Maybe should refactor this? Shouldn't be used much... */
         return this.componentParts.find(({name}) => name === searchName);
     }
 
@@ -501,7 +452,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 }
             }
         }
-        // TODO: should probably be nulling this after
+        /* TODO: should probably be nulling this after */
         //this.renderObj = null; // rendering is over, set to null
     }
 
@@ -546,8 +497,8 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     if (!arr) {
         arr = []; // HACK for testability
     }
-    // TODO: for "pre-load" directives, possibly just pass in "Loader" as
-    // "component" so we can have load-time directives
+    /* TODO: for "pre-load" directives, possibly just pass in "Loader" as
+       "component" so we can have load-time directives */
     for (const rawName of el.getAttributeNames()) {
         // todo: optimize skipping most elements or attributes
         let name = rawName;
@@ -594,7 +545,7 @@ Modulo.adapters = {
             component.innerHTML = html;
         },
         setdom: () => {
-            // TODO: Maybe, move into function, so instantiate each time??
+            /* TODO: Maybe, move into function, so instantiate each time?? */
             return (component, html) => {
                 const reconciler = new Modulo.SetDomReconciler();
                 reconciler.reconcile(component, html);
@@ -725,7 +676,7 @@ Modulo.cparts.set('component', Modulo.parts.Component);
 Modulo.parts.Props = class Props extends Modulo.ComponentPart {
     static name = 'props';
     static factoryCallback({options}, {componentClass}, renderObj) {
-        // untested / daedcode ---v
+        /* untested / daedcode ---v */
         componentClass.observedAttributes = Object.keys(options);
     }
 

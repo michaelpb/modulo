@@ -6,15 +6,15 @@
   "main": "tools/modulocli.js",
   "scripts": {
     "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
-    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
+    "update-and-build-docs": "npm run update-docs-js && npm run build-docs && npm run build-docco",
     "build-docs-watch": "find src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
-    "build-docco": "docco ./src/Modulo.js --output ./docs/documentation",
+    "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.jst --css ./tools/resources/modified_parallel_docco.css --output ./docs/documentation",
     "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
     "test": "ava -v --serial"
   },
   "devDependencies": {
     "ava": "3.14.0",
-    "docco": "0.8.1",
+    "docco-next": "0.9.8",
     "jsdom": "16.4.0",
     "xmldom": "0.4.0"
   },
