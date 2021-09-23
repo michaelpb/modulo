@@ -487,7 +487,7 @@ Modulo.cparts.get('state').prototype.ghostCreatedCallback = function (ghostElem)
 };
 
 Modulo.cparts.get('state').prototype.ghostAttributeMutedCallback = function (ghostElem) {
-    const data = Modulo.parseAttrs(ghostElem);
+    const data = Modulo.utils.parseAttrs(ghostElem);
     this.data = Object.assign({}, this.data, data);
     this.component.rerender();
 };
