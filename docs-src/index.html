@@ -1,12 +1,13 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf8" />
     <title>Modulo.js</title>
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="icon" type="image/png" href="./img/mono_logo.png" />
-    <!--<script src="./js/Modulo.js"></script>-->
+    <script src="./js/Modulo.js"></script>
     <mod-load namespace="mdu" src="./components/core.html"></mod-load>
+    <mod-load namespace="mdu" src="./components/pageparts.html"></mod-load>
 </head>
 
 <body>
@@ -24,20 +25,48 @@
         <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
         <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
     </div>
-
-    <main>
-        <section>
-            <aside class="TitleAside">
-                <h1>Example: ToDo App</h1>
-            </aside>
-            <aside>
-                <mdu-Todo></mdu-Todo>
-            </aside>
-        </section>
-    </main>
+    <mdu-Navbar></mdu-Navbar>
 </div>
 
-<mdu-Navbar></mdu-Navbar>
+<main>
+    <section>
+        <aside class="TitleAside">
+            <h1>Example: ToDo App</h1>
+            <pre style="text-align: left ">
+&lt;component name="Todo"&gt;
+&lt;template&gt;
+    &lt;ol&gt;
+        &lt;li&gt;&lt;h1&gt;To Do!&lt;/h1&gt;&lt;/li&gt;
+        {% for item in state.list %}
+            &lt;li&gt;{{ item }}&lt;/li&gt;
+        {% endfor %}
+        &lt;li&gt;
+            &lt;input [state.bind] name="text" /&gt;
+            &lt;button @click:=script.addItem&gt;Add&lt;/button&gt;
+        &lt;/li&gt;
+    &lt;/ol&gt;
+&lt;/template&gt;
+&lt;state
+    list:='["Milk", "Bread", "Candy"]'
+    text="Beer"
+&gt;&lt;/state&gt;
+&lt;script&gt;
+    function addItem() {
+        state.list.push(state.text);
+        state.text = '';
+    }
+&lt;/script&gt;
+&lt;/component&gt;
+</pre>
+
+        </aside>
+
+        <aside>
+            <mdu-Todo></mdu-Todo>
+        </aside>
+    </section>
+</main>
+
 
 
 <main>
@@ -74,6 +103,8 @@
     <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
     -->
 </main>
+
+<script>Modulo.defineAll();</script>
 
 </body>
 </html>

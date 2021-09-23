@@ -12,7 +12,7 @@ const commands = {
         for (const inputPath of filenames) {
             const outputPath = outputDir + inputPath.slice(inputDir.length);
             utils.mkdirToContain(outputPath);
-            const ext = path.extname(inputPath).slice(1).lower();
+            const ext = path.extname(inputPath).slice(1).toLowerCase();
             if (ext === 'html') {
                 utils.renderModuloHtml(inputPath, outputPath, null, () => {
                     console.log('RENDER:', inputPath, '->', outputPath);

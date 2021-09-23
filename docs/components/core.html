@@ -1,4 +1,4 @@
-<head><template mod-component="Navbar">
+<!DOCTYPE HTML><head><template mod-component="Navbar">
     <script type="modulo/template">
         <nav class="Navbar">
             <a href="index.html"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
@@ -6,8 +6,8 @@
                 <li><a href="about.html" {% if props.selected == "about" %}class="Navbar--selected"{% endif %}>About</a></li>
                 <li><a href="start.html" {% if props.selected == "start" %}class="Navbar--selected"{% endif %}>Start</a></li>
                 <li><a href="docs.html" {% if props.selected == "docs" %}class="Navbar--selected"{% endif %}>Docs</a></li>
-                <li><a href="https://github.com/michaelpb/modulo/">Source</a></li>
-                <li>v{{ script.exports.versionNumber }}</li>
+                <li><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Source</a></li>
+                <li>v0.0.1</li>
             </ul>
         </nav>
     </script>
@@ -15,8 +15,8 @@
     <props selected=""></props>
 
     <script>
-        const packageJson = Modulo.require('../package.json');
-        module.exports.versionNumber = packageJson.version;
+        //const packageJson = Modulo.require('../package.json');
+        //module.exports.versionNumber = packageJson.version;
     </script>
 </template>
 
@@ -95,8 +95,7 @@
     <state list:="[&quot;Milk&quot;, &quot;Bread&quot;, &quot;Candy&quot;]" text="Beer"></state>
     <script>
         function addItem() {
-            const newList = state.list.concat([state.text]);
-            state.list = newList;
+            state.list.push(state.text);
             state.text = '';
         }
     </script>

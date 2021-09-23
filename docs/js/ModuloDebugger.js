@@ -87,13 +87,6 @@ function make(text, ...others) {
 Modulo.DEBUG = true;
 Modulo.moddebug = {pollingRate: 1000};
 
-function assert(value, ...info) {
-    if (!value) {
-        console.error(...info);
-        throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
-    }
-}
-
 function deepEquals(a, b) {
     try {
         return JSON.stringify(a) === JSON.stringify(b);
@@ -394,6 +387,33 @@ function oneTimeSetup() {
     //console.log('toolbar is appended', moddebug.toolbar);
 }
 
+Modulo.MultiMap = class MultiMap extends Map {
+    get(key) {
+        if (!this.has(key)) {
+            super.set(key, []);
+        }
+        return super.get(key);
+    }
+    set(key, value) {
+        this.get(key).push(value);
+    }
+    toObject() {
+        return Object.fromEntries(this);
+    }
+    register(value) {
+        // deadcode, todo finish after multimap merge for cleaner extension syntax
+        const {name} = value; // works for Functions, need to work for Classes
+        assert(name, `Invalid register type "{value}"`);
+        this.set(name, value);
+    }
+    // Idea: Can implement TaggedObjectMap with MultiMap:
+    //   - save(tagName) - Savepoints are looping through values,
+    //                     and saving an obj of lengths
+    //   - modifyTag(tagName, key, value) - get tagName array, then insert value
+    //                                      at savepoint[key].length
+}
+
+Modulo.middleware = new Modulo.MultiMap();
 Modulo.middleware.set(
     'load_component_after',
     function registerFactory(node, loader, loadingObj, factory) {
@@ -506,4 +526,100 @@ if (typeof module !== 'undefined') {
     module.exports = Modulo; // Node environment
 } else if (typeof customElements !== 'undefined') {
     Modulo.defineAll(); // Browser environment
+}
+
+/*
+Modulo.middleware.set(
+    'load_template_after',
+    function rewriteComponentNamespace(node, loader, loadingObj, info) {
+        let content = info.content || '';
+        content = content.replace(/(<\/?)my-/ig, '$1' + loader.namespace + '-')
+        info.content = content;
+    },
+);
+
+Modulo.middleware.set(
+    'load_style_after',
+    function prefixAllSelectors(node, loader, loadingObj, info) {
+        const {name} = loadingObj.get('component')[0];
+        const fullName = `${loader.namespace}-${name}`;
+        let content = info.content || '';
+        content = content.replace(/\*\/.*?\*\//ig, ''); // strip comments
+        content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
+            selector = selector.trim();
+            if (selector.startsWith('@') || selector.startsWith(fullName)) {
+                // Skip, is @media or @keyframes, or already prefixed
+                return selector;
+            }
+            selector = selector.replace(new RegExp(name, 'ig'), fullName);
+            if (!selector.startsWith(fullName)) {
+                selector = `${fullName} ${selector}`;
+            }
+            return selector;
+        });
+        info.content = content;
+    },
+);
+*/
+
+/*
+function runLifecycle(lifecycleName, parts, renderObj, ...extraArgs) {
+    let partsArray = [];
+    if (isPlainObject(parts)) {
+        for (const [partName, partOptionsArr] of Object.entries(parts)) {
+            const cPart = Modulo.cparts.get(partName);
+            for (const data of partOptionsArr) {
+                partsArray.push({cPart, cPartArgs: [data]});
+                renderObj.set(cPart.name, data);
+            }
+        }
+    } else {
+        partsArray = parts.map(cPart => ({cPart, cPartArgs: []}));
+    }
+    for (const {cPart, cPartArgs} of partsArray) {
+        const args = [...cPartArgs, ...extraArgs, renderObj];
+        runMiddleware(lifecycleName, cPart, 'before', args);
+        let results = {};
+        const method = cPart[lifecycleName + 'Callback'];
+        if (method) {
+            results = method.apply(cPart, args) || results;
+        }
+        runMiddleware(lifecycleName, cPart, 'after', args.concat([results]));
+        renderObj.set(cPart.name, results);
+    }
+    if (renderObj.save) {
+        renderObj.save(lifecycleName);
+    }
+}
+
+function runMiddleware(lifecycleName, cPart, timing, args) {
+    const key = `${lifecycleName}_${cPart.name}_${timing}`;
+    const middlewareArr = Modulo.middleware.get(key); // new
+    for (const middleware of middlewareArr) {
+        middleware.apply(cPart, args);
+    }
+}
+
+*/
+
+
+function scopedEval(thisContext, namedArgs, code) {
+    const argPairs = Array.from(Object.entries(namedArgs));
+    const argNames = argPairs.map(pair => pair[0]);
+    const argValues = argPairs.map(pair => pair[1]);
+    const func = new Function(...argNames, code);
+    return func.apply(thisContext, argValues);
+}
+
+function isPlainObject(obj) {
+  return obj && typeof obj === 'object' && !Array.isArray(obj);
+}
+
+function hash(str) {
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+        hash = ((hash<<5)-hash)+str.charCodeAt(i);
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 }

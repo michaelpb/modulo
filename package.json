@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "description": "Minimalist Web Component based framework",
   "homepage": "https://github.com/michaelpb/modulo#readme",
-  "main": "modulocli.js",
+  "main": "tools/modulocli.js",
   "scripts": {
-    "build-docs": "node src/modulocli.js ssg docs-src/ --output docs/",
-    "build-docs-watch": "find docs-src/ -iname '*.html' | entr npm run build-docs",
+    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
+    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
+    "build-docs-watch": "find src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
     "build-docco": "docco ./src/Modulo.js --output ./docs/documentation",
-    "update-docs-js": "cp ./src/Modulo.js docs/js/Modulo.js && cp ./src/ModuloDebugger.js docs/js/ModuloDebugger.js",
+    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
     "test": "ava -v --serial"
   },
   "devDependencies": {

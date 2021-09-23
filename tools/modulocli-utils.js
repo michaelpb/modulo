@@ -22,7 +22,11 @@ function parseArgs(argArray) {
     }
 
     const confPath = process.env.MODCLI_CONF || './modulocli.json';
-    const stat = fs.statSync(confPath);
+    let stat = null;
+    try {
+      const stat = fs.statSync(confPath); // throws Error if not found
+    } catch {}
+
     const flags = {};
     if (stat && !stat.isDirectory()) {
         const jsonText = fs.readFileSync(confPath, 'utf-8');
@@ -274,7 +278,11 @@ function renderModuloHtml(inputPath, outputPath, callback) {
             return;
         }
         const {document} = loadModuloDocument(inputPath, inputContents);
-        const html = document.documentElement.innerHTML;
+        let html = document.documentElement.innerHTML;
+        if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
+            // generating "quirks mode" document, do not want
+            html = '<!DOCTYPE HTML>' + html;
+        }
         fs.writeFile(outputPath, html, {encoding: 'utf8'}, err => {
             if (err) {
                 console.error('ERROR', err);

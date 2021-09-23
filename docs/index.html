@@ -1,9 +1,9 @@
-<head>
+<!DOCTYPE HTML><head>
     <meta charset="utf8">
     <title>Modulo.js</title>
     <link rel="stylesheet" href="./css/style.css">
     <link rel="icon" type="image/png" href="./img/mono_logo.png">
-    <!--<script src="./js/Modulo.js"></script>-->
+    <script src="./js/Modulo.js"></script>
     <style id="mdu-Hero_style">
 mdu-Hero h1 {
           font-size: 120px;
@@ -49,6 +49,7 @@ mdu-Hero div .dsiabled {
           box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
       }
     </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
+    <mod-load namespace="mdu" src="./components/pageparts.html"></mod-load>
 
 
 
@@ -66,14 +67,54 @@ mdu-Hero div .dsiabled {
         <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
         <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
     </div>
+    <mdu-navbar>
+        <nav class="Navbar">
+            <a href="index.html"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li><a href="about.html">About</a></li>
+                <li><a href="start.html">Start</a></li>
+                <li><a href="docs.html">Docs</a></li>
+                <li><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Source</a></li>
+                <li>v0.0.1</li>
+            </ul>
+        </nav>
+    </mdu-navbar>
+</div>
 
-    <main>
-        <section>
-            <aside class="TitleAside">
-                <h1>Example: ToDo App</h1>
-            </aside>
-            <aside>
-                <mdu-todo>
+<main>
+    <section>
+        <aside class="TitleAside">
+            <h1>Example: ToDo App</h1>
+            <pre style="text-align: left ">&lt;component name="Todo"&gt;
+&lt;template&gt;
+    &lt;ol&gt;
+        &lt;li&gt;&lt;h1&gt;To Do!&lt;/h1&gt;&lt;/li&gt;
+        {% for item in state.list %}
+            &lt;li&gt;{{ item }}&lt;/li&gt;
+        {% endfor %}
+        &lt;li&gt;
+            &lt;input [state.bind] name="text" /&gt;
+            &lt;button @click:=script.addItem&gt;Add&lt;/button&gt;
+        &lt;/li&gt;
+    &lt;/ol&gt;
+&lt;/template&gt;
+&lt;state
+    list:='["Milk", "Bread", "Candy"]'
+    text="Beer"
+&gt;&lt;/state&gt;
+&lt;script&gt;
+    function addItem() {
+        state.list.push(state.text);
+        state.text = '';
+    }
+&lt;/script&gt;
+&lt;/component&gt;
+</pre>
+
+        </aside>
+
+        <aside>
+            <mdu-todo>
         <ol>
             <li><h1>To Do!</h1></li>
             
@@ -91,23 +132,10 @@ mdu-Hero div .dsiabled {
             </li>
         </ol>
     </mdu-todo>
-            </aside>
-        </section>
-    </main>
-</div>
+        </aside>
+    </section>
+</main>
 
-<mdu-navbar>
-        <nav class="Navbar">
-            <a href="index.html"><img src="./img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li><a href="about.html">About</a></li>
-                <li><a href="start.html">Start</a></li>
-                <li><a href="docs.html">Docs</a></li>
-                <li><a href="https://github.com/michaelpb/modulo/">Source</a></li>
-                <li>v0.0.1</li>
-            </ul>
-        </nav>
-    </mdu-navbar>
 
 
 <main>
@@ -144,6 +172,8 @@ mdu-Hero div .dsiabled {
     <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
     -->
 </main>
+
+<script>Modulo.defineAll();</script>
 
 
 
