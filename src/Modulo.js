@@ -12,25 +12,25 @@ var Modulo = {globals};
 
 
 // **Unlike most code files, this one is arranged in a very deliberate way.**
-// It's arranged in a top-down manner, reflecting the lifecycle of a Modulo
+// It's arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
 // component, such that the earlier and more important code is at the top, and
-// later and less important code is at the bottom. Thus, it is written like a
+// later and less important code is at the bottom. You can read it like a
 // linear "story" of how Modulo works. Modulo employs
 // [literate programming](https://en.wikipedia.org/wiki/Literate_programming),
 // or interweaving Markdown-formatted comments on to tell this story, and using
-// a tool to extract all these comments for easy reading. Excluding this
-// documentation you are reading now, the Modulo source code remains under 1000
-// lines of code.
+// a tool (docco) to extract all these comments for easy reading. Excluding
+// the documentation you are reading now, the Modulo source code remains under
+// 1000 lines of code.
 
 // ## Quick definitions:
-// - Component - A discrete, re-usable bit of code, typically used to show a
+// * Component - A discrete, re-usable bit of code, typically used to show a
 //   graphical UI element (eg a button, or a rich-text area). Components can
 //   also use other components (eg a form).
-// - ComponentPart, or CPart - Each component consists of a "bag" or "bundle"
+// * ComponentPart, or CPart - Each component consists of a "bag" or "bundle"
 //   of CParts, each CPart being a "pluggable" module that supplies different
-//   functionality for that component.
-// - customElement - The term used for a custom HTML5 web component
-// - Modulo.globals - Identical to "window", helps keep unit-tests simpler
+// * functionality for that component.
+// * customElement - The term used for a custom HTML5 web component
+// * Modulo.globals - Identical to "window", helps keep unit-tests simpler
 
 
 
@@ -95,6 +95,21 @@ Modulo.Loader = class Loader extends HTMLElement {
         // `extends=`)
         const attrs = Modulo.utils.parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
+        /*
+          Two other ideas:
+          - Create a CPart that handles inheritance / composition:
+
+            <inherits state from lib-CoolThing></inherits>
+            <inherits>lib-CoolThing</inherits>
+            <parent is lib-CoolThing></parent>
+            (Then we'd get parent.XYZ syntax for free!)
+
+          - Only have extends on a per-CPart basis. So,
+
+            <state inherits from lib-CoolThing></state>
+            <template inherits from lib-CoolThing></template>
+        */
+
         /* Untested TODO: Change this.componentFactoryData to be a map, also,
                  refactor this mess in general
         const extend = attrs['extends'];
@@ -317,7 +332,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         return class CustomElement extends Modulo.Element {
             get factory() {
                 /* Gets current registered component factory (for hot-reloading) */
-                return Modulo.ComponentFactory.instances.get(fullName);
+                return Modulo.factoryInstances[fullName];
             }
             get reconcile() { return reconcile; }
         };
@@ -342,9 +357,11 @@ Modulo.ComponentFactory = class ComponentFactory {
         const tagName = this.fullName.toLowerCase();
         Modulo.globals.customElements.define(tagName, this.componentClass);
     }
-    static instances = new Map();
     static registerInstance(instance) {
-        Modulo.ComponentFactory.instances.set(instance.fullName, instance);
+        if (!Modulo.factoryInstances) {
+            Modulo.factoryInstances = {};
+        }
+        Modulo.factoryInstances[instance.fullName] = instance;
     }
 }
 
@@ -823,10 +840,14 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         // Make sure that the local variables are all properly set
         const {setLocalVariable} = renderObj.script;
+        const cpartsObj = {};
         for (const part of this.component.componentParts) {
             setLocalVariable(part.name, part);
+            cpartsObj[part.name] = part;
         }
         setLocalVariable('element', this.component);
+        // TODO: Add in cparts.*
+        setLocalVariable('cparts', cpartsObj);
     }
 
     eventCallback(renderObj) {

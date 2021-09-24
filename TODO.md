@@ -1,3 +1,76 @@
+# More notes: 2021 (later)
+
+- Idea for Modulo Router
+    - Could make easier to develop navbar
+    - Detect if in SSG step:
+        - If not, then use fragment style routing + fetch (for simplicity)
+        - If in SSG step, provide an external escape hatch in SSG that allows
+          for writing to multiple files. Then loop through each named URL,
+          generating a new file, maybe like... index__my-stuff.html
+            - Exact mechanics:
+                - mdu-Link would be fairly simplistic
+                - mdu-Route would house most of the logic
+                - mdu-Route would also set something globally so that mdu-Link
+                  can look different if necessary (using class-if-active)
+        - This would be extremely useful, and basically make the SSG 100x more
+          useful
+
+      <nav>
+          <mdu-Link target="my-stuff" class="cool" class-if-active="active">
+            Check out my stuff
+          </mdu-Link>
+      </nav>
+
+      <main>
+          <mdu-Route
+              name="my-stuff"
+              src="./content/relevant_my_stuff_content.html"
+          ></mdu-Route>
+
+          <mdu-Route
+              name="blog-posts-and-stuff"
+              src="./content/blog_post.md"
+          ></mdu-Route>
+      </main>
+
+
+
+- Ideas & untested code on inheritance:
+
+        // ## Loader: loadFromDOMElement
+        /*
+          Two other ideas:
+          - Create a CPart that handles inheritance / composition:
+
+            <inherits state from lib-CoolThing></inherits>
+            <inherits>lib-CoolThing</inherits>
+            <parent is lib-CoolThing></parent>
+            (Then we'd get parent.XYZ syntax for free!)
+
+          - Only have extends on a per-CPart basis. So,
+
+            <state inherits from lib-CoolThing></state>
+            <template inherits from lib-CoolThing></template>
+        */
+
+        /* Untested TODO: Change this.componentFactoryData to be a map, also,
+                 refactor this mess in general
+        const extend = attrs['extends'];
+        if (extend) {
+            for (const [name, data] of this.componentFactoryData) {
+                if (name === extend) {
+                    for (const key of Object.keys(data)) {
+                        loadingObj[name] = [data[key]];
+                    }
+                }
+            }
+        }
+        */
+
+
+
+
+
 # More notes: 2021
 
 - Replace all mention of 'options' with 'attrs' or something equally consistent

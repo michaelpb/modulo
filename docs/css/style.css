@@ -6,7 +6,9 @@ html {
   box-sizing: border-box;
   font-size: 16px;
   line-height: 1.5;
-  font-family: sans-serif;
+  /*font-family: sans-serif;*/
+  font-family: serif;
+  overflow-y: scroll;
 }
 
 *, *:before, *:after {
@@ -203,8 +205,10 @@ h1.Tagline-title {
     text-align: center;
     font-size: 60px;
     line-height: 1.0;
-    font-weight: bold;
-    color: var(--highlight-color);
+    font-weight: lighter;
+    letter-spacing: 10px;
+    color: black;
+    /*color: var(--highlight-color);*/
 }
 
 h1.Tagline-logo {

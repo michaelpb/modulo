@@ -5,7 +5,7 @@
     <title>Modulo.js</title>
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="icon" type="image/png" href="./img/mono_logo.png" />
-    <!--<script src="./js/Modulo.js"></script>-->
+    <script src="./js/Modulo.js"></script>
     <mod-load namespace="mdu" src="./components/core.html"></mod-load>
 </head>
 
@@ -13,19 +13,56 @@
 
 <mdu-Navbar selected="docs"></mdu-Navbar>
 
-<main>
-    <section>
-        <aside class="TitleAside">
-            <h3><span alt="Lower-case delta">δ</span></h3>
-            <h3>Documentation</h3>
-        </aside>
-        <aside>
 
+<main class="give-left-margin">
+    <aside class="TitleAside TitleAside--navBar">
+        <h3><span alt="Lower-case delta">%</span></h3>
+        <h3>Documentation</h3>
+        <nav class="TitleAside-navigation">
+            <ul>
+                <li>
+                  Templating
+                  <ul>
+                      <li>Templating</li>
+                  </ul>
+                </li>
+                <li>
+                    Other resources:
+
+                    <ul>
+                        <li>
+                            <strong>Beginner:</strong> Read the <a
+                            href="/start.html">Getting Started tutorial</a>.
+                        </li>
+
+                        <li>
+                            <strong>Intermediate:</strong> Read the <a
+                            href="/start.html">Getting Started tutorial</a>.
+                        </li>
+
+                        <li>
+                            <strong>Advanced:</strong> Read the <a
+                            href="/start.html">Getting Started tutorial</a>.
+                        </li>
+                        <li>
+                            Interested in reading the source code?
+                            <a href="/literate/src/Modulo.html">Click to read the
+                            source code, side-by-side with annotations.</a>
+                        </li>
+                    </ul>
+
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <section>
+        <aside class="Tiles">
+            <a class="Tiles-link" href="faq">FAQ</a>
+            <a class="Tiles-link">FAQ</a>
         </aside>
     </section>
-</main>
 
-<main>
     <section>
         <aside class="TitleAside">
             <h3><span alt="Question mark">?</span></h3>
@@ -86,9 +123,9 @@
 
         </aside>
     </section>
+
 </main>
 
-
-
+    <script>Modulo.defineAll()</script>
 </body>
 </html>
