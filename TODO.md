@@ -1,4 +1,21 @@
+
 # More notes: 2021 (later)
+
+- Main next steps:
+    - (DONE) Remove ".name"
+    - Do cparts.state vs state conversion
+      - (Make state be bare object version, and cparts.state OOP instance)
+    - Work on Modulo Router
+    - Make it easier to get values from script tag and hook into render
+
+- Idea for configuring cparts from within script tag:
+    - Set already-constructed cparts in script before running script
+    - Allow global / static code like such:
+    - < script >
+    -   template.addFilter('asOrdinal', s => s === 1 ? '1st' : s + 'th')
+    -   or template.filters.asOrdinal = ... etc
+    -   OR have someting like factory.configure('template', 'filters', ...)
+    - (best, since should be static/factory, thus passed in at time of Function)
 
 - Idea for Modulo Router
     - Could make easier to develop navbar
@@ -32,7 +49,6 @@
               src="./content/blog_post.md"
           ></mdu-Route>
       </main>
-
 
 
 - Ideas & untested code on inheritance:

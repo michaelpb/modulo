@@ -44,14 +44,14 @@ const expectedWrappedScript = `
 
 
 test('Script.getSymbolsAsObjectAssignment - finds functions', t => {
-    const results = Modulo.parts.Script.getSymbolsAsObjectAssignment(testScript1);
+    const results = Modulo.cparts.script.getSymbolsAsObjectAssignment(testScript1);
     t.truthy(results);
     t.is(strip(results), strip(expectedFuncsString));
 });
 
 
 test('Script.wrapJavaScriptContext - works as intended', t => {
-    const results = Modulo.parts.Script.wrapJavaScriptContext(testScript1, ['var1', 'var2']);
+    const results = Modulo.cparts.script.wrapJavaScriptContext(testScript1, ['var1', 'var2']);
     t.truthy(results);
     t.is(strip(results), strip(expectedWrappedScript));
 });

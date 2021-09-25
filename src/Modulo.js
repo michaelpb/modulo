@@ -11,16 +11,16 @@ var globals = {HTMLElement};
 var Modulo = {globals};
 
 
-// **Unlike most code files, this one is arranged in a very deliberate way.**
-// It's arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
+// Unlike most code files, this one is arranged in a very deliberate way.  It's
+// arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
 // component, such that the earlier and more important code is at the top, and
 // later and less important code is at the bottom. You can read it like a
-// linear "story" of how Modulo works. Modulo employs
-// [literate programming](https://en.wikipedia.org/wiki/Literate_programming),
-// or interweaving Markdown-formatted comments on to tell this story, and using
-// a tool (docco) to extract all these comments for easy reading. Excluding
-// the documentation you are reading now, the Modulo source code remains under
-// 1000 lines of code.
+// linear "story" of how Modulo works. Modulo employs [literate
+// programming](https://en.wikipedia.org/wiki/Literate_programming), or
+// interweaving Markdown-formatted comments on to tell this story, and using a
+// tool (docco) to extract all these comments for easy reading. Excluding this
+// documentation you are now reading, the Modulo source code remains under 1000
+// lines of code.
 
 // ## Quick definitions:
 // * Component - A discrete, re-usable bit of code, typically used to show a
@@ -74,6 +74,11 @@ Modulo.Loader = class Loader extends HTMLElement {
         /* TODO - Maybe use DOMParser here instead */
         const frag = new Modulo.globals.DocumentFragment();
         const div = Modulo.globals.document.createElement('div');
+        /* TODO: Do <script  / etc preprocessing here:
+          <state -> <script type="modulo/state"
+          <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
+          </(state|props|template)> -> </script>
+        */
         div.innerHTML = text;
         frag.append(div);
         const results = [];
@@ -95,34 +100,6 @@ Modulo.Loader = class Loader extends HTMLElement {
         // `extends=`)
         const attrs = Modulo.utils.parseAttrs(elem);
         const name = attrs.modComponent || attrs.name;
-        /*
-          Two other ideas:
-          - Create a CPart that handles inheritance / composition:
-
-            <inherits state from lib-CoolThing></inherits>
-            <inherits>lib-CoolThing</inherits>
-            <parent is lib-CoolThing></parent>
-            (Then we'd get parent.XYZ syntax for free!)
-
-          - Only have extends on a per-CPart basis. So,
-
-            <state inherits from lib-CoolThing></state>
-            <template inherits from lib-CoolThing></template>
-        */
-
-        /* Untested TODO: Change this.componentFactoryData to be a map, also,
-                 refactor this mess in general
-        const extend = attrs['extends'];
-        if (extend) {
-            for (const [name, data] of this.componentFactoryData) {
-                if (name === extend) {
-                    for (const key of Object.keys(data)) {
-                        loadingObj[name] = [data[key]];
-                    }
-                }
-            }
-        }
-        */
 
         // ### Step 2: Set-up `loadingObj`
         // Modulo often uses plain objects to "pass around" during the lifecycle
@@ -146,19 +123,19 @@ Modulo.Loader = class Loader extends HTMLElement {
         // ### Step 3: define CParts
         // Loop through each CPart DOM definition within the component (e.g.
         // `<state>`), invoking the `loadCallback` on each definition (e.g.
-        // `Modulo.cparts.State.loadCallback` will get invoked for each
+        // `Modulo.cparts.state.loadCallback` will get invoked for each
         // `<state>`). This `loadCallback` in turn will do any pre-processing
         // necessary to transform the attributes of the DOM element into the
         // data necessary to define this CPart.
         for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
-            const cPart = Modulo.cparts.get(cPartName);
+            const cPart = Modulo.cparts[cPartName];
             const results = cPart.loadCallback(node, this, loadingObj);
 
             // Multiple parts of the same type, push onto array
-            if (cPart.name in loadingObj) {
-                loadingObj[cPart.name].push(results);
+            if (cPartName in loadingObj) {
+                loadingObj[cPartName].push(results);
             } else {
-                loadingObj[cPart.name] = [results];
+                loadingObj[cPartName] = [results];
             }
         }
 
@@ -200,7 +177,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
             cPartName = splitType[1];
         }
-        if (!(Modulo.cparts.has(cPartName))) {
+        if (!(cPartName in Modulo.cparts)) {
             console.error('Unknown CPart in component def:', tagName);
             return null;
         }
@@ -214,6 +191,16 @@ Modulo.Loader = class Loader extends HTMLElement {
         return Array.from(elem.content.childNodes)
             .map(node => ({node, cPartName: this.getNodeCPartName(node)}))
             .filter(obj => obj.cPartName);
+
+        /* TODO: rewrite this */
+        const arr = [];
+        for (const node of elem.content.childNodes) {
+            const cPartName = this.getNodeCPartName(node);
+            if (cPartName) {
+                arr.push({node, cPartName});
+            }
+        }
+        return arr;
     }
 
 
@@ -309,13 +296,13 @@ Modulo.ComponentFactory = class ComponentFactory {
     // ```
     runFactoryLifecycle(cPartOpts) {
         this.baseRenderObj = {};
-        for (const [partName, partOptionsArr] of Object.entries(cPartOpts)) {
-            const cPart = Modulo.cparts.get(partName);
+        for (const [cPartName, partOptionsArr] of Object.entries(cPartOpts)) {
+            const cPart = Modulo.cparts[cPartName];
             let data = {};
             for (data of partOptionsArr) {
                 data = cPart.factoryCallback(data, this, this.baseRenderObj) || data;
             }
-            this.baseRenderObj[cPart.name] = data;
+            this.baseRenderObj[cPartName] = data;
         }
     }
 
@@ -344,11 +331,11 @@ Modulo.ComponentFactory = class ComponentFactory {
     // central location for every ComponentFactory instance.
     getCParts() {
         const results = [];
-        for (const [partName, partOptionsArr] of Object.entries(this.options)) {
+        for (const [cPartName, partOptionsArr] of Object.entries(this.options)) {
             for (const partOptions of partOptionsArr) {
-                const cPart = Modulo.cparts.get(partName);
-                Modulo.assert(cPart, `Unknown cPart: ${partName}`);
-                results.push({cPart, partOptions});
+                const cPart = Modulo.cparts[cPartName];
+                Modulo.assert(cPart, `Unknown cPart: ${cPartName}`);
+                results.push({cPart, partOptions, cPartName});
             }
         }
         return results;
@@ -368,7 +355,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
-        this.componentParts = [];
+        this.cparts = {};
         /*
         console.log('this is this', this);
         console.log('this is this', this.getAttribute);
@@ -386,35 +373,25 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     initialize() {
-        this.name = 'element'; // Used by lifecycle // TODO: Replace with lifecycleName
         this.fullName = this.factory.fullName;
         this.isMounted = false;
         this.isModuloElement = true; // used when finding parent
         this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
-        // this.initRenderObj = new Modulo.TaggedObjectMap(this.factory.baseRenderObj);
-        // this.cparts = new Modulo.TaggedObjectMap();
     }
 
     constructParts(isReload=false) {
-        const oldCParts = isReload ? this.componentParts : [];
-        this.componentParts = [this]; // Include self, to hook into lifecycle
-        for (const {cPart, partOptions} of this.factory.getCParts()) {
+        const oldCParts = isReload ? this.cparts : {};
+        this.cparts = {element: this}; // Include self, to hook into lifecycle
+        for (const {cPart, partOptions, cPartName} of this.factory.getCParts()) {
             const instance = new cPart(this, partOptions);
-            this.componentParts.push(instance);
+            this.cparts[cPartName] = instance;
 
-            if (instance.reloadCallback) {
+            if (instance.reloadCallback && cPartName in oldCParts) {
+                // NOTE: Need to test this now that we refactored the cPartName
                 // Trigger any custom reloading code
-                const oldPart = oldCParts.find(({name}) => name === cPart.name);
-                if (oldPart) {
-                    instance.reloadCallback(oldPart);
-                }
+                instance.reloadCallback(oldCParts[cPartName]);
             }
         }
-    }
-
-    getPart(searchName) {
-        /* TODO: Maybe should refactor this? Shouldn't be used much... */
-        return this.componentParts.find(({name}) => name === searchName);
     }
 
     applyDirectives(directives) {
@@ -453,19 +430,23 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.renderObj = Object.assign({}, this.getCurrentRenderObj());
         // todo: maybe sort cparts ahead of time based on lifecycles?
         for (const lcName of lifecycleNames) {
-            for (const cPart of this.componentParts) {
+            for (const [cPartName, cPart] of Object.entries(this.cparts)) {
                 const method = cPart[lcName + 'Callback'];
                 if (!this.renderObj) {
                     console.log('lolwut - renderobj is falsy', this.renderObj);
                     break;
                 }
-                if (!(cPart.name in this.renderObj)) {
-                    this.renderObj[cPart.name] = cPart;
+
+                // TODO: clean this up, renderObj should never "just"
+                // be cPart, should be the whole cparts.* being bare
+                // name OOP, vs cparts.*  being factory-defined
+                if (!(cPartName in this.renderObj)) {
+                    this.renderObj[cPartName] = cPart;
                 }
                 if (method) {
                     const results = method.call(cPart, this.renderObj);
                     if (results) {
-                        this.renderObj[cPart.name] = results;
+                        this.renderObj[cPartName] = results;
                     }
                 }
             }
@@ -548,12 +529,8 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     return arr; // HACK for testability
 }
 
-Modulo.cparts = new Map();
-Modulo.directiveShortcuts = new Map();
-Modulo.directiveShortcuts.set(/^@/, 'component.event');
-Modulo.directiveShortcuts.set(/:$/, 'component.resolve');
-//Modulo.directiveShortcuts.set(/\.$/, 'json'); // idea for JSON literals
-
+Modulo.directiveShortcuts = [[/^@/, 'component.event'],
+                             [/:$/, 'component.resolve'] ];
 Modulo.adapters = {
     templating: {
         ModuloTemplate: () => text => ctx => new Modulo.Template(text).render(ctx),
@@ -607,15 +584,10 @@ Modulo.ComponentPart = class ComponentPart {
         this.options = options.options;
         this.content = options.content;
     }
-
-    get name() {
-        return this.constructor.name;
-    }
 }
 
-Modulo.parts = {};
-Modulo.parts.Component = class Component extends Modulo.ComponentPart {
-    static name = 'component';
+Modulo.cparts = {};
+Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     prepareCallback() {
         // TODO shouldn't have to do this ---v
         return {
@@ -689,10 +661,8 @@ Modulo.parts.Component = class Component extends Modulo.ComponentPart {
         delete el.attrs[attrName];
     }
 }
-Modulo.cparts.set('component', Modulo.parts.Component);
 
-Modulo.parts.Props = class Props extends Modulo.ComponentPart {
-    static name = 'props';
+Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     static factoryCallback({options}, {componentClass}, renderObj) {
         /* untested / daedcode ---v */
         componentClass.observedAttributes = Object.keys(options);
@@ -734,10 +704,8 @@ Modulo.parts.Props = class Props extends Modulo.ComponentPart {
         return props;
     }
 }
-Modulo.cparts.set('props', Modulo.parts.Props);
 
-Modulo.parts.Style = class Style extends Modulo.ComponentPart {
-    static name = 'style';
+Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
         const {fullName} = factory;
         const id = `${fullName}_style`;
@@ -771,15 +739,13 @@ Modulo.parts.Style = class Style extends Modulo.ComponentPart {
     static loadCallback(node, loader, loadingObj) {
         let {content, options} = super.loadCallback(node, loader, loadingObj);
         const {name} = loadingObj.component[0];
-        content = Modulo.parts.Style.prefixAllSelectors(loader.namespace, name, content);
+        content = Modulo.cparts.style.prefixAllSelectors(loader.namespace, name, content);
         return {options, content};
     }
 }
-Modulo.cparts.set('style', Modulo.parts.Style);
 
 
-Modulo.parts.Template = class Template extends Modulo.ComponentPart {
-    static name = 'template';
+Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, renderObj) {
         const {loader} = factory;
         const tagPref = '$1' + loader.namespace + '-';
@@ -794,17 +760,14 @@ Modulo.parts.Template = class Template extends Modulo.ComponentPart {
         const context = renderObj;
         const result = compiledTemplate(context);
         if (result.includes('undefined')) {
-            console.log('undefined me', renderObj);
+            /* console.log('undefined me', renderObj); */
         }
         return {renderedOutput: result, compiledTemplate};
     }
 }
-Modulo.cparts.set('template', Modulo.parts.Template);
 
 
-Modulo.parts.Script = class Script extends Modulo.ComponentPart {
-    static name = 'script';
-
+Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
@@ -840,24 +803,22 @@ Modulo.parts.Script = class Script extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         // Make sure that the local variables are all properly set
         const {setLocalVariable} = renderObj.script;
-        const cpartsObj = {};
-        for (const part of this.component.componentParts) {
-            setLocalVariable(part.name, part);
-            cpartsObj[part.name] = part;
+        for (const [cPartName, cPart] of Object.entries(this.component.cparts)) {
+            setLocalVariable(cPartName, cPart);
         }
         setLocalVariable('element', this.component);
         // TODO: Add in cparts.*
-        setLocalVariable('cparts', cpartsObj);
+        //const cpartsObj = {};
+        //cpartsObj[part.name] = part;
+        //setLocalVariable('cparts', cpartsObj);
     }
 
     eventCallback(renderObj) {
         this.initializedCallback(renderObj);
     }
 }
-Modulo.cparts.set('script', Modulo.parts.Script);
 
-Modulo.parts.State = class State extends Modulo.ComponentPart {
-    static name = 'state';
+Modulo.cparts.state = class State extends Modulo.ComponentPart {
     static debugGhost = true;
     get debugGhost() { return true; }
     initializedCallback(renderObj) {
@@ -944,7 +905,6 @@ Modulo.parts.State = class State extends Modulo.ComponentPart {
     }
 
 }
-Modulo.cparts.set('state', Modulo.parts.State);
 
 // ModuloTemplate
 const defaultOptions = {

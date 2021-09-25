@@ -8,7 +8,7 @@
                 <li><a href="/docs.html" {% if props.selected == "docs" %}class="Navbar--selected"{% endif %}>Docs</a></li>
                 <li><a href="/literate/src/Modulo.html" {% if props.selected == "source" %}class="Navbar--selected"{% endif %}>Source</a></li>
                 <li title="SLOC: 929">
-                  v0.0.1
+                  v<span id="versionnum">{{ script.versionNumber }}</span>
                 </li>
             </ul>
         </nav>
@@ -17,8 +17,25 @@
     <props selected=""></props>
 
     <script>
-        //const packageJson = Modulo.require('../package.json');
-        //module.exports.versionNumber = packageJson.version;
+        if (Modulo.require) {
+            const packageJson = Modulo.require('../package.json');
+            module.exports.versionNumber = packageJson.version;
+            console.log('Hello SSG! Look at me:', module.exports.versionNumber);
+        } else {
+            setTimeout(() => {
+                console.log('Hello browser!');
+                module.exports.versionNumber = document.getElementById('versionnum').textContent;
+                console.log('Hello browser! Look at me:', module.exports.versionNumber);
+            });
+        }
+    </script>
+</template>
+
+<template mod-component="Link">
+    <script>
+        if (Modulo.require) {
+            // is SSG
+        }
     </script>
 </template>
 

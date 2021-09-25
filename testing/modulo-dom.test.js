@@ -91,7 +91,8 @@ test('Components register click events after rerendering', t => {
     component.wasClicked = false;
     component.rerender();
     t.is(component.wasClicked, false);
-    component.getPart('state').set('num', 10);
+    //component.getPart('state').set('num', 10);
+    component.cparts.state.set('num', 10);
     component.querySelector('aside').click();
     t.is(component.wasClicked, true);
 });

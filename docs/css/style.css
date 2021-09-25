@@ -43,6 +43,17 @@ nav.Navbar {
     height: 100px;
 }
 
+nav.Navbar--docs {
+  /*
+  height: 50px;
+  padding-top: 0;
+  border-top: 1px dotted black;
+  top: 100px !important;
+  position: fixed !important;
+  width: 100%;
+  */
+}
+
 nav.Navbar ul {
     max-width: 800px;
     display: flex;
@@ -60,8 +71,21 @@ nav.Navbar li a {
     color: black;
 }
 
+nav.Navbar--subbar li a {
+    text-transform: none;
+    font-size: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    line-height: 0.9;
+}
+
 nav.Navbar li a.Navbar--selected {
     text-decoration: overline underline;
+}
+
+nav.Navbar--subbar li a.Navbar--selected {
+    text-decoration: none;
+    color: #B90183;
 }
 
 main {
@@ -93,6 +117,23 @@ aside.TitleAside {
 aside.TitleAside a {
     font-size: 18px;
 }
+
+.TitleAside--navBar {
+  position: fixed;
+  width: 250px;
+}
+
+.TitleAside--navBar nav {
+  text-align: left;
+}
+
+@media (max-width: 992px) {
+    .TitleAside--navBar {
+      position: static;
+      width: 100%;
+    }
+}
+
 
 aside {
     border: 1px solid black;
@@ -225,6 +266,10 @@ h1.Tagline-logo {
 main {
     max-width: 800px;
     margin: auto;
+}
+
+main.give-left-padding > :not(.TitleAside) {
+    margin-left: 300px;
 }
 
 section {
