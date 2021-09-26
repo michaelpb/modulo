@@ -356,7 +356,7 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
             const factory = loader.defineComponent(name, options);
             for (const instance of this.instancesByName.get(factory.fullName)) {
                 instance.initialize(); // Re-initialize properties
-                instance.constructParts(true); // Rebuild from factory
+                instance.setupCParts(); // Rebuild from factory
                 instance.isMounted = true; // "Start" mounted
                 instance.rerender();
             }

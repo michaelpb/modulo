@@ -8,8 +8,9 @@
                 <li><a href="/start.html" {% if props.selected == "start" %}class="Navbar--selected"{% endif %}>Start</a></li>
                 <li><a href="/docs.html" {% if props.selected == "docs" %}class="Navbar--selected"{% endif %}>Docs</a></li>
                 <li><a href="/literate/src/Modulo.html" {% if props.selected == "source" %}class="Navbar--selected"{% endif %}>Source</a></li>
-                <li title="SLOC: 929">
-                  v<span id="versionnum">{{ script.versionNumber }}</span>
+                <li modulo-ignore>
+                  v: {{ script.exports.versionNumber }}<br />
+                  SLOC: 868 lines
                 </li>
             </ul>
         </nav>
