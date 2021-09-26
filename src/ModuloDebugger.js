@@ -379,8 +379,8 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
 function oneTimeSetup() {
     const {Loader, moddebug} = Modulo;
     moddebug.reloader = new moddebug.LoaderReloader();
-    moddebug.loader = new Loader('moddebug');
-    moddebug.loader.loadString(debugToolbarString);
+    //moddebug.loader = new Loader('moddebug');
+    //moddebug.loader.loadString(debugToolbarString);
     moddebug.toolbar = globals.document.createElement('moddebug-toolbar');
     globals.document.body.appendChild(moddebug.toolbar);
     greeting();

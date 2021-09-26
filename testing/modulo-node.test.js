@@ -7,7 +7,7 @@ test('Loader instantiates with empty args in node.js environ', t => {
     t.truthy(loader);
 });
 
-test('Loader serializes with empty args in node.js environ', t => {
+test.skip('Loader serializes with empty args in node.js environ', t => {
     const loader = new Modulo.Loader();
     const results = loader.serialize();
     t.truthy(results);
@@ -30,7 +30,7 @@ const expectedFuncsString = `
 const expectedWrappedScript = `
     'use strict';
     var var1,var2;
-    var module = {exports: {}};
+    var script = {exports: {}};
     function __set(name, value) {
         if (name === 'var1') var1 = value;
         if (name === 'var2') var2 = value;
@@ -39,7 +39,7 @@ const expectedWrappedScript = `
     return {
         ${expectedFuncsString}
         setLocalVariable: __set,
-        exports: module.exports};
+        exports: script.exports};
 `;
 
 

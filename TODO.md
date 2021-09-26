@@ -4,6 +4,9 @@
 - Main next steps:
     - (DONE) Remove ".name"
     - (DONE) Do cparts.state vs state conversion
+    - Work on "Live Code Preview" component for examples
+    - Misc must have features:
+        - Cache for components in localStorage
     - Work on Modulo Router
 
 - Idea for configuring cparts from within script tag:

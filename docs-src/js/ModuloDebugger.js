@@ -356,7 +356,7 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
             const factory = loader.defineComponent(name, options);
             for (const instance of this.instancesByName.get(factory.fullName)) {
                 instance.initialize(); // Re-initialize properties
-                instance.constructParts(true); // Rebuild from factory
+                instance.setupCParts(); // Rebuild from factory
                 instance.isMounted = true; // "Start" mounted
                 instance.rerender();
             }
@@ -379,8 +379,8 @@ Modulo.moddebug.LoaderReloader = class LoaderReloader {
 function oneTimeSetup() {
     const {Loader, moddebug} = Modulo;
     moddebug.reloader = new moddebug.LoaderReloader();
-    moddebug.loader = new Loader('moddebug');
-    moddebug.loader.loadString(debugToolbarString);
+    //moddebug.loader = new Loader('moddebug');
+    //moddebug.loader.loadString(debugToolbarString);
     moddebug.toolbar = globals.document.createElement('moddebug-toolbar');
     globals.document.body.appendChild(moddebug.toolbar);
     greeting();

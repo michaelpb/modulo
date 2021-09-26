@@ -18,8 +18,8 @@ test('Loader loads libraries with expected properties', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
     const loader = document.querySelector('mod-load');
     t.truthy(loader);
-    t.truthy(loader.componentFactoryData);
-    t.snapshot(Array.from(loader.componentFactoryData));
+    t.truthy(loader.factoryData);
+    t.snapshot(Array.from(loader.factoryData));
 });
 
 // TODO: When ghost is fully extricated, stop skipping

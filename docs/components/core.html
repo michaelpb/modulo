@@ -3,33 +3,84 @@
         <nav class="Navbar">
             <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
             <ul>
-                <li><a href="/index.html#below" {% if props.selected == "about" %}class="Navbar--selected"{% endif %}>About</a></li>
-                <li><a href="/start.html" {% if props.selected == "start" %}class="Navbar--selected"{% endif %}>Start</a></li>
-                <li><a href="/docs.html" {% if props.selected == "docs" %}class="Navbar--selected"{% endif %}>Docs</a></li>
-                <li><a href="/literate/src/Modulo.html" {% if props.selected == "source" %}class="Navbar--selected"{% endif %}>Source</a></li>
-                <li title="SLOC: 929">
-                  v<span id="versionnum">{{ script.versionNumber }}</span>
+                <li>
+                    <a href="/index.html#below" {% if props.selected == "about" %}class="Navbar--selected"{% endif %}>About</a>
+                </li>
+                <li>
+                    <a href="/start.html" {% if props.selected == "start" %}class="Navbar--selected"{% endif %}>Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html" {% if props.selected == "docs" %}class="Navbar--selected"{% endif %}>Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html" {% if props.selected == "source" %}class="Navbar--selected"{% endif %}>Source</a>
                 </li>
             </ul>
+
+            <div class="Navbar-rightInfo">
+                v: <span id="v_num">{{ script.exports.version }}</span><br />
+                SLOC: <span id="s_num">{{ script.exports.sloc }}</span> lines<br />
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
         </nav>
     </script>
 
     <props selected=""></props>
 
     <script>
+        function sloccount() {
+            const txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            return Modulo.require('sloc')(txt, 'js').source;
+        }
         if (Modulo.require) {
-            const packageJson = Modulo.require('../package.json');
-            module.exports.versionNumber = packageJson.version;
-            console.log('Hello SSG! Look at me:', module.exports.versionNumber);
+            if (!Modulo.ssgStore.navbar) {
+                Modulo.ssgStore.navbar = {
+                    version: Modulo.require('../package.json').version,
+                    sloc: sloccount(),
+                }
+            }
+            script.exports = Modulo.ssgStore.navbar;
         } else {
-            setTimeout(() => {
-                console.log('Hello browser!');
-                module.exports.versionNumber = document.getElementById('versionnum').textContent;
-                console.log('Hello browser! Look at me:', module.exports.versionNumber);
-            });
+            console.log('Hello browser!');
+            script.exports = {
+                version: document.getElementById('v_num').textContent,
+                sloc: document.getElementById('s_num').textContent,
+            }
         }
     </script>
 </template>
+
+
+<template mod-component="CodeExample">
+    <template>
+        <div>
+            <button @click:="script.run">Try it.</button>
+            <textarea [state.bind]="" name="text">            </textarea>
+        </div>
+
+        <div>
+            <!-- TODO: Add in code to save it here... -->
+            &lt;my-CustomTag&gt;
+            &lt;/my-CustomTag&gt;
+        </div>
+    </template>
+    <state text="Example..."></state>
+    <script>
+        console.log('gettin script tagged');
+        function initializedCallback() {
+            console.log('hey i am getting initialized wow');
+            var editor = CodeMirror.fromTextArea(myTextarea, {
+                lineNumbers: true
+            });
+        }
+        function run() {
+            console.log('running code')
+        }
+    </script>
+</template>
+
+
 
 <template mod-component="Link">
     <script>
@@ -106,7 +157,7 @@
             <li>
                 <input [state.bind]="" name="text">
                 <button @click:="script.addItem">
-                    Add
+                    Add "{{ state.text }}"
                 </button>
             </li>
         </ol>

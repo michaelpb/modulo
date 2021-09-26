@@ -46,6 +46,13 @@ function clearRequireCache(searchPath) {
     //require.cache = {};
 }
 
+function makeMockStorage() {
+    const map = new Map();
+    map.getItem = map.get.bind(map);
+    map.setItem = map.set.bind(map);
+    return map;
+}
+
 function setupModulo(path = null, includeDebugger = false, html = '') {
     let Modulo;
     clearRequireCache('../../src/Modulo.js');
@@ -74,6 +81,9 @@ function setupModulo(path = null, includeDebugger = false, html = '') {
     const mockTOPush = (func, time) => mockTimeouts.push({func, time});
     Modulo.globals.setTimeout = mockTOPush;
     Modulo.globals.setInterval = mockTOPush;
+
+    Modulo.globals.localStorage = makeMockStorage();
+    Modulo.globals.sessionStorage = makeMockStorage();
 
     Modulo.globals.mockModifyFile = [];
 

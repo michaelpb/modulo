@@ -57,14 +57,26 @@ mdu-Hero div .dsiabled {
         <nav class="Navbar">
             <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
-                <li><a href="/index.html#below">About</a></li>
-                <li><a href="/start.html">Start</a></li>
-                <li><a href="/docs.html" class="Navbar--selected">Docs</a></li>
-                <li><a href="/literate/src/Modulo.html">Source</a></li>
-                <li title="SLOC: 929">
-                  v<span id="versionnum">undefined</span>
+                <li>
+                    <a href="/index.html#below">About</a>
+                </li>
+                <li>
+                    <a href="/start.html">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html" class="Navbar--selected">Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html">Source</a>
                 </li>
             </ul>
+
+            <div class="Navbar-rightInfo">
+                v: <span id="v_num">0.0.1</span><br>
+                SLOC: <span id="s_num">850</span> lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
         </nav>
     </mdu-navbar>
 
@@ -75,12 +87,33 @@ mdu-Hero div .dsiabled {
         <h3>Documentation</h3>
         <nav class="TitleAside-navigation">
             <ul>
+
                 <li>
                   Templating
                   <ul>
-                      <li>Templating</li>
+                      <li>Basics</li>
+                      <li>Extending</li>
+                      <li>API Reference</li>
+                          <li>Filters</li>
+                          <li>Template-tags</li>
                   </ul>
                 </li>
+
+                <li>
+                  Directives
+                  <ul>
+                      <li>Built-ins</li>
+                          <li>[state.bind]</li>
+                          <li>[component.event] (@)</li>
+                          <li>[component.resolve] (:)</li>
+                          <li>[component.children] (untested)</li>
+                      <li>Extending</li>
+                      <li>API Reference</li>
+                      <li>Filters</li>
+                      <li>Template-tags</li>
+                  </ul>
+                </li>
+
                 <li>
                     Other resources:
 

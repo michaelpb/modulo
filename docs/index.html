@@ -49,7 +49,7 @@ mdu-Hero div .dsiabled {
           box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
       }
     </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
-    <mod-load namespace="mdu" src="./components/pageparts.html"></mod-load>
+    <!--<mod-load namespace="mdu" src="./components/pageparts.html"></mod-load>-->
 
 
 
@@ -59,30 +59,43 @@ mdu-Hero div .dsiabled {
 <div class="IndexWrapper">
     <div class="Tagline">
         <h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>
-        <h1 class="Tagline-title">MODULO</h1>
-        <h2>A tiny JavaScript UI framework</h2>
+        <h1 class="Tagline-title">modulo</h1>
+        <h2>A tiny JavaScript component framework</h2>
         <br> <br>
-        <h2>☑ 1000 lines of code as a thin layer over vanilla Web Components</h2>
-        <h2>☑ Components system inspired by React, Svelte, and Polymer</h2>
+        <h2>☑ 1000 lines of code extending vanilla Web Components</h2>
+        <h2>☑ Component system inspired by React, Svelte, and Polymer</h2>
         <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
-        <h2>☑ A "no fuss" drop-in to add JS to existing web apps</h2>
+        <h2>☑ A "no fuss" drop-in to add JS components to existing web apps</h2>
     </div>
-    <span id="below"></span>
-    <mdu-navbar selected="about">
+</div>
+
+<span id="below"></span>
+<mdu-navbar selected="about">
         <nav class="Navbar">
             <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
-                <li><a href="/index.html#below" class="Navbar--selected">About</a></li>
-                <li><a href="/start.html">Start</a></li>
-                <li><a href="/docs.html">Docs</a></li>
-                <li><a href="/literate/src/Modulo.html">Source</a></li>
-                <li title="SLOC: 929">
-                  v<span id="versionnum">undefined</span>
+                <li>
+                    <a href="/index.html#below" class="Navbar--selected">About</a>
+                </li>
+                <li>
+                    <a href="/start.html">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html">Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html">Source</a>
                 </li>
             </ul>
+
+            <div class="Navbar-rightInfo">
+                v: <span id="v_num">0.0.1</span><br>
+                SLOC: <span id="s_num">850</span> lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
         </nav>
     </mdu-navbar>
-</div>
 
 <main id="About">
     <section>
@@ -153,14 +166,18 @@ mdu-Hero div .dsiabled {
             <p><strong>Concise</strong> - The code-base is intentionally kept
             short &amp; sweet, so when something goes wrong you can always
             <tt>git blame</tt> Modulo.</p>
+            <p><strong>Building blocks for more</strong> - Ever wanted to write
+            your own component framework? Read the "literate" code for a
+            starting spot.</p>
             <p><strong>Opinionated defaults</strong> - Modulo is cohesive,
             coming with a templating system and DOM resolution out-of-the-box.
-            Modulo is for people who like the consistency of following the
-            rules, but we're all adults now so it's okay to break 'em if they
-            get in the way, meaning any of these defaults can be replaced.  But
+            It's like "batteries included", but maybe AAA instead of D.
+            Modulo is for people who like the consistency of One Way to Do It,
+            while still having flexibility if the One Way comes up short.</p>
+            <!--
+            But
             like your parents always warned you, "Don't directly mutate state!"
-            </p>
-            <!--<p><strong>No more of "this"</strong> - OOP in JavaScript? Not a
+            <p><strong>No more of "this"</strong> - OOP in JavaScript? Not a
             fan.</p>
             <p><strong>Fork it</strong> - It's small so you can make it your
             own.</p>-->
@@ -183,7 +200,8 @@ mdu-Hero div .dsiabled {
         {% endfor %}
         &lt;li&gt;
             &lt;input [state.bind] name="text" /&gt;
-            &lt;button @click:=script.addItem&gt;Add&lt;/button&gt;
+            &lt;button @click:=script.addItem&gt;
+                Add "{{ state.text }}"&lt;/button&gt;
         &lt;/li&gt;
     &lt;/ol&gt;
 &lt;/template&gt;
@@ -216,7 +234,7 @@ mdu-Hero div .dsiabled {
             <li>
                 <input [state.bind]="" name="text">
                 <button @click:="script.addItem">
-                    Add
+                    Add "Beer"
                 </button>
             </li>
         </ol>

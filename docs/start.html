@@ -3,7 +3,7 @@
     <title>Modulo.js</title>
     <link rel="stylesheet" href="./css/style.css">
     <link rel="icon" type="image/png" href="./img/mono_logo.png">
-    <!--<script src="./js/Modulo.js"></script>-->
+    <script src="./js/Modulo.js"></script>
     <style id="mdu-Hero_style">
 mdu-Hero h1 {
           font-size: 120px;
@@ -53,21 +53,46 @@ mdu-Hero div .dsiabled {
 
 
 
+<script src="/js/Modulo.js"></script>
 <mdu-navbar selected="start">
         <nav class="Navbar">
             <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
-                <li><a href="/index.html#below">About</a></li>
-                <li><a href="/start.html" class="Navbar--selected">Start</a></li>
-                <li><a href="/docs.html">Docs</a></li>
-                <li><a href="/literate/src/Modulo.html">Source</a></li>
-                <li title="SLOC: 929">
-                  v<span id="versionnum">undefined</span>
+                <li>
+                    <a href="/index.html#below">About</a>
+                </li>
+                <li>
+                    <a href="/start.html" class="Navbar--selected">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html">Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html">Source</a>
                 </li>
             </ul>
+
+            <div class="Navbar-rightInfo">
+                v: <span id="v_num">0.0.1</span><br>
+                SLOC: <span id="s_num">850</span> lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
         </nav>
     </mdu-navbar>
 
+<mdu-codeexample>
+        <div>
+            <button @click:="script.run">Try it.</button>
+            <textarea [state.bind]="" name="text">            </textarea>
+        </div>
+
+        <div>
+            <!-- TODO: Add in code to save it here... -->
+            &lt;my-CustomTag&gt;
+            &lt;/my-CustomTag&gt;
+        </div>
+    </mdu-codeexample>
 
 <main id="About">
     <section>
@@ -101,7 +126,7 @@ mdu-Hero div .dsiabled {
     </section>
 </main>
 
-
+<script>Modulo.defineAll();</script>
 
 
 </body>

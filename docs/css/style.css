@@ -6,8 +6,8 @@ html {
   box-sizing: border-box;
   font-size: 16px;
   line-height: 1.5;
-  /*font-family: sans-serif;*/
-  font-family: serif;
+  font-family: sans-serif;
+  /*font-family: serif;*/
   overflow-y: scroll;
 }
 
@@ -86,6 +86,14 @@ nav.Navbar li a.Navbar--selected {
 nav.Navbar--subbar li a.Navbar--selected {
     text-decoration: none;
     color: #B90183;
+}
+
+nav.Navbar .Navbar-rightInfo {
+    font-size: 12px;
+    text-align: left;
+    margin-left: 40px;
+    /*border: 1px solid black;*/
+    padding: 5px;
 }
 
 main {
@@ -238,6 +246,7 @@ nav.Navbar ul {
 div.IndexWrapper {
     min-height: calc(100vh - 100px);
 }
+
 div.Tagline {
     text-align: center;
 }
@@ -246,10 +255,15 @@ h1.Tagline-title {
     text-align: center;
     font-size: 60px;
     line-height: 1.0;
-    font-weight: lighter;
+    /*font-weight: lighter;*/
+    font-weight: 800; /* heavy if possible */
     letter-spacing: 10px;
-    color: black;
+    /*color: black;*/
     /*color: var(--highlight-color);*/
+    text-shadow: 0 0 1px var(--highlight-color); /* extremely subtle shadow */
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+    color: white;
 }
 
 h1.Tagline-logo {
@@ -257,10 +271,13 @@ h1.Tagline-logo {
     font-size: 200px;
     line-height: 1.0;
     /*text-shadow: 0 0 27px var(--highlight-color);*/
-    text-shadow: 0 0 27px #000;
+    /*text-shadow: 0 0 5px #000;*/
+    text-shadow: 0 0 1px var(--highlight-color); /* extremely subtle shadow */
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
     color: white;
     background: white;
-    font-weight: bold;
+    font-weight: 300; /* lightest if possible */
 }
 
 main {
@@ -313,6 +330,10 @@ a:visited {
 
     div.Tagline {
         padding: 5px;
+    }
+    nav.Navbar .Navbar-rightInfo {
+        padding: 2px;
+        margin-left: 10px;
     }
 
 }

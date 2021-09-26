@@ -5,14 +5,16 @@
     <title>Modulo.js</title>
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="icon" type="image/png" href="./img/mono_logo.png" />
-    <!--<script src="./js/Modulo.js"></script>-->
+    <script src="./js/Modulo.js"></script>
     <mod-load namespace="mdu" src="./components/core.html"></mod-load>
 </head>
 
 <body>
 
+<script src="/js/Modulo.js"></script>
 <mdu-Navbar selected="start"></mdu-Navbar>
 
+<mdu-CodeExample></mdu-CodeExample>
 
 <main id="About">
     <section>
@@ -47,6 +49,6 @@
     </section>
 </main>
 
-
+<script>Modulo.defineAll();</script>
 </body>
 </html>

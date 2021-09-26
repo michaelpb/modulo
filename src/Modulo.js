@@ -3,24 +3,30 @@
 // # Introduction
 // Welcome to the Modulo.js source code.
 
-/* tl;dr: Modulo.globals is the same thing as "window" */
-if (typeof HTMLElement === 'undefined') {
-    var HTMLElement = class {}; // Node.js compatibilty
-}
-var globals = {HTMLElement};
-var Modulo = {globals};
-
-
 // Unlike most code files, this one is arranged in a very deliberate way.  It's
 // arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
 // component, such that the earlier and more important code is at the top, and
 // later and less important code is at the bottom. You can read it like a
 // linear "story" of how Modulo works. Modulo employs [literate
 // programming](https://en.wikipedia.org/wiki/Literate_programming), or
-// interweaving Markdown-formatted comments on to tell this story, and using a
-// tool (docco) to extract all these comments for easy reading. Excluding this
-// documentation you are now reading, the Modulo source code remains under 1000
-// lines of code.
+// interweaving Markdown-formatted comments on to tell this story, and uses a
+// tool (docco) to extract all these comments for easy reading.
+
+if (typeof HTMLElement === 'undefined') {
+    var HTMLElement = class {}; // Node.js compatibilty
+}
+var Modulo = {
+    globals: {HTMLElement}, // globals is window in Browser, an obj in Node.js
+    reconcilers: {}, // used later, for custom DOM Reconciler classes
+    cparts: {}, // used later, for custom CPart classes
+    templating: {}, // used later, for custom Templating languages
+};
+
+// ## Code standards
+// - SLOC limit: 1000 lines
+// - Line limit: 80 chars
+// - Indentation: 4 spaces
+
 
 
 // ## Quick definitions:
@@ -80,15 +86,38 @@ Modulo.Loader = class Loader extends HTMLElement {
     // with a `<mod-load>` tag in it.
     connectedCallback() {
         this.src = this.getAttribute('src');
-        this.initialize(this.getAttribute('namespace'), Modulo.utils.parseAttrs(this));
-        /* TODO: Check if already loaded via a global / static serialized obj */
+        this.namespace = this.getAttribute('namespace');
+        Modulo.assert(this.src, 'Loader: Invalid or missing src= attribute');
+        Modulo.assert(this.namespace, 'Loader: Invalid or missing namespace= attribute');
 
+        this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
+        const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
+
+        // TODO: finish cache feature, maybe fold into hot reload, eg it always
+        // first loads from cache, then it tries hotreloading from origin
+        const skipCache = true || this.hasAttribute('skip-cache') || Modulo.require;
+        if (cachedData && cachedData.length > 2 && skipCache) {
+            for (const [name, loadObj] of JSON.parse(cachedData)) {
+                this.defineComponent(name, loadObj);
+            }
+        } else {
+
+            /* 
+                if (this.getAttribute('reload')) {
+                    setInterval(this.doFetch, 2000);
+                }
+            */
+            this.doFetch();
+        }
+    }
+
+    doFetch() {
         // After initializing data, send a new request to the URL specified by
         // the src attribute. When the response is received, load the text as a
         // Modulo component module definition.
         Modulo.globals.fetch(this.src)
             .then(response => response.text())
-            .then(text => this.loadString(text));
+            .then(text => this.loadString(text))
     }
 
     // ## Loader: loadString
@@ -96,7 +125,7 @@ Modulo.Loader = class Loader extends HTMLElement {
     // a module as an argument and loop through all `<component ...>` style
     // definitions. Then, it uses `Loader.loadFromDOMElement` to create a
     // `ComponentFactory` instance for each component definition.
-    loadString(text, alsoRegister=true) {
+    loadString(text) {
         /* TODO - Maybe use DOMParser here instead */
         const frag = new Modulo.globals.DocumentFragment();
         const div = Modulo.globals.document.createElement('div');
@@ -105,17 +134,21 @@ Modulo.Loader = class Loader extends HTMLElement {
           <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
           </(state|props|template)> -> </script>
         */
+        this.factoryData = [];
         div.innerHTML = text;
         frag.append(div);
-        const results = [];
         for (const tag of div.querySelectorAll('[mod-component],component')) {
-            const componentFactory = this.loadFromDOMElement(tag);
-            results.push(componentFactory);
-            if (alsoRegister) {
-                componentFactory.register();
-            }
+            const [name, loadObj] = this.loadFromDOMElement(tag);
+            this.factoryData.push([name, loadObj]);
+            this.defineComponent(name, loadObj);
         }
-        return results;
+        for (const tag of div.querySelectorAll('[modulo-load],[mod-load]')) {
+            /* TODO - Recurse into other loaders */
+            /* One approach would be to see if localStorage */
+            /*this.subLoader = new Loader();*/
+        }
+        const serialized = JSON.stringify(this.factoryData);
+        Modulo.globals.localStorage.setItem(this.cacheKey, serialized);
     }
 
     // ## Loader: loadFromDOMElement
@@ -159,9 +192,7 @@ Modulo.Loader = class Loader extends HTMLElement {
             const {loadCallback} = Modulo.cparts[cPartName];
             loadObj[cPartName].push(loadCallback(node, this, loadObj));
         }
-
-        this.componentFactoryData.push([name, loadObj]);
-        return this.defineComponent(name, loadObj);
+        return [name, loadObj];
     }
 
     // ## Loader: defineComponent
@@ -169,10 +200,10 @@ Modulo.Loader = class Loader extends HTMLElement {
     // based on a loadObj data structure.
     defineComponent(name, loadObj) {
         const factory = new Modulo.ComponentFactory(this, name, loadObj);
+        factory.register();
         if (Modulo.globals.defineComponentCallback) {
             Modulo.globals.defineComponentCallback(factory); // TODO rm when possible
         }
-        return factory;
     }
 
     // ## Loader.getNodeCPartName
@@ -223,38 +254,6 @@ Modulo.Loader = class Loader extends HTMLElement {
         }
         return arr;
     }
-
-    // ## Loader: constructor, initialize
-    // Constructor functions to get initial / default data set-up.
-    constructor(...args) {
-        super();
-        this.initialize.apply(this, args);
-    }
-
-    initialize(namespace, options, factoryData=null) {
-        this.namespace = namespace;
-        this.customizedSettings = options;
-        this.settings = Object.assign({}, options);
-        this.componentFactoryData = factoryData || [];
-        this.loadAll();
-    }
-
-    // ## Loader: loadAll, serialize
-    // Utility functions used for serializing / deserializing a set of Modulo
-    // component definition.
-    loadAll() {
-        for (const [name, options] of this.componentFactoryData) {
-            this.defineComponent(name, options);
-        }
-    }
-
-    serialize() {
-        /* Note: Will probably rewrite thsi when working on "modulo-cli build"*/
-        const arg0 = JSON.stringify(this.namespace);
-        const arg1 = JSON.stringify(this.customizedSettings);
-        const arg2 = JSON.stringify(this.componentFactoryData);
-        return `new Modulo.Loader(${arg0}, ${arg1}, ${arg2});`;
-    }
 }
 
 // # Modulo.ComponentFactory
@@ -274,7 +273,6 @@ Modulo.ComponentFactory = class ComponentFactory {
     // turn sets up expected properties, and then invokes its methods
     // createClass and runFactoryLifeCycle explained next.
     constructor(loader, name, options) {
-        Modulo.assert(name, 'Name must be given.');
         this.loader = loader;
         this.options = options;
         this.name = name;
@@ -394,12 +392,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
         this.cparts = {};
-        /*
-        console.log('this is this', this);
-        console.log('this is this', this.getAttribute);
-        */
-        this.originalHTML = this.innerHTML;
 
+        this.originalHTML = this.innerHTML;
         this.originalChildren = [];
         if (this.hasChildNodes()) {
             const dupedChildren = Array.from(this.childNodes); // necessary
@@ -579,7 +573,6 @@ Modulo.ComponentPart = class ComponentPart {
     }
 }
 
-Modulo.cparts = {};
 Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     prepareCallback() {
         // TODO shouldn't have to do this ---v
@@ -602,8 +595,8 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     handleEvent(func, ev, payload) {
         this.element.lifecycle(['event'], {_eventFunction: func});
         func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
-        this.element.lifecycle(['eventCleanup']);
-        this.element.rerender();
+        this.element.lifecycle(['eventCleanup']); // todo: should this go below rerender()?
+        this.element.rerender(); // always rerender after events
     }
 
     childrenMount({el}) {
@@ -775,14 +768,14 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const localVarsLet = localVars.join(',') || 'noLocalVars=true';
         const localVarsIfs = localVars.map(n => `if (name === '${n}') ${n} = value;`).join('\n');
 
-        // TODO: Rename module to script to be consistent with event-time lifecycle
+        // TODO: Rename script to script to be consistent with event-time lifecycle
         return `
             'use strict';
             var ${localVarsLet};
-            var module = {exports: {}};
+            var script = {exports: {}};
             function __set(name, value) { ${localVarsIfs} }
             ${contents}
-            return { ${symbolsString} setLocalVariable: __set, exports: module.exports};
+            return { ${symbolsString} setLocalVariable: __set, exports: script.exports};
         `;
     }
 
@@ -836,9 +829,11 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     bindMount({el}) {
         el.getAttr = el.getAttr || el.getAttribute;
         const name = el.getAttr('name');
-        Modulo.assert(name in this.data, `[state.bind]: "${name}" not in state`);
+        Modulo.assert(name in this.data, `[state.bind]: no "${name}" in state`);
         const func = () => this.set(name, el.value);
-        const evName = 'keyup'; // eventually customizable
+        // eventually customizable, eg [state.bind]mouseover=mouseY (event
+        // name, el property name, and/or state propery name etc)
+        const evName = 'keyup';
         this.boundElements[name] = [el, evName, func];
         el.value = this.data[name];
         el.addEventListener(evName, func);
@@ -856,60 +851,30 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
+    set(name, value) {
+        this.data[name] = value;
+        this.component.rerender();
+    }
+
     eventCallback() {
         this._oldData = Object.assign({}, this.data);
     }
 
     eventCleanupCallback() {
         for (const name of Object.keys(this.data)) {
-            Modulo.assert(name in this._oldData, 'Invalid key: state.' + name)
+            Modulo.assert(name in this._oldData, `Tried to assign to "state.${name}" despite no initial value`);
             if (name in this.boundElements) {
                 if (this.data[name] !== this._oldData[name]) {
                     const [el, func, evName] = this.boundElements[name];
-                    el.value = value;
+                    el.value = this.data[name];
                 }
             }
         }
         this._oldData = null;
     }
-
-    // TODO: Possibly delete all methods below:
-    get(key) {
-        return this.data[key];
-    }
-
-    set(key, value) {
-        this.data[key] = value;
-        this._update(key, value);
-    }
-
-    _updateBoundElement(key, value) {
-        if (this.boundElements[key]) {
-            const [el, func, evName] = this.boundElements[key];
-            el.value = value;
-        }
-    }
-
-    _update(key, value) {
-        if (this.boundElements[key]) {
-            const [el, func, evName] = this.boundElements[key];
-            el.value = value;
-        }
-        this.element.rerender();
-        if (this.ghostElem) {
-            // update ghost element with change
-            if (typeof value !== 'string') {
-                value = JSON.stringify(value);
-                key += ':';
-            }
-            this.ghostElem.setAttribute(key, value);
-        }
-    }
-
 }
 
 // ModuloTemplate
-Modulo.templating = {};
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options = {}) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
@@ -1017,6 +982,7 @@ Modulo.templating.defaultOptions.filters = {
     add: (s, arg) => s + arg,
     subtract: (s, arg) => s - arg,
     default: (s, arg) => s || arg,
+    invoke: (s, arg) => s(arg),
     divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
 };
 
@@ -1056,7 +1022,6 @@ Modulo.templating.defaultOptions.tags = {
 };
 
 // SetDomReconciler ------------------
-Modulo.reconcilers = {};
 Modulo.reconcilers.InnerHtml = class InnerHtmlReconciler {
     reconcile(element, newHTML) {
         element.innerHTML = newHTML;
@@ -1362,6 +1327,5 @@ if (typeof module !== 'undefined') { // Node
     module.exports = Modulo;
 }
 if (typeof customElements !== 'undefined') { // Browser
-    globals = window;
+    Modulo.globals = window;
 }
-Modulo.globals = globals;

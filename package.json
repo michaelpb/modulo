@@ -16,6 +16,7 @@
     "ava": "3.14.0",
     "docco-next": "0.9.8",
     "jsdom": "16.4.0",
+    "sloc": "^0.2.1",
     "xmldom": "0.4.0"
   },
   "repository": {

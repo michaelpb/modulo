@@ -3,6 +3,8 @@ const pathlib = require('path');
 const {JSDOM} = require('jsdom');
 const {DOMParser} = require('xmldom');
 
+const ssgStore = {};
+
 function exitErr(message) {
     console.warn(message);
     process.exit(1);
@@ -116,6 +118,13 @@ function loadModuloDocument(path, html) {
         }
     }
 
+    function makeMockStorage() {
+        const map = new Map();
+        map.getItem = map.get.bind(map);
+        map.setItem = map.set.bind(map);
+        return map;
+    }
+
     function setupModulo(path = null, includeDebugger = false, html = '') {
         let Modulo;
         if (includeDebugger) {
@@ -132,6 +141,7 @@ function loadModuloDocument(path, html) {
         const dom = new JSDOM(htmlCode);
         if (includeRequire) {
             Modulo.require = require; // for ssg
+            Modulo.ssgStore = ssgStore; // for ssg
         }
         Modulo.document = dom.window.document; // for easier testing
         Modulo.globals.DOMParser = DOMParser;
@@ -150,6 +160,8 @@ function loadModuloDocument(path, html) {
         const mockTOPush = (func, time) => mockTimeouts.push({func, time});
         Modulo.globals.setTimeout = mockTOPush;
         Modulo.globals.setInterval = mockTOPush;
+        Modulo.globals.localStorage = makeMockStorage();
+        Modulo.globals.sessionStorage = makeMockStorage();
 
         Modulo.globals.mockModifyFile = [];
 
