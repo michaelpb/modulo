@@ -3,10 +3,8 @@
 
 - Main next steps:
     - (DONE) Remove ".name"
-    - Do cparts.state vs state conversion
-      - (Make state be bare object version, and cparts.state OOP instance)
+    - (DONE) Do cparts.state vs state conversion
     - Work on Modulo Router
-    - Make it easier to get values from script tag and hook into render
 
 - Idea for configuring cparts from within script tag:
     - Set already-constructed cparts in script before running script

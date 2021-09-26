@@ -50,7 +50,9 @@ var Modulo = {globals};
 // * `prepare` - Gather data needed before rendering (e.g. gather variables for
 // template)
 // * `render` - Use the Template to render HTML code
-// * `update` - Updates the DOM to reflect the newly generated HTML code
+// * `update` - Updates the DOM to reflect the newly generated HTML code, while
+//    applying directives. Each directive gets it's own set of lifecycle
+//    methods, like eventMount and eventUnmount.
 // * `updated` - Perform any clean-up tasks after DOM update
 
 // ### Group 3: Directives
@@ -450,9 +452,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
-    lifecycle(lifecycleNames) {
+    lifecycle(lifecycleNames, rObj={}) {
         // NEW CODE: This is a quick re-implementation of lifecycle
-        this.renderObj = Object.assign({}, this.getCurrentRenderObj());
+        this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
         // todo: maybe sort cparts ahead of time based on lifecycles?
         for (const lcName of lifecycleNames) {
             for (const [cPartName, cPart] of Object.entries(this.cparts)) {
@@ -466,7 +468,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 // be cPart, should be the whole cparts.* being bare
                 // name OOP, vs cparts.*  being factory-defined
                 if (!(cPartName in this.renderObj)) {
-                    this.renderObj[cPartName] = cPart;
+                    //this.renderObj[cPartName] = cPart;
                 }
                 if (method) {
                     const results = method.call(cPart, this.renderObj);
@@ -569,8 +571,9 @@ Modulo.ComponentPart = class ComponentPart {
 
     static factoryCallback() {}
 
-    constructor(component, options) {
-        this.component = component; // TODO: Change to this.element
+    constructor(element, options) {
+        this.component = element; // TODO: Remove
+        this.element = element;
         this.options = options.options;
         this.content = options.content;
     }
@@ -597,18 +600,19 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     handleEvent(func, ev, payload) {
-        this.component.lifecycle(['event']);
+        this.element.lifecycle(['event'], {_eventFunction: func});
         func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
-        this.component.lifecycle(['eventCleanup']);
+        this.element.lifecycle(['eventCleanup']);
+        this.element.rerender();
     }
 
     childrenMount({el}) {
-        el.append(...this.component.originalChildren);
-        this.component.originalChildren = [];
+        el.append(...this.element.originalChildren);
+        this.element.originalChildren = [];
     }
 
     childrenUnmount() {
-        this.component.innerHTML = '';
+        this.element.innerHTML = '';
     }
 
     eventMount(info) {
@@ -661,22 +665,22 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     copyMount({el}) {
         // dead code?
         // change to "this.element"
-        for (const attr of this.component.getAttributeNames()) {
-            el.setAttribute(attr, this.component.getAttribute(attr));
+        for (const attr of this.element.getAttributeNames()) {
+            el.setAttribute(attr, this.element.getAttribute(attr));
         }
         /*
         const props = {};
         for (let propName of Object.keys(this.options)) {
             propName = propName.replace(/:$/, ''); // normalize
-            let attrName = this.component.resolveAttributeName(propName);
+            let attrName = this.element.resolveAttributeName(propName);
             if (!attrName) {
-                console.error('Prop', propName, 'is required for', this.component.tagName);
+                console.error('Prop', propName, 'is required for', this.element.tagName);
                 continue;
             }
-            let value = this.component.getAttribute(attrName);
+            let value = this.element.getAttribute(attrName);
             if (attrName.endsWith(':')) {
                 attrName = attrName.slice(0, -1); // trim ':'
-                value = this.component.moduloRenderContext.resolveValue(value);
+                value = this.element.moduloRenderContext.resolveValue(value);
             }
             props[propName] = value;
         }
@@ -685,7 +689,7 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 
     initializedCallback(renderObj) {
         const props = {};
-        const getAttr = getGetAttr(this.component);
+        const getAttr = getGetAttr(this.element);
         for (let propName of Object.keys(this.options)) {
             propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
             props[propName] = getAttr(propName);
@@ -770,6 +774,8 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const symbolsString = this.getSymbolsAsObjectAssignment(contents);
         const localVarsLet = localVars.join(',') || 'noLocalVars=true';
         const localVarsIfs = localVars.map(n => `if (name === '${n}') ${n} = value;`).join('\n');
+
+        // TODO: Rename module to script to be consistent with event-time lifecycle
         return `
             'use strict';
             var ${localVarsLet};
@@ -784,26 +790,30 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const code = partOptions.content || '';
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
-        localVars.push('parent'); // add in access to previous versions of renderObj // TODO: finish, currently dead code
+        // localVars.push('parent'); // add in access to previous versions of renderObj (DEAD CODE)
+        localVars.push('cparts');
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
-        return (new Function('Modulo', wrappedJS)).call(null, Modulo);
+        const results = (new Function('Modulo', wrappedJS)).call(null, Modulo);
+        results.localVars = localVars;
+        return results;
     }
 
     initializedCallback(renderObj) {
-        // Make sure that the local variables are all properly set
         const {setLocalVariable} = renderObj.script;
-        for (const [cPartName, cPart] of Object.entries(this.component.cparts)) {
-            setLocalVariable(cPartName, cPart);
-        }
-        setLocalVariable('element', this.component);
-        // TODO: Add in cparts.*
-        //const cpartsObj = {};
-        //cpartsObj[part.name] = part;
-        //setLocalVariable('cparts', cpartsObj);
+        setLocalVariable('element', this.element);
+        setLocalVariable('cparts', this.element.cparts);
     }
 
+    // ## cparts.Script: eventCallback
+    // To allow for local variables access to APIs provided by other CParts,
+    // sets local variables equal to the data returned by their callbacks.
     eventCallback(renderObj) {
-        this.initializedCallback(renderObj);
+        const {setLocalVariable, localVars} = renderObj.script;
+        for (const localVar of localVars) {
+            if (localVar in renderObj) {
+                setLocalVariable(localVar, renderObj[localVar]);
+            }
+        }
     }
 }
 
@@ -811,14 +821,16 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     static debugGhost = true;
     get debugGhost() { return true; }
     initializedCallback(renderObj) {
-        //console.log('initialized callback (1)', this.data);
         this.rawDefaults = renderObj.state.options || {};
-        //console.log('initialized callback (2)', renderObj);
         this.boundElements = {};
         if (!this.data) {
             this.data = Modulo.utils.simplifyResolvedLiterals(this.rawDefaults);
         }
-        //console.log('initialized callback (3)', this.data);
+
+        // TODO ---v delete these
+        this.data.bindMount = this.bindMount.bind(this);// Ugh hack
+        this.data.bindUnmount = this.bindUnmount.bind(this);// Ugh hack
+        return this.data;
     }
 
     bindMount({el}) {
@@ -839,50 +851,51 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         el.removeEventListener(evName, func);
     }
 
-    prepareCallback(renderObj) {
-        // console.log('this is data', this.data);
-        this.initializedCallback(renderObj); // TODO remove this, should not have to
-        this.data.bindMount = this.bindMount.bind(this);// Ugh hack
-        this.data.bindUnmount = this.bindUnmount.bind(this);// Ugh hack
-        return this.data;
-    }
-
     reloadCallback(oldPart) {
+        // Used for hot-reloading: Merge data with oldPart's data
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
     eventCallback() {
         this._oldData = Object.assign({}, this.data);
-        Object.assign(this, this.data);
     }
 
     eventCleanupCallback() {
         for (const name of Object.keys(this.data)) {
-            if (!(name in this._oldData)) {
-                // clean up extra
-                delete this.data[name];
-                // this.set(name, null);
-            } else if (this[name] !== this.data[name]) {
-                this.set(name, this[name]); // update
+            Modulo.assert(name in this._oldData, 'Invalid key: state.' + name)
+            if (name in this.boundElements) {
+                if (this.data[name] !== this._oldData[name]) {
+                    const [el, func, evName] = this.boundElements[name];
+                    el.value = value;
+                }
             }
         }
-        this.component.rerender(); // HACK
-        // ToDo: Clean this up, maybe have data be what's returned for
-        // prepareEventCallback, just like with prepareCallback?
+        this._oldData = null;
     }
 
+    // TODO: Possibly delete all methods below:
     get(key) {
         return this.data[key];
     }
 
     set(key, value) {
-        const data = {[key]: value};
+        this.data[key] = value;
+        this._update(key, value);
+    }
+
+    _updateBoundElement(key, value) {
         if (this.boundElements[key]) {
             const [el, func, evName] = this.boundElements[key];
             el.value = value;
         }
-        this.data = Object.assign({}, this.data, data);
-        this.component.rerender();
+    }
+
+    _update(key, value) {
+        if (this.boundElements[key]) {
+            const [el, func, evName] = this.boundElements[key];
+            el.value = value;
+        }
+        this.element.rerender();
         if (this.ghostElem) {
             // update ghost element with change
             if (typeof value !== 'string') {
@@ -1045,8 +1058,8 @@ Modulo.templating.defaultOptions.tags = {
 // SetDomReconciler ------------------
 Modulo.reconcilers = {};
 Modulo.reconcilers.InnerHtml = class InnerHtmlReconciler {
-    reconcile(component, newHTML) {
-        component.innerHTML = newHTML;
+    reconcile(element, newHTML) {
+        element.innerHTML = newHTML;
         // TODO, add in directives stuff, move elsewhere
     }
 }
@@ -1059,24 +1072,24 @@ Modulo.reconcilers.SetDom = class SetDomReconciler {
         this.mockBody = Modulo.globals.document.implementation.createHTMLDocument('').body;
     }
 
-    reconcile(component, newHTML) {
-        this.componentContext = component;
-        if (!component.isMounted) {
-            component.innerHTML = newHTML;
-            this.findAndApplyDirectives(component);
+    reconcile(element, newHTML) {
+        this.elemCtx = element;
+        if (!element.isMounted) {
+            element.innerHTML = newHTML;
+            this.findAndApplyDirectives(element);
         } else {
             this.mockBody.innerHTML = `<div>${newHTML}</div>`;
-            this.setChildNodes(component, this.mockBody.firstChild);
+            this.setChildNodes(element, this.mockBody.firstChild);
         }
-        this.componentContext = null;
+        this.elemCtx = null;
     }
 
     findAndApplyDirectives(element) {
         const directives = [];
         for (const child of element.children) {
-            Modulo.collectDirectives(this.componentContext, child, directives);
+            Modulo.collectDirectives(this.elemCtx, child, directives);
         }
-        this.componentContext.applyDirectives(directives);
+        this.elemCtx.applyDirectives(directives);
     }
 
     /**

@@ -23,13 +23,13 @@
     <script>
         if (Modulo.require) {
             const packageJson = Modulo.require('../package.json');
-            module.exports.versionNumber = packageJson.version;
-            console.log('Hello SSG! Look at me:', module.exports.versionNumber);
+            script.exports.versionNumber = packageJson.version;
+            console.log('Hello SSG! Look at me:', script.exports.versionNumber);
         } else {
             setTimeout(() => {
                 console.log('Hello browser!');
-                module.exports.versionNumber = document.getElementById('versionnum').textContent;
-                console.log('Hello browser! Look at me:', module.exports.versionNumber);
+                //script.exports.versionNumber = document.getElementById('versionnum').textContent;
+                //console.log('Hello browser! Look at me:', script.exports.versionNumber);
             });
         }
     </script>

@@ -2,6 +2,49 @@
 
 # Ideas
 
+    eventCleanupCallback() {
+        for (const name of Object.keys(this.data)) {
+            Modulo.assert(name in this._oldData, 'Invalid key: state.' + name)
+            if (this.boundElements[name]) {
+                if (this.data[name] !== this._oldData[name]) {
+                    const [el, func, evName] = this.boundElements[name];
+                    el.value = value;
+                }
+            }
+        }
+        /* .-HACK, rerenders every time, should have
+           v dirty state detection */
+        this.element.rerender();
+        this._oldData = null;
+        /*
+            How we can more do a more targeted approach:
+                Have a "function var reference counter" utility function, that
+                caches function references and guesses / does some clever stuff
+                to determine a list of assignments and/or references. Then, use
+                this to know which state variables to check. This might be
+                overkill!
+            const funcString = String(renderObj._eventFunction);
+            funcString.match(/state/)
+        */
+    }
+
+    /*
+    eventCleanupCallbackOld() {
+        for (const name of Object.keys(this.data)) {
+            if (!(name in this._oldData)) {
+                // clean up extra
+                delete this.data[name];
+                // this.set(name, null);
+            } else if (this[name] !== this.data[name]) {
+                this.set(name, this[name]); // update
+            }
+        }
+        this.element.rerender(); // HACK
+        // ToDo: Clean this up, maybe have data be what's returned for
+        // prepareEventCallback, just like with prepareCallback?
+    }
+    */
+
 
 - Notes on component.resolve directive:
     - elem.getAttr will NOT WORK in the long run. Why? HTML built-ins!
