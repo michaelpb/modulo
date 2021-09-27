@@ -263,7 +263,7 @@ h1.Tagline-title {
     text-shadow: 0 0 1px var(--highlight-color); /* extremely subtle shadow */
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
-    color: white;
+    color: black;
 }
 
 h1.Tagline-logo {
@@ -272,10 +272,10 @@ h1.Tagline-logo {
     line-height: 1.0;
     /*text-shadow: 0 0 27px var(--highlight-color);*/
     /*text-shadow: 0 0 5px #000;*/
-    text-shadow: 0 0 1px var(--highlight-color); /* extremely subtle shadow */
+    text-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
-    color: white;
+    color: black;
     background: white;
     font-weight: 300; /* lightest if possible */
 }

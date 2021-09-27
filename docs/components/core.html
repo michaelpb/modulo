@@ -34,6 +34,9 @@
             return Modulo.require('sloc')(txt, 'js').source;
         }
         if (Modulo.require) {
+            /* Better way to do this than ssgStore: "props.addProp" -- stores a
+            ** property on element, alowing plain text to be squirreled away
+            ** into the rendered DOM */
             if (!Modulo.ssgStore.navbar) {
                 Modulo.ssgStore.navbar = {
                     version: Modulo.require('../package.json').version,
@@ -42,7 +45,6 @@
             }
             script.exports = Modulo.ssgStore.navbar;
         } else {
-            console.log('Hello browser!');
             script.exports = {
                 version: document.getElementById('v_num').textContent,
                 sloc: document.getElementById('s_num').textContent,
@@ -54,28 +56,88 @@
 
 <template mod-component="CodeExample">
     <template>
-        <div>
-            <button @click:="script.run">Try it.</button>
-            <textarea [state.bind]="" name="text">            </textarea>
-        </div>
+        <div class="split">
+            <button @click:="script.run">&gt;</button>
+            <div>
+                <textarea [state.bind]="" name="text"></textarea>
+            </div>
 
-        <div>
-            <!-- TODO: Add in code to save it here... -->
-            &lt;my-CustomTag&gt;
-            &lt;/my-CustomTag&gt;
+            <div>
+                <div id="previewSpot" modulo-ignore=""></div>
+            </div>
         </div>
     </template>
-    <state text="Example..."></state>
+
+    <style>
+        .split > button {
+            position: absolute;
+            top: 200px;
+            left: 65%;
+            width: 60px;
+            height: 60px;
+            margin-left: -30px;
+            border: 4px solid black;
+            border-radius: 50px;
+            background: white;
+            font-weight: bold;
+            font-size: 30px;
+        }
+        .split > div > textarea {
+            width: 100%;
+            min-height: 200px;
+        }
+        .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+        .split > div {
+            border: 1px solid black;
+        }
+    </style>
+
+    <state text="
+<template>
+    <p>Count: {{ state.num }}</p>
+    <button @click:=script.increment>
+        Count!
+    </button>
+</template>
+<state
+    num:=1
+></state>
+<script>
+    console.log(&quot;script tag within example&quot;);
+    function increment() {
+        state.num++;
+    }
+</script>
+        " nscounter:="1"></state>
     <script>
         console.log('gettin script tagged');
+        /* Configure loader: */
         function initializedCallback() {
             console.log('hey i am getting initialized wow');
+            console.log('initialized callback');
+            Modulo.globals.setTimeout(run, 10); // mount after first render
+            /*
             var editor = CodeMirror.fromTextArea(myTextarea, {
                 lineNumbers: true
             });
+            */
         }
+
         function run() {
-            console.log('running code')
+            const namespace = `eg${state.nscounter}`; // TODO: later do hot reloading using same loader
+            state.nscounter++;
+            const loadOpts = {src: '', namespace};
+            const loader = Object.assign(new Modulo.Loader, loadOpts);
+            console.log('Creating component from text:', state.text)
+            const text = '<template mod-component="Example">' + state.text + '</template>';
+            loader.loadString(text);
+            const tag = `${namespace}-Example`;
+            const preview = `<${tag}></${tag}>`;
+            document.querySelector('#previewSpot').innerHTML = preview;
+            console.log('adding preview', preview);
         }
     </script>
 </template>

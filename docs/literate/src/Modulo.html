@@ -5,7 +5,32 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="icon" type="image/png" href="../../img/mono_logo.png">
     <script src="../../js/Modulo.js"></script>
-    <style id="mdu-Hero_style">
+    <style id="mdu-CodeExample_style">
+mdu-CodeExample .split > button {
+            position: absolute;
+            top: 200px;
+            left: 65%;
+            width: 60px;
+            height: 60px;
+            margin-left: -30px;
+            border: 4px solid black;
+            border-radius: 50px;
+            background: white;
+            font-weight: bold;
+            font-size: 30px;
+        }
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 200px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+mdu-CodeExample .split > div {
+            border: 1px solid black;
+        }
+    </style><style id="mdu-Hero_style">
 mdu-Hero h1 {
           font-size: 120px;
           color: rgba(255, 255, 255, 1);
@@ -74,7 +99,7 @@ mdu-Hero div .dsiabled {
 
             <div class="Navbar-rightInfo">
                 v: <span id="v_num">0.0.1</span><br>
-                SLOC: <span id="s_num">850</span> lines<br>
+                SLOC: <span id="s_num">860</span> lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -354,18 +379,19 @@ with a <code>&lt;mod-load&gt;</code> tag in it.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-15">§</a>
               </div>
-              <p>TODO: finish cache feature, maybe fold into hot reload, eg it always
-first loads from cache, then it tries hotreloading from origin</p>
+              <p>TODO: Finish cache feature, maybe fold into hot reload, eg it always
+first loads from cache, then it tries hotreloading from origin.
+This would make “never-cache” less important, but “always-cache”
+would be useful and be the inverse.</p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>        <span class="hljs-keyword">const</span> skipCache = <span class="hljs-literal">true</span> || <span class="hljs-built_in">this</span>.hasAttribute(<span class="hljs-string">'skip-cache'</span>) || Modulo.require;
-        <span class="hljs-keyword">if</span> (cachedData &amp;&amp; cachedData.length &gt; <span class="hljs-number">2</span> &amp;&amp; skipCache) {
+            <div class="content"><div class="highlight"><pre>        <span class="hljs-keyword">const</span> skipCache = <span class="hljs-literal">true</span> || <span class="hljs-built_in">this</span>.hasAttribute(<span class="hljs-string">'never-cache'</span>) || Modulo.require;
+        <span class="hljs-keyword">if</span> (!skipCache &amp;&amp; cachedData &amp;&amp; cachedData.length &gt; <span class="hljs-number">2</span>) {
             <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [name, loadObj] <span class="hljs-keyword">of</span> <span class="hljs-built_in">JSON</span>.parse(cachedData)) {
                 <span class="hljs-built_in">this</span>.defineComponent(name, loadObj);
             }
         } <span class="hljs-keyword">else</span> {
-
             <span class="hljs-comment">/* 
                 if (this.getAttribute('reload')) {
                     setInterval(this.doFetch, 2000);
@@ -428,13 +454,14 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
             
             <div class="content"><div class="highlight"><pre>    <span class="hljs-function"><span class="hljs-title">loadString</span>(<span class="hljs-params">text</span>)</span> {
         <span class="hljs-comment">/* TODO - Maybe use DOMParser here instead */</span>
-        <span class="hljs-keyword">const</span> frag = <span class="hljs-keyword">new</span> Modulo.globals.DocumentFragment();
-        <span class="hljs-keyword">const</span> div = Modulo.globals.document.createElement(<span class="hljs-string">'div'</span>);
+        <span class="hljs-comment">/* TODO - Recurse into other sub-loaders, applying namespace */</span>
         <span class="hljs-comment">/* <span class="hljs-doctag">TODO:</span> Do &lt;script  / etc preprocessing here:
           &lt;state -&gt; &lt;script type="modulo/state"
           &lt;\s*(state|props|template)([\s&gt;]) -&gt; &lt;script type="modulo/\1"\2
           &lt;/(state|props|template)&gt; -&gt; &lt;/script&gt;
         */</span>
+        <span class="hljs-keyword">const</span> frag = <span class="hljs-keyword">new</span> Modulo.globals.DocumentFragment();
+        <span class="hljs-keyword">const</span> div = Modulo.globals.document.createElement(<span class="hljs-string">'div'</span>);
         <span class="hljs-built_in">this</span>.factoryData = [];
         div.innerHTML = text;
         frag.append(div);
@@ -442,11 +469,6 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
             <span class="hljs-keyword">const</span> [name, loadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(tag);
             <span class="hljs-built_in">this</span>.factoryData.push([name, loadObj]);
             <span class="hljs-built_in">this</span>.defineComponent(name, loadObj);
-        }
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tag <span class="hljs-keyword">of</span> div.querySelectorAll(<span class="hljs-string">'[modulo-load],[mod-load]'</span>)) {
-            <span class="hljs-comment">/* TODO - Recurse into other loaders */</span>
-            <span class="hljs-comment">/* One approach would be to see if localStorage */</span>
-            <span class="hljs-comment">/*this.subLoader = new Loader();*/</span>
         }
         <span class="hljs-keyword">const</span> serialized = <span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-built_in">this</span>.factoryData);
         Modulo.globals.localStorage.setItem(<span class="hljs-built_in">this</span>.cacheKey, serialized);
@@ -986,7 +1008,8 @@ Component Parts for this component, checking for errors.</p>
             Modulo.assert(name <span class="hljs-keyword">in</span> Modulo.cparts, <span class="hljs-string">`Unknown cPart: <span class="hljs-subst">${name}</span>`</span>);
 
             <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> partOptions <span class="hljs-keyword">of</span> partOptionsArr) {
-                cparts[name] = <span class="hljs-keyword">new</span> Modulo.cparts[name](element, partOptions);
+                <span class="hljs-keyword">const</span> cPartClass = Modulo.cparts[name];
+                cparts[name] = <span class="hljs-keyword">new</span> cPartClass(element, partOptions);
 
                 <span class="hljs-comment">/* // (<span class="hljs-doctag">NOTE:</span> Untested after refactor) 
                 *  // If this component was already mounted and is getting
@@ -1701,11 +1724,8 @@ Modulo.cparts.script = <span class="hljs-class"><span class="hljs-keyword">class
         <span class="hljs-keyword">return</span> results;
     }
 
-    <span class="hljs-function"><span class="hljs-title">initializedCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
-        <span class="hljs-keyword">const</span> {setLocalVariable} = renderObj.script;
-        setLocalVariable(<span class="hljs-string">'element'</span>, <span class="hljs-built_in">this</span>.element);
-        setLocalVariable(<span class="hljs-string">'cparts'</span>, <span class="hljs-built_in">this</span>.element.cparts);
-    }</pre></div></div>
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">element, options</span>)</span> {
+        <span class="hljs-built_in">super</span>(element, options);</pre></div></div>
             
         </li>
         
@@ -1716,9 +1736,22 @@ Modulo.cparts.script = <span class="hljs-class"><span class="hljs-keyword">class
               <div class="sswrap ">
                 <a class="ss" href="#section-69">§</a>
               </div>
-              <h2 id="cpartsscript-eventcallback">cparts.Script: eventCallback</h2>
+              <p>Attach callbacks from script to this, to hook into lifecycle.</p>
 
             </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="hljs-keyword">const</span> {script} = element.initRenderObj;
+        <span class="hljs-keyword">const</span> cbs = <span class="hljs-built_in">Object</span>.keys(script).filter(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> key.endsWith(<span class="hljs-string">'Callback'</span>));
+        cbs.push(<span class="hljs-string">'initializedCallback'</span>, <span class="hljs-string">'eventCallback'</span>); <span class="hljs-comment">// always CBs for these</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> cbName <span class="hljs-keyword">of</span> cbs) {
+            <span class="hljs-built_in">this</span>[cbName] = <span class="hljs-function"><span class="hljs-params">renderObj</span> =&gt;</span> {
+                <span class="hljs-built_in">this</span>.prepLocalVars(renderObj);
+                <span class="hljs-keyword">if</span> (cbName <span class="hljs-keyword">in</span> script) {
+                    script[cbName](renderObj);
+                }
+            };
+        }
+    }</pre></div></div>
             
         </li>
         
@@ -1729,13 +1762,30 @@ Modulo.cparts.script = <span class="hljs-class"><span class="hljs-keyword">class
               <div class="sswrap ">
                 <a class="ss" href="#section-70">§</a>
               </div>
-              <p>To allow for local variables access to APIs provided by other CParts,
-sets local variables equal to the data returned by their callbacks.</p>
+              <h2 id="cpartsscript-preplocalvars">cparts.Script: prepLocalVars</h2>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="hljs-function"><span class="hljs-title">eventCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-71">§</a>
+              </div>
+              <p>To allow for local variables access to APIs provided by other CParts,
+sets local variables equal to the data returned by their callbacks.
+This is important: It’s what enables us to avoid using the “this”
+context, since the current element is set before any custom code is run.</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="hljs-function"><span class="hljs-title">prepLocalVars</span>(<span class="hljs-params">renderObj</span>)</span> {
         <span class="hljs-keyword">const</span> {setLocalVariable, localVars} = renderObj.script;
+        setLocalVariable(<span class="hljs-string">'element'</span>, <span class="hljs-built_in">this</span>.element);
+        setLocalVariable(<span class="hljs-string">'cparts'</span>, <span class="hljs-built_in">this</span>.element.cparts);
         <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> localVar <span class="hljs-keyword">of</span> localVars) {
             <span class="hljs-keyword">if</span> (localVar <span class="hljs-keyword">in</span> renderObj) {
                 setLocalVariable(localVar, renderObj[localVar]);
@@ -1757,11 +1807,11 @@ Modulo.cparts.state = <span class="hljs-class"><span class="hljs-keyword">class<
         </li>
         
         
-        <li id="section-71">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-71">§</a>
+                <a class="ss" href="#section-72">§</a>
               </div>
               <p>TODO —v delete these</p>
 
@@ -1781,11 +1831,11 @@ Modulo.cparts.state = <span class="hljs-class"><span class="hljs-keyword">class<
         </li>
         
         
-        <li id="section-72">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-72">§</a>
+                <a class="ss" href="#section-73">§</a>
               </div>
               <p>eventually customizable, eg [state.bind]mouseover=mouseY (event
 name, el property name, and/or state propery name etc)</p>
@@ -1810,11 +1860,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-73">§</a>
+                <a class="ss" href="#section-74">§</a>
               </div>
               <p>Used for hot-reloading: Merge data with oldPart’s data</p>
 
@@ -1849,11 +1899,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-74">§</a>
+                <a class="ss" href="#section-75">§</a>
               </div>
               <p>ModuloTemplate</p>
 
@@ -1987,11 +2037,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-75">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-75">§</a>
+                <a class="ss" href="#section-76">§</a>
               </div>
               <p>Make variable name be based on nested-ness of tag stack</p>
 
@@ -2013,11 +2063,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-76">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-76">§</a>
+                <a class="ss" href="#section-77">§</a>
               </div>
               <p>Make variable name be based on nested-ness of tag stack</p>
 
@@ -2034,11 +2084,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-77">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-77">§</a>
+                <a class="ss" href="#section-78">§</a>
               </div>
               <p>SetDomReconciler ——————</p>
 
@@ -2051,11 +2101,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-78">
+        <li id="section-79">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-78">§</a>
+                <a class="ss" href="#section-79">§</a>
               </div>
               <p>TODO, add in directives stuff, move elsewhere</p>
 
@@ -2106,11 +2156,11 @@ Modulo.reconcilers.SetDom = <span class="hljs-class"><span class="hljs-keyword">
         </li>
         
         
-        <li id="section-79">
+        <li id="section-80">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-79">§</a>
+                <a class="ss" href="#section-80">§</a>
               </div>
               <p>We have to fully replace the node — the tag/type doesn’t match
 this.dismount(oldNode);</p>
@@ -2124,11 +2174,11 @@ this.dismount(oldNode);</p>
         </li>
         
         
-        <li id="section-80">
+        <li id="section-81">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-80">§</a>
+                <a class="ss" href="#section-81">§</a>
               </div>
               <p>Handle other types of node updates (text/comments/etc).
 TODO: Is this if statement even a useful optimization..?
@@ -2143,11 +2193,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-81">
+        <li id="section-82">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-81">§</a>
+                <a class="ss" href="#section-82">§</a>
               </div>
               <p>Update children &amp; attributes</p>
 
@@ -2159,11 +2209,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-82">
+        <li id="section-83">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-82">§</a>
+                <a class="ss" href="#section-83">§</a>
               </div>
               <p>TODO: do dismounts as necessary</p>
 
@@ -2186,11 +2236,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-83">
+        <li id="section-84">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-83">§</a>
+                <a class="ss" href="#section-84">§</a>
               </div>
               <p>Remove old attributes.</p>
 
@@ -2207,11 +2257,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-84">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-84">§</a>
+                <a class="ss" href="#section-85">§</a>
               </div>
               <p>Set new attributes.</p>
 
@@ -2227,11 +2277,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-85">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-85">§</a>
+                <a class="ss" href="#section-86">§</a>
               </div>
               <p>Add a new attribute.</p>
 
@@ -2244,11 +2294,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-86">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-86">§</a>
+                <a class="ss" href="#section-87">§</a>
               </div>
               <p>Update existing attribute.</p>
 
@@ -2277,11 +2327,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-87">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-87">§</a>
+                <a class="ss" href="#section-88">§</a>
               </div>
               <p>Extract keyed nodes from previous children and keep track of total
 count.</p>
@@ -2301,11 +2351,11 @@ count.</p>
         </li>
         
         
-        <li id="section-88">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-88">§</a>
+                <a class="ss" href="#section-89">§</a>
               </div>
               <p>Loop over new nodes and perform updates.</p>
 
@@ -2325,11 +2375,11 @@ count.</p>
         </li>
         
         
-        <li id="section-89">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-89">§</a>
+                <a class="ss" href="#section-90">§</a>
               </div>
               <p>If we have a key and it existed before we move the previous
 node to the new position if needed and diff it.</p>
@@ -2351,11 +2401,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-90">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-90">§</a>
+                <a class="ss" href="#section-91">§</a>
               </div>
               <p>If the old child had a key we skip over it until the end.</p>
 
@@ -2368,11 +2418,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-91">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-91">§</a>
+                <a class="ss" href="#section-92">§</a>
               </div>
               <p>Otherwise we diff the two non-keyed nodes.</p>
 
@@ -2385,11 +2435,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-92">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-92">§</a>
+                <a class="ss" href="#section-93">§</a>
               </div>
               <p>Finally if there was no old node we add the new node.</p>
 
@@ -2405,11 +2455,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-93">
+        <li id="section-94">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-93">§</a>
+                <a class="ss" href="#section-94">§</a>
               </div>
               <p>Remove old keyed nodes.</p>
 
@@ -2423,11 +2473,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-94">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-94">§</a>
+                <a class="ss" href="#section-95">§</a>
               </div>
               <p>If we have any remaining unkeyed nodes remove them from the end.</p>
 
@@ -2467,11 +2517,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-95">
+        <li id="section-96">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-95">§</a>
+                <a class="ss" href="#section-96">§</a>
               </div>
               <p>Check if both nodes are ignored.</p>
 
@@ -2482,11 +2532,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-96">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-96">§</a>
+                <a class="ss" href="#section-97">§</a>
               </div>
               <p>Check if both nodes have the same checksum.</p>
 
@@ -2497,11 +2547,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-97">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-97">§</a>
+                <a class="ss" href="#section-98">§</a>
               </div>
               <p>Fall back to native isEqualNode check.</p>
 
@@ -2549,11 +2599,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-98">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-98">§</a>
+                <a class="ss" href="#section-99">§</a>
               </div>
               <p>/setDOM ——————</p>
 
@@ -2602,11 +2652,11 @@ Pls ignore all
         </li>
         
         
-        <li id="section-99">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-99">§</a>
+                <a class="ss" href="#section-100">§</a>
               </div>
               <p>HACK</p>
 

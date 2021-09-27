@@ -4,7 +4,32 @@
     <link rel="stylesheet" href="./css/style.css">
     <link rel="icon" type="image/png" href="./img/mono_logo.png">
     <script src="./js/Modulo.js"></script>
-    <style id="mdu-Hero_style">
+    <style id="mdu-CodeExample_style">
+mdu-CodeExample .split > button {
+            position: absolute;
+            top: 200px;
+            left: 65%;
+            width: 60px;
+            height: 60px;
+            margin-left: -30px;
+            border: 4px solid black;
+            border-radius: 50px;
+            background: white;
+            font-weight: bold;
+            font-size: 30px;
+        }
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 200px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+mdu-CodeExample .split > div {
+            border: 1px solid black;
+        }
+    </style><style id="mdu-Hero_style">
 mdu-Hero h1 {
           font-size: 120px;
           color: rgba(255, 255, 255, 1);
@@ -58,7 +83,8 @@ mdu-Hero div .dsiabled {
 
 <div class="IndexWrapper">
     <div class="Tagline">
-        <h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>
+        <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
+        <div class="Tagline-logo"><img src="./img/mono_logo_percent_only.png"></div>
         <h1 class="Tagline-title">modulo</h1>
         <h2>A tiny JavaScript component framework</h2>
         <br> <br>
@@ -90,7 +116,7 @@ mdu-Hero div .dsiabled {
 
             <div class="Navbar-rightInfo">
                 v: <span id="v_num">0.0.1</span><br>
-                SLOC: <span id="s_num">850</span> lines<br>
+                SLOC: <span id="s_num">860</span> lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>

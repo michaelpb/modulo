@@ -93,15 +93,16 @@ Modulo.Loader = class Loader extends HTMLElement {
         this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
         const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
 
-        // TODO: finish cache feature, maybe fold into hot reload, eg it always
-        // first loads from cache, then it tries hotreloading from origin
-        const skipCache = true || this.hasAttribute('skip-cache') || Modulo.require;
-        if (cachedData && cachedData.length > 2 && skipCache) {
+        // TODO: Finish cache feature, maybe fold into hot reload, eg it always
+        // first loads from cache, then it tries hotreloading from origin.
+        // This would make "never-cache" less important, but "always-cache"
+        // would be useful and be the inverse.
+        const skipCache = true || this.hasAttribute('never-cache') || Modulo.require;
+        if (!skipCache && cachedData && cachedData.length > 2) {
             for (const [name, loadObj] of JSON.parse(cachedData)) {
                 this.defineComponent(name, loadObj);
             }
         } else {
-
             /* 
                 if (this.getAttribute('reload')) {
                     setInterval(this.doFetch, 2000);
@@ -127,13 +128,14 @@ Modulo.Loader = class Loader extends HTMLElement {
     // `ComponentFactory` instance for each component definition.
     loadString(text) {
         /* TODO - Maybe use DOMParser here instead */
-        const frag = new Modulo.globals.DocumentFragment();
-        const div = Modulo.globals.document.createElement('div');
+        /* TODO - Recurse into other sub-loaders, applying namespace */
         /* TODO: Do <script  / etc preprocessing here:
           <state -> <script type="modulo/state"
           <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
           </(state|props|template)> -> </script>
         */
+        const frag = new Modulo.globals.DocumentFragment();
+        const div = Modulo.globals.document.createElement('div');
         this.factoryData = [];
         div.innerHTML = text;
         frag.append(div);
@@ -141,11 +143,6 @@ Modulo.Loader = class Loader extends HTMLElement {
             const [name, loadObj] = this.loadFromDOMElement(tag);
             this.factoryData.push([name, loadObj]);
             this.defineComponent(name, loadObj);
-        }
-        for (const tag of div.querySelectorAll('[modulo-load],[mod-load]')) {
-            /* TODO - Recurse into other loaders */
-            /* One approach would be to see if localStorage */
-            /*this.subLoader = new Loader();*/
         }
         const serialized = JSON.stringify(this.factoryData);
         Modulo.globals.localStorage.setItem(this.cacheKey, serialized);
@@ -358,7 +355,8 @@ Modulo.ComponentFactory = class ComponentFactory {
             Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
 
             for (const partOptions of partOptionsArr) {
-                cparts[name] = new Modulo.cparts[name](element, partOptions);
+                const cPartClass = Modulo.cparts[name];
+                cparts[name] = new cPartClass(element, partOptions);
 
                 /* // (NOTE: Untested after refactor) 
                 *  // If this component was already mounted and is getting
@@ -791,17 +789,32 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         return results;
     }
 
-    initializedCallback(renderObj) {
-        const {setLocalVariable} = renderObj.script;
-        setLocalVariable('element', this.element);
-        setLocalVariable('cparts', this.element.cparts);
+    constructor(element, options) {
+        super(element, options);
+
+        // Attach callbacks from script to this, to hook into lifecycle.
+        const {script} = element.initRenderObj;
+        const cbs = Object.keys(script).filter(key => key.endsWith('Callback'));
+        cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
+        for (const cbName of cbs) {
+            this[cbName] = renderObj => {
+                this.prepLocalVars(renderObj);
+                if (cbName in script) {
+                    script[cbName](renderObj);
+                }
+            };
+        }
     }
 
-    // ## cparts.Script: eventCallback
+    // ## cparts.Script: prepLocalVars
     // To allow for local variables access to APIs provided by other CParts,
     // sets local variables equal to the data returned by their callbacks.
-    eventCallback(renderObj) {
+    // This is important: It's what enables us to avoid using the "this"
+    // context, since the current element is set before any custom code is run.
+    prepLocalVars(renderObj) {
         const {setLocalVariable, localVars} = renderObj.script;
+        setLocalVariable('element', this.element);
+        setLocalVariable('cparts', this.element.cparts);
         for (const localVar of localVars) {
             if (localVar in renderObj) {
                 setLocalVariable(localVar, renderObj[localVar]);
