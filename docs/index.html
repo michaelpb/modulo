@@ -250,18 +250,14 @@ mdu-CodeExample .split { display: block; }
             <div name="API">
 
 <mdu-codeexample text="
-<script type=&quot;modulo/template&quot;>
+<template>
   <p>{{ state.name }} | {{ state.location }}</p>
   <p>{{ state.bio }}</p>
   <p>
     <input [state.bind] name=&quot;search&quot; placeholder=&quot;GitHub username&quot; />
-    <button
-        {% if not state.search %}disabled{% endif %}
-        @click:=script.fetchGitHub>
-      Go
-    </button>
+    <button @click:=script.fetchGitHub>Go</button>
   </p>
-</script>
+</template>
 
 <state
     search=&quot;&quot;

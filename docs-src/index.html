@@ -118,18 +118,14 @@ text='
 
 <mdu-CodeExample
 text='
-<script type="modulo/template">
+<template>
   <p>{{ state.name }} | {{ state.location }}</p>
   <p>{{ state.bio }}</p>
   <p>
     <input [state.bind] name="search" placeholder="GitHub username" />
-    <button
-        {% if not state.search %}disabled{% endif %}
-        @click:=script.fetchGitHub>
-      Go
-    </button>
+    <button @click:=script.fetchGitHub>Go</button>
   </p>
-</script>
+</template>
 
 <state
     search=""
