@@ -81,6 +81,24 @@ function checkArgs(args, commands) {
     }
 }
 
+function patchModuloWithSSGFeatures(Modulo) {
+    Modulo.isBackend = true;
+    Modulo.require = require;
+    Modulo.ssgStore = ssgStore;
+    /*
+    // Reconsider these features. Only include in core modulo if has space
+    const {factoryCallback} = Modulo.cparts.script;
+    Modulo.cparts.script.factoryCallback = (partOptions, factory, renderObj) => {
+        const results = factoryCallback(partOptions, factory, renderObj);
+        const {exports} = results;
+        if (exports) {
+            element.setAttribute('script-exports', JSON.stringify(exports));
+        }
+        return results;
+    };
+    */
+}
+
 function loadModuloDocument(path, html) {
     const includeRequire = true;
     /*
@@ -98,11 +116,14 @@ function loadModuloDocument(path, html) {
             protos.push(Reflect.getPrototypeOf(protos[1]));
         }
         protos.reverse();
+
+        // Get every prototype key
         const allKeys = [];
         for (const proto of protos) {
             allKeys.push(...Reflect.ownKeys(proto));
         }
-        // console.log(el.tagName, 'this is all props', allKeys);
+
+        // Loop through binding functions to element
         for (const key of allKeys) {
             if (instance[key] instanceof Function) {
                 el[key] = instance[key].bind(el);
@@ -110,6 +131,12 @@ function loadModuloDocument(path, html) {
                 el[key] = instance[key];
             }
         }
+
+        // "Re-initialize" so we get innerHTML etc
+        if (el.lifecycle) { // Is a modulo Element
+            el.initialize();
+        }
+
         if (el.connectedCallback && !secondTime) {
             // console.log('connected callback for:', el.tagName);
             //setTimeout(() => {
@@ -140,8 +167,7 @@ function loadModuloDocument(path, html) {
 
         const dom = new JSDOM(htmlCode);
         if (includeRequire) {
-            Modulo.require = require; // for ssg
-            Modulo.ssgStore = ssgStore; // for ssg
+            patchModuloWithSSGFeatures(Modulo);
         }
         Modulo.document = dom.window.document; // for easier testing
         Modulo.globals.DOMParser = DOMParser;

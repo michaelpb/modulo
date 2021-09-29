@@ -346,17 +346,23 @@ Modulo.ComponentFactory = class ComponentFactory {
     // ## ComponentFactory: buildCParts
     // This function does the heavy lifting of actually constructing a
     // component, and is invoked when the component is mounted to the page.
-    buildCParts(element, oldCParts = {}) {
-        const cparts = {element}; // Include "element", for lifecycle methods
+    buildCParts(element) {
+        const oldCParts = element.cparts || {};
+        element.cparts = {element}; // Include "element", for lifecycle methods
+        element.cpartSpares = {}; // no need to include, since only 1 element
 
         // It loops through the parsed array of objects that define the
         // Component Parts for this component, checking for errors.
         for (const [name, partOptionsArr] of Object.entries(this.options)) {
             Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
+            element.cpartSpares[name] = [];
 
             for (const partOptions of partOptionsArr) {
-                const cPartClass = Modulo.cparts[name];
-                cparts[name] = new cPartClass(element, partOptions);
+                const instance = new Modulo.cparts[name](element, partOptions);
+                if (name in element.cparts) {
+                    element.cpartSpares[name].push(instance);
+                }
+                element.cparts[name] = instance;
 
                 /* // (NOTE: Untested after refactor) 
                 *  // If this component was already mounted and is getting
@@ -368,7 +374,6 @@ Modulo.ComponentFactory = class ComponentFactory {
                 }*/
             }
         }
-        return cparts;
     }
 
     // ## ComponentFactory: register & registerInstance
@@ -389,28 +394,31 @@ Modulo.ComponentFactory = class ComponentFactory {
 Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
-        this.cparts = {};
-
-        this.originalHTML = this.innerHTML;
-        this.originalChildren = [];
-        if (this.hasChildNodes()) {
-            const dupedChildren = Array.from(this.childNodes); // necessary
-            for (const child of dupedChildren) {
-                this.originalChildren.push(this.removeChild(child));
-            }
-        }
         this.initialize();
     }
 
     initialize() {
+        this.cparts = {};
+
+        this.originalHTML = this.innerHTML;
+        this.originalChildren = [];
+        //console.log('originalChildren!', this.originalChildren);
+        //console.log('originalInnerHTML!', this.innerHTML);
+        if (this.hasChildNodes()) {
+            const dupedChildren = Array.from(this.childNodes); // necessary
+            for (const child of dupedChildren) {
+                //this.originalChildren.push(this.removeChild(child)); // TODO: should i remove children?
+                this.originalChildren.push(child);
+            }
+            //console.log('originalChildren has child nodes!', this.originalChildren);
+        }
         this.fullName = this.factory.fullName;
         this.isMounted = false;
-        this.isModuloElement = true; // used when finding parent
         this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
     }
 
     setupCParts() {
-        this.cparts = this.factory.buildCParts(this, this.cparts || {});
+        this.factory.buildCParts(this);
     }
 
     applyDirectives(directives) {
@@ -509,6 +517,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.setupCParts();
         this.lifecycle(['initialized'])
         this.rerender();
+        if (!this.isMounted && !('template' in this.cparts)) {
+            // TODO: Make 'template' not hardcoded here, as well as
+            // Component's updateCallback. OR do attrs?
+        }
         this.isMounted = true;
     }
 }
@@ -594,16 +606,17 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
         this.element.lifecycle(['event'], {_eventFunction: func});
         func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
         this.element.lifecycle(['eventCleanup']); // todo: should this go below rerender()?
+        // TODO: Add if (!this.component.options.controlledRender)
         this.element.rerender(); // always rerender after events
     }
 
     childrenMount({el}) {
         el.append(...this.element.originalChildren);
-        this.element.originalChildren = [];
+        //this.element.originalChildren = [];
     }
 
     childrenUnmount() {
-        this.element.innerHTML = '';
+        //this.element.innerHTML = '';
     }
 
     eventMount(info) {
@@ -690,6 +703,19 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     }
 }
 
+/*
+Modulo.cparts.attributes = class Attributes extends Modulo.ComponentPart {
+    initializedCallback() {
+        for (let [name, value] of Object.entries(this.options)) {
+            if (name.includes('.')) {
+                name = '[' + nae
+            }
+            this.element.setAttribute(name, value);
+        }
+    }
+}
+*/
+
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
         const {fullName} = factory;
@@ -706,13 +732,20 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static prefixAllSelectors(namespace, name, text='') {
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
+
+        // To prefix the selectors, we loop through them, with this RegExp that
+        // looks for { chars
         content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
             selector = selector.trim();
             if (selector.startsWith('@') || selector.startsWith(fullName)) {
                 // Skip, is @media or @keyframes, or already prefixed
                 return selector;
             }
+
+            // Upgrade the "bare" component name to be the full name
             selector = selector.replace(new RegExp(name, 'ig'), fullName);
+
+            // If it is not prefixed at this point, then be sure to prefix
             if (!selector.startsWith(fullName)) {
                 selector = `${fullName} ${selector}`;
             }
@@ -764,7 +797,8 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static wrapJavaScriptContext(contents, localVars) {
         const symbolsString = this.getSymbolsAsObjectAssignment(contents);
         const localVarsLet = localVars.join(',') || 'noLocalVars=true';
-        const localVarsIfs = localVars.map(n => `if (name === '${n}') ${n} = value;`).join('\n');
+        const localVarsIfs = localVars
+          .map(n => `if (name === '${n}') ${n} = value;`).join('\n');
 
         // TODO: Rename script to script to be consistent with event-time lifecycle
         return `
@@ -784,7 +818,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         // localVars.push('parent'); // add in access to previous versions of renderObj (DEAD CODE)
         localVars.push('cparts');
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
-        const results = (new Function('Modulo', wrappedJS)).call(null, Modulo);
+        const results = (new Function('Modulo,factory', wrappedJS)).call(null, Modulo, factory);
         results.localVars = localVars;
         return results;
     }
@@ -794,7 +828,8 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
 
         // Attach callbacks from script to this, to hook into lifecycle.
         const {script} = element.initRenderObj;
-        const cbs = Object.keys(script).filter(key => key.endsWith('Callback'));
+        const cbs = Object.keys(script)
+            .filter(key => key.endsWith('Callback') || key.endsWith('Mount'));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
             this[cbName] = renderObj => {
@@ -875,7 +910,8 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
     eventCleanupCallback() {
         for (const name of Object.keys(this.data)) {
-            Modulo.assert(name in this._oldData, `Tried to assign to "state.${name}" despite no initial value`);
+            const msg = `Tried to assign to "state.${name}"`;
+            Modulo.assert(name in this._oldData, msg);
             if (name in this.boundElements) {
                 if (this.data[name] !== this._oldData[name]) {
                     const [el, func, evName] = this.boundElements[name];
@@ -996,6 +1032,7 @@ Modulo.templating.defaultOptions.filters = {
     subtract: (s, arg) => s - arg,
     default: (s, arg) => s || arg,
     invoke: (s, arg) => s(arg),
+    getAttribute: (s, arg) => s.getAttribute(arg),
     divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
 };
 
@@ -1047,7 +1084,8 @@ Modulo.reconcilers.SetDom = class SetDomReconciler {
         this.IGNORE = 'modulo-ignore'
         this.CHECKSUM = 'modulo-checksum'
         this.KEY_PREFIX = '_set-dom-'
-        this.mockBody = Modulo.globals.document.implementation.createHTMLDocument('').body;
+        this.mockBody = Modulo.globals.document.implementation
+                        .createHTMLDocument('').body;
     }
 
     reconcile(element, newHTML) {
@@ -1073,13 +1111,15 @@ Modulo.reconcilers.SetDom = class SetDomReconciler {
     /**
     * @private
     * @description
-    * Updates a specific htmlNode and does whatever it takes to convert it to another one.
+    * Updates a specific htmlNode and does whatever it takes to convert it to
+      another one.
     *
     * @param {Node} oldNode - The previous HTMLNode.
     * @param {Node} newNode - The updated HTMLNode.
     */
     setNode(oldNode, newNode) {
-        if (oldNode.nodeType !== newNode.nodeType || oldNode.nodeName !== newNode.nodeName) {
+        if (oldNode.nodeType !== newNode.nodeType ||
+                oldNode.nodeName !== newNode.nodeName) {
             // We have to fully replace the node --- the tag/type doesn't match
             //this.dismount(oldNode);
             oldNode.parentNode.replaceChild(newNode, oldNode)
@@ -1292,7 +1332,8 @@ Modulo.utils = class utils {
             name = name.replace(/-([a-z])/g, g => g[1].toUpperCase());
             if (name.endsWith(':')) {
                 name = name.slice(0, -1); // slice out colon
-                value = JSON.parse(value);
+                Modulo.assert(value.trim(), `Invalid literal: ${name}="${value}"`);
+                value = JSON.parse(value.trim());
             }
             obj[name] = value;
         }

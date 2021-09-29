@@ -3,9 +3,11 @@
 <head>
     <meta charset="utf8" />
     <title>Modulo.js</title>
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="icon" type="image/png" href="./img/mono_logo.png" />
     <script src="./js/Modulo.js"></script>
+    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <mod-load namespace="mdu" src="./components/core.html"></mod-load>
     <!--<mod-load namespace="mdu" src="./components/pageparts.html"></mod-load>-->
 </head>
@@ -19,14 +21,29 @@
         <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
         <div class="Tagline-logo"><img src="./img/mono_logo_percent_only.png" /></div>
         <h1 class="Tagline-title">modulo</h1>
-        <h2>A tiny JavaScript component framework</h2>
+        <h2>A tiny JavaScript Web Component framework</h2>
         <br /> <br />
-        <h2>☑ 1000 lines of code extending vanilla Web Components</h2>
-        <h2>☑ Component system inspired by React, Svelte, and Polymer</h2>
+        <h2>&#x261E; ☑ Fewer than 1000 lines of highly-documented code</h2>
+        <h2>% ☑ Component system inspired by React, Svelte, and Polymer</h2>
         <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
-        <h2>☑ A "no fuss" drop-in to add JS components to existing web apps</h2>
+        <h2>% ☑ A dependency-free, "no fuss" drop-in for existing web apps</h2>
+    </div>
+
+    <div>
+        <mdu-TabSet selected="about">
+            <div name="HelloCounter">
+                <mdu-CodeExample text='<template>Hello modulo world!</template>'>
+                </mdu-CodeExample>
+            </div>
+            <div name="Todo">
+            </div>
+            <div name="API">
+            </div>
+        </mdu-TabSet>
     </div>
 </div>
+
+
 
 <span id="below"></span>
 <mdu-Navbar selected="about"></mdu-Navbar>
@@ -167,13 +184,15 @@
         <aside>
             <img src="https://i.imgur.com/BLbcneR.jpg" alt="Michael at a laptop" style="float: left; margin-right: 10px; width: 100px;" /><br />
             <h3>Learn JavaScript from me</h3>
-            <p><strong>Shameless plug:</strong>
-            Hi, I'm Michael. I also teach coding courses covering Python
-            fundamentals, Python / Django, the cutting-edge of React
-            JavaScript, and Computer Science for job interview prep.
-            Modulo is my thing. Kickstart Coding is
-            also my thing. Check it out and use discount code: #MODULO</p>
+            <p><strong>Shameless plug:</strong> Hi, I'm Michael. I also teach
+            coding courses covering Python fundamentals, Python / Django, the
+            cutting-edge of React JavaScript, and Computer Science for job
+            interview prep.  Modulo is my thing. Kickstart Coding is also my
+            thing.</p>
+            <p><a href="https://kickstartcoding.com/?utm=ugh_i_hate_marketing">$299 / month, for "custom paced" full-stack
+            training</a></p>
         </aside>
+        <!--
         <aside style="border: none" class="TitleAside">
             <p>
                 <a href="https://kickstartcoding.com/">
@@ -184,6 +203,7 @@
             <p><a href="">$299 / month, for "custom paced" full-stack
             training</a></p>
         </aside>
+        -->
     </section>
 
 
@@ -198,6 +218,10 @@
 </main>
 
 <script>Modulo.defineAll();</script>
+
+<footer>
+    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+</footer>
 
 </body>
 </html>

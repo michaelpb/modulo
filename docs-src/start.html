@@ -3,9 +3,11 @@
 <head>
     <meta charset="utf8" />
     <title>Modulo.js</title>
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="icon" type="image/png" href="./img/mono_logo.png" />
     <script src="./js/Modulo.js"></script>
+    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <mod-load namespace="mdu" src="./components/core.html"></mod-load>
 </head>
 
@@ -15,7 +17,24 @@
 <mdu-Navbar selected="start"></mdu-Navbar>
 
 <main>
-    <mdu-CodeExample></mdu-CodeExample>
+    <mdu-CodeExample text='
+<template>
+    <p>Count: {{ state.num }}</p>
+    <button @click:=script.increment>
+        Count!
+    </button>
+</template>
+
+<state
+    num:=1
+></state>
+
+<script>
+    function increment() {
+        state.num++;
+    }
+</script>
+'></mdu-CodeExample>
 </main>
 
 <main id="About">

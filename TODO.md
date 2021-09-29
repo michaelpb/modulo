@@ -4,10 +4,30 @@
 - Main next steps:
     - (DONE) Remove ".name"
     - (DONE) Do cparts.state vs state conversion
-    - Work on "Live Code Preview" component for examples
-    - Misc must have features:
+    - (DONE-ish) Work on "Live Code Preview" component for examples
+    - (DONE) Misc must have features:
         - Cache for components in localStorage
+        - (DONE) "settingProps" as a means to squirrel away data during ssg
+    - Do immediately prefixing components
     - Work on Modulo Router
+
+- Memory game idea:
+    - Use random unicode in some math range
+    - Randomly generate board
+    - Use CSS grid + simple flip animation
+    - Timer that counts down, see how many you can do in 30 sec etc
+
+- Idea for template selection:
+    - Last template always wins (right now)
+    - All cparts get stored in a list. Simply assign cparts.template to
+      something else!
+
+- Idea for solving inheritance / libraries / composition etc:
+    - < library name="GoodTemplates" > .. identical to components, except will
+      not get registered, just stored in global vars
+    - Stored globally so we can then do < load template from="GoodTemplates">
+    - or < template load-from="GoodTemplates">
+
 
 - Idea for configuring cparts from within script tag:
     - Set already-constructed cparts in script before running script
