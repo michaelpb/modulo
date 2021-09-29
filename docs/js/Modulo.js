@@ -629,6 +629,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
             const func = getAttr(attrName, getAttr(rawName));
             Modulo.assert(func, `Bad ${attrName}, ${value} is ${func}`);
             const payload = getAttr(`${attrName}.payload`, el.value);
+            console.log('this is payload', `${attrName}.payload`, payload);
             this.handleEvent(func, ev, payload);
         };
         info.listener = listener;
@@ -737,7 +738,10 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
         // looks for { chars
         content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
             selector = selector.trim();
-            if (selector.startsWith('@') || selector.startsWith(fullName)) {
+            if (selector.startsWith('@') || selector.startsWith(fullName)
+                  || selector.startsWith('from') || selector.startsWith('to')) {
+                // TODO: Make a regexp to check if matches other keyframe
+                // stuff, 90% etc
                 // Skip, is @media or @keyframes, or already prefixed
                 return selector;
             }
@@ -947,6 +951,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
             }
             mode = (mode === 'text') ? null : (mode ? 'text' : token);
         }
+        // console.log('this is the rsulting template code', output.replace(/([;\}\{])/g, '$1\n'));
         return new Function('CTX,G', output + ';return OUT.join("");');
     }
 
@@ -989,10 +994,14 @@ Modulo.Template = Modulo.templating.MTL; // Alias
 
 Modulo.templating.defaultOptions = {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
+    //opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,and,or',
     opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not',
     opAliases: {
+        '==': 'X === Y',
         'is': 'X === Y',
         'is not': 'X !== Y',
+        //'and': 'X && Y',
+        //'or': 'X || Y',
         'not': '!(Y)',
         'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
     },
@@ -1031,8 +1040,9 @@ Modulo.templating.defaultOptions.filters = {
     add: (s, arg) => s + arg,
     subtract: (s, arg) => s - arg,
     default: (s, arg) => s || arg,
-    invoke: (s, arg) => s(arg),
-    getAttribute: (s, arg) => s.getAttribute(arg),
+    //invoke: (s, arg) => s(arg),
+    //getAttribute: (s, arg) => s.getAttribute(arg),
+    includes: (s, arg) => s.includes(arg),
     divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
 };
 
@@ -1102,6 +1112,10 @@ Modulo.reconcilers.SetDom = class SetDomReconciler {
 
     findAndApplyDirectives(element) {
         const directives = [];
+        if (!element.children) {
+            //console.log('this is element', element); // NOT sure why text nodes get here
+            return;
+        }
         for (const child of element.children) {
             Modulo.collectDirectives(this.elemCtx, child, directives);
         }

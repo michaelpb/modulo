@@ -19,28 +19,195 @@
 <div class="IndexWrapper">
     <div class="Tagline">
         <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
-        <div class="Tagline-logo"><img src="./img/mono_logo_percent_only.png" /></div>
+        <div class="Tagline-logo">
+            <img src="./img/mono_logo_percent_only.png" style="height: 100px" />
+        </div>
         <h1 class="Tagline-title">modulo</h1>
         <h2>A tiny JavaScript Web Component framework</h2>
-        <br /> <br />
-        <h2>&#x261E; ☑ Fewer than 1000 lines of highly-documented code</h2>
-        <h2>% ☑ Component system inspired by React, Svelte, and Polymer</h2>
-        <!--<h2>☑ Modular with opinionated defaults and few assumptions</h2>-->
-        <h2>% ☑ A dependency-free, "no fuss" drop-in for existing web apps</h2>
+        <ul>
+            <li>Fewer than 1000 lines of highly-documented code</li>
+            <li>Component system inspired by React, Svelte, and Polymer</li>
+            <!--<li>Modular with opinionated defaults and few assumptions</li>-->
+            <li>A dependency-free, "no fuss" drop-in for existing web apps</li>
+        <ul>
     </div>
 
-    <div>
-        <mdu-TabSet selected="about">
-            <div name="HelloCounter">
-                <mdu-CodeExample text='<template>Hello modulo world!</template>'>
-                </mdu-CodeExample>
+    <main>
+        <mdu-TabSet modulo-ssg-skip>
+
+            <div name="Hello">
+
+<mdu-CodeExample
+text='
+<template>
+    <button @click:=script.countUp>Hello {{ state.num }}</button>
+</template>
+<state num:=42
+></state>
+<script>
+    function countUp() {
+        state.num++;
+    }
+</script>
+'>
+</mdu-CodeExample>
+
             </div>
+
+            <div name="Simple">
+
+<mdu-CodeExample
+text='
+<template>
+    Components can use <strong>any</strong> number
+    of <em title="Component Parts">CParts</em>.
+</template>
+<style>
+    em { color: darkblue; }
+    * { text-decoration: underline; }
+</style>
+'>
+</mdu-CodeExample>
+
+            </div>
+
+
             <div name="Todo">
+
+<mdu-CodeExample
+text='
+<template><ol>
+    {% for item in state.list %}
+        <li>{{ item }}</li>
+    {% endfor %}
+    <li>
+        <input [state.bind] name="text" />
+        <button @click:=script.addItem>Add</button>
+    </li>
+</ol></template>
+
+<state
+    list:=&#39;["Milk", "Bread", "Candy"]&#39;
+    text="Beer"
+></state>
+
+<script>
+    function addItem() {
+        state.list.push(state.text);
+        state.text = "";
+    }
+</script>
+
+<style>
+    li { 
+        list-style: "- ";
+    }
+    input {
+        border: none;
+        padding: 0;
+        width: 100px;
+    }
+</style>
+'>
+</mdu-CodeExample>
+
+
             </div>
+
             <div name="API">
+
+<mdu-CodeExample
+text='
+<script type="modulo/template">
+  <p>{{ state.name }} | {{ state.location }}</p>
+  <p>{{ state.bio }}</p>
+  <p>
+    <input [state.bind] name="search" placeholder="GitHub username" />
+    <button
+        {% if not state.search %}disabled{% endif %}
+        @click:=script.fetchGitHub>
+      Go
+    </button>
+  </p>
+</script>
+
+<state
+    search=""
+    name=""
+    location=""
+    bio=""
+></state>
+
+<script>
+    function fetchGitHub() {
+        const myState = state;
+        const myElement = element;
+        fetch(`https://api.github.com/users/${state.search}`)
+            .then(response => response.json())
+            .then(data => {
+                myState.name = data.name;
+                myState.location = data.location;
+                myState.bio = data.bio;
+                console.log("got data back", data);
+                myElement.rerender();
+            });
+    }
+</script>
+
+<style>
+    input { width: 100px; }
+</style>
+'>
+</mdu-CodeExample>
+
+
+            </div>
+
+            <div name="MemoryGame">
+
+<mdu-CodeExample
+text='
+<template>
+    {% for row in script.exports.rows %}
+        {% for col in row %}
+            <div @click:=flip click.payload="{{col}}">{{ col|safe }}</div>
+        {% endfor %}
+    {% endfor %}
+</template>
+<state>
+    flip1=
+</state>
+
+<script>
+    const rows = [];
+    const cards = [];
+    for (let i = 0; i < 4; i++) {
+        const row = [];
+        rows.push(row);
+        for (let j = 0; j < 4; j++) {
+            row.push(.toString(16) + ";");
+        }
+    }
+    script.exports.rows = rows;
+</script>
+<style>
+    Example {
+        display: grid;
+        grid-template-row: repeat(1fr, 4);
+        grid-template-column: repeat(1fr, 4);
+        width: 100%;
+        height: 50px;
+    }
+</style>
+'>
+</mdu-CodeExample>
+
+            </div>
+
+
             </div>
         </mdu-TabSet>
-    </div>
+    </main>
 </div>
 
 
@@ -137,44 +304,6 @@
 
 </main>
 
-
-<main>
-    <section>
-        <aside class="TitleAside">
-            <h1>Example: ToDo App</h1>
-            <pre style="text-align: left ">
-&lt;component name="Todo"&gt;
-&lt;template&gt;
-    &lt;ol&gt;
-        &lt;li&gt;&lt;h1&gt;To Do!&lt;/h1&gt;&lt;/li&gt;
-        {% for item in state.list %}
-            &lt;li&gt;{{ item }}&lt;/li&gt;
-        {% endfor %}
-        &lt;li&gt;
-            &lt;input [state.bind] name="text" /&gt;
-            &lt;button @click:=script.addItem&gt;
-                Add "{{ state.text }}"&lt;/button&gt;
-        &lt;/li&gt;
-    &lt;/ol&gt;
-&lt;/template&gt;
-&lt;state
-    list:='["Milk", "Bread", "Candy"]'
-    text="Beer"
-&gt;&lt;/state&gt;
-&lt;script&gt;
-    function addItem() {
-        state.list.push(state.text);
-        state.text = '';
-    }
-&lt;/script&gt;
-&lt;/component&gt;
-</pre>
-
-        </aside>
-
-        <aside>
-            <mdu-Todo></mdu-Todo>
-        </aside>
     </section>
 </main>
 

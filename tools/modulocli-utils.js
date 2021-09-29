@@ -242,6 +242,9 @@ function loadModuloDocument(path, html) {
             define: (name, cls) => {
                 const elements = dom.window.document.querySelectorAll(name);
                 for (const el of elements) {
+                    if (el.hasAttribute('modulo-ssg-skip')) {
+                        continue;
+                    }
                     webComponentsUpgrade(dom, el, cls);
                     Modulo.globals.mockMounted.push({el, cls});
                     //setTimeout(() => {

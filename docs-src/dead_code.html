@@ -1,0 +1,186 @@
+
+
+<main>
+    <section>
+        <aside class="TitleAside">
+            <h1>Example: ToDo App</h1>
+            <pre style="text-align: left ">
+&lt;component name="Todo"&gt;
+&lt;template&gt;
+    &lt;ol&gt;
+        &lt;li&gt;&lt;h1&gt;To Do!&lt;/h1&gt;&lt;/li&gt;
+        {% for item in state.list %}
+            &lt;li&gt;{{ item }}&lt;/li&gt;
+        {% endfor %}
+        &lt;li&gt;
+            &lt;input [state.bind] name="text" /&gt;
+            &lt;button @click:=script.addItem&gt;
+                Add "{{ state.text }}"&lt;/button&gt;
+        &lt;/li&gt;
+    &lt;/ol&gt;
+&lt;/template&gt;
+&lt;state
+    list:='["Milk", "Bread", "Candy"]'
+    text="Beer"
+&gt;&lt;/state&gt;
+&lt;script&gt;
+    function addItem() {
+        state.list.push(state.text);
+        state.text = '';
+    }
+&lt;/script&gt;
+&lt;/component&gt;
+</pre>
+
+        </aside>
+
+        <aside>
+            <mdu-Todo></mdu-Todo>
+        </aside>
+
+
+
+<main id="About">
+    <section>
+        <aside class="TitleAside">
+            <h1>Try it now</h1>
+            <p>Copy the code to the right into any HTML file:</p>
+        </aside>
+
+        <aside>
+<pre>
+&lt;script src="https://unpkg... TODO"&gt;&lt;/script&gt;
+
+&lt;!-- Define a component named TestThing --&gt;
+&lt;template modulo-component="TestThing"&gt;
+    &lt;template&gt;
+        &lt;p&gt;Hello counting world: {{ state.num }}&lt;/p&gt;
+        &lt;button @click:=script.increment&gt;Increment&lt;/p&gt;
+    &lt;/template&gt;
+    &lt;state num:=10
+    &gt;&lt;/state&gt;
+    &lt;script&gt;
+        function increment() {
+            state.num++;
+        }
+    &lt;/script&gt;
+&lt;/template&gt;
+
+&lt;!-- Now we can use it, anywhere, as often as we want! --&gt;
+&lt;x-TestThing&gt;&lt;/x-TestThing&gt;
+</pre>
+        </aside>
+    </section>
+</main>
+
+
+
+<template mod-component="Hero">
+    <template>
+        <div>
+            <img src="./img/logo_sans_stroke_white.png" alt="Percent sign logo" />
+            <br />
+            <img src="./img/text_logo.png" alt="Modulo.js" />
+        </div>
+    </template>
+    <style>
+      h1 {
+          font-size: 120px;
+          color: rgba(255, 255, 255, 1);
+          /*text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+          /*text-shadow: 0px -5px 5px rgba(0, 0, 0, 0.3);*/
+          text-shadow: 0px -3px 0 rgba(0, 0, 0, 0.3);
+          font-weight: bold;
+          height: 120px;
+      }
+      img:first-child {
+          margin-bottom: -40px;
+          margin-top: 50px;
+          max-width: 256px;
+      }
+
+      img:last-child {
+          margin-bottom: -62px;
+          margin-top: 50px;
+          z-index: 1;
+          position: relative;
+          max-width: none;
+          height: 196px;
+      }
+
+      div {
+          /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          /*background-size: 600% 600%;*/
+          background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
+              url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
+          /*animation: BGAnimTwo 10s linear infinite;*/
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+
+      div .dsiabled {
+          background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
+          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
+          background-size: 600% 600%;
+          animation: BGAnimation 20s ease infinite;
+          text-align: center;
+          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
+      }
+    </style>
+</template>
+
+
+<template mod-component="Todo">
+    <template>
+        <ol>
+            <li><h1>To Do!</h1></li>
+            {% for item in state.list %}
+                <li>{{ item }}</li>
+            {% endfor %}
+            <li>
+                <input [state.bind] name="text" />
+                <button @click:=script.addItem>
+                    Add "{{ state.text }}"
+                </button>
+            </li>
+        </ol>
+    </template>
+    <state
+        list:='["Milk", "Bread", "Candy"]'
+        text="Beer"
+    ></state>
+    <script>
+        function addItem() {
+            state.list.push(state.text);
+            state.text = '';
+        }
+    </script>
+</template>
+
+
+<template mod-component="NestingTest">
+    <template>
+        <div>
+            <my-ChildComponent clickme:=script.gotClicked txt="Click me! :)">
+            </my-ChildComponent>
+        </div>
+    </template>
+    <script>
+        function gotClicked() {
+            component.wasClicked = true;
+        }
+    </script>
+</template>
+
+<template mod-component="ChildComponent">
+    <template>
+        <button @click:=props.clickme>
+            {{ props.txt }}
+        </button>
+    </template>
+    <props
+      clickme:=Function
+      txt:=String
+    ></props>
+</template>

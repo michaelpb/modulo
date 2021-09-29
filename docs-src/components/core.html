@@ -59,8 +59,6 @@
 </template>
 
 <template mod-component="TabSet">
-        <!--{% for tab in element.originalChildren %} {% endfor %}-->
-        <!--<h1>Original children:</h1>-->
     <template>
         <nav class="tab-nav">
             <ul>
@@ -69,31 +67,38 @@
                         {% if tab.title == state.selected %}
                             tab-nav_title__selected
                         {% endif %}
-                    "><a href="#">{{ tab.title }}</a></li>
+                    "><a @click:=script.select
+                             click.payload="{{ tab.title }}"
+                        >{{ tab.title }}</a></li>
                 {% endfor %}
             </ul>
         </nav>
-        <div
-            class="tab-body"
-            [component.children]></div>
+        <div [component.children] modulo-ignore>
+        </div>
     </template>
     <style>
         TabSet {
             width: 100%;
             display: flex;
             flex-direction: column;
-            border: 3px solid var(--highlight-color);
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
         }
         .tab-nav {
-            display: flex;
+            /*border-bottom: 1px dotted var(--highlight-color);*/
             width: 100%;
+        }
+        .tab-nav > ul {
+            width: 100%;
+            display: flex;
         }
         .tab-nav_title {
             border: 2px solid black;
             border-top-width: 4px;
             border-bottom-width: 0;
-            border-radius: 8px;
+            border-radius: 8px 8px 0 0;
             background: white;
+            min-width: 10%;
         }
 
         .tab-nav_title a,
@@ -102,13 +107,17 @@
             text-decoration: none;
             color: black;
             display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .tab-nav_title__selected {
             background: var(--highlight-color);
-            box-shadow: 0 0 2px var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
             border-top-width: 1px;
-            border-bottom-width: 3px;
+            border-radius: 1px;
         }
     </style>
     <state
@@ -117,14 +126,44 @@
     ></state>
     <script>
         function initializedCallback() {
-            console.log(element.originalChildren);
-            //state.selected = element.originalChildren;
-            state.tabs = [
-                {title: 'Hello Counter'},
-                {title: 'Todo List'},
-                {title: 'Memory Game'},
-            ]
-            state.selected = state.tabs[0].title;
+            state.tabs = [];
+
+            for (const child of element.originalChildren) {
+                if (child.nodeType !== 1) { // DOM Element
+                    continue;
+                }
+                const title = child.getAttribute('name');
+                if (!title) {
+                    continue;
+                }
+                state.tabs.push({title, child});
+            }
+
+            if (state.tabs[0]) {
+                state.selected = state.tabs[0].title;
+                refreshTabs();
+            }
+        }
+
+        function refreshTabs() {
+            for (const {title, child} of state.tabs) {
+                if (title === state.selected) {
+                    child.style.display = 'block';
+                    let editorToWake = child.querySelector('.CodeMirror');
+                    if (editorToWake) {
+                        editorToWake.CodeMirror.refresh();
+                    }
+
+                } else if (child.style) {
+                    child.style.display = 'none';
+                }
+            }
+        }
+
+        function select(ev, payload) {
+            console.log('selection happening!', payload);
+            state.selected = payload;
+            refreshTabs();
         }
     </script>
 </template>
@@ -171,22 +210,26 @@
             box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
         }
         .split > div:last-child {
-            padding: 20px;
+            padding: 5px;
             background: whiteSmoke;
         }
         .split > div:first-child{
             border: 1px solid black;
+            height: 172px;
+            /*overflow-y: scroll;*/
         }
 
         .preview-wrapper {
-            margin-top: 5px;
-            padding: 20px;
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
             border: 1px solid black;
         }
 
         .split > div > textarea {
             width: 100%;
-            min-height: 200px;
+            min-height: 10px;
         }
         .split {
             display: grid;
@@ -206,6 +249,7 @@
         nscounter:=1
     ></state>
     <script>
+        let exCounter = 0; // global variable
         //console.log('gettin script tagged');
         /* Configure loader: */
         function initializedCallback() {
@@ -232,16 +276,25 @@
 
         function codemirrorMount({el}) {
             if (Modulo.globals.CodeMirror) {
-                //console.log('this is props', props);
-                element.codeMirrorEditor = CodeMirror.fromTextArea(el, {
+                console.log('this is props', props);
+                const cm = CodeMirror.fromTextArea(el, {
                     lineNumbers: true,
                     mode: 'django',
                     theme: 'eclipse',
                     indentUnit: 4,
                 });
-                element.codeMirrorEditor.setValue(props.text.trim());
-                element.codeMirrorEditor.refresh();
-                window.codeMirrorEditor = element.codeMirrorEditor;
+                element.codeMirrorEditor = cm;
+                window.cm = cm;
+                cm.setValue('');
+                cm.setSize(null, 170);
+                cm.refresh();
+                const text = props.text.trim();
+                cm.setValue(text);
+                setTimeout(() => {
+                    cm.setValue(text);
+                    cm.setSize(null, 170);
+                    cm.refresh();
+                }, 1);
                 el.setAttribute('modulo-ignore', 'y');
             } else {
                 console.log('Code mirror not found'); // probably SSG
@@ -252,7 +305,9 @@
             if (!Modulo.globals.CodeMirror) {
                 return;
             }
-            const namespace = `eg${state.nscounter}`; // TODO: later do hot reloading using same loader
+            exCounter++;
+            console.log('There are ', exCounter, ' examples on this page. Gee!')
+            const namespace = `eg${exCounter}-${state.nscounter}`; // TODO: later do hot reloading using same loader
             state.nscounter++;
             const loadOpts = {src: '', namespace};
             const loader = Object.assign(new Modulo.Loader, loadOpts);
@@ -271,7 +326,6 @@
 </template>
 
 
-
 <template mod-component="Link">
     <script>
         if (Modulo.require) {
@@ -281,112 +335,163 @@
 </template>
 
 
-<template mod-component="Hero">
+<template mod-component="MemoryGame">
     <template>
-        <div>
-            <img src="./img/logo_sans_stroke_white.png" alt="Percent sign logo" />
-            <br />
-            <img src="./img/text_logo.png" alt="Modulo.js" />
+        {% if not state.cards.length %}
+            <p>Welcome to a Game of Memory<p>
+            <button @click:=script.dealCards click.payload=8>Easy (2x4)</button>
+            <button @click:=script.dealCards click.payload=16>Medium (4x4)</button>
+            <button @click:=script.dealCards click.payload=36>Hard (6x6)</button>
+        {% endif %}
+        <div class="board {% if state.cards.length > 16 %}hard{% endif %}">
+        {% for card in state.cards %}
+            <div
+                class="card
+                    {% if state.revealed|includes:card.cardId %}
+                        flipped
+                    {% endif %}
+                    {% if state.win %}winning-animation{% endif %}
+                "
+                style="
+                    {% if state.win %}
+                        animation: flipping 0.5s infinite alternate;
+                        animation-delay: {{ card.cardId }}.{{ card.cardId }}s;
+                    {% endif %}
+                "
+                @click:=script.flip
+                click.payload="{{ card.cardId }}">
+                {% if state.revealed|includes:card.cardId %}
+                    {{ card.symbol }}
+                {% endif %}
+            </div>
+        {% endfor %}
         </div>
+        {% if state.message %}
+            <p class="message {% if state.failedflip %}error{% endif %}">{{ state.message }}</p>
+        {% endif %}
     </template>
+    <state
+        message=""
+        win:=false
+        cards:=[]
+        revealed:=[]
+        lastflipped:=null
+        failedflip:=null
+    ></state>
+
+    <script>
+        const symbolsStr = "%!@#$?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
+        function dealCards(ev, payload) {
+            const count = Number(payload);
+            let symbols = symbolsStr.substr(0, count/2).split("");
+            symbols = symbols.concat(symbols); // duplicate cards
+            let cardId = 0;
+            while (cardId < count) {
+                const index = Math.floor(Math.random() * symbols.length);
+                const symbol = symbols.splice(index, 1)[0];
+                state.cards.push({symbol, cardId});
+                cardId++;
+            }
+        }
+
+        function failedFlipCallback(ev) {
+            // Remove both from revealed array & set to null
+            state.revealed = state.revealed.filter(
+                    cardId => cardId !== state.failedflip
+                           && cardId !== state.lastflipped);
+            state.failedflip = null;
+            state.lastflipped = null;
+            state.message = "";
+            element.rerender();
+        }
+
+        function flip(ev, cardId) {
+            if (state.failedflip !== null) {
+                return;
+            }
+            cardId = Number(cardId);
+            if (state.revealed.includes(cardId)) {
+                return; // double click
+            } else if (state.lastflipped === null) {
+                state.lastflipped = cardId;
+                state.revealed.push(cardId);
+            } else {
+                state.revealed.push(cardId);
+                const {symbol} = state.cards[cardId];
+                const lastCard = state.cards[state.lastflipped];
+                if (symbol === lastCard.symbol) {
+                    // Successful match! Check for win condition.
+                    if (state.revealed.length === state.cards.length) {
+                        state.message = "You win!";
+                        state.win = true;
+                    } else {
+                        state.message = "Nice match!";
+                    }
+                    state.lastflipped = null;
+                } else {
+                    state.message = "No match.";
+                    state.failedflip = cardId;
+                    setTimeout(failedFlipCallback, 1000);
+                }
+            }
+        }
+    </script>
     <style>
-      h1 {
-          font-size: 120px;
-          color: rgba(255, 255, 255, 1);
-          /*text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
-          /*text-shadow: 0px -5px 5px rgba(0, 0, 0, 0.3);*/
-          text-shadow: 0px -3px 0 rgba(0, 0, 0, 0.3);
-          font-weight: bold;
-          height: 120px;
-      }
-      img:first-child {
-          margin-bottom: -40px;
-          margin-top: 50px;
-          max-width: 256px;
-      }
+        .message {
+            border: 3px dotted blue;
+            padding: 2px;
+            margin: 2px;
+        }
+        .message.error {
+            border: 3px solid red;
+        }
+        .board {
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 2px;
+            width: 100%;
+            height: 150px;
+            width: 150px;
+        }
+        .board.hard {
+            grid-gap: 1px;
+            grid-template-rows: repeat(6, 1fr);
+            grid-template-columns: repeat(6, 1fr);
+        }
+        .board > .card {
+            background: #B90183;
+            border: 2px solid black;
+            border-radius: 1px;
+            cursor: pointer;
+            text-align: center;
+            min-height: 15px;
+            transition: background 0.3s, transform 0.3s;
+            transform: scaleX(-1);
+            padding-top: 2px;
+            color: #B90183;
+        }
+        .board.hard > .card {
+            border: none !important;
+            padding: 0;
+        }
+        .board > .card.flipped {
+            background: #FFFFFF;
+            border: 2px solid #B90183;
+            transform: scaleX(1);
+        }
+        .board > .card.failed-flip {
+            background: red;
+            color: white;
+        }
 
-      img:last-child {
-          margin-bottom: -62px;
-          margin-top: 50px;
-          z-index: 1;
-          position: relative;
-          max-width: none;
-          height: 196px;
-      }
-
-      div {
-          /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
-          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-          /*background-size: 600% 600%;*/
-          background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
-              url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
-          /*animation: BGAnimTwo 10s linear infinite;*/
-          text-align: center;
-          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-      }
-
-      div .dsiabled {
-          background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
-          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-          background-size: 600% 600%;
-          animation: BGAnimation 20s ease infinite;
-          text-align: center;
-          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-      }
+        .winning-animation {
+            animation: flipping 0.5s infinite alternate;
+        }
+        @keyframes flipping {
+            from { transform: scaleX(-1.1); background: #B90183; }
+            to {   transform: scaleX(1.0);  background: #FFFFFF; }
+        }
     </style>
 </template>
 
-
-<template mod-component="Todo">
-    <template>
-        <ol>
-            <li><h1>To Do!</h1></li>
-            {% for item in state.list %}
-                <li>{{ item }}</li>
-            {% endfor %}
-            <li>
-                <input [state.bind] name="text" />
-                <button @click:=script.addItem>
-                    Add "{{ state.text }}"
-                </button>
-            </li>
-        </ol>
-    </template>
-    <state
-        list:='["Milk", "Bread", "Candy"]'
-        text="Beer"
-    ></state>
-    <script>
-        function addItem() {
-            state.list.push(state.text);
-            state.text = '';
-        }
-    </script>
-</template>
-
-
-<template mod-component="NestingTest">
-    <template>
-        <div>
-            <my-ChildComponent clickme:=script.gotClicked txt="Click me! :)">
-            </my-ChildComponent>
-        </div>
-    </template>
-    <script>
-        function gotClicked() {
-            component.wasClicked = true;
-        }
-    </script>
-</template>
-
-<template mod-component="ChildComponent">
-    <template>
-        <button @click:=props.clickme>
-            {{ props.txt }}
-        </button>
-    </template>
-    <props
-      clickme:=Function
-      txt:=String
-    ></props>
-</template>

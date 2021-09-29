@@ -1,28 +1,34 @@
 <!DOCTYPE HTML><head>
     <meta charset="utf8">
-    <title>Modulo.js</title>
+    <title>Start - Modulo.js</title>
     <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="icon" type="image/png" href="./img/mono_logo.png">
-    <script src="./js/Modulo.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <style id="mdu-TabSet_style">
 mdu-TabSet {
             width: 100%;
             display: flex;
             flex-direction: column;
-            border: 3px solid var(--highlight-color);
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
         }
 mdu-TabSet .tab-nav {
-            display: flex;
+            /*border-bottom: 1px dotted var(--highlight-color);*/
             width: 100%;
+        }
+mdu-TabSet .tab-nav > ul {
+            width: 100%;
+            display: flex;
         }
 mdu-TabSet .tab-nav_title {
             border: 2px solid black;
             border-top-width: 4px;
             border-bottom-width: 0;
-            border-radius: 8px;
+            border-radius: 8px 8px 0 0;
             background: white;
+            min-width: 10%;
         }
 
 mdu-TabSet .tab-nav_title a,
@@ -31,13 +37,17 @@ mdu-TabSet .tab-nav_title a:active {
             text-decoration: none;
             color: black;
             display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
 mdu-TabSet .tab-nav_title__selected {
             background: var(--highlight-color);
-            box-shadow: 0 0 2px var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
             border-top-width: 1px;
-            border-bottom-width: 3px;
+            border-radius: 1px;
         }
     </style><style id="mdu-CodeExample_style">
 mdu-CodeExample .toolbar {
@@ -61,22 +71,26 @@ mdu-CodeExample .toolbar > button:hover {
             box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
         }
 mdu-CodeExample .split > div:last-child {
-            padding: 20px;
+            padding: 5px;
             background: whiteSmoke;
         }
 mdu-CodeExample .split > div:first-child{
             border: 1px solid black;
+            height: 172px;
+            /*overflow-y: scroll;*/
         }
 
 mdu-CodeExample .preview-wrapper {
-            margin-top: 5px;
-            padding: 20px;
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
             border: 1px solid black;
         }
 
 mdu-CodeExample .split > div > textarea {
             width: 100%;
-            min-height: 200px;
+            min-height: 10px;
         }
 mdu-CodeExample .split {
             display: grid;
@@ -85,57 +99,68 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
-    </style><style id="mdu-Hero_style">
-mdu-Hero h1 {
-          font-size: 120px;
-          color: rgba(255, 255, 255, 1);
-          /*text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
-          /*text-shadow: 0px -5px 5px rgba(0, 0, 0, 0.3);*/
-          text-shadow: 0px -3px 0 rgba(0, 0, 0, 0.3);
-          font-weight: bold;
-          height: 120px;
-      }
-mdu-Hero img:first-child {
-          margin-bottom: -40px;
-          margin-top: 50px;
-          max-width: 256px;
-      }
+    </style><style id="mdu-MemoryGame_style">
+mdu-MemoryGame .message {
+            border: 3px dotted blue;
+            padding: 2px;
+            margin: 2px;
+        }
+mdu-MemoryGame .message.error {
+            border: 3px solid red;
+        }
+mdu-MemoryGame .board {
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 2px;
+            width: 100%;
+            height: 150px;
+            width: 150px;
+        }
+mdu-MemoryGame .board.hard {
+            grid-gap: 1px;
+            grid-template-rows: repeat(6, 1fr);
+            grid-template-columns: repeat(6, 1fr);
+        }
+mdu-MemoryGame .board > .card {
+            background: #B90183;
+            border: 2px solid black;
+            border-radius: 1px;
+            cursor: pointer;
+            text-align: center;
+            min-height: 15px;
+            transition: background 0.3s, transform 0.3s;
+            transform: scaleX(-1);
+            padding-top: 2px;
+            color: #B90183;
+        }
+mdu-MemoryGame .board.hard > .card {
+            border: none !important;
+            padding: 0;
+        }
+mdu-MemoryGame .board > .card.flipped {
+            background: #FFFFFF;
+            border: 2px solid #B90183;
+            transform: scaleX(1);
+        }
+mdu-MemoryGame .board > .card.failed-flip {
+            background: red;
+            color: white;
+        }
 
-mdu-Hero img:last-child {
-          margin-bottom: -62px;
-          margin-top: 50px;
-          z-index: 1;
-          position: relative;
-          max-width: none;
-          height: 196px;
-      }
-
-mdu-Hero div {
-          /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
-          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-          /*background-size: 600% 600%;*/
-          background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
-              url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
-          /*animation: BGAnimTwo 10s linear infinite;*/
-          text-align: center;
-          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-      }
-
-mdu-Hero div .dsiabled {
-          background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
-          /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-          background-size: 600% 600%;
-          animation: BGAnimation 20s ease infinite;
-          text-align: center;
-          box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-      }
+mdu-MemoryGame .winning-animation {
+            animation: flipping 0.5s infinite alternate;
+        }
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+        }
     </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
 
 
 
 
-<script src="/js/Modulo.js"></script>
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:871}">
+<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:876}">
         <nav class="Navbar">
             <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -155,81 +180,25 @@ mdu-Hero div .dsiabled {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 871 lines<br>
+                SLOC: 876 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
         </nav>
     </mdu-navbar>
 
-<main>
-    <mdu-codeexample text="
-<template>
-    <p>Count: {{ state.num }}</p>
-    <button @click:=script.increment>
-        Count!
-    </button>
-</template>
-
-<state
-    num:=1
-></state>
-
-<script>
-    function increment() {
-        state.num++;
-    }
-</script>
-">
-        <div class="split">
-            <div modulo-ignore="">
-                <textarea [script.codemirror]="">                </textarea>
-            </div>
-
-            <div>
-                <div class="toolbar">
-                    <h2>Preview</h2>
-                    <button @click:="script.run">Run ⟳</button>
-                </div>
-                <div [script.previewspot]="" class="preview-wrapper">
-                    <div modulo-ignore=""></div>
-                </div>
-            </div>
+<mdu-memorygame>
+        
+            <p>Welcome to a Game of Memory</p><p>
+            <button @click:="script.dealCards" click.payload="8">Easy (2x4)</button>
+            <button @click:="script.dealCards" click.payload="16">Medium (4x4)</button>
+            <button @click:="script.dealCards" click.payload="36">Hard (6x6)</button>
+        
+        </p><div class="board ">
+        
         </div>
-    </mdu-codeexample>
-</main>
-
-<main id="About">
-    <section>
-        <aside class="TitleAside">
-            <h1>Try it now</h1>
-            <p>Copy the code to the right into any HTML file:</p>
-        </aside>
-
-        <aside>
-<pre>&lt;script src="https://unpkg... TODO"&gt;&lt;/script&gt;
-
-&lt;!-- Define a component named TestThing --&gt;
-&lt;template modulo-component="TestThing"&gt;
-    &lt;template&gt;
-        &lt;p&gt;Hello counting world: {{ state.num }}&lt;/p&gt;
-        &lt;button @click:=script.increment&gt;Increment&lt;/p&gt;
-    &lt;/template&gt;
-    &lt;state num:=10
-    &gt;&lt;/state&gt;
-    &lt;script&gt;
-        function increment() {
-            state.num++;
-        }
-    &lt;/script&gt;
-&lt;/template&gt;
-
-&lt;!-- Now we can use it, anywhere, as often as we want! --&gt;
-&lt;x-TestThing&gt;&lt;/x-TestThing&gt;
-</pre>
-        </aside>
-    </section>
-</main>
+        
+    </mdu-memorygame>
 
 <script>Modulo.defineAll();</script>
 

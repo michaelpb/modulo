@@ -2,6 +2,12 @@
     --highlight-color: #B90183;
 }
 
+.CodeMirror *,
+textarea {
+  font-family: monospace;
+  font-size: 14px;
+}
+
 html {
   box-sizing: border-box;
   font-size: 16px;
@@ -126,6 +132,7 @@ aside.TitleAside a {
     font-size: 18px;
 }
 
+
 .TitleAside--navBar {
   position: fixed;
   width: 250px;
@@ -247,13 +254,26 @@ div.IndexWrapper {
     min-height: calc(100vh - 100px);
 }
 
+div.IndexWrapper mdu-TabSet {
+  margin-top: 30px;
+}
+
 div.Tagline {
     text-align: center;
+}
+div.Tagline ul {
+    width: 500px;
+    margin: auto;
+}
+
+div.Tagline ul > li {
+    text-align: left;
+    list-style-type: ">";
 }
 
 h1.Tagline-title {
     text-align: center;
-    font-size: 60px;
+    font-size: 50px;
     line-height: 1.0;
     /*font-weight: lighter;*/
     font-weight: 800; /* heavy if possible */

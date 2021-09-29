@@ -10,6 +10,8 @@
         - (DONE) "settingProps" as a means to squirrel away data during ssg
     - Do immediately prefixing components
     - Work on Modulo Router
+    - MTL: Support for "or" and "and" operators in if statements, and better
+      error messages if encountering unknown conditional operators
 
 - Memory game idea:
     - Use random unicode in some math range
