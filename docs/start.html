@@ -99,62 +99,6 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
-    </style><style id="mdu-MemoryGame_style">
-mdu-MemoryGame .message {
-            border: 3px dotted blue;
-            padding: 2px;
-            margin: 2px;
-        }
-mdu-MemoryGame .message.error {
-            border: 3px solid red;
-        }
-mdu-MemoryGame .board {
-            display: grid;
-            grid-template-rows: repeat(4, 1fr);
-            grid-template-columns: repeat(4, 1fr);
-            grid-gap: 2px;
-            width: 100%;
-            height: 150px;
-            width: 150px;
-        }
-mdu-MemoryGame .board.hard {
-            grid-gap: 1px;
-            grid-template-rows: repeat(6, 1fr);
-            grid-template-columns: repeat(6, 1fr);
-        }
-mdu-MemoryGame .board > .card {
-            background: #B90183;
-            border: 2px solid black;
-            border-radius: 1px;
-            cursor: pointer;
-            text-align: center;
-            min-height: 15px;
-            transition: background 0.3s, transform 0.3s;
-            transform: scaleX(-1);
-            padding-top: 2px;
-            color: #B90183;
-        }
-mdu-MemoryGame .board.hard > .card {
-            border: none !important;
-            padding: 0;
-        }
-mdu-MemoryGame .board > .card.flipped {
-            background: #FFFFFF;
-            border: 2px solid #B90183;
-            transform: scaleX(1);
-        }
-mdu-MemoryGame .board > .card.failed-flip {
-            background: red;
-            color: white;
-        }
-
-mdu-MemoryGame .winning-animation {
-            animation: flipping 0.5s infinite alternate;
-        }
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-        }
     </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
 
 
@@ -186,19 +130,6 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
             </div>
         </nav>
     </mdu-navbar>
-
-<mdu-memorygame>
-        
-            <p>Welcome to a Game of Memory</p><p>
-            <button @click:="script.dealCards" click.payload="8">Easy (2x4)</button>
-            <button @click:="script.dealCards" click.payload="16">Medium (4x4)</button>
-            <button @click:="script.dealCards" click.payload="36">Hard (6x6)</button>
-        
-        </p><div class="board ">
-        
-        </div>
-        
-    </mdu-memorygame>
 
 <script>Modulo.defineAll();</script>
 
