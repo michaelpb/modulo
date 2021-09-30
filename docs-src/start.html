@@ -15,6 +15,216 @@
 
 <mdu-Navbar selected="start"></mdu-Navbar>
 
+<main class="Tutorial">
+    <h2>Modulo Tutorial, Part 1:<br />
+        Your first component</h2>
+
+
+    <blockquote>
+    <p><strong>Prerequisites</strong>
+    Part 1 of this tutorial requires a prerequisite knowledge of HTML &amp; CSS
+    only.  Parts 2 and onward require familiarity with JavaScript.</p>
+
+    <p><strong>Other frameworks</strong> Modulo shares a common set of
+    terminology with frameworks like React and Vue, and a similar syntax and
+    component definition structure to Vue, Svelt, or Riot.js. Similar to
+    Polymer (now litElement), it is based on the Web Components API that is
+    standard in all modern browsers.</p>
+    </blockquote>
+
+    <h3>Including Modulo</h3>
+    <p>Welcome to the Modulo tutorial. By following these short tutorials, you
+    can learn how to use Modulo in your own projects.</p>
+
+    <p>The first step is to include the Modulo.js file. You can do this one of
+    2 ways:</p>
+    <ol>
+        <li>Using a script tag to directly link to the minified version on a
+        CDN <strong>(Recommended)</strong></li>
+        <li>Downloading the Modulo.js and including it with a script tag, e.g.
+        <code>&lt;script src="/js/Modulo.js"&gt;</code>
+    </ol>
+
+    <p>Then, Modulo needs to be explicitly activated. Somewhere before the closing body tag of your HTML file, you should activate Modulo with the following code:
+        <code>&lt;script&gt;Modulo.defineAll();&lt;script&gt;</code>
+    </p>
+
+    <h3>Defining your first component</h3>
+
+    <p>Once you have included Modulo and activated it, you can define your
+    first <em>custom component</em>. Right now, we'll do that all in one file,
+    although soon we'll learn how to split your components into a separate
+    file, which is the preferred way.</p>
+
+
+    <blockquote>
+        <p><strong>Why use "components"?</strong> Have you ever repeated the
+        same HTML, CSS, and/or JavaScript while writing a website or or web
+        app? <em>Components</em> let you store repeated code in one place. Once
+        defined, components can be re-used everywhere, saving developer time
+        and reducing mistakes. Furthermore, within teams, components libraries
+        improve collaboration between developers.</p>
+    </blockquote>
+
+
+    <p><strong>Component definitions</strong> start with a "component"
+    opening tag in the format of
+    <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>. Modulo will scan a
+    document for these tags, creating components for each one it encounters.
+    Every component definition must specify a name, conventionally in
+    <code>UpperCamelCase</code> (although technically component names are case
+    insensitive).</p>
+
+    <p>Once defined, you can use a component by referring to it's name as
+    though it were a plain HTML tag like &lt;div&gt;. Components can go
+    anywhere that plain HTML tags can go, and can be styled with CSS the same
+    way as well. Unlike plain HTML tags, you must use a dash (<code>-</code>)
+    when referring to a component, such as by prefixing with an "x" as such:
+    <code>x-</code>. This is a rule of the HTML5 Custom Components
+    standard, which Modulo is based upon.</p>
+
+    <p>So, if a component is defined like
+    <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, then it can be
+    referenced elsewhere like
+    <code>&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;</code>.</p>
+
+    <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
+
+
+    <section class="Tutorial-tryit">
+        <h4>Try it now</h4>
+        <ol>
+            <li>Open up an HTML file in your preferred text editor. It's okay
+            to start from scratch, or use an existing project.</li>
+            <li>Open that HTML file in your preferred web browser as well.</li>
+            <li>Copy &amp; paste in the following code:
+<pre>
+&lt;!-- Define a custom component --&gt;
+&lt;component name="HelloWorld"&gt;
+    &lt;template&gt;
+        Hello &lt;strong&gt;Modulo&lt;/strong&gt; World!
+    &lt;/template&gt;
+&lt;/component&gt;
+
+
+&lt;!-- Reuse it anywhere, just like any other HTML tag --&gt;
+&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;
+
+&lt;p&gt;In a P tag: &lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;&lt;/p&gt;
+
+
+&lt;!-- Finally, include Modulo CDN &amp; activate (at the bottom) --&gt;
+&lt;script src="https://cdn.skypack.dev/modulo?min"&gt;&lt;/script&gt;
+&lt;script&gt;Modulo.defineAll();&lt;/script&gt;
+</pre></li>
+            <li>Refresh the web browser to view the results.</li>
+        </ol>
+    </section>
+
+    <h3>The anatomy of a component definition</h3>
+
+    <p>The central concept to Modulo is that of <em>Component Parts</em>.
+    Because it is so central, saying <em>Component Parts</em> over and over got
+    old, so it's typically shortened to <em>CParts</em>.</p>
+
+    <blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the cast and
+    crew of a musical. Each are assigned to a different task&mdash;some are
+    more flashy and visible, others being stage-hands working behind the
+    scenes&mdash;but they all work together to put on the same
+    show!</p></blockquote>
+
+    <p>All component definitions consist of some number of CParts.  Thus, a
+    component definition can be thought of as merely a collection of CPart
+    definitions. When a component definition is later instantiated (i.e., when that
+    component is used on the page), it in turn will instantiate (i.e. create an
+    instance of) a CPart for each of the CPart definitions contained in the
+    component definition. "Under the hood" of your component, each CPart will
+    have a different role to contribute to the functionality of your
+    component.</p>
+
+    <p>The first two CParts:</p>
+    <ol>
+        <li>
+            <strong>Template</strong> - <code>&lt;template&gt;</code>
+            <p>Templates are where you put any arbitrary HTML code that you
+            want your component to contain. For now, we'll just include some
+            unchanging HTML. Later, we'll learn how to use "templating
+            language" to control what HTML is produced in what
+            circumstance.</p>
+        </li>
+
+        <li>
+
+            <blockquote> <p><strong>Adding CSS</strong> Instead of a Style
+            CPart, you can always link a global CSS file the regular way to
+            style your components.  However, many developers prefer the
+            simplicity of keeping everything in one place, e.g. the CSS with
+            the component definition that it styles.</p></blockquote>
+
+            <strong>Style</strong> - <code>&lt;style&gt;</code>
+            <p>Just like the <code>&lt;style&gt;</code> tag in HTML, the
+            <strong>Style</strong> CPart allows us to write CSS for our
+            component. CSS written here will be automatically prefixed so that
+            it will only apply to your component and any HTML generated by the
+            Template CPart.
+            </p>
+
+        </li>
+    </ol>
+
+    <p>Throughout Modulo documentation, there are these little embedded code
+    editors. These allow you to immediately practice new concepts learned. For
+    simplicity, the top and bottom of the component definition code is omitted.
+    Instead, these sample code editors only focus on the CPart definitions
+    within.</p>
+
+
+
+</main>
+
+
+<main>
+    <section class="Tutorial-tryit">
+        <h4>Try it now</h4>
+        <p>Edit the CPart definitions on the left and click RUN to see the results
+        on the right!</p>
+
+        <ol>
+            <li>Practice modifying the <strong>Template</strong> CPart
+            (<code>&lt;template&gt;</code>) to see how that affects the
+            output</li>
+            <li>Practice modifying the <strong>Style</strong> CPart
+            (<code>&lt;style&gt;</code>) to add or modify CSS</li>
+            <li>Practice incorporating these CParts into your own component
+            definition by copying your code here and pasting it within the HTML
+            file's component definition that you created in the previous part
+            of this tutorial</p>
+        </ol>
+
+
+    <mdu-CodeExample
+text='
+<template>
+    Hello <strong>Modulo</strong> World!
+    <p class="neat">Any HTML can be here!</p>
+</template>
+<style>
+    strong {
+        color: blue;
+    }
+    .neat {
+        font-variant: small-caps;
+    }
+</style>
+'>
+</mdu-CodeExample>
+</section>
+</main>
+
+
+
+
+
 <script>Modulo.defineAll();</script>
 </body>
 </html>
