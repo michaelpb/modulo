@@ -2,8 +2,8 @@
     <meta charset="utf8">
     <title>Modulo.js</title>
     <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="icon" type="image/png" href="./img/mono_logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="./js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <style id="mdu-TabSet_style">
@@ -111,7 +111,7 @@ mdu-CodeExample .split { display: block; }
     <div class="Tagline">
         <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
         <div class="Tagline-logo">
-            <img src="./img/mono_logo_percent_only.png" style="height: 100px">
+            <img src="/img/mono_logo_percent_only.png" class="Tagline-logoimg">
         </div>
         <h1 class="Tagline-title">modulo</h1>
         <h2>A tiny JavaScript Web Component framework</h2>
@@ -194,7 +194,8 @@ mdu-CodeExample .split { display: block; }
             <div name="Todo">
 
 <mdu-codeexample text="
-<template><ol>
+<template>
+<ol>
     {% for item in state.list %}
         <li>{{ item }}</li>
     {% endfor %}
@@ -202,7 +203,8 @@ mdu-CodeExample .split { display: block; }
         <input [state.bind] name=&quot;text&quot; />
         <button @click:=script.addItem>Add</button>
     </li>
-</ol></template>
+</ol>
+</template>
 
 <state
     list:='[&quot;Milk&quot;, &quot;Bread&quot;, &quot;Candy&quot;]'
@@ -215,17 +217,6 @@ mdu-CodeExample .split { display: block; }
         state.text = &quot;&quot;;
     }
 </script>
-
-<style>
-    li { 
-        list-style: &quot;- &quot;;
-    }
-    input {
-        border: none;
-        padding: 0;
-        width: 100px;
-    }
-</style>
 ">
         <div class="split">
             <div modulo-ignore="">
@@ -251,12 +242,14 @@ mdu-CodeExample .split { display: block; }
 
 <mdu-codeexample text="
 <template>
-  <p>{{ state.name }} | {{ state.location }}</p>
-  <p>{{ state.bio }}</p>
-  <p>
-    <input [state.bind] name=&quot;search&quot; placeholder=&quot;GitHub username&quot; />
-    <button @click:=script.fetchGitHub>Go</button>
-  </p>
+<p>{{ state.name }} | {{ state.location }}</p>
+<p>{{ state.bio }}</p>
+<a href=&quot;https://github.com/{{ state.search }}/&quot; target=&quot;_blank&quot;>
+    {% if state.search %}github.com/{{ state.search }}/{% endif %}
+</a>
+<input [state.bind] name=&quot;search&quot;
+    placeholder=&quot;Type GitHub username&quot; />
+<button @click:=script.fetchGitHub>Get Info</button>
 </template>
 
 <state
@@ -268,23 +261,17 @@ mdu-CodeExample .split { display: block; }
 
 <script>
     function fetchGitHub() {
-        const myState = state;
-        const myElement = element;
         fetch(`https://api.github.com/users/${state.search}`)
             .then(response => response.json())
-            .then(data => {
-                myState.name = data.name;
-                myState.location = data.location;
-                myState.bio = data.bio;
-                console.log(&quot;got data back&quot;, data);
-                myElement.rerender();
-            });
+            .then(githubCallback);
+    }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
     }
 </script>
-
-<style>
-    input { width: 100px; }
-</style>
 ">
         <div class="split">
             <div modulo-ignore="">
@@ -311,39 +298,42 @@ mdu-CodeExample .split { display: block; }
 <mdu-codeexample text="
 <!-- A much more complicated example application -->
 <template>
-    {% if not state.cards.length %}
-        <p>Welcome to a Game of Memory<p>
-        <button @click:=script.dealCards click.payload=8>2x4</button>
-        <button @click:=script.dealCards click.payload=16>4x4</button>
-        <button @click:=script.dealCards click.payload=36>6x6</button>
-    {% endif %}
-
-    <div class=&quot;board {% if state.cards.length > 16 %}hard{% endif %}&quot;>
+{% if not state.cards.length %}
+    <h3>The Symbolic Memory Game</h3>
+    <p>Choose your difficulty:</p>
+    <button @click:=script.setup click.payload=8>2x4</button>
+    <button @click:=script.setup click.payload=16>4x4</button>
+    <button @click:=script.setup click.payload=36>6x6</button>
+{% else %}
+    <div class=&quot;board
+        {% if state.cards.length > 16 %}hard{% endif %}&quot;>
     {# Loop through each card in the &quot;deck&quot; (state.cards) #}
     {% for card in state.cards %}
         {# Using &quot;key=&quot; to speed up DOM reconciler #}
-        <div key=&quot;c{{ card.cardId }}&quot;
+        <div key=&quot;c{{ card.id }}&quot;
             class=&quot;card
-                {% if state.revealed|includes:card.cardId %}
-                    flipped
-                {% endif %}
+            {% if state.revealed|includes:card.id %}
+                flipped
+            {% endif %}
             &quot;
             style=&quot;
-                {% if state.win %}
-                    animation: flipping 0.5s infinite alternate;
-                    animation-delay: {{ card.cardId }}.{{ card.cardId }}s;
-                {% endif %}
+            {% if state.win %}
+                animation: flipping 0.5s infinite alternate;
+                animation-delay: {{ card.id }}.{{ card.id }}s;
+            {% endif %}
             &quot;
             @click:=script.flip
-            click.payload=&quot;{{ card.cardId }}&quot;>
-            {% if state.revealed|includes:card.cardId %}
+            click.payload=&quot;{{ card.id }}&quot;>
+            {% if state.revealed|includes:card.id %}
                 {{ card.symbol }}
             {% endif %}
         </div>
     {% endfor %}
     </div>
-    <p class=&quot;message {% if state.failedflip %}error{% endif %}&quot;>
+    <p style=&quot;{% if state.failedflip %}
+                color: red{% endif %}&quot;>
         {{ state.message }}</p>
+{% endif %}
 </template>
 
 <state
@@ -356,113 +346,113 @@ mdu-CodeExample .split { display: block; }
 ></state>
 
 <script>
-    const symbolsStr = &quot;%!@#$?&amp;+~÷≠∑µ‰∂Δƒσ&quot;; // 16 options
-    function dealCards(ev, payload) {
-        const count = Number(payload);
-        let symbols = symbolsStr.substr(0, count/2).split(&quot;&quot;);
-        symbols = symbols.concat(symbols); // duplicate cards
-        let cardId = 0;
-        while (cardId < count) {
-            const index = Math.floor(Math.random() * symbols.length);
-            const symbol = symbols.splice(index, 1)[0];
-            state.cards.push({symbol, cardId});
-            cardId++;
-        }
+const symbolsStr = &quot;%!@#=?&amp;+~÷≠∑µ‰∂Δƒσ&quot;; // 16 options
+function setup(ev, payload) {
+    const count = Number(payload);
+    let symbols = symbolsStr.substr(0, count/2).split(&quot;&quot;);
+    symbols = symbols.concat(symbols); // duplicate cards
+    let id = 0;
+    while (id < count) {
+        const index = Math.floor(Math.random()
+                                    * symbols.length);
+        const symbol = symbols.splice(index, 1)[0];
+        state.cards.push({symbol, id});
+        id++;
     }
+}
 
-    function failedFlipCallback(ev) {
-        // Remove both from revealed array &amp; set to null
-        state.revealed = state.revealed.filter(
-                cardId => cardId !== state.failedflip
-                        &amp;&amp; cardId !== state.lastflipped);
-        state.failedflip = null;
-        state.lastflipped = null;
-        state.message = &quot;&quot;;
-        element.rerender();
+function failedFlipCallback(ev) {
+    // Remove both from revealed array &amp; set to null
+    state.revealed = state.revealed.filter(
+            id => id !== state.failedflip
+                    &amp;&amp; id !== state.lastflipped);
+    state.failedflip = null;
+    state.lastflipped = null;
+    state.message = &quot;&quot;;
+    element.rerender();
+}
+
+function flip(ev, id) {
+    if (state.failedflip !== null) {
+        return;
     }
-
-    function flip(ev, cardId) {
-        if (state.failedflip !== null) {
-            return;
-        }
-        cardId = Number(cardId);
-        if (state.revealed.includes(cardId)) {
-            return; // double click
-        } else if (state.lastflipped === null) {
-            state.lastflipped = cardId;
-            state.revealed.push(cardId);
-        } else {
-            state.revealed.push(cardId);
-            const {symbol} = state.cards[cardId];
-            const lastCard = state.cards[state.lastflipped];
-            if (symbol === lastCard.symbol) {
-                // Successful match! Check for win condition.
-                if (state.revealed.length === state.cards.length) {
-                    state.message = &quot;You win!&quot;;
-                    state.win = true;
-                } else {
-                    state.message = &quot;Nice match!&quot;;
-                }
-                state.lastflipped = null;
+    id = Number(id);
+    if (state.revealed.includes(id)) {
+        return; // double click
+    } else if (state.lastflipped === null) {
+        state.lastflipped = id;
+        state.revealed.push(id);
+    } else {
+        state.revealed.push(id);
+        const {symbol} = state.cards[id];
+        const lastCard = state.cards[state.lastflipped];
+        if (symbol === lastCard.symbol) {
+            // Successful match! Check for win.
+            const {revealed, cards} = state;
+            if (revealed.length === cards.length) {
+                state.message = &quot;You win!&quot;;
+                state.win = true;
             } else {
-                state.message = &quot;No match.&quot;;
-                state.failedflip = cardId;
-                setTimeout(failedFlipCallback, 1000);
+                state.message = &quot;Nice match!&quot;;
             }
+            state.lastflipped = null;
+        } else {
+            state.message = &quot;No match.&quot;;
+            state.failedflip = id;
+            setTimeout(failedFlipCallback, 1000);
         }
     }
+}
 </script>
 
 <style>
-    .message {
-        border: 3px dotted blue;
-        padding: 2px;
-        margin: 2px;
-        min-height: 30px;
-    }
-    .message.error {
-        border: 3px dotted red;
-    }
-    .board {
-        display: grid;
-        grid-template-rows: repeat(4, 1fr);
-        grid-template-columns: repeat(4, 1fr);
-        grid-gap: 2px;
-        width: 100%;
-        height: 150px;
-        width: 150px;
-    }
-    .board.hard {
-        grid-gap: 1px;
-        grid-template-rows: repeat(6, 1fr);
-        grid-template-columns: repeat(6, 1fr);
-    }
-    .board > .card {
-        background: #B90183;
-        border: 2px solid black;
-        border-radius: 1px;
-        cursor: pointer;
-        text-align: center;
-        min-height: 15px;
-        transition: background 0.3s, transform 0.3s;
-        transform: scaleX(-1);
-        padding-top: 2px;
-        color: #B90183;
-    }
-    .board.hard > .card {
-        border: none !important;
-        padding: 0;
-    }
-    .board > .card.flipped {
-        background: #FFFFFF;
-        border: 2px solid #B90183;
-        transform: scaleX(1);
-    }
+h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+.board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+.board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+.board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+.board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+.board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
 
-    @keyframes flipping {
-        from { transform: scaleX(-1.1); background: #B90183; }
-        to {   transform: scaleX(1.0);  background: #FFFFFF; }
-    }
+@keyframes flipping {
+    from { transform: scaleX(-1.1); background: #B90183; }
+    to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
 </style>
 ">
         <div class="split">
@@ -493,7 +483,7 @@ mdu-CodeExample .split { display: block; }
 
 
 <span id="below"></span>
-<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:876}">
+<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:875}">
         <nav class="Navbar">
             <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -513,7 +503,7 @@ mdu-CodeExample .split { display: block; }
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 876 lines<br>
+                SLOC: 875 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -577,21 +567,23 @@ mdu-CodeExample .split { display: block; }
         <aside class="TitleAside">
             <h3><span alt="Modulo operator">%</span></h3>
             <h3>Similar<br>(but&nbsp;simpler)</h3>
-            <p><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Read Modulo.js</a></p>
+            <p><a href="/literate/src/Modulo.html">Read the annotated source code</a></p>
         </aside>
 
         <aside>
             <p><strong>"It's like React"</strong> - Modulo has components,
-            props, state, lifecycle methods, virtual DOM (if you want it),
-            hot-reloading, debugging tools with introspection - get the
-            creature comforts of React or Vue, but with a compatible syntax and
-            a shorter time to integrate.</p>
+            props, state, lifecycle methods, DOM resolution, and plays nicely
+            with dev tools inspect. Get the creature comforts of React or Vue,
+            but with a compatible syntax and a shorter time to integrate.</p>
             <p><strong>Concise</strong> - The code-base is intentionally kept
-            short &amp; sweet, so when something goes wrong you can always
-            <tt>git blame</tt> Modulo.</p>
-            <p><strong>Building blocks for more</strong> - Ever wanted to write
-            your own component framework? Read the "literate" code for a
-            starting spot.</p>
+            short &amp; sweet: Under 1000 lines of source code (not including
+            comments and documentation), 80 char line limit, 4 spaces of
+            indent, and a <abbr title="Nearly all functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
+            imperative approach. When something goes wrong you can always
+            <tt>git blame</tt> Modulo.</p> <p><strong>Building blocks for
+            more</strong> - Ever wanted to write your own component framework,
+            but didn't want to totally start from scratch?  Read the "literate"
+            code for a starting spot, and fork away!</p>
             <p><strong>Opinionated defaults</strong> - Modulo is cohesive,
             coming with a templating system and DOM resolution out-of-the-box.
             It's like "batteries included", but maybe AAA instead of D.

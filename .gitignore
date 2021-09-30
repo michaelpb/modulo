@@ -5,6 +5,7 @@
 
 # testing
 /coverage
+.complexity-report/
 
 # misc
 .DS_Store

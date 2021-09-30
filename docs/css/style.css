@@ -255,7 +255,13 @@ div.IndexWrapper {
 }
 
 div.IndexWrapper mdu-TabSet {
-  margin-top: 30px;
+  margin-top: 10px;
+}
+
+@media (min-height: 768px) {
+    div.IndexWrapper mdu-TabSet {
+        margin-top: 100px;
+    }
 }
 
 div.Tagline {
@@ -268,7 +274,16 @@ div.Tagline ul {
 
 div.Tagline ul > li {
     text-align: left;
-    list-style-type: ">";
+    list-style-type: '>>   ';
+}
+@media (min-height: 768px) {
+    div.Tagline ul {
+        margin-top: 50px;
+        width: 560px;
+    }
+    div.Tagline ul > li {
+        font-size: 1.3rem;
+    }
 }
 
 h1.Tagline-title {
@@ -284,6 +299,13 @@ h1.Tagline-title {
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
     color: black;
+}
+
+.Tagline-logoimg {
+    height: 100px;
+}
+@media (min-height: 768px) {
+    .Tagline-logoimg { height: 150px; }
 }
 
 h1.Tagline-logo {

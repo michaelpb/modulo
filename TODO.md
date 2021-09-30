@@ -12,12 +12,15 @@
     - Work on Modulo Router
     - MTL: Support for "or" and "and" operators in if statements, and better
       error messages if encountering unknown conditional operators
+    - ERROR: On GitHub API search, key= doesn't work to keep input focus
+      between renders, if a new element is introduced above it. Need to debug
+      SET DOM how it uses key.
+    - Linting Rules!!
 
-- Memory game idea:
-    - Use random unicode in some math range
-    - Randomly generate board
-    - Use CSS grid + simple flip animation
-    - Timer that counts down, see how many you can do in 30 sec etc
+- Code quality idea: Max cyclomatic complexity
+    - (Can be configured via linting?)
+    - Currently only collectDirectives (7) and "anon method-18" (6) violate
+      this
 
 - Idea for template selection:
     - Last template always wins (right now)
@@ -148,7 +151,7 @@
 
 ---
 
-Ideas for unifying renderObj etc:
+(DONE) Ideas for unifying renderObj etc:
 
 - Template render context and script context has 2 things:
     - cparts.XYZ --- the OOP version with bound methods
@@ -179,102 +182,4 @@ Ideas for unifying renderObj etc:
     - Otherwise, the post-factory, automatically resolved attributes are
       available (automatically squashed)
 
----
-
-# Older notes
-
-- "Render context" issue: render is synchronous, so connectedCallback happens
-  AFTER
-    - Solutions: Figure out a dependable order? (DONE)
-    - Solutions: Do some template mangling to pass in a reference? (Not necessary)
-
-
-# Todo notes: 2020-12-20
-
-- Before official release, make sure well tested, then re-order entire code
-  base to sort by lifecycle. Then, I can do literate coding to fully document
-  the entire library, for hyper well-documented code.
-    - "Docco" is the name of the literate coding library I forgot:
-    - https://github.com/jashkenas/docco/
-    - "Pycco" is a python clone: https://pycco-docs.github.io/pycco/
-
-
----
-
-Todo notes: 2020-12-13
-
-What works & has tests:
-- Most things seem to work
-
-What works but does not have tests:
-- morphdom
-- TinyTiny
-- ghost-state from browser
-- non-mocked browser usage in general
-
-What's left:
-- Bugs:
-    - Functions are getting resolved incorrectly. (Has skipped test) Need to
-      generalize around "resolved attributes", and determine which renderObj is
-      relevant at render time (that is, correctly determine render context
-      component). See TODO in code. Maybe back to the render stack system (?)
-- Nice to haves:
-    - Break Ghost and all DEBUG code off into it's own file
-    - Possibly move core DeepMap etc into own file
-    - Modulo-debug.js?
-    - Allow loading from files for ComponentParts using src
-    - Refactor factoryMiddleware and logic around these
-- Main focus
-    - Build homepage to think about main focus / pros/cons
-        - "JS-free developent" (like TurboLinks etc)
-        - embeded turoials
-- Other component parts (CParts)
-    - mod-fetch
-        - Provides templates to simple APIs
-        - Allow "JS free" development
-    - mod-router
-        - Provide logic for routnig to other CPart e.g. templates
-    - mod-canvas
-        - For graphical things, e.g. games, paint apps, etc
-        - Allow some other structure of content?
-    - mod-api-whatever
-        - Specific "API" CParts, one for each popular API
-        - Allow things like giphy.lastSearch
-    - This one would be useful: `<mod-native>`
-        - Have same JS logic, props, state, but native display (and separate
-          iOS / android)
-    - mod-form
-        - Provide form serialization, submission utils?
-- Tooling
-    - Create build conf for project (maybe using rollup or another one instead
-      of webpack?)
-    - Bundle ideas:
-        - Modulus.minimal.js -- Just Modulo.Component and Modulo.Loader etc
-        - Modulus.core.js -- Core only (all adaptors, and Backtick and none as
-                             default settings)
-        - Modulus.standard.js -- Includes DEBUG, all parts & default
-                                 middleware, TinyTiny, morphdom
-        - Modulus.extra.js -- Any extra stuff?
-- Hot reloading
-    - Hash components -- Come up with JSON-alphabetical (if it doesn't
-      already exist) and then hash the JSON file and truncate to 8
-      digits
-    - In the final built copy, maybe do something like
-      x7aerf-MyComponent as the rewritten references
-    - Idea
-      - On front-end, every time Loader loads something, it should
-        fetch or say on WebSocket "Loaded /static/whatevs.js"
-      - The server then searches for that file based on suffix (e.g.
-        starts by finding all whatevs.js, then sorts them by suffix
-        similarity, e.g. djangoapps/mystuff/static/whatevs.js wins
-        against other/cache/whatevs.js)
-      - The server starts watching that file
-      - When its saved, it sends signal to loader, telling it to
-        reload & refresh that file
-      - POSSIBLY: Runs a parallel loader on the backend, and diffs the
-        resulting hash
-
-- Tooling
-- Low prio:
-    - Write some very simple CSS or HTML lexers
 

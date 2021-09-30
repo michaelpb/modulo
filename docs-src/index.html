@@ -4,8 +4,8 @@
     <meta charset="utf8" />
     <title>Modulo.js</title>
     <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="icon" type="image/png" href="./img/mono_logo.png" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
     <script src="./js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <mod-load namespace="mdu" src="./components/core.html"></mod-load>
@@ -20,7 +20,7 @@
     <div class="Tagline">
         <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
         <div class="Tagline-logo">
-            <img src="./img/mono_logo_percent_only.png" style="height: 100px" />
+            <img src="/img/mono_logo_percent_only.png" class="Tagline-logoimg" />
         </div>
         <h1 class="Tagline-title">modulo</h1>
         <h2>A tiny JavaScript Web Component framework</h2>
@@ -76,7 +76,8 @@ text='
 
 <mdu-CodeExample
 text='
-<template><ol>
+<template>
+<ol>
     {% for item in state.list %}
         <li>{{ item }}</li>
     {% endfor %}
@@ -84,7 +85,8 @@ text='
         <input [state.bind] name="text" />
         <button @click:=script.addItem>Add</button>
     </li>
-</ol></template>
+</ol>
+</template>
 
 <state
     list:=&#39;["Milk", "Bread", "Candy"]&#39;
@@ -97,17 +99,6 @@ text='
         state.text = "";
     }
 </script>
-
-<style>
-    li { 
-        list-style: "- ";
-    }
-    input {
-        border: none;
-        padding: 0;
-        width: 100px;
-    }
-</style>
 '>
 </mdu-CodeExample>
 
@@ -119,12 +110,14 @@ text='
 <mdu-CodeExample
 text='
 <template>
-  <p>{{ state.name }} | {{ state.location }}</p>
-  <p>{{ state.bio }}</p>
-  <p>
-    <input [state.bind] name="search" placeholder="GitHub username" />
-    <button @click:=script.fetchGitHub>Go</button>
-  </p>
+<p>{{ state.name }} | {{ state.location }}</p>
+<p>{{ state.bio }}</p>
+<a href="https://github.com/{{ state.search }}/" target="_blank">
+    {% if state.search %}github.com/{{ state.search }}/{% endif %}
+</a>
+<input [state.bind] name="search"
+    placeholder="Type GitHub username" />
+<button @click:=script.fetchGitHub>Get Info</button>
 </template>
 
 <state
@@ -136,23 +129,17 @@ text='
 
 <script>
     function fetchGitHub() {
-        const myState = state;
-        const myElement = element;
         fetch(`https://api.github.com/users/${state.search}`)
             .then(response => response.json())
-            .then(data => {
-                myState.name = data.name;
-                myState.location = data.location;
-                myState.bio = data.bio;
-                console.log("got data back", data);
-                myElement.rerender();
-            });
+            .then(githubCallback);
+    }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
     }
 </script>
-
-<style>
-    input { width: 100px; }
-</style>
 '>
 </mdu-CodeExample>
 
@@ -165,39 +152,42 @@ text='
 text='
 <!-- A much more complicated example application -->
 <template>
-    {% if not state.cards.length %}
-        <p>Welcome to a Game of Memory<p>
-        <button @click:=script.dealCards click.payload=8>2x4</button>
-        <button @click:=script.dealCards click.payload=16>4x4</button>
-        <button @click:=script.dealCards click.payload=36>6x6</button>
-    {% endif %}
-
-    <div class="board {% if state.cards.length > 16 %}hard{% endif %}">
+{% if not state.cards.length %}
+    <h3>The Symbolic Memory Game</h3>
+    <p>Choose your difficulty:</p>
+    <button @click:=script.setup click.payload=8>2x4</button>
+    <button @click:=script.setup click.payload=16>4x4</button>
+    <button @click:=script.setup click.payload=36>6x6</button>
+{% else %}
+    <div class="board
+        {% if state.cards.length > 16 %}hard{% endif %}">
     {# Loop through each card in the "deck" (state.cards) #}
     {% for card in state.cards %}
         {# Using "key=" to speed up DOM reconciler #}
-        <div key="c{{ card.cardId }}"
+        <div key="c{{ card.id }}"
             class="card
-                {% if state.revealed|includes:card.cardId %}
-                    flipped
-                {% endif %}
+            {% if state.revealed|includes:card.id %}
+                flipped
+            {% endif %}
             "
             style="
-                {% if state.win %}
-                    animation: flipping 0.5s infinite alternate;
-                    animation-delay: {{ card.cardId }}.{{ card.cardId }}s;
-                {% endif %}
+            {% if state.win %}
+                animation: flipping 0.5s infinite alternate;
+                animation-delay: {{ card.id }}.{{ card.id }}s;
+            {% endif %}
             "
             @click:=script.flip
-            click.payload="{{ card.cardId }}">
-            {% if state.revealed|includes:card.cardId %}
+            click.payload="{{ card.id }}">
+            {% if state.revealed|includes:card.id %}
                 {{ card.symbol }}
             {% endif %}
         </div>
     {% endfor %}
     </div>
-    <p class="message {% if state.failedflip %}error{% endif %}">
+    <p style="{% if state.failedflip %}
+                color: red{% endif %}">
         {{ state.message }}</p>
+{% endif %}
 </template>
 
 <state
@@ -210,113 +200,113 @@ text='
 ></state>
 
 <script>
-    const symbolsStr = "%!@#$?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
-    function dealCards(ev, payload) {
-        const count = Number(payload);
-        let symbols = symbolsStr.substr(0, count/2).split("");
-        symbols = symbols.concat(symbols); // duplicate cards
-        let cardId = 0;
-        while (cardId < count) {
-            const index = Math.floor(Math.random() * symbols.length);
-            const symbol = symbols.splice(index, 1)[0];
-            state.cards.push({symbol, cardId});
-            cardId++;
-        }
+const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
+function setup(ev, payload) {
+    const count = Number(payload);
+    let symbols = symbolsStr.substr(0, count/2).split("");
+    symbols = symbols.concat(symbols); // duplicate cards
+    let id = 0;
+    while (id < count) {
+        const index = Math.floor(Math.random()
+                                    * symbols.length);
+        const symbol = symbols.splice(index, 1)[0];
+        state.cards.push({symbol, id});
+        id++;
     }
+}
 
-    function failedFlipCallback(ev) {
-        // Remove both from revealed array & set to null
-        state.revealed = state.revealed.filter(
-                cardId => cardId !== state.failedflip
-                        && cardId !== state.lastflipped);
-        state.failedflip = null;
-        state.lastflipped = null;
-        state.message = "";
-        element.rerender();
+function failedFlipCallback(ev) {
+    // Remove both from revealed array & set to null
+    state.revealed = state.revealed.filter(
+            id => id !== state.failedflip
+                    && id !== state.lastflipped);
+    state.failedflip = null;
+    state.lastflipped = null;
+    state.message = "";
+    element.rerender();
+}
+
+function flip(ev, id) {
+    if (state.failedflip !== null) {
+        return;
     }
-
-    function flip(ev, cardId) {
-        if (state.failedflip !== null) {
-            return;
-        }
-        cardId = Number(cardId);
-        if (state.revealed.includes(cardId)) {
-            return; // double click
-        } else if (state.lastflipped === null) {
-            state.lastflipped = cardId;
-            state.revealed.push(cardId);
-        } else {
-            state.revealed.push(cardId);
-            const {symbol} = state.cards[cardId];
-            const lastCard = state.cards[state.lastflipped];
-            if (symbol === lastCard.symbol) {
-                // Successful match! Check for win condition.
-                if (state.revealed.length === state.cards.length) {
-                    state.message = "You win!";
-                    state.win = true;
-                } else {
-                    state.message = "Nice match!";
-                }
-                state.lastflipped = null;
+    id = Number(id);
+    if (state.revealed.includes(id)) {
+        return; // double click
+    } else if (state.lastflipped === null) {
+        state.lastflipped = id;
+        state.revealed.push(id);
+    } else {
+        state.revealed.push(id);
+        const {symbol} = state.cards[id];
+        const lastCard = state.cards[state.lastflipped];
+        if (symbol === lastCard.symbol) {
+            // Successful match! Check for win.
+            const {revealed, cards} = state;
+            if (revealed.length === cards.length) {
+                state.message = "You win!";
+                state.win = true;
             } else {
-                state.message = "No match.";
-                state.failedflip = cardId;
-                setTimeout(failedFlipCallback, 1000);
+                state.message = "Nice match!";
             }
+            state.lastflipped = null;
+        } else {
+            state.message = "No match.";
+            state.failedflip = id;
+            setTimeout(failedFlipCallback, 1000);
         }
     }
+}
 </script>
 
 <style>
-    .message {
-        border: 3px dotted blue;
-        padding: 2px;
-        margin: 2px;
-        min-height: 30px;
-    }
-    .message.error {
-        border: 3px dotted red;
-    }
-    .board {
-        display: grid;
-        grid-template-rows: repeat(4, 1fr);
-        grid-template-columns: repeat(4, 1fr);
-        grid-gap: 2px;
-        width: 100%;
-        height: 150px;
-        width: 150px;
-    }
-    .board.hard {
-        grid-gap: 1px;
-        grid-template-rows: repeat(6, 1fr);
-        grid-template-columns: repeat(6, 1fr);
-    }
-    .board > .card {
-        background: #B90183;
-        border: 2px solid black;
-        border-radius: 1px;
-        cursor: pointer;
-        text-align: center;
-        min-height: 15px;
-        transition: background 0.3s, transform 0.3s;
-        transform: scaleX(-1);
-        padding-top: 2px;
-        color: #B90183;
-    }
-    .board.hard > .card {
-        border: none !important;
-        padding: 0;
-    }
-    .board > .card.flipped {
-        background: #FFFFFF;
-        border: 2px solid #B90183;
-        transform: scaleX(1);
-    }
+h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+.board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+.board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+.board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+.board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+.board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
 
-    @keyframes flipping {
-        from { transform: scaleX(-1.1); background: #B90183; }
-        to {   transform: scaleX(1.0);  background: #FFFFFF; }
-    }
+@keyframes flipping {
+    from { transform: scaleX(-1.1); background: #B90183; }
+    to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
 </style>
 '>
 </mdu-CodeExample>
@@ -345,8 +335,13 @@ text='
         <aside>
             <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
             just drop it into any HTML file.  Unlike jQuery, that 1 file packs
-            in a component system, hot-reloading, a tiny build system to pack
-            your CSS and JS for production, and even debug tools.</p>
+            in the creature-comforts of a modern component framework.</p>
+            <!--
+            a modern component system, a swappable templating language based
+            on Liquid-syntax, DOM resolution, and more.
+            , a tiny
+            build system to pack your CSS and JS for production, and even debug
+            tools.</p>-->
 
             <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
             wheels. Like Polymer (LitElement) or Skate.js, Modulo is built as a
@@ -391,33 +386,27 @@ text='
         <aside class="TitleAside">
             <h3><span alt="Modulo operator">%</span></h3>
             <h3>Similar<br />(but&nbsp;simpler)</h3>
-            <p><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Read Modulo.js</a></p>
+            <p><a href="/literate/src/Modulo.html">Read the source</a></p>
         </aside>
 
         <aside>
-            <p><strong>"It's like React"</strong> - Modulo has components,
-            props, state, lifecycle methods, virtual DOM (if you want it),
-            hot-reloading, debugging tools with introspection - get the
-            creature comforts of React or Vue, but with a compatible syntax and
-            a shorter time to integrate.</p>
-            <p><strong>Concise</strong> - The code-base is intentionally kept
-            short &amp; sweet, so when something goes wrong you can always
+            <p><strong>"It's like React"</strong> - Modulo is
+            batteries-included to be like React.js or Vue.js, except without
+            the complications of dependencies or build systems. You get props,
+            state, lifecycle methods, smart DOM resolution, encapsulated
+            components, and a simple namespace and library loading system.</p>
+
+            <p><strong>Clean & concise</strong> - The code-base is intentionally kept
+            short &amp; sweet: Under 1000
+            <abbr title="Source Lines of Code - This counts 'physical lines' and thus does not include comments, documentation, blanks, etc">SLOC</abbr>,
+            80 char lines, 4 spaces of
+            indent, and a <abbr title="Functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
+            imperative style. When something goes wrong,
             <tt>git blame</tt> Modulo.</p>
-            <p><strong>Building blocks for more</strong> - Ever wanted to write
-            your own component framework? Read the "literate" code for a
-            starting spot.</p>
-            <p><strong>Opinionated defaults</strong> - Modulo is cohesive,
-            coming with a templating system and DOM resolution out-of-the-box.
-            It's like "batteries included", but maybe AAA instead of D.
-            Modulo is for people who like the consistency of One Way to Do It,
-            while still having flexibility if the One Way comes up short.</p>
-            <!--
-            But
-            like your parents always warned you, "Don't directly mutate state!"
-            <p><strong>No more of "this"</strong> - OOP in JavaScript? Not a
-            fan.</p>
-            <p><strong>Fork it</strong> - It's small so you can make it your
-            own.</p>-->
+
+            <p><strong>A basis for whatever comes next</strong> - Want to write
+            your own component framework, but don't want to start from scratch?
+            Read the "literate" code for a starting spot, and fork away!</p>
         </aside>
     </section>
 

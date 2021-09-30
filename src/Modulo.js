@@ -629,7 +629,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
             const func = getAttr(attrName, getAttr(rawName));
             Modulo.assert(func, `Bad ${attrName}, ${value} is ${func}`);
             const payload = getAttr(`${attrName}.payload`, el.value);
-            console.log('this is payload', `${attrName}.payload`, payload);
+            //console.log('this is payload', `${attrName}.payload`, payload);
             this.handleEvent(func, ev, payload);
         };
         info.listener = listener;
