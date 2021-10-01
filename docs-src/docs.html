@@ -13,6 +13,10 @@
 
 <mdu-Navbar selected="docs"></mdu-Navbar>
 
+<mdu-Route
+  name="templating"
+  src="./docs/templating.html"
+></mdu-Route>
 
 <main class="give-left-margin">
     <aside class="TitleAside TitleAside--navBar">
@@ -141,6 +145,68 @@
             <br />
             <p><strong>Q: Isn't custom DOM-resolution good / bad?</strong></p>
             <p>Maybe. But the good news is, with Modulo you get both!</p>
+
+            <p><strong>Q: Any future plans?</strong></p>
+            <p>A: Yes, plenty! The three main ones: SSG, server-side, and MDU.
+            Currently, this site is already getting generated with a
+            Modulo-based SSG. However, it's undocumented and messy, so it still
+            needs work before it's released externally. On a similar note,
+            there are plans for a JAMstack-style SSG + server-side combo, with
+            live-refresh inspired by Phoenix LiveView. Finally, developing this
+            site requires developing some key components, so I also hope to
+            have time to document and release "mdu", which will be a standard
+            library of Modulo components, including a Router system inspired by
+            React Router.</p>
+
+            <br />
+
+            <p><strong>Q: Why do you care so much about short source code
+            files? Don't you want a framework that does more?</strong></p>
+            <p>A: In my opinion, the most important feature about a framework
+            like this is documentation and structure, not functionality.
+            Specifically, my coding philosophy is that good frameworks should
+            have aim first and foremost to have a high "documentation to code"
+            ratio. This is because a framework is much more than simply a set
+            of libraries to import. Choosing a framework represents buy-in to
+            file and directory structures, recipes, best practices, code
+            patterns, and so on. I don't want to have to dig through
+            <em>other</em> people's code to figure out how to solve <em>my</em>
+            problems. Instead, a good framework should come "batteries
+            included" with documentation that clearly indicates how to solve
+            common problems.</p>
+
+            <p>Thus, to pump up our "doc/code" ratio, the easiest thing is to
+            keep the denominator as low as possible.  This is especially true
+            for a new, solo-developed framework project such as this one.
+            Similarly, I think that frameworks should seek to be as simple
+            and elegant as possible, especially in this case, when the
+            framework is a layer on top of existing web standards (the web
+            component standard). In this case, adding anything more would
+            constitute over-engineering.</p>
+
+            <br />
+            <p><strong>Q: 80 char line limit? 4 space indentation? Imperative
+            coding? What is this, the 90's?</strong></p>
+            <p>A: Another motivating factor for developing Modulo was dismay at
+            the code quality of many JavaScript libraries that I use. This is
+            not a slight on any particular library, nor is it a claim that I
+            write better code&mdash;in fact, outside of Modulo.js itself, all
+            the tooling code in this repo is a mess! However, for Modulo.js
+            itself, I invested most of the development time in refactoring it
+            over and over, until the code and logical flow was as simple as
+            possible. My goal is to make the code readable and be a good
+            example for novice coders.  I want engineers of all skill levels to
+            be able to understand <em>why</em> the framework behaves the way it
+            does by simply reading the code that powers certain features.</p>
+
+            <p>That's where the coding standard comes in. Shorter line length and
+            "more intense" indentation requirements naturally causes simpler,
+            less convoluted code, causing desirable side-effects such as lower
+            cyclomatic complexity in functions. It might not be "pleasant" to
+            write under these conditions, but code is written once and read
+            1000 times. Modulo code was written to be easily read, not easily
+            written.</p>
+
 
         </aside>
     </section>

@@ -427,7 +427,7 @@ a:visited {
     letter-spacing: 1px;
 }
 
-.Tutorial ol li {
+.Tutorial ol > li {
     list-style: decimal;
     margin-left: 40px;
 }

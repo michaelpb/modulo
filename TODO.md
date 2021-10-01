@@ -27,6 +27,21 @@
     - All cparts get stored in a list. Simply assign cparts.template to
       something else!
 
+
+- Idea for custom CParts:
+
+        <script type="modulo/cpart" name="fetcher">
+            class Fetcher extends Modulo.ComponentPart {
+            }
+            script.exports = Fetcher;
+        </script>
+
+        then used like (eg with namespacing)
+        <x-fetcher>
+        Or like
+        <mylib-fetcher>
+        </mylib-fetcher>
+
 - Idea for solving inheritance / libraries / composition etc:
     - < library name="GoodTemplates" > .. identical to components, except will
       not get registered, just stored in global vars

@@ -29,7 +29,7 @@
 # Contributing
 
 The best way to contribute is by trying it out: Building something with it, and
-giving feedback.
+then give feedback.
 
 ## Formatting
 
@@ -46,9 +46,10 @@ standards:
   minification. Instead, keep it simple, clear, and self-documenting.
 - Avoid continuing long statements onto new lines. Instead, create
   descriptively named temporary variables.
-- For larger blocks of code, consider JS constructs such as `for..of` loops
-  to keep the code's logical flow clear and imperitive, instead of chaining
+- For larger blocks of code, consider JS constructs such as `for..of` loops to
+  keep the code's logical flow clear and imperitive, instead of chaining
   methods such as `.forEach` or `.map`.
 - Most operations should be synchronous, so they can finish before reflow.
-- Do not add any layers of callback indirection unless it is necessary.
+- Do not add any layers of callback indirection unless it is absolutely
+  necessary.
 

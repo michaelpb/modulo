@@ -8,20 +8,33 @@ const commands = {
         const outputDir = args.flags.output;
         utils.assert(inputDir, 'Specify a source directory');
         utils.assert(outputDir, 'Specify output dir, e.g. --output=docs/');
+
         const filenames = utils.walkSync(inputDir);
         for (const inputPath of filenames) {
             const outputPath = outputDir + inputPath.slice(inputDir.length);
             utils.mkdirToContain(outputPath);
             const ext = path.extname(inputPath).slice(1).toLowerCase();
             if (ext === 'html') {
-                utils.renderModuloHtml(inputPath, outputPath, null, () => {
-                    console.log('RENDER:', inputPath, '->', outputPath);
+                utils.renderModuloHtml(inputPath, outputPath, (subPaths, inputContents) => {
+                    console.log('RENDERED:', inputPath, '->', outputPath);
+                    if (subPaths) {
+                        console.log('RENDERED:', inputPath,
+                                    `-> NOTE: ${subPaths.length} subpaths`);
+                        for (const newFilePath of subPaths) {
+                            utils.renderModuloHtmlForSubpath(
+                                    inputContents, inputPath, newFilePath, () => {
+                                console.log('RENDERED SUB-PATH:', inputPath, '->', newFilePath);
+                            });
+                        }
+                    }
+
                 });
             } else if (ext in args.flags) {
+                // DEADCODE, unused code path
                 const tmpltPath = args.flags[ext];
                 fs.readFile(inputPath, 'utf8', (err, content) => {
-                    const args = {inputPath, outputPath, filenames, content};
-                    utils.renderModuloHtml(tmpltPath, outputPath, args, () => {
+                    //const args = {inputPath, outputPath, filenames, content};
+                    utils.renderModuloHtml(tmpltPath, outputPath, (subPaths) => {
                         console.log('TEMPLATE:', inputPath, '->', outputPath,
                                     `(USING: ${tmpltPath})`);
                     });

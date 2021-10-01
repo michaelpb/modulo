@@ -1,51 +1,3 @@
-- Other component parts (CParts)
-    - mod-fetch
-        - Provides templates to simple APIs
-        - Allow "JS free" development
-    - mod-canvas
-        - For graphical things, e.g. games, paint apps, etc
-        - Allow some other structure of content?
-    - mod-api-whatever
-        - Specific "API" CParts, one for each popular API
-        - Allow things like giphy.lastSearch
-    - This one would be useful: `<mod-native>`
-        - Have same JS logic, props, state, but native display (and separate
-          iOS / android)
-    - mod-form
-        - Provide form serialization, submission utils?
-- Tooling
-    - Create build conf for project (maybe using rollup or another one instead
-      of webpack?)
-    - Bundle ideas:
-        - Modulus.minimal.js -- Just Modulo.Component and Modulo.Loader etc
-        - Modulus.core.js -- Core only (all adaptors, and Backtick and none as
-                             default settings)
-        - Modulus.standard.js -- Includes DEBUG, all parts & default
-                                 middleware, TinyTiny, morphdom
-        - Modulus.extra.js -- Any extra stuff?
-- Hot reloading
-    - Hash components -- Come up with JSON-alphabetical (if it doesn't
-      already exist) and then hash the JSON file and truncate to 8
-      digits
-    - In the final built copy, maybe do something like
-      x7aerf-MyComponent as the rewritten references
-    - Idea
-      - On front-end, every time Loader loads something, it should
-        fetch or say on WebSocket "Loaded /static/whatevs.js"
-      - The server then searches for that file based on suffix (e.g.
-        starts by finding all whatevs.js, then sorts them by suffix
-        similarity, e.g. djangoapps/mystuff/static/whatevs.js wins
-        against other/cache/whatevs.js)
-      - The server starts watching that file
-      - When its saved, it sends signal to loader, telling it to
-        reload & refresh that file
-      - POSSIBLY: Runs a parallel loader on the backend, and diffs the
-        resulting hash
-
-- Tooling
-- Low prio:
-    - Write some very simple CSS or HTML lexers
-
 
 # Ideas
 
@@ -164,3 +116,55 @@ directive:
 
 
     //[/\.$/, 'json'] // idea for JSON literals
+
+# Older misc ideas
+
+- Other component parts (CParts)
+    - mod-fetch
+        - Provides templates to simple APIs
+        - Allow "JS free" development
+    - mod-canvas
+        - For graphical things, e.g. games, paint apps, etc
+        - Allow some other structure of content?
+    - mod-api-whatever
+        - Specific "API" CParts, one for each popular API
+        - Allow things like giphy.lastSearch
+    - This one would be useful: `<mod-native>`
+        - Have same JS logic, props, state, but native display (and separate
+          iOS / android)
+    - mod-form
+        - Provide form serialization, submission utils?
+- Tooling
+    - Create build conf for project (maybe using rollup or another one instead
+      of webpack?)
+    - Bundle ideas:
+        - Modulus.minimal.js -- Just Modulo.Component and Modulo.Loader etc
+        - Modulus.core.js -- Core only (all adaptors, and Backtick and none as
+                             default settings)
+        - Modulus.standard.js -- Includes DEBUG, all parts & default
+                                 middleware, TinyTiny, morphdom
+        - Modulus.extra.js -- Any extra stuff?
+- Hot reloading
+    - Hash components -- Come up with JSON-alphabetical (if it doesn't
+      already exist) and then hash the JSON file and truncate to 8
+      digits
+    - In the final built copy, maybe do something like
+      x7aerf-MyComponent as the rewritten references
+    - Idea
+      - On front-end, every time Loader loads something, it should
+        fetch or say on WebSocket "Loaded /static/whatevs.js"
+      - The server then searches for that file based on suffix (e.g.
+        starts by finding all whatevs.js, then sorts them by suffix
+        similarity, e.g. djangoapps/mystuff/static/whatevs.js wins
+        against other/cache/whatevs.js)
+      - The server starts watching that file
+      - When its saved, it sends signal to loader, telling it to
+        reload & refresh that file
+      - POSSIBLY: Runs a parallel loader on the backend, and diffs the
+        resulting hash
+
+- Tooling
+- Low prio:
+    - Write some very simple CSS or HTML lexers
+
+

@@ -335,3 +335,65 @@
 </template>
 
 
+<template mod-component="Route">
+    <props
+        name
+        src
+        loadedcontent
+        routevisiblenow
+    ></props>
+    <script>
+        function readFile(currentPath, src) {
+            const path = Modulo.require('path');
+            const fullPath = path.resolve(path.join(path.dirname(currentPath), src));
+            return Modulo.require('fs').readFileSync(fullPath, 'utf8');
+        }
+
+        function getNewFilePath(ssgCurrentPath, name) {
+            console.log('Modulo.ssgCurrentPath', ssgCurrentPath);
+            let newFilePath = ssgCurrentPath;
+
+            // Strip extension
+            if (newFilePath.toLowerCase().endsWith('.html')) {
+                newFilePath = newFilePath.substr(0, newFilePath.length - 5);
+            }
+
+            // Sanitize for filename
+            let newBaseName = name.replace(/\//g, '__') + '.html';
+            newFilePath += '/' + newBaseName;
+            return newFilePath;
+        }
+
+        function initializedCallback() {
+            if (Modulo.isBackend) {
+                const {name, src} = props;
+                const {ssgCurrentPath, ssgCurrentSubPath} = Modulo;
+                const key = `mdu-Router|${src}`;
+                if (!Modulo.ssgStore[key]) {
+                    Modulo.ssgStore[key] = readFile(ssgCurrentPath, src);
+                }
+                const data = Modulo.ssgStore[key];
+                if (data && ssgCurrentSubPath) {
+                    // We are currently "in" the right file now, fill with data
+                    //element.setAttribute('loadedcontent', data);
+                    //element.setAttribute('routevisiblenow', 'true');
+                    element.innerHTML = data;
+                    return;
+                }
+
+                // otherwise, transform the path
+                const newFilePath = getNewFilePath(ssgCurrentPath, name);
+                console.log('Adding to extra paths:', newFilePath);
+                Modulo.ssgRegisterSubPath(newFilePath);
+            } else {
+                //TODO: Check for hash-fragment navigation here
+                //if (props.routevisiblenow === 'true') {
+                //    element.innerHTML = element.getAttribute('loadedcontent');
+                //}
+            }
+        }
+    </script>
+</template>
+
+
+

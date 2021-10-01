@@ -105,6 +105,7 @@ nav.Navbar .Navbar-rightInfo {
 main {
     max-width: 800px;
     margin: auto;
+    clear: both;
 }
 
 section {
@@ -353,6 +354,102 @@ a {
 a:visited {
     color: #666;
 }
+
+.Tutorial p {
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+.Tutorial p:first-of-type {
+    text-indent: 0;
+}
+
+.Tutorial {
+    font-size: 1.2rem;
+}
+.Tutorial ul li {
+    list-style: disc;
+    margin-left: 40px;
+}
+.Tutorial blockquote {
+    max-width: 280px;
+    float: right;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+    line-height: 1.3;
+    font-size: 0.98rem;
+}
+
+.Tutorial blockquote > p {
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+.Tutorial blockquote > p:first-child {
+    margin-top: 0;
+}
+
+.Tutorial blockquote strong {
+    color: var(--highlight-color);
+    font-size: 1.1rem;
+}
+
+.Tutorial blockquote strong:first-child::before {
+    content: '%   ';
+}
+
+.Tutorial-tryit::before {
+    content: '';
+}
+.Tutorial-tryit {
+    border: 1px solid var(--highlight-color);
+    padding: 20px;
+    display: block;
+    position: relative;
+    clear: both;
+}
+
+.Tutorial > h2,
+.Tutorial > h3,
+.Tutorial > h4 {
+    font-weight: bold;
+    color: var(--highlight-color);
+    margin-top: 30px;
+    margin-bottom: 0;
+}
+
+.Tutorial-tryit h4 {
+    color: var(--highlight-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 22px;
+    margin-top: -10px;
+    letter-spacing: 1px;
+}
+
+.Tutorial ol > li {
+    list-style: decimal;
+    margin-left: 40px;
+}
+
+.Tutorial {
+    counter-reset: h2counter;
+}
+.Tutorial > h2 {
+    counter-increment: h2counter;
+    counter-reset: h3counter;
+}
+.Tutorial > h2:before {
+    content: counter(h2counter) ".\0000a0\0000a0";
+}
+.Tutorial > h3 {
+    counter-increment: h3counter;
+}
+.Tutorial > h3:before {
+    content: counter(h2counter) "." counter(h3counter) ".\0000a0\0000a0";
+}
+
+
 
 @media (max-width: 992px) {
 

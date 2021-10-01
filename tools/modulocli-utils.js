@@ -68,6 +68,14 @@ function parseArgs(argArray) {
     return args;
 }
 
+const readFileSyncCache = {};
+function cachedReadFileSync(fullPath) {
+    if (!(fullPath in readFileSyncCache)) {
+        readFileSyncCache[fullPath] = fs.readFileSync(fullPath, 'utf-8');
+    }
+    return readFileSyncCache[fullPath];
+}
+
 function checkArgs(args, commands) {
     // presently no-op
     const options = Object.keys(commands).join(' or ');
@@ -81,10 +89,20 @@ function checkArgs(args, commands) {
     }
 }
 
-function patchModuloWithSSGFeatures(Modulo) {
+function patchModuloWithSSGFeatures(Modulo, path, subpath=null) {
     Modulo.isBackend = true;
     Modulo.require = require;
     Modulo.ssgStore = ssgStore;
+    Modulo.ssgCurrentPath = path.replace('//', '/'); // remove accidental double slashes
+    Modulo.ssgCurrentSubPath = subpath ? subpath.replace('//', '/') : null; // remove accidental double slashes
+    Modulo.ssgSubPaths = null;
+    Modulo.ssgRegisterSubPath = function (newFilePath) {
+        if (!Modulo.ssgSubPaths) {
+            Modulo.ssgSubPaths = [];
+        }
+        Modulo.ssgSubPaths.push(newFilePath);
+    }
+
     /*
     // Reconsider these features. Only include in core modulo if has space
     const {factoryCallback} = Modulo.cparts.script;
@@ -99,7 +117,7 @@ function patchModuloWithSSGFeatures(Modulo) {
     */
 }
 
-function loadModuloDocument(path, html) {
+function loadModuloDocument(path, html, subpath=null) {
     const includeRequire = true;
     /*
       Very hacky function to load Modulo and mock set it up with a path to
@@ -167,7 +185,7 @@ function loadModuloDocument(path, html) {
 
         const dom = new JSDOM(htmlCode);
         if (includeRequire) {
-            patchModuloWithSSGFeatures(Modulo);
+            patchModuloWithSSGFeatures(Modulo, path, subpath);
         }
         Modulo.document = dom.window.document; // for easier testing
         Modulo.globals.DOMParser = DOMParser;
@@ -215,7 +233,8 @@ function loadModuloDocument(path, html) {
                     callback(response);
                     return {
                         then: callback => {
-                            let data = fs.readFileSync(fullPath, 'utf-8');
+                            //let data = fs.readFileSync(fullPath, 'utf-8');
+                            let data = cachedReadFileSync(fullPath);
                             for (const func of Modulo.globals.mockModifyFile) {
                                 data = func(fullPath, data);
                             }
@@ -318,7 +337,9 @@ function renderModuloHtml(inputPath, outputPath, callback) {
             console.error('ERROR', err);
             return;
         }
-        const {document} = loadModuloDocument(inputPath, inputContents);
+
+        const Modulo = loadModuloDocument(inputPath, inputContents);
+        const {document, ssgSubPaths} = Modulo;
         let html = document.documentElement.innerHTML;
         if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
             // generating "quirks mode" document, do not want
@@ -328,11 +349,25 @@ function renderModuloHtml(inputPath, outputPath, callback) {
             if (err) {
                 console.error('ERROR', err);
             } else if (callback) {
-                callback();
+                callback(ssgSubPaths, inputContents);
             }
         });
     });
 }
+
+function renderModuloHtmlForSubpath(inputContents, inputPath, outputPath, callback) {
+    const {document} = loadModuloDocument(inputPath, inputContents, outputPath);
+    let html = document.documentElement.innerHTML;
+    if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
+        // generating "quirks mode" document, do not want
+        html = '<!DOCTYPE HTML>' + html;
+    }
+    fs.writeFile(outputPath, html, {encoding: 'utf8'}, err => {
+        if (err) { console.error('ERROR', err);
+        } else if (callback) { callback(); }
+    });
+}
+
 
 module.exports = {
     assert,
@@ -341,5 +376,6 @@ module.exports = {
     mkdirToContain,
     parseArgs,
     renderModuloHtml,
+    renderModuloHtmlForSubpath,
     walkSync,
 }
