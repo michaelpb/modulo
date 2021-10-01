@@ -16,6 +16,8 @@
       between renders, if a new element is introduced above it. Need to debug
       SET DOM how it uses key.
     - Linting Rules!!
+    - How to get better stack traces when everything is in an eval? Anyway to
+      catch & throw?
 
 - Code quality idea: Max cyclomatic complexity
     - (Can be configured via linting?)

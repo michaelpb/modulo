@@ -89,11 +89,11 @@ function checkArgs(args, commands) {
     }
 }
 
-function patchModuloWithSSGFeatures(Modulo, path, subpath=null) {
+function patchModuloWithSSGFeatures(Modulo, path, subpath=null, outputPath) {
     Modulo.isBackend = true;
     Modulo.require = require;
     Modulo.ssgStore = ssgStore;
-    Modulo.ssgCurrentPath = path.replace('//', '/'); // remove accidental double slashes
+    Modulo.ssgCurrentPath = outputPath.replace('//', '/'); // remove accidental double slashes
     Modulo.ssgCurrentSubPath = subpath ? subpath.replace('//', '/') : null; // remove accidental double slashes
     Modulo.ssgSubPaths = null;
     Modulo.ssgRegisterSubPath = function (newFilePath) {
@@ -117,7 +117,7 @@ function patchModuloWithSSGFeatures(Modulo, path, subpath=null) {
     */
 }
 
-function loadModuloDocument(path, html, subpath=null) {
+function loadModuloDocument(path, html, subpath=null, rootPath=null, outputPath=null) {
     const includeRequire = true;
     /*
       Very hacky function to load Modulo and mock set it up with a path to
@@ -185,7 +185,7 @@ function loadModuloDocument(path, html, subpath=null) {
 
         const dom = new JSDOM(htmlCode);
         if (includeRequire) {
-            patchModuloWithSSGFeatures(Modulo, path, subpath);
+            patchModuloWithSSGFeatures(Modulo, path, subpath, outputPath);
         }
         Modulo.document = dom.window.document; // for easier testing
         Modulo.globals.DOMParser = DOMParser;
@@ -222,8 +222,9 @@ function loadModuloDocument(path, html, subpath=null) {
 
         Modulo.globals.fetch = url => {
             // Faked version of fetch
-            const rootDir = pathlib.dirname(path);
+            const rootDir = rootPath || pathlib.dirname(path);
             const fullPath = pathlib.join(rootDir, url);
+            console.log('this is rootDir', rootDir, url, fullPath);
             const response = {
                 text: () => {},
                 // later, can add "json" that just sets a var
@@ -284,6 +285,10 @@ function walkSync(basePath) {
     const bareFileNames = fs.readdirSync(basePath);
     for (const baseName of bareFileNames) {
         file = basePath + '/' + baseName;
+        if (baseName.startsWith('_') || baseName.startsWith('.')) {
+            console.log('(Skipping: ', file, ')');
+            continue;
+        }
         const stat = fs.statSync(file);
         if (stat && stat.isDirectory()) {
             results = results.concat(walkSync(file));
@@ -331,14 +336,14 @@ function copyIfDifferent(inputPath, outputPath, callback) {
     );
 }
 
-function renderModuloHtml(inputPath, outputPath, callback) {
+function renderModuloHtml(rootPath, inputPath, outputPath, callback) {
     fs.readFile(inputPath, (err, inputContents) => {
         if (err) {
             console.error('ERROR', err);
             return;
         }
 
-        const Modulo = loadModuloDocument(inputPath, inputContents);
+        const Modulo = loadModuloDocument(inputPath, inputContents, null, rootPath, outputPath);
         const {document, ssgSubPaths} = Modulo;
         let html = document.documentElement.innerHTML;
         if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
@@ -355,8 +360,9 @@ function renderModuloHtml(inputPath, outputPath, callback) {
     });
 }
 
-function renderModuloHtmlForSubpath(inputContents, inputPath, outputPath, callback) {
-    const {document} = loadModuloDocument(inputPath, inputContents, outputPath);
+function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPath, callback) {
+    console.log('loadModuloDocument', inputPath, outputPath, rootPath);
+    const {document} = loadModuloDocument(inputPath, inputContents, outputPath, rootPath, outputPath);
     let html = document.documentElement.innerHTML;
     if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
         // generating "quirks mode" document, do not want

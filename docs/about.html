@@ -1,0 +1,136 @@
+<!DOCTYPE HTML><head>
+    <meta charset="utf8">
+    <title>Modulo.js</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" type="image/png" href="./img/mono_logo.png">
+    <!--<script src="./js/Modulo.js"></script>-->
+    <style id="mdu-TabSet_style">
+mdu-TabSet {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
+        }
+mdu-TabSet .tab-nav {
+            /*border-bottom: 1px dotted var(--highlight-color);*/
+            width: 100%;
+        }
+mdu-TabSet .tab-nav > ul {
+            width: 100%;
+            display: flex;
+        }
+mdu-TabSet .tab-nav_title {
+            border: 2px solid black;
+            border-top-width: 4px;
+            border-bottom-width: 0;
+            border-radius: 8px 8px 0 0;
+            background: white;
+            min-width: 10%;
+        }
+
+mdu-TabSet .tab-nav_title a,
+mdu-TabSet .tab-nav_title a:visited,
+mdu-TabSet .tab-nav_title a:active {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+mdu-TabSet .tab-nav_title__selected {
+            background: var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
+            border-top-width: 1px;
+            border-radius: 1px;
+        }
+    </style><style id="mdu-CodeExample_style">
+mdu-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mdu-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mdu-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mdu-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mdu-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mdu-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            height: 172px;
+            /*overflow-y: scroll;*/
+        }
+
+mdu-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mdu-CodeExample .split { display: block; }
+        }
+    </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
+
+
+
+
+<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:875}">
+        <nav class="Navbar">
+            <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li>
+                    <a href="/index.html#below" class="Navbar--selected">About</a>
+                </li>
+                <li>
+                    <a href="/start.html">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html">Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html">Source</a>
+                </li>
+            </ul>
+
+            <div class="Navbar-rightInfo">
+                v: 0.0.1<br>
+                SLOC: 875 lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
+        </nav>
+    </mdu-navbar>
+
+...not used?...
+
+
+
+</body>

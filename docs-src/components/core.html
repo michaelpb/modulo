@@ -346,6 +346,7 @@
         function readFile(currentPath, src) {
             const path = Modulo.require('path');
             const fullPath = path.resolve(path.join(path.dirname(currentPath), src));
+            console.log('found this fullPath', fullPath, currentPath, src);
             return Modulo.require('fs').readFileSync(fullPath, 'utf8');
         }
 
@@ -358,8 +359,7 @@
                 newFilePath = newFilePath.substr(0, newFilePath.length - 5);
             }
 
-            // Sanitize for filename
-            let newBaseName = name.replace(/\//g, '__') + '.html';
+            let newBaseName = name.replace(/\//g, '__') + '.html'; // Sanitize for filename
             newFilePath += '/' + newBaseName;
             return newFilePath;
         }
@@ -368,23 +368,32 @@
             if (Modulo.isBackend) {
                 const {name, src} = props;
                 const {ssgCurrentPath, ssgCurrentSubPath} = Modulo;
+                console.log('this is ssgCurrentPath', ssgCurrentPath);
+                if (ssgCurrentPath.includes('templating')) {
+                    throw new Error('noooo got templating');
+                }
+
                 const key = `mdu-Router|${src}`;
                 if (!Modulo.ssgStore[key]) {
                     Modulo.ssgStore[key] = readFile(ssgCurrentPath, src);
                 }
                 const data = Modulo.ssgStore[key];
-                if (data && ssgCurrentSubPath) {
-                    // We are currently "in" the right file now, fill with data
-                    //element.setAttribute('loadedcontent', data);
-                    //element.setAttribute('routevisiblenow', 'true');
-                    element.innerHTML = data;
-                    return;
-                }
-
                 // otherwise, transform the path
                 const newFilePath = getNewFilePath(ssgCurrentPath, name);
-                console.log('Adding to extra paths:', newFilePath);
-                Modulo.ssgRegisterSubPath(newFilePath);
+                if (ssgCurrentSubPath) {
+                    // We are currently "in" a subpath right now, fill with data
+                    //element.setAttribute('loadedcontent', data);
+                    //element.setAttribute('routevisiblenow', 'true');
+                    console.log('Rendering subpath:', ssgCurrentSubPath, ssgCurrentSubPath === newFilePath, newFilePath);
+                    if (ssgCurrentSubPath === newFilePath) {
+                        console.log('Rendering subpath!');
+                        element.innerHTML = data;
+                    }
+                } else {
+                    console.log('Adding to extra paths:', newFilePath);
+                    Modulo.ssgRegisterSubPath(newFilePath);
+                }
+
             } else {
                 //TODO: Check for hash-fragment navigation here
                 //if (props.routevisiblenow === 'true') {
