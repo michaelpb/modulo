@@ -1,27 +1,138 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-    <meta charset="utf8" />
+<!DOCTYPE HTML><head>
+    <meta charset="utf8">
     <title>Modulo.js</title>
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="icon" type="image/png" href="./img/mono_logo.png" />
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" type="image/png" href="./img/mono_logo.png">
     <script src="./js/Modulo.js"></script>
-    <mod-load namespace="mdu" src="./components/core.html"></mod-load>
-</head>
+    <style id="mdu-TabSet_style">
+mdu-TabSet {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
+        }
+mdu-TabSet .tab-nav {
+            /*border-bottom: 1px dotted var(--highlight-color);*/
+            width: 100%;
+        }
+mdu-TabSet .tab-nav > ul {
+            width: 100%;
+            display: flex;
+        }
+mdu-TabSet .tab-nav_title {
+            border: 2px solid black;
+            border-top-width: 4px;
+            border-bottom-width: 0;
+            border-radius: 8px 8px 0 0;
+            background: white;
+            min-width: 10%;
+        }
 
-<body>
+mdu-TabSet .tab-nav_title a,
+mdu-TabSet .tab-nav_title a:visited,
+mdu-TabSet .tab-nav_title a:active {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-<mdu-Navbar selected="docs"></mdu-Navbar>
+mdu-TabSet .tab-nav_title__selected {
+            background: var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
+            border-top-width: 1px;
+            border-radius: 1px;
+        }
+    </style><style id="mdu-CodeExample_style">
+mdu-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mdu-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mdu-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mdu-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mdu-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mdu-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            height: 172px;
+            /*overflow-y: scroll;*/
+        }
 
-<mdu-Route
-  name="templating"
-  src="./_docs/templating.html"
-></mdu-Route>
+mdu-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
 
-<mdu-Route
-  name="other-thing"
-  src="./_docs/templating.html"
-></mdu-Route>
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mdu-CodeExample .split { display: block; }
+        }
+    </style></head><body><mod-load namespace="mdu" src="./components/core.html"></mod-load>
+
+
+
+
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:875}">
+        <nav class="Navbar">
+            <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li>
+                    <a href="/index.html#below">About</a>
+                </li>
+                <li>
+                    <a href="/start.html">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html" class="Navbar--selected">Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html">Source</a>
+                </li>
+            </ul>
+
+            <div class="Navbar-rightInfo">
+                v: 0.0.1<br>
+                SLOC: 875 lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
+        </nav>
+    </mdu-navbar>
+
+<mdu-route name="templating" src="./_docs/templating.html" loadedcontent="<h1>Templating!!!</h1>
+"></mdu-route>
+
+<mdu-route name="other-thing" src="./_docs/templating.html"></mdu-route>
 
 
 
@@ -63,18 +174,15 @@
 
                     <ul>
                         <li>
-                            <strong>Beginner:</strong> Read the <a
-                            href="/start.html">Getting Started tutorial</a>.
+                            <strong>Beginner:</strong> Read the <a href="/start.html">Getting Started tutorial</a>.
                         </li>
 
                         <li>
-                            <strong>Intermediate:</strong> Read the <a
-                            href="/start.html">Getting Started tutorial</a>.
+                            <strong>Intermediate:</strong> Read the <a href="/start.html">Getting Started tutorial</a>.
                         </li>
 
                         <li>
-                            <strong>Advanced:</strong> Read the <a
-                            href="/start.html">Getting Started tutorial</a>.
+                            <strong>Advanced:</strong> Read the <a href="/start.html">Getting Started tutorial</a>.
                         </li>
                         <li>
                             Interested in reading the source code?
@@ -103,17 +211,17 @@
         <aside>
 
             <p><strong>Q: Why call it Modulo?</strong></p>
-            <p>A: From Wikipeda: &ldquo;In mathematics, the term modulo is often
+            <p>A: From Wikipeda: “In mathematics, the term modulo is often
             used to assert that two distinct mathematical objects can be
             regarded as equivalent if their difference is accounted for by an
-            additional factor.&rdquo; Basically, it's math jargon to say two
+            additional factor.” Basically, it's math jargon to say two
             things are equivalent in a given condition or context.</p>
-            <br />
+            <br>
             <p>So, maybe the goal of Modulo is provide that context, making a
             natural way to integrate the new and the old! Or maybe it sounded
             cool. Maybe that!</p>
 
-            <br />
+            <br>
             <p><strong>Q: Isn't <em>Modulo</em> already a thing in
             JavaScript?</strong></p>
             <p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
@@ -128,11 +236,11 @@
             favorite (but often deficient) computer language.</p>
             <!--You can think of it as the missing modulo! (Except not at all.)-->
 
-            <br />
+            <br>
             <p><strong>Q: Why yet another JavaScript framework?</strong></p>
             <p>A: To me, the very idea of writing YET ANOTHER JavaScript framework
-            is vomit inducing.<br />And yet here I am.</p>
-            <br />
+            is vomit inducing.<br>And yet here I am.</p>
+            <br>
             <p>While working at Kickstart Coding, developing our Django-based
             LMS, nothing quite fit the bill for a very simple JS framework to
             sprinkle in some extra interactive features to an otherwise very
@@ -140,7 +248,7 @@
             mess of Vue and scattered vanilla JavaScript (okay, and a few old
             jQuery plugins, that we'll totally get rid of ASAP totally), with
             the build-step and mounting code for the Vue code getting almost as
-            complicated as the little it was even doing.</p> <br />
+            complicated as the little it was even doing.</p> <br>
             <p>We didn't have the developer bandwidth needed for a SPA, and the
             poor state of JS code was slowing down building features, not to
             mention the brittle mounting process was hard to test.  If only I
@@ -149,7 +257,7 @@
             end. So, I gave up, gave in, and became the problem. I wrote yet
             another JavaScript component framework.</p>
 
-            <br />
+            <br>
             <p><strong>Q: Isn't custom DOM-resolution good / bad?</strong></p>
             <p>Maybe. But the good news is, with Modulo you get both!</p>
 
@@ -165,7 +273,7 @@
             library of Modulo components, including a Router system inspired by
             React Router.</p>
 
-            <br />
+            <br>
 
             <p><strong>Q: Why do you care so much about short source code
             files? Don't you want a framework that does more?</strong></p>
@@ -191,13 +299,13 @@
             component standard). In this case, adding anything more would
             constitute over-engineering.</p>
 
-            <br />
+            <br>
             <p><strong>Q: 80 char line limit? 4 space indentation? Imperative
             coding? What is this, the 90's?</strong></p>
             <p>A: Another motivating factor for developing Modulo was dismay at
             the code quality of many JavaScript libraries that I use. This is
             not a slight on any particular library, nor is it a claim that I
-            write better code&mdash;in fact, outside of Modulo.js itself, all
+            write better code—in fact, outside of Modulo.js itself, all
             the tooling code in this repo is a mess! However, for Modulo.js
             itself, I invested most of the development time in refactoring it
             over and over, until the code and logical flow was as simple as
@@ -221,5 +329,6 @@
 </main>
 
     <script>Modulo.defineAll()</script>
+
+
 </body>
-</html>

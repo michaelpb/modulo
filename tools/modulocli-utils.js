@@ -89,12 +89,15 @@ function checkArgs(args, commands) {
     }
 }
 
-function patchModuloWithSSGFeatures(Modulo, path, subpath=null, outputPath) {
+function patchModuloWithSSGFeatures(Modulo, path, subpath, outputPath) {
     Modulo.isBackend = true;
     Modulo.require = require;
     Modulo.ssgStore = ssgStore;
-    Modulo.ssgCurrentPath = outputPath.replace('//', '/'); // remove accidental double slashes
+
+    Modulo.ssgCurrentPath = path.replace('//', '/'); // remove accidental double slashes
+    Modulo.ssgCurrentOutputPath = outputPath.replace('//', '/'); // remove accidental double slashes
     Modulo.ssgCurrentSubPath = subpath ? subpath.replace('//', '/') : null; // remove accidental double slashes
+
     Modulo.ssgSubPaths = null;
     Modulo.ssgRegisterSubPath = function (newFilePath) {
         if (!Modulo.ssgSubPaths) {

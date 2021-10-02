@@ -135,7 +135,7 @@ aside.TitleAside a {
 
 
 .TitleAside--navBar {
-  position: fixed;
+  /*position: fixed;*/
   width: 250px;
 }
 

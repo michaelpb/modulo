@@ -322,7 +322,7 @@
 
 
 <template mod-component="Route">
-    <props name="" src="" loadedcontent="" routevisiblenow=""></props>
+    <props name="" src="" loadedcontent=""></props>
     <script>
         function readFile(currentPath, src) {
             const path = Modulo.require('path');
@@ -331,51 +331,55 @@
             return Modulo.require('fs').readFileSync(fullPath, 'utf8');
         }
 
-        function getNewFilePath(ssgCurrentPath, name) {
-            console.log('Modulo.ssgCurrentPath', ssgCurrentPath);
-            let newFilePath = ssgCurrentPath;
-
-            // Strip extension
+        function getNewFilePath(newFilePath, name) {
+            console.log('###############1 this is newFilePath', newFilePath);
+            // Strip HTML extension
             if (newFilePath.toLowerCase().endsWith('.html')) {
                 newFilePath = newFilePath.substr(0, newFilePath.length - 5);
             }
 
             let newBaseName = name.replace(/\//g, '__') + '.html'; // Sanitize for filename
-            newFilePath += '/' + newBaseName;
+            newFilePath = newFilePath + '/' + newBaseName;
+            console.log('###############2 this is newBaseName', newBaseName);
+            console.log('###############3 this is newFilePath', newFilePath);
             return newFilePath;
         }
 
         function initializedCallback() {
             if (Modulo.isBackend) {
                 const {name, src} = props;
-                const {ssgCurrentPath, ssgCurrentSubPath} = Modulo;
-                console.log('this is ssgCurrentPath', ssgCurrentPath);
-                if (ssgCurrentPath.includes('templating')) {
-                    throw new Error('noooo got templating');
-                }
+                const {ssgCurrentPath, ssgCurrentSubPath, ssgCurrentOutputPath} = Modulo;
 
                 const key = `mdu-Router|${src}`;
                 if (!Modulo.ssgStore[key]) {
                     Modulo.ssgStore[key] = readFile(ssgCurrentPath, src);
                 }
-                const data = Modulo.ssgStore[key];
-                // otherwise, transform the path
-                const newFilePath = getNewFilePath(ssgCurrentPath, name);
+
+                //console.log({ssgCurrentPath, ssgCurrentSubPath, ssgCurrentOutputPath});
+
                 if (ssgCurrentSubPath) {
                     // We are currently "in" a subpath right now, fill with data
+                    const data = Modulo.ssgStore[key];
                     //element.setAttribute('loadedcontent', data);
                     //element.setAttribute('routevisiblenow', 'true');
-                    console.log('Rendering subpath:', ssgCurrentSubPath, ssgCurrentSubPath === newFilePath, newFilePath);
-                    if (ssgCurrentSubPath === newFilePath) {
-                        console.log('Rendering subpath!');
-                        element.innerHTML = data;
+                    if (ssgCurrentSubPath === ssgCurrentOutputPath &&
+                            ssgCurrentSubPath.endsWith(name + '.html')) {
+                        //console.log('Subpath detected!');
+                        element.innerHTML = data; // TODO: Fix this, doesn't inline in time
+                        element.setAttribute('loadedcontent', data);
                     }
+                    //console.log('Rendering subpath:', ssgCurrentOutputPath, ssgCurrentSubPath, ssgCurrentSubPath === newFilePath, newFilePath);
                 } else {
-                    console.log('Adding to extra paths:', newFilePath);
+                    // otherwise, transform the path
+                    const newFilePath = getNewFilePath(ssgCurrentOutputPath, name);
                     Modulo.ssgRegisterSubPath(newFilePath);
                 }
 
             } else {
+                if (props.loadedcontent) {
+                    element.innerHTML = props.loadedcontent;
+                    element.setAttribute('loadedcontent', '');
+                }
                 //TODO: Check for hash-fragment navigation here
                 //if (props.routevisiblenow === 'true') {
                 //    element.innerHTML = element.getAttribute('loadedcontent');
