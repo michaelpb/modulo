@@ -327,12 +327,11 @@
         function readFile(currentPath, src) {
             const path = Modulo.require('path');
             const fullPath = path.resolve(path.join(path.dirname(currentPath), src));
-            console.log('found this fullPath', fullPath, currentPath, src);
+            //console.log('found this fullPath', fullPath, currentPath, src);
             return Modulo.require('fs').readFileSync(fullPath, 'utf8');
         }
 
         function getNewFilePath(newFilePath, name) {
-            console.log('###############1 this is newFilePath', newFilePath);
             // Strip HTML extension
             if (newFilePath.toLowerCase().endsWith('.html')) {
                 newFilePath = newFilePath.substr(0, newFilePath.length - 5);
@@ -340,8 +339,6 @@
 
             let newBaseName = name.replace(/\//g, '__') + '.html'; // Sanitize for filename
             newFilePath = newFilePath + '/' + newBaseName;
-            console.log('###############2 this is newBaseName', newBaseName);
-            console.log('###############3 this is newFilePath', newFilePath);
             return newFilePath;
         }
 

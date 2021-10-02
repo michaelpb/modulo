@@ -288,7 +288,9 @@ function walkSync(basePath) {
     const bareFileNames = fs.readdirSync(basePath);
     for (const baseName of bareFileNames) {
         file = basePath + '/' + baseName;
-        if (baseName.startsWith('_') || baseName.startsWith('.')) {
+        // $mypath/ -- eventually use for backend
+        if (baseName.startsWith('_') || baseName.startsWith('.') ||
+                                        baseName.startsWith('$')) {
             console.log('(Skipping: ', file, ')');
             continue;
         }
