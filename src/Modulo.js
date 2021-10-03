@@ -72,8 +72,13 @@ var Modulo = {
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
     Modulo.globals.customElements.define('mod-load', Modulo.Loader);
-    Modulo.globalLoader = new Modulo.Loader;
-    Modulo.globalLoader.namespace = 'x'; // x- is the default, global namespace
+
+    // Then, looks for embedded modulo components, found in <template modulo>
+    // tags or <script type="modulo/embed" tags>. For each of these, it loads
+    // their contents into a global loader with namespace 'x'.
+    Modulo.globalLoader = new Modulo.Loader();
+    Modulo.globalLoader.namespace = 'x';
+    Modulo.globalLoader.loadModules(Modulo.globals.document);
 };
 
 // # Modulo.Loader
@@ -114,6 +119,20 @@ Modulo.Loader = class Loader extends HTMLElement {
         }
     }
 
+    loadModules(elem) {
+        this.mod = {};
+        const mod = elem.querySelector('module');
+        if (mod) {
+            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
+            this.mod = modLoadObj;
+            this.modFactory = this.defineComponent(this.namespace, modLoadObj);
+        }
+        const query = 'template[modulo-embed],script[type="modulo/embed"]';
+        for (const embeddedModule of elem.querySelectorAll(query)) {
+            this.loadString(embeddedModule.innerHTML);
+        }
+    }
+
     doFetch() {
         // After initializing data, send a new request to the URL specified by
         // the src attribute. When the response is received, load the text as a
@@ -138,20 +157,13 @@ Modulo.Loader = class Loader extends HTMLElement {
         */
         const frag = new Modulo.globals.DocumentFragment();
         const div = Modulo.globals.document.createElement('div');
-        this.factoryData = [];
         div.innerHTML = text;
         frag.append(div);
+        this.loadModules(div); // In case we are just loading an embedded component
 
-        /*
-        this.mod = {};
-        const mod = div.querySelector('module');
-        if (mod) {
-            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
-            this.mod = modLoadObj;
-            this.modFactory = this.defineComponent(this.namespace, modLoadObj);
+        if (!this.factoryData) {
+            this.factoryData = [];
         }
-        */
-
         for (const tag of div.querySelectorAll('[mod-component],component')) {
             const [name, loadObj] = this.loadFromDOMElement(tag);
             this.factoryData.push([name, loadObj]);
@@ -214,7 +226,6 @@ Modulo.Loader = class Loader extends HTMLElement {
         if (Modulo.globals.defineComponentCallback) {
             Modulo.globals.defineComponentCallback(factory); // TODO rm when possible
         }
-        return factory;
     }
 
     // ## Loader.getNodeCPartName

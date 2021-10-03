@@ -105,7 +105,7 @@ mdu-CodeExample .split { display: block; }
 
 
 
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:882}">
+<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:898}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -125,7 +125,7 @@ mdu-CodeExample .split { display: block; }
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 882 lines<br>
+                SLOC: 898 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -164,6 +164,12 @@ mdu-CodeExample .split { display: block; }
             </ul>
         </nav>
     </tutorial-tutnav>
+
+<template modulo-embed="">
+    <component name="Testing">
+        <template>Very intttersting.<em>jk</em></template>
+    </component>
+</template>
 
 <main class="Tutorial">
 
@@ -238,21 +244,24 @@ referenced elsewhere like
 
 <mdu-codesnippet text="
 <!-- Define a custom component -->
-<component name=&quot;HelloWorld&quot;>
-    <template>
-        Hello <strong>Modulo</strong> World!
-    </template>
-</component>
+<template modulo-embed>
+    <component name=&quot;HelloWorld&quot;>
+        <template>
+            Hello <strong>Modulo</strong> World!
+        </template>
+    </component>
+</template>
 
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <x-HelloWorld></x-HelloWorld>
 <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
 
-<!-- Finally, include Modulo CDN &amp; activate (at the bottom) -->
-<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>
+<!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) -->
+<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
 <script>Modulo.defineAll();</script>
 "></mdu-codesnippet>
 </li>
+<!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
         <li>Refresh the web browser to view the results.</li>
     </ol>
 </section>
@@ -309,11 +318,10 @@ in the component definition.</p>-->
     </li>
 </ol>
 
-<p>Throughout Modulo documentation, there are these little embedded code
-editors. These allow you to immediately practice new concepts learned. For
-simplicity, the top and bottom of the component definition code is omitted.
-Instead, these sample code editors only focus on the CPart definitions
-within.</p>
+<p>Throughout Modulo documentation, there are little code editors, like below.
+These allow you to immediately practice new concepts learned. For simplicity,
+the top and bottom of the component definition code is omitted.  Instead, these
+sample code editors only focus on the CPart definitions within.</p>
 
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>

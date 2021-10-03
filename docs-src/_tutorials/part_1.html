@@ -68,21 +68,24 @@ referenced elsewhere like
 <mdu-CodeSnippet
 text='
 <!-- Define a custom component -->
-<component name="HelloWorld">
-    <template>
-        Hello <strong>Modulo</strong> World!
-    </template>
-</component>
+<template modulo-embed>
+    <component name="HelloWorld">
+        <template>
+            Hello <strong>Modulo</strong> World!
+        </template>
+    </component>
+</template>
 
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <x-HelloWorld></x-HelloWorld>
 <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
 
-<!-- Finally, include Modulo CDN & activate (at the bottom) -->
-<script src="https://cdn.skypack.dev/modulo?min"></script>
+<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
+<script src="https://modulojs.org/js/Modulo.js"></script>
 <script>Modulo.defineAll();</script>
 '></mdu-CodeSnippet>
 </li>
+<!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
         <li>Refresh the web browser to view the results.</li>
     </ol>
 </section>
@@ -139,11 +142,10 @@ in the component definition.</p>-->
     </li>
 </ol>
 
-<p>Throughout Modulo documentation, there are these little embedded code
-editors. These allow you to immediately practice new concepts learned. For
-simplicity, the top and bottom of the component definition code is omitted.
-Instead, these sample code editors only focus on the CPart definitions
-within.</p>
+<p>Throughout Modulo documentation, there are little code editors, like below.
+These allow you to immediately practice new concepts learned. For simplicity,
+the top and bottom of the component definition code is omitted.  Instead, these
+sample code editors only focus on the CPart definitions within.</p>
 
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>
