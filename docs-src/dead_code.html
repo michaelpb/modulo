@@ -1,4 +1,24 @@
 
+<pre>
+&lt;!-- Define a custom component --&gt;
+&lt;component name="HelloWorld"&gt;
+    &lt;template&gt;
+        Hello &lt;strong&gt;Modulo&lt;/strong&gt; World!
+    &lt;/template&gt;
+&lt;/component&gt;
+
+
+&lt;!-- Reuse it anywhere, just like any other HTML tag --&gt;
+&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;
+
+&lt;p&gt;In a P tag: &lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;&lt;/p&gt;
+
+
+&lt;!-- Finally, include Modulo CDN &amp; activate (at the bottom) --&gt;
+&lt;script src="https://cdn.skypack.dev/modulo?min"&gt;&lt;/script&gt;
+&lt;script&gt;Modulo.defineAll();&lt;/script&gt;
+</pre>
+
 
 <main>
     <section>

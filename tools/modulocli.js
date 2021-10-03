@@ -19,9 +19,10 @@ const commands = {
                 utils.renderModuloHtml(rootPath, inputPath, outputPath, (subPaths, inputContents) => {
                     console.log('RENDERED:', inputPath, '->', outputPath);
                     if (subPaths) {
-                        console.log('RENDERED:', inputPath,
+                        console.log('         ', Array.from(inputPath.length).join(' '),
                                     `-> NOTE: ${subPaths.length} subpaths`);
                         for (const newFilePath of subPaths) {
+                            utils.mkdirToContain(newFilePath);
                             utils.renderModuloHtmlForSubpath(rootPath,
                                     inputContents, inputPath, newFilePath, () => {
                                 console.log('RENDERED SUB-PATH:', inputPath, '->', newFilePath);

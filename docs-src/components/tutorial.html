@@ -1,0 +1,41 @@
+<component name="Button">
+    <props
+        label
+        shape
+    ></props>
+    <template>
+        <button class="my-btn my-btn_{{ props.shape }}">
+            {{ props.label }}
+        </button>
+    </template>
+</component>
+
+<component name="TutNav">
+    <props
+        selected
+    ></props>
+    <template>
+        <nav class="Navbar Navbar--subbar">
+            <ul>
+                <li>Props: '{{ props.selected }}'</li>
+                {% for row in state.items %}
+                    <li>
+                        <a href="{{ row|get:0 }}"
+                          class="
+                            {% if props.selected == row|get:2 %}Navbar--selected{% endif %}
+                          ">{{ row|get:1 }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </template>
+    <state
+        items:='[
+            ["/start.html", "The Modulo Tutorial", 0],
+            ["/start/tutorial1.html", "1. Components, CParts, Loaders", 1],
+            ["/start/tutorial2.html", "2. Templating Language, Props", 2],
+            ["/start/tutorial3.html", "3. Script, State", 3]
+        ]'
+    ></state>
+</component>
+

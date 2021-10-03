@@ -153,6 +153,7 @@ mdu-CodeExample .split { display: block; }
                 <div [script.previewspot]="" class="preview-wrapper">
                     <div modulo-ignore=""></div>
                 </div>
+                
             </div>
         </div>
     </mdu-codeexample>
@@ -184,6 +185,7 @@ mdu-CodeExample .split { display: block; }
                 <div [script.previewspot]="" class="preview-wrapper">
                     <div modulo-ignore=""></div>
                 </div>
+                
             </div>
         </div>
     </mdu-codeexample>
@@ -231,6 +233,7 @@ mdu-CodeExample .split { display: block; }
                 <div [script.previewspot]="" class="preview-wrapper">
                     <div modulo-ignore=""></div>
                 </div>
+                
             </div>
         </div>
     </mdu-codeexample>
@@ -286,12 +289,85 @@ mdu-CodeExample .split { display: block; }
                 <div [script.previewspot]="" class="preview-wrapper">
                     <div modulo-ignore=""></div>
                 </div>
+                
             </div>
         </div>
     </mdu-codeexample>
 
 
             </div>
+
+            <div name="Prime">
+
+<mdu-codeexample text="
+<template>
+<div class=&quot;numbers&quot;>
+    {% for i in state.exports.range %}
+        {% if i > 2 %}{% if i < state.num %}
+            <div
+              class=&quot;
+                {% if state.number|divisibleby:i %}
+                  whole
+                {% endif %}
+              &quot;
+            >{{ i }}</div>
+        {% endif %}{% endif %}
+    {% endfor %}
+    <div class=&quot;whole&quot;>{{ state.number }}</div>
+</div>
+</template>
+
+<state
+    number:=10
+></state>
+
+<script>
+    module.exports.range_100 = Array.from(Array(100).keys())
+
+    function eventCallback() {
+        state.range = Array.from(
+            {length: state.number - 2}, (_, i) => i + 2);
+    }
+</script>
+
+<style>
+.numbers {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.numbers > div {
+  color: ccc;
+  border: 1px solid #ccc;
+}
+
+.numbers > div.whole {
+    color: black;
+}
+</style>
+">
+        <div class="split">
+            <div modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
+
+
+            </div>
+
+
 
             <div name="MemoryGame">
 
@@ -468,6 +544,7 @@ h3 {
                 <div [script.previewspot]="" class="preview-wrapper">
                     <div modulo-ignore=""></div>
                 </div>
+                
             </div>
         </div>
     </mdu-codeexample>
@@ -483,9 +560,9 @@ h3 {
 
 
 <span id="below"></span>
-<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:875}">
+<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:882}">
         <nav class="Navbar">
-            <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
                 <li>
                     <a href="/index.html#below" class="Navbar--selected">About</a>
@@ -503,7 +580,7 @@ h3 {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 875 lines<br>
+                SLOC: 882 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>

@@ -210,6 +210,8 @@ constructs a Loader object for every <code>&lt;mod-load ...&gt;</code> tag it en
             
             <div class="content"><div class='highlight'><pre>Modulo.defineAll = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">defineAll</span>(<span class="hljs-params"></span>) </span>{
     Modulo.globals.customElements.define(<span class="hljs-string">&#x27;mod-load&#x27;</span>, Modulo.Loader);
+    Modulo.globalLoader = <span class="hljs-keyword">new</span> Modulo.Loader;
+    Modulo.globalLoader.namespace = <span class="hljs-string">&#x27;x&#x27;</span>; <span class="hljs-comment">// x- is the default, global namespace</span>
 };</pre></div></div>
             
         </li>
@@ -373,6 +375,17 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         <span class="hljs-built_in">this</span>.factoryData = [];
         div.innerHTML = text;
         frag.append(div);
+
+        <span class="hljs-comment">/*
+        this.mod = {};
+        const mod = div.querySelector(&#x27;module&#x27;);
+        if (mod) {
+            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
+            this.mod = modLoadObj;
+            this.modFactory = this.defineComponent(this.namespace, modLoadObj);
+        }
+        */</span>
+
         <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tag <span class="hljs-keyword">of</span> div.querySelectorAll(<span class="hljs-string">&#x27;[mod-component],component&#x27;</span>)) {
             <span class="hljs-keyword">const</span> [name, loadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(tag);
             <span class="hljs-built_in">this</span>.factoryData.push([name, loadObj]);
@@ -553,6 +566,7 @@ based on a loadObj data structure.</p>
         <span class="hljs-keyword">if</span> (Modulo.globals.defineComponentCallback) {
             Modulo.globals.defineComponentCallback(factory); <span class="hljs-comment">// TODO rm when possible</span>
         }
+        <span class="hljs-keyword">return</span> factory;
     }</pre></div></div>
             
         </li>
@@ -674,7 +688,8 @@ generating an array of objects containing the node and CPart name.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">getCPartNamesFromDOM</span>(<span class="hljs-params">elem</span>)</span> {
-        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Array</span>.from(elem.content.childNodes)
+        <span class="hljs-keyword">let</span> children = elem.content ? elem.content.childNodes : elem.children;
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Array</span>.from(children)
             .map(<span class="hljs-function"><span class="hljs-params">node</span> =&gt;</span> ({node, <span class="hljs-attr">cPartName</span>: <span class="hljs-built_in">this</span>.getNodeCPartName(node)}))
             .filter(<span class="hljs-function"><span class="hljs-params">obj</span> =&gt;</span> obj.cPartName);
 
@@ -1376,9 +1391,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
     }
 
     <span class="hljs-function"><span class="hljs-title">updateCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
-        <span class="hljs-keyword">const</span> {component} = <span class="hljs-built_in">this</span>;
-        <span class="hljs-keyword">let</span> newContents = (renderObj.template || {}).renderedOutput || <span class="hljs-string">&#x27;&#x27;</span>;
-        component.reconcile(component, newContents);
+        <span class="hljs-keyword">const</span> {element} = <span class="hljs-built_in">this</span>;
+        <span class="hljs-keyword">if</span> (renderObj.template) {
+            <span class="hljs-keyword">let</span> newContents = renderObj.template.renderedOutput || <span class="hljs-string">&#x27;&#x27;</span>;
+            element.reconcile(element, newContents);
+        }
     }
 
     <span class="hljs-function"><span class="hljs-title">handleEvent</span>(<span class="hljs-params">func, ev, payload</span>)</span> {
@@ -1962,7 +1979,7 @@ name, el property name, and/or state propery name etc)</p>
 
     <span class="hljs-function"><span class="hljs-title">set</span>(<span class="hljs-params">name, value</span>)</span> {
         <span class="hljs-built_in">this</span>.data[name] = value;
-        <span class="hljs-built_in">this</span>.component.rerender();
+        <span class="hljs-built_in">this</span>.element.rerender();
     }
 
     <span class="hljs-function"><span class="hljs-title">eventCallback</span>(<span class="hljs-params"></span>)</span> {
@@ -2163,7 +2180,8 @@ getAttribute: (s, arg) =&gt; s.getAttribute(arg),</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    includes: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s.includes(arg),
+            <div class="content"><div class='highlight'><pre>    get: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s[arg],
+    <span class="hljs-attr">includes</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s.includes(arg),
     <span class="hljs-attr">divisibleby</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> ((s * <span class="hljs-number">1</span>) % (arg * <span class="hljs-number">1</span>)) === <span class="hljs-number">0</span>,
 };
 

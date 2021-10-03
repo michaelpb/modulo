@@ -9,19 +9,48 @@
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
 </head>
 
 <body>
 
 <mdu-Navbar selected="start"></mdu-Navbar>
 
+<tutorial-TutNav selected=0></tutorial-TutNav>
+
 <main class="Tutorial">
+
+    <mdu-RouteIndex>
+        <blockquote>
+        <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this tutorial
+        requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
+        requires familiarity with JavaScript. Familiarity with React, Vue, or
+        similar frameworks is helpful, but not required.</p></blockquote>
+
+        <h1>The Modulo Tutorial</h1>
+        <p>Welcome to the Modulo tutorial. By following these short tutorials,
+        you can learn how to use Modulo in your own projects.</p>
+        <p><strong>Ready to dive in to Web Component development with
+        Modulo?</strong></p>
+        <a href="/start/tutorial1.html" style="font-size:1.5rem">&gt;&gt; 
+        <em> Part 1: Components, CParts, and Loaders</em></a>
+    </mdu-RouteIndex>
+
     <mdu-Route
-        src="_tutorials/part_1.html"
+        src="./_tutorials/part_1.html"
         name="tutorial1"
     ></mdu-Route>
-</main>
 
+    <mdu-Route
+        src="./_tutorials/part_2.html"
+        name="tutorial2"
+    ></mdu-Route>
+
+    <mdu-Route
+        src="./_tutorials/part_3.html"
+        name="tutorial3"
+    ></mdu-Route>
+</main>
 
 
 <script>Modulo.defineAll();</script>

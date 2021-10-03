@@ -167,27 +167,104 @@ mdu-CodeExample .split { display: block; }
 
 <main class="Tutorial">
 
-    <mdu-routeindex>
-        <blockquote>
-        <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this tutorial
-        requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
-        requires familiarity with JavaScript. Familiarity with React, Vue, or
-        similar frameworks is helpful, but not required.</p></blockquote>
+    <mdu-routeindex></mdu-routeindex>
 
-        <h1>The Modulo Tutorial</h1>
-        <p>Welcome to the Modulo tutorial. By following these short tutorials,
-        you can learn how to use Modulo in your own projects.</p>
-        <p><strong>Ready to dive in to Web Component development with
-        Modulo?</strong></p>
-        <a href="/start/tutorial1.html" style="font-size:1.5rem">&gt;&gt; 
-        <em> Part 1: Components, CParts, and Loaders</em></a>
-    </mdu-routeindex>
+    <mdu-route src="./_tutorials/part_1.html" name="tutorial1"></mdu-route>
 
-    <mdu-route src="./_tutorials/part_1.html" name="tutorial1" ssgpath="docs/start/tutorial1.html"></mdu-route>
+    <mdu-route src="./_tutorials/part_2.html" name="tutorial2"><h2>Part 2: Props and Templating</h2>
 
-    <mdu-route src="./_tutorials/part_2.html" name="tutorial2" ssgpath="docs/start/tutorial2.html"></mdu-route>
+<blockquote> <p><strong>Why use Props?</strong>
+Components are "write once, use everywhere". That is to say, you only need to
+define a component once to use it throughout your pages. However, sometimes you
+want each instance of a component to have different content or modified
+behavior. This is where <em>Props</em> come into play: They allow you to
+customize differences in content or behavior between multiple uses of the same
+component.</p>
+</blockquote>
 
-    <mdu-route src="./_tutorials/part_3.html" name="tutorial3" ssgpath="docs/start/tutorial3.html"></mdu-route>
+
+<h3>CPart: Props</h3>
+
+<p>The <em>Props</em> CPart defines the <em>properties</em> that can be
+customized about a component. It allows for options or other data to be
+"passed" to a component instance, in order to distinguish that instance from
+other ones. For example, a button component might have <em>Props</em> that
+specify its text, or which shape variation.</p>
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <p>Context: The <code>&lt;tutorial-Button&gt;</code> component has already
+    been defined for you. It was defined to accept two <em>props</em>:
+    <code>label</code>, and <code>shape</code>. We'll cover how it was defined
+    to use these <em>props</em> later on. For now, practice using the
+    button.</p>
+
+    <ol>
+        <li>Examine the code below. See how the code uses the
+        <code>tutorial-Button</code> component?</li>
+    </ol>
+
+
+<mdu-codeexample text="
+<template>
+Hello <strong>Modulo</strong> World!
+<p class=&quot;neat&quot;>Any HTML can be here!</p>
+</template>
+<style>
+/* ...and any CSS here! */
+strong {
+    color: blue;
+}
+.neat {
+    font-variant: small-caps;
+}
+</style>
+">
+</mdu-codeexample>
+</section>
+
+
+<mdu-codeexample text="
+<template>
+    <p>Trying out the button...</p>
+    <tutorial-Button
+        label=&quot;Button Example&quot;
+        shape=&quot;square&quot;
+    ></tutorial-Button>
+
+    <p>Another button...</p>
+    <tutorial-Button
+        label=&quot;Rounded is Great Too&quot;
+        shape=&quot;rounded&quot;
+    ></tutorial-Button>
+</template>
+">
+</mdu-codeexample>
+
+
+
+<mdu-codesnippet text="
+<component name=&quot;Button&quot;>
+    <props
+        label
+        shape
+    ></props>
+    <template>
+        <button class=&quot;my-btn my-btn_{{ props.shape }}&quot;>
+            {{ props.label }}
+        </button>
+    </template>
+</component>
+"></mdu-codesnippet>
+
+
+
+
+
+</mdu-route>
+
+    <mdu-route src="./_tutorials/part_3.html" name="tutorial3"></mdu-route>
 </main>
 
 

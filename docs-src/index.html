@@ -146,6 +146,63 @@ text='
 
             </div>
 
+            <div name="Prime">
+
+<mdu-CodeExample
+text='
+<template>
+<div class="numbers">
+    {% for i in state.exports.range %}
+        {% if i > 2 %}{% if i < state.num %}
+            <div
+              class="
+                {% if state.number|divisibleby:i %}
+                  whole
+                {% endif %}
+              "
+            >{{ i }}</div>
+        {% endif %}{% endif %}
+    {% endfor %}
+    <div class="whole">{{ state.number }}</div>
+</div>
+</template>
+
+<state
+    number:=10
+></state>
+
+<script>
+    module.exports.range_100 = Array.from(Array(100).keys())
+
+    function eventCallback() {
+        state.range = Array.from(
+            {length: state.number - 2}, (_, i) => i + 2);
+    }
+</script>
+
+<style>
+.numbers {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.numbers > div {
+  color: ccc;
+  border: 1px solid #ccc;
+}
+
+.numbers > div.whole {
+    color: black;
+}
+</style>
+'>
+</mdu-CodeExample>
+
+
+            </div>
+
+
+
             <div name="MemoryGame">
 
 <mdu-CodeExample

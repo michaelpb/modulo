@@ -79,10 +79,11 @@ nav.Navbar li a {
 
 nav.Navbar--subbar li a {
     text-transform: none;
-    font-size: 25px;
+    font-size: 20px;
     text-decoration: none;
     font-weight: bold;
     line-height: 0.9;
+    text-align: left;
 }
 
 nav.Navbar li a.Navbar--selected {
@@ -411,7 +412,10 @@ a:visited {
 
 .Tutorial > h2,
 .Tutorial > h3,
-.Tutorial > h4 {
+.Tutorial > h4,
+.Tutorial > mdu-Route > h2,
+.Tutorial > mdu-Route > h3,
+.Tutorial > mdu-Route > h4 {
     font-weight: bold;
     color: var(--highlight-color);
     margin-top: 30px;

@@ -45,7 +45,23 @@
     */
 
 
-- Notes on component.resolve directive:
+- New notes on component.resolve directive:
+    - There is anotehr solution: Simplify the behavior of resolve
+    - Do we need live resolved values? Like, ever?
+    - title:=props.title should just be title="{{ props.title }}", templating
+      like normal
+    - Live resolved values breaks the whole render loop idea -- vastly
+      complicating the mental model
+    - Direct assignment as well
+    - In general, the ":=" is much less useful than I thought, and perhaps
+      should only be a helper used by certain CParts, kind of like the earliest
+      version
+    - Only situation where direct assignment is useful:
+        - <x-Chart data:=script.exports.data></x-Chart>
+        - We want to be able to directly pass
+        - So, props, at least, should support this
+
+- Old notes on resolve directive:
     - elem.getAttr will NOT WORK in the long run. Why? HTML built-ins!
       While not necessary (can use templating), it's obviously an
       expected feature
@@ -67,6 +83,8 @@
     - No templating "syntactic sugar" can achieve this (eg ':=thing'
       gets replaced with '="{{ thing }}"'), since that would still not
       support updates directly from the DOM
+
+# More ideas on BE version
 
 
 # Some ideas on BE version:

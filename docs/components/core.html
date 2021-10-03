@@ -1,7 +1,7 @@
 <!DOCTYPE HTML><head><template mod-component="Navbar">
     <script type="modulo/template">
         <nav class="Navbar">
-            <a href="index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
+            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
             <ul>
                 <li>
                     <a href="/index.html#below" {% if props.selected == "about" %}class="Navbar--selected"{% endif %}>About</a>
@@ -175,6 +175,14 @@
                 <div [script.previewspot]="" class="preview-wrapper">
                     <div modulo-ignore=""></div>
                 </div>
+                {% if props.showtag %}
+                    {% if props.preview %}
+                        <div class="toolbar">
+                            <h2>Tag</h2>
+                            <code>{{ props.preview }}</code>
+                        </div>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </template>
@@ -233,7 +241,7 @@
 
     <props text="" textsrc=""></props>
 
-    <state nscounter:="1"></state>
+    <state nscounter:="1" preview=""></state>
     <script>
         let exCounter = 0; // global variable
         //console.log('gettin script tagged');
@@ -249,7 +257,6 @@
                         .readFileSync('./docs-src/' + props.textsrc, 'utf8');
                     element.setAttribute('text', html);
                 } else if (html && !element.getAttribute('text')) {
-                    console.log('setting text', html);
                     element.setAttribute('text', html);
                 }
             }
@@ -262,7 +269,9 @@
 
         function codemirrorMount({el}) {
             if (Modulo.globals.CodeMirror) {
-                console.log('this is props', props);
+                //console.log('this is props', props);
+                // TODO: Debug this, should not use textarea, should not need
+                // extra refreshes or anything
                 const cm = CodeMirror.fromTextArea(el, {
                     lineNumbers: true,
                     mode: 'django',
@@ -283,7 +292,7 @@
                 }, 1);
                 el.setAttribute('modulo-ignore', 'y');
             } else {
-                console.log('Code mirror not found'); // probably SSG
+                //console.log('Code mirror not found'); // probably SSG
             }
         }
 
@@ -304,6 +313,7 @@
             loader.loadString(text);
             const tag = `${namespace}-${tagName}`;
             const preview = `<${tag}></${tag}>`;
+            state.preview = preview;
             element.previewSpot.innerHTML = preview;
             //document.querySelector('#previewSpot').innerHTML = preview;
             //console.log('adding preview', preview);
@@ -311,6 +321,30 @@
     </script>
 </template>
 
+<template mod-component="CodeSnippet">
+    <template>
+        <div modulo-ignore="">
+            <div [script.codemirror]=""></div>
+        </div>
+    </template>
+    <props text=""></props>
+    <script>
+        function codemirrorMount({el}) {
+            if (Modulo.globals.CodeMirror) {
+                const text = props.text.trim();
+                const cm = CodeMirror(el, {
+                    //lineNumbers: true,
+                    value: text,
+                    mode: 'django',
+                    theme: 'eclipse',
+                    indentUnit: 4,
+                    readOnly: true,
+                });
+                element.codeMirrorEditor = cm;
+            }
+        }
+    </script>
+</template>
 
 <template mod-component="Link">
     <script>
@@ -320,9 +354,20 @@
     </script>
 </template>
 
+<template mod-component="RouteIndex">
+    <script>
+        function initializedCallback() {
+            const {isBackend, ssgCurrentSubPath, globals} = Modulo;
+            const path = isBackend ? ssgCurrentSubPath : globals.location.hash;
+            if (path) {
+                element.innerHTML = '';
+            }
+        }
+    </script>
+</template>
 
 <template mod-component="Route">
-    <props name="" src="" loadedcontent=""></props>
+    <props name="" src="" index="" loadedcontent="" ssgpath=""></props>
     <script>
         function readFile(currentPath, src) {
             const path = Modulo.require('path');
@@ -342,46 +387,68 @@
             return newFilePath;
         }
 
-        function initializedCallback() {
-            if (Modulo.isBackend) {
-                const {name, src} = props;
-                const {ssgCurrentPath, ssgCurrentSubPath, ssgCurrentOutputPath} = Modulo;
+        function setupBackend() {
+            const {name, src} = props;
+            const {ssgCurrentPath, ssgCurrentSubPath, ssgCurrentOutputPath} = Modulo;
 
-                const key = `mdu-Router|${src}`;
-                if (!Modulo.ssgStore[key]) {
-                    Modulo.ssgStore[key] = readFile(ssgCurrentPath, src);
+            const key = `mdu-Router|${src}`;
+            if (!Modulo.ssgStore[key]) {
+                Modulo.ssgStore[key] = readFile(ssgCurrentPath, src);
+            }
+
+            if (ssgCurrentSubPath) {
+                // We are currently "in" a subpath right now, fill with data
+                const data = Modulo.ssgStore[key];
+                if (ssgCurrentSubPath === ssgCurrentOutputPath &&
+                        ssgCurrentSubPath.endsWith(name + '.html')) {
+                    element.innerHTML = data;
                 }
-
-                //console.log({ssgCurrentPath, ssgCurrentSubPath, ssgCurrentOutputPath});
-
-                if (ssgCurrentSubPath) {
-                    // We are currently "in" a subpath right now, fill with data
-                    const data = Modulo.ssgStore[key];
-                    //element.setAttribute('loadedcontent', data);
-                    //element.setAttribute('routevisiblenow', 'true');
-                    if (ssgCurrentSubPath === ssgCurrentOutputPath &&
-                            ssgCurrentSubPath.endsWith(name + '.html')) {
-                        //console.log('Subpath detected!');
-                        element.innerHTML = data; // TODO: Fix this, doesn't inline in time
-                        element.setAttribute('loadedcontent', data);
-                    }
-                    //console.log('Rendering subpath:', ssgCurrentOutputPath, ssgCurrentSubPath, ssgCurrentSubPath === newFilePath, newFilePath);
-                } else {
-                    // otherwise, transform the path
-                    const newFilePath = getNewFilePath(ssgCurrentOutputPath, name);
-                    Modulo.ssgRegisterSubPath(newFilePath);
-                }
-
             } else {
+                // otherwise, transform the path
+                const newFilePath = getNewFilePath(ssgCurrentOutputPath, name);
+                Modulo.ssgRegisterSubPath(newFilePath);
+                element.setAttribute('ssgpath', newFilePath);
+                if (props.index) {
+                    element.innerHTML = Modulo.ssgStore[key];
+                }
+            }
+        }
+
+        function fetchCallback(html) {
+            element.innerHTML = html;
+        }
+
+        function initializedCallback() {
+            const {isBackend, globals} = Modulo;
+            if (isBackend) {
+                setupBackend();
+            } else {
+                const hash = globals.location.hash;
+                const filename = `${props.name}.html`;
+                if (hash && hash.startsWith('/')) {
+                    if (hash === props.ssgpath) {
+                        globals.location.url = props.ssgpath; // redirect
+                    } else if (hash.endsWith(filename) || hash.endsWith(props.name)) {
+                        Modulo.globals.fetch(props.src)
+                            .then(response => response.text())
+                            .then(fetchCallback);
+                    }
+                }
+            }
+            /*
+            else {
+                console.log('checkin props');
                 if (props.loadedcontent) {
-                    element.innerHTML = props.loadedcontent;
-                    element.setAttribute('loadedcontent', '');
+                    //console.log('settin inner html', props.loadedcontent);
+                    //console.log(element);
+                    //element.innerHTML = props.loadedcontent;
+                    //element.setAttribute('loadedcontent', '');
                 }
                 //TODO: Check for hash-fragment navigation here
-                //if (props.routevisiblenow === 'true') {
-                //    element.innerHTML = element.getAttribute('loadedcontent');
-                //}
+                // ALSO: If hash fragment is found, AND was processed by a SSG
+                // (set "wasSSG=True"), then auto window.location.url redirect
             }
+            */
         }
     </script>
 </template>

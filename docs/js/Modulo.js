@@ -72,6 +72,8 @@ var Modulo = {
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
     Modulo.globals.customElements.define('mod-load', Modulo.Loader);
+    Modulo.globalLoader = new Modulo.Loader;
+    Modulo.globalLoader.namespace = 'x'; // x- is the default, global namespace
 };
 
 // # Modulo.Loader
@@ -139,6 +141,17 @@ Modulo.Loader = class Loader extends HTMLElement {
         this.factoryData = [];
         div.innerHTML = text;
         frag.append(div);
+
+        /*
+        this.mod = {};
+        const mod = div.querySelector('module');
+        if (mod) {
+            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
+            this.mod = modLoadObj;
+            this.modFactory = this.defineComponent(this.namespace, modLoadObj);
+        }
+        */
+
         for (const tag of div.querySelectorAll('[mod-component],component')) {
             const [name, loadObj] = this.loadFromDOMElement(tag);
             this.factoryData.push([name, loadObj]);
@@ -201,6 +214,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         if (Modulo.globals.defineComponentCallback) {
             Modulo.globals.defineComponentCallback(factory); // TODO rm when possible
         }
+        return factory;
     }
 
     // ## Loader.getNodeCPartName
@@ -237,7 +251,8 @@ Modulo.Loader = class Loader extends HTMLElement {
     // Helper function that loops through a component definitions children,
     // generating an array of objects containing the node and CPart name.
     getCPartNamesFromDOM(elem) {
-        return Array.from(elem.content.childNodes)
+        let children = elem.content ? elem.content.childNodes : elem.children;
+        return Array.from(children)
             .map(node => ({node, cPartName: this.getNodeCPartName(node)}))
             .filter(obj => obj.cPartName);
 
@@ -597,9 +612,11 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     updateCallback(renderObj) {
-        const {component} = this;
-        let newContents = (renderObj.template || {}).renderedOutput || '';
-        component.reconcile(component, newContents);
+        const {element} = this;
+        if (renderObj.template) {
+            let newContents = renderObj.template.renderedOutput || '';
+            element.reconcile(element, newContents);
+        }
     }
 
     handleEvent(func, ev, payload) {
@@ -905,7 +922,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
     set(name, value) {
         this.data[name] = value;
-        this.component.rerender();
+        this.element.rerender();
     }
 
     eventCallback() {
@@ -1042,6 +1059,7 @@ Modulo.templating.defaultOptions.filters = {
     default: (s, arg) => s || arg,
     //invoke: (s, arg) => s(arg),
     //getAttribute: (s, arg) => s.getAttribute(arg),
+    get: (s, arg) => s[arg],
     includes: (s, arg) => s.includes(arg),
     divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
 };
