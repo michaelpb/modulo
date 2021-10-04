@@ -10,6 +10,7 @@
     </template>
 </component>
 
+
 <component name="TutNav">
     <props
         selected
@@ -17,7 +18,7 @@
     <template>
         <nav class="Navbar Navbar--subbar">
             <ul>
-                <li>Props: '{{ props.selected }}'</li>
+                {#<li>Props: '{{ props.selected }}'</li>#}
                 {% for row in state.items %}
                     <li>
                         <a href="{{ row|get:0 }}"
@@ -39,3 +40,189 @@
     ></state>
 </component>
 
+<component name="DocSidebar">
+
+<props
+    path
+></props>
+
+<template>
+<ul>
+    {% for linkGroup in script.exports.menu %}
+        <li class="
+            {% if linkGroup.children %}
+                {% if linkGroup.active %}gactive{% else %}ginactive{% endif %}
+            {% endif %}
+            "><a href="{{ linkGroup.filename }}">{{ linkGroup.label }}</a>
+            {% if linkGroup.active %}
+                {% if linkGroup.children %}
+                    <ul>
+                    {% for childLink in linkGroup.children %}
+                        <li><a
+                          href="{{ linkGroup.filename }}#{{ childLink.hash }}"
+                            >{{ childLink.label }}</a></li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endif %}
+        </li>
+    {% endfor %}
+
+
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            <li>
+                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li>
+        </ul>
+
+    </li>
+</ul>
+</template>
+
+<script>
+    function _child(label, hash) {
+        if (!hash) {
+            hash = label.toLowerCase()
+        }
+        return {label, hash};
+    }
+    script.exports.menu = [
+        {
+            label: 'Home',
+            filename: '/docs.html',
+        },
+
+        {
+            label: 'Tutorial',
+            filename: '/docs/tutorial.html',
+            children: [
+                _child('Part 1: Components, CParts, Loaders', 'part1'),
+                _child('Part 2: Props and Templating', 'part2'),
+                _child('Part 3: State and Script', 'part3'),
+            ],
+        },
+
+        {
+            label: 'CParts',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Component'),
+                _child('Props'),
+                _child('Template'),
+                _child('State'),
+                _child('Script'),
+                _child('Style'),
+                _child('Custom CParts API', 'custom'),
+            ],
+        },
+
+        {
+            label: 'Directives',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Component'),
+                _child('Props'),
+                _child('Template'),
+                _child('State'),
+                _child('Script'),
+                _child('Style'),
+                _child('Custom CParts API', 'custom'),
+            ],
+        },
+
+        {
+            label: 'Templating',
+            filename: '/docs/templating.html',
+            children: [
+                _child('Templates'),
+                _child('Variables'),
+                _child('Filters'),
+                _child('Tags'),
+                _child('Comments'),
+                _child('Escaping'),
+            ],
+        },
+
+        {
+            label: 'Template Reference',
+            filename: '/docs/template_reference.html',
+            children: [
+                _child('Built-in Filters', 'filters'),
+                _child('Built-in Template Tags', 'tags'),
+                _child('Custom Filters', 'customfilters'),
+                _child('Custom Template Tags', 'customtags'),
+            ],
+        },
+
+        {
+            label: 'Example Library',
+            filename: '/docs/examples.html',
+            children: [
+                _child('Hello'),
+                _child('Simple'),
+                _child('ToDo'),
+                _child('API'),
+                _child('Prime'),
+                _child('MemoryGame'),
+            ],
+        },
+    ];
+
+    function initializedCallback() {
+        const {isBackend, ssgCurrentOutputPath} = Modulo;
+        let path;
+        if (isBackend) {
+            path = ssgCurrentOutputPath;
+            element.setAttribute('path', path);
+        } else {
+            path = props.path;
+        }
+        for (const groupObj of script.exports.menu) {
+            if (groupObj.filename && path.endsWith(groupObj.filename)) {
+                groupObj.active = true;
+            }
+        }
+    }
+</script>
+
+<style>
+  li {
+      margin-left: 20px;
+  }
+  /*
+  li.ginactive > ul::before,
+  li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+  li.ginactive > a::before {
+      content: '+ ';
+  }
+</style>
+
+</component>
+
+
+      <!--
+    <li>Directives
+      <ul>
+          <li>Built-ins</li>
+              <li>[state.bind]</li>
+              <li>[component.event] (@)</li>
+              <li>[component.resolve] (:)</li>
+              <li>[component.children]</li>
+          <li>Extending</li>
+          <li>API Reference</li>
+          <li>Filters</li>
+          <li>Template-tags</li>
+      </ul>
+    </li>
+      -->

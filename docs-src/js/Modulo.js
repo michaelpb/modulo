@@ -656,7 +656,8 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
             //console.log('this is rawName', rawName, value);
             const func = getAttr(attrName, getAttr(rawName));
             Modulo.assert(func, `Bad ${attrName}, ${value} is ${func}`);
-            const payload = getAttr(`${attrName}.payload`, el.value);
+            const payload = getAttr(`${attrName}.payload`,
+                                      getAttr('payload', el.value));
             //console.log('this is payload', `${attrName}.payload`, payload);
             this.handleEvent(func, ev, payload);
         };
@@ -999,6 +1000,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 
     parseCondExpr(text) {
         const reText = ` (${this.opTokens.split(',').join('|')}) `;
+        //console.log(text.split(RegExp(reText)));
         return text.split(RegExp(reText));
     }
 
@@ -1016,6 +1018,9 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         }
         return (text + '').replace(/&/g, '&amp;')
             .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // TODO: add this
+            //' (single quote) is converted to &#x27;
+            //" (double quote) is converted to &quot;
     }
 }
 Modulo.Template = Modulo.templating.MTL; // Alias
@@ -1023,10 +1028,12 @@ Modulo.Template = Modulo.templating.MTL; // Alias
 Modulo.templating.defaultOptions = {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
     //opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,and,or',
-    opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not',
+    opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,gt,lt',
     opAliases: {
         '==': 'X === Y',
         'is': 'X === Y',
+        'gt': 'X > Y',
+        'lt': 'X < Y',
         'is not': 'X !== Y',
         //'and': 'X && Y',
         //'or': 'X || Y',
@@ -1068,10 +1075,13 @@ Modulo.templating.defaultOptions.filters = {
     add: (s, arg) => s + arg,
     subtract: (s, arg) => s - arg,
     default: (s, arg) => s || arg,
+    number: (s) => Number(s),
     //invoke: (s, arg) => s(arg),
     //getAttribute: (s, arg) => s.getAttribute(arg),
     get: (s, arg) => s[arg],
     includes: (s, arg) => s.includes(arg),
+    truncate: (s, arg) => ((s.length > arg*1) ?
+                            (s.substr(0, arg-1) + '…') : s),
     divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
 };
 

@@ -6,7 +6,25 @@
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <style id="mdu-TabSet_style">
+    <style id="mdu-Section_style">
+mdu-Section {
+            position: relative;
+        }
+mdu-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mdu-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mdu-Section:hover .mdu-Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mdu-TabSet_style">
 mdu-TabSet {
             width: 100%;
             display: flex;
@@ -76,7 +94,6 @@ mdu-CodeExample .split > div:last-child {
         }
 mdu-CodeExample .split > div:first-child{
             border: 1px solid black;
-            height: 172px;
             /*overflow-y: scroll;*/
         }
 
@@ -99,13 +116,29 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
-    </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    </style><style id="tutorial-DocSidebar_style">
+tutorial-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+tutorial-DocSidebar li.ginactive > ul::before,
+tutorial-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+tutorial-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
 
 
 
 
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:898}">
+<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -125,7 +158,7 @@ mdu-CodeExample .split { display: block; }
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 898 lines<br>
+                SLOC: 904 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -135,7 +168,7 @@ mdu-CodeExample .split { display: block; }
 <tutorial-tutnav selected="0">
         <nav class="Navbar Navbar--subbar">
             <ul>
-                <li>Props: '0'</li>
+                
                 
                     <li>
                         <a href="/start.html" class="
@@ -164,12 +197,6 @@ mdu-CodeExample .split { display: block; }
             </ul>
         </nav>
     </tutorial-tutnav>
-
-<template modulo-embed="">
-    <component name="Testing">
-        <template>Very intttersting.<em>jk</em></template>
-    </component>
-</template>
 
 <main class="Tutorial">
 

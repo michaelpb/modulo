@@ -55,6 +55,33 @@
     </script>
 </template>
 
+</head><body><component name="Section">
+    <props name=""></props>
+    <template>
+        <a class="secanchor" title="Click to focus on this section." id="{{ props.name }}" name="{{ props.name }}" href="#{{ props.name }}">#</a>
+        <h2 [component.children]=""></h2>
+    </template>
+    <style>
+        Section {
+            position: relative;
+        }
+        h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+        a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+        Section:hover .Section-helper {
+            opacity: 1.0;
+        }
+    </style>
+</component>
+
 <template mod-component="TabSet">
     <template>
         <nav class="tab-nav">
@@ -153,7 +180,7 @@
         }
 
         function select(ev, payload) {
-            console.log('selection happening!', payload);
+            //console.log('selection happening!', payload);
             state.selected = payload;
             refreshTabs();
         }
@@ -163,7 +190,7 @@
 <template mod-component="CodeExample">
     <template>
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: {{ props.vsize|number|default:170|add:2 }}px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -214,7 +241,6 @@
         }
         .split > div:first-child{
             border: 1px solid black;
-            height: 172px;
             /*overflow-y: scroll;*/
         }
 
@@ -239,7 +265,7 @@
         }
     </style>
 
-    <props text="" textsrc=""></props>
+    <props text="" extraprops="" vsize="" textsrc=""></props>
 
     <state nscounter:="1" preview=""></state>
     <script>
@@ -280,14 +306,16 @@
                 });
                 element.codeMirrorEditor = cm;
                 window.cm = cm;
+
+                const height = props.vsize ? Number(props.vsize) : 170;
                 cm.setValue('');
-                cm.setSize(null, 170);
+                cm.setSize(null, height);
                 cm.refresh();
                 const text = props.text.trim();
                 cm.setValue(text);
                 setTimeout(() => {
                     cm.setValue(text);
-                    cm.setSize(null, 170);
+                    cm.setSize(null, height);
                     cm.refresh();
                 }, 1);
                 el.setAttribute('modulo-ignore', 'y');
@@ -312,7 +340,16 @@
             //console.log('Creating component from text:', text)
             loader.loadString(text);
             const tag = `${namespace}-${tagName}`;
-            const preview = `<${tag}></${tag}>`;
+            let extraPropsStr = '';
+            /*
+            const extraProps =  props.extraprops ? JSON.parse(props.extraprops) : {};
+            for (const [key, value] of Object.entries(extraProps)) {
+                const escValue = value.replace(/"/g, , '&quot;');
+                extraPropsStr += ` ${key}="${escValue}"`;
+            }
+            */
+
+            const preview = `<${tag}${extraPropsStr}></${tag}>`;
             state.preview = preview;
             element.previewSpot.innerHTML = preview;
             //document.querySelector('#previewSpot').innerHTML = preview;
@@ -454,5 +491,4 @@
 </template>
 
 
-
-</head><body></body>
+</body>

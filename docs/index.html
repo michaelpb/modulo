@@ -6,7 +6,25 @@
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="./js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <style id="mdu-TabSet_style">
+    <style id="mdu-Section_style">
+mdu-Section {
+            position: relative;
+        }
+mdu-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mdu-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mdu-Section:hover .mdu-Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mdu-TabSet_style">
 mdu-TabSet {
             width: 100%;
             display: flex;
@@ -76,7 +94,6 @@ mdu-CodeExample .split > div:last-child {
         }
 mdu-CodeExample .split > div:first-child{
             border: 1px solid black;
-            height: 172px;
             /*overflow-y: scroll;*/
         }
 
@@ -141,7 +158,7 @@ mdu-CodeExample .split { display: block; }
 </script>
 ">
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: 172px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -173,7 +190,7 @@ mdu-CodeExample .split { display: block; }
 </style>
 ">
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: 172px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -193,7 +210,7 @@ mdu-CodeExample .split { display: block; }
             </div>
 
 
-            <div name="Todo">
+            <div name="ToDo">
 
 <mdu-codeexample text="
 <template>
@@ -215,13 +232,13 @@ mdu-CodeExample .split { display: block; }
 
 <script>
     function addItem() {
-        state.list.push(state.text);
-        state.text = &quot;&quot;;
+        state.list.push(state.text); // add to list
+        state.text = &quot;&quot;; // clear input
     }
 </script>
 ">
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: 172px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -277,7 +294,7 @@ mdu-CodeExample .split { display: block; }
 </script>
 ">
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: 172px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -298,56 +315,69 @@ mdu-CodeExample .split { display: block; }
             </div>
 
             <div name="Prime">
-
 <mdu-codeexample text="
 <template>
-<div class=&quot;numbers&quot;>
-    {% for i in state.exports.range %}
-        {% if i > 2 %}{% if i < state.num %}
-            <div
-              class=&quot;
-                {% if state.number|divisibleby:i %}
-                  whole
-                {% endif %}
-              &quot;
-            >{{ i }}</div>
-        {% endif %}{% endif %}
+  <div class=&quot;grid&quot;>
+    {% for i in script.exports.range %}
+      <div @mouseover:=script.setNum
+        class=&quot;
+            {# If-statements to check divisibility in template: #}
+            {% if state.number == i %}number{% endif %}
+            {% if state.number lt i %}hidden{% else %}
+              {% if state.number|divisibleby:i %}whole{% endif %}
+            {% endif %}
+        &quot;>{{ i }}</div>
     {% endfor %}
-    <div class=&quot;whole&quot;>{{ state.number }}</div>
-</div>
+  </div>
 </template>
 
 <state
-    number:=10
+    number:=76
 ></state>
 
 <script>
-    module.exports.range_100 = Array.from(Array(100).keys())
-
-    function eventCallback() {
-        state.range = Array.from(
-            {length: state.number - 2}, (_, i) => i + 2);
+    // Getting big a range of numbers in JS. Use &quot;script.exports&quot;
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 75}, (x, i) => i + 2);
+    function setNum(ev) {
+        state.number = Number(ev.target.textContent);
     }
 </script>
 
 <style>
-.numbers {
-    display: flex;
-    flex-wrap: wrap;
+.grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+.grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+div.whole {
+    color: white;
+    background: #B90183;
+}
+div.hidden {
+    background: #ccc;
+    color: #ccc;
 }
 
-.numbers > div {
-  color: ccc;
-  border: 1px solid #ccc;
-}
-
-.numbers > div.whole {
-    color: black;
-}
+/* Color green and add asterisk */
+div.number { background: green; }
+div.number::after { content: &quot;*&quot;; }
+/* Check for whole factors (an adjacent div.whole).
+   If found, then hide asterisk and green. */
+div.whole ~ div.number { background: #B90183; }
+div.whole ~ div.number::after { opacity: 0; }
 </style>
 ">
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: 172px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -363,7 +393,6 @@ mdu-CodeExample .split { display: block; }
             </div>
         </div>
     </mdu-codeexample>
-
 
             </div>
 
@@ -532,7 +561,7 @@ h3 {
 </style>
 ">
         <div class="split">
-            <div modulo-ignore="">
+            <div style="height: 172px;" modulo-ignore="">
                 <textarea [script.codemirror]="">                </textarea>
             </div>
 
@@ -560,7 +589,7 @@ h3 {
 
 
 <span id="below"></span>
-<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:898}">
+<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -580,7 +609,7 @@ h3 {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 898 lines<br>
+                SLOC: 904 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>

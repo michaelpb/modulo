@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><head>
     <meta charset="utf8">
-    <title>Start - Modulo.js</title>
+    <title>Modulo.js</title>
     <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
@@ -138,7 +138,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -146,10 +146,10 @@ tutorial-DocSidebar li.ginactive > a::before {
                     <a href="/index.html#below">About</a>
                 </li>
                 <li>
-                    <a href="/start.html" class="Navbar--selected">Start</a>
+                    <a href="/start.html">Start</a>
                 </li>
                 <li>
-                    <a href="/docs.html">Docs</a>
+                    <a href="/docs.html" class="Navbar--selected">Docs</a>
                 </li>
                 <li>
                     <a href="/literate/src/Modulo.html">Source</a>
@@ -165,44 +165,118 @@ tutorial-DocSidebar li.ginactive > a::before {
         </nav>
     </mdu-navbar>
 
-<tutorial-tutnav selected="0">
-        <nav class="Navbar Navbar--subbar">
-            <ul>
+
+<main class="Main--fluid Docs">
+    <aside class="TitleAside TitleAside--navBar">
+        <h3><span alt="Lower-case delta">%</span></h3>
+        <nav class="TitleAside-navigation">
+            <h3>Documentation</h3>
+            <tutorial-docsidebar path="docs/docs/tutorial.html">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs.html">Home</a>
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/tutorial.html">Tutorial</a>
+            
                 
+                    <ul>
+                    
+                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a></li>
+                    
+                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a></li>
+                    
+                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a></li>
+                    
+                    </ul>
                 
-                    <li>
-                        <a href="/start.html" class="
-                            
-                          ">The Modulo Tutorial</a>
-                    </li>
-                
-                    <li>
-                        <a href="/start/tutorial1.html" class="
-                            
-                          ">1. Components, CParts, Loaders</a>
-                    </li>
-                
-                    <li>
-                        <a href="/start/tutorial2.html" class="
-                            
-                          ">2. Templating Language, Props</a>
-                    </li>
-                
-                    <li>
-                        <a href="/start/tutorial3.html" class="
-                            
-                          ">3. Script, State</a>
-                    </li>
-                
-            </ul>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/template_reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/examples.html">Example Library</a>
+            
+        </li>
+    
+
+
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            </li><li>
+                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li>
+        </ul>
+
+    </li>
+</ul>
+</tutorial-docsidebar>
         </nav>
-    </tutorial-tutnav>
+    </aside>
+    <aside style="border: none">
+        <mdu-routeindex></mdu-routeindex>
 
-<main class="Tutorial">
+        <mdu-route name="tutorial" src="./_docs/tutorial.html"><h1>Tutorial</h1>
 
-    <mdu-routeindex></mdu-routeindex>
+<blockquote>
+<p><strong>Prerequisites:</strong> Part 1 and Part 2 of this tutorial
+requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
+requires familiarity with JavaScript. Familiarity with React, Vue, or
+similar frameworks is helpful, but not required.</p></blockquote>
 
-    <mdu-route src="./_tutorials/part_1.html" name="tutorial1"><h2>Part 1: Components, CParts, Loaders</h2>
+<h1>The Modulo Tutorial</h1>
+<p>Welcome to the Modulo tutorial. By following these short tutorials,
+you can learn how to use Modulo in your own projects.</p>
+<p><strong>Ready to dive in to Web Component development with
+Modulo?</strong></p>
+
+
+<mdu-section name="part1">Part 1: Components, CParts, Loaders</mdu-section>
 
 
 <h3>Including Modulo</h3>
@@ -518,17 +592,114 @@ capabilities of Templates, allow flexible and composable components with
 Props CPart, create custom behavior with Script CParts,  and finally create
 forms and interactive, changing components with the State CPart.</p>
 
-<p><a href="./tutorial2.html">Onward to the next tutorial!</a></p>
 
-</mdu-route>
 
-    <mdu-route src="./_tutorials/part_2.html" name="tutorial2"></mdu-route>
 
-    <mdu-route src="./_tutorials/part_3.html" name="tutorial3"></mdu-route>
+<mdu-section name="part2">Part 2: Props and Templating</mdu-section>
+
+<blockquote> <p><strong>Why use Props?</strong>
+Components are "write once, use everywhere". That is to say, you only need to
+define a component once to use it throughout your pages. However, sometimes you
+want each instance of a component to have different content or modified
+behavior. This is where <em>Props</em> come into play: They allow you to
+customize differences in content or behavior between multiple uses of the same
+component.</p>
+</blockquote>
+
+
+<h3>CPart: Props</h3>
+
+<p>The <em>Props</em> CPart defines the <em>properties</em> that can be
+customized about a component. It allows for options or other data to be
+"passed" to a component instance, in order to distinguish that instance from
+other ones. For example, a button component might have <em>Props</em> that
+specify its text, or which shape variation.</p>
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <p>Context: The <code>&lt;tutorial-Button&gt;</code> component has already
+    been defined for you. It was defined to accept two <em>props</em>:
+    <code>label</code>, and <code>shape</code>. We'll cover how it was defined
+    to use these <em>props</em> later on. For now, practice using the
+    button.</p>
+
+    <ol>
+        <li>Examine the code below. See how the code uses the
+        <code>tutorial-Button</code> component?</li>
+    </ol>
+
+
+<mdu-codeexample text="
+<template>
+Hello <strong>Modulo</strong> World!
+<p class=&quot;neat&quot;>Any HTML can be here!</p>
+</template>
+<style>
+/* ...and any CSS here! */
+strong {
+    color: blue;
+}
+.neat {
+    font-variant: small-caps;
+}
+</style>
+">
+</mdu-codeexample>
+</section>
+
+
+<mdu-codeexample text="
+<template>
+    <p>Trying out the button...</p>
+    <tutorial-Button
+        label=&quot;Button Example&quot;
+        shape=&quot;square&quot;
+    ></tutorial-Button>
+
+    <p>Another button...</p>
+    <tutorial-Button
+        label=&quot;Rounded is Great Too&quot;
+        shape=&quot;rounded&quot;
+    ></tutorial-Button>
+</template>
+">
+</mdu-codeexample>
+
+
+
+<mdu-codesnippet text="
+<component name=&quot;Button&quot;>
+    <props
+        label
+        shape
+    ></props>
+    <template>
+        <button class=&quot;my-btn my-btn_{{ props.shape }}&quot;>
+            {{ props.label }}
+        </button>
+    </template>
+</component>
+"></mdu-codesnippet>
+
+
+
+
+
+<mdu-section name="part3">Part 3: State and Script
+
+coming soon!
+
+
+</mdu-section></mdu-route>
+
+        <mdu-route name="templating" src="./_docs/templating.html"></mdu-route>
+
+        <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
+    </aside>
 </main>
 
-
-<script>Modulo.defineAll();</script>
+    <script>Modulo.defineAll()</script>
 
 
 </body>

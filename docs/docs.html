@@ -1,10 +1,30 @@
 <!DOCTYPE HTML><head>
     <meta charset="utf8">
     <title>Modulo.js</title>
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="/js/Modulo.js"></script>
-    <style id="mdu-TabSet_style">
+    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
+    <style id="mdu-Section_style">
+mdu-Section {
+            position: relative;
+        }
+mdu-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mdu-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mdu-Section:hover .mdu-Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mdu-TabSet_style">
 mdu-TabSet {
             width: 100%;
             display: flex;
@@ -74,7 +94,6 @@ mdu-CodeExample .split > div:last-child {
         }
 mdu-CodeExample .split > div:first-child{
             border: 1px solid black;
-            height: 172px;
             /*overflow-y: scroll;*/
         }
 
@@ -97,12 +116,29 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
-    </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    </style><style id="tutorial-DocSidebar_style">
+tutorial-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+tutorial-DocSidebar li.ginactive > ul::before,
+tutorial-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+tutorial-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
 
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:898}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -122,7 +158,7 @@ mdu-CodeExample .split { display: block; }
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 898 lines<br>
+                SLOC: 904 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -130,56 +166,95 @@ mdu-CodeExample .split { display: block; }
     </mdu-navbar>
 
 
-
-<main>
+<main class="Main--fluid Docs">
     <aside class="TitleAside TitleAside--navBar">
         <h3><span alt="Lower-case delta">%</span></h3>
-        <h3>Documentation</h3>
         <nav class="TitleAside-navigation">
-            <ul>
+            <h3>Documentation</h3>
+            <tutorial-docsidebar path="docs/docs.html">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs.html">Home</a>
+            
+                
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/tutorial.html">Tutorial</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/template_reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/examples.html">Example Library</a>
+            
+        </li>
+    
 
-                <li>
-                  Templating
-                  <ul>
-                      <li>Basics</li>
-                      <li>Extending</li>
-                      <li>API Reference</li>
-                          <li>Filters</li>
-                          <li>Template-tags</li>
-                  </ul>
-                </li>
 
-                <li>
-                  Directives
-                  <ul>
-                      <li>Built-ins</li>
-                          <li>[state.bind]</li>
-                          <li>[component.event] (@)</li>
-                          <li>[component.resolve] (:)</li>
-                          <li>[component.children]</li>
-                      <li>Extending</li>
-                      <li>API Reference</li>
-                      <li>Filters</li>
-                      <li>Template-tags</li>
-                  </ul>
-                </li>
+    <li>
+        Other resources:
 
-                <li>
-                    Other resources:
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            </li><li>
+                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li>
+        </ul>
 
-                    <ul>
-                        <li>
-                            Interested in reading the source code?
-                            <a href="/literate/src/Modulo.html">Click to read the
-                            source code, side-by-side with annotations.</a>
-                        </li>
-                    </ul>
-
-                </li>
-            </ul>
+    </li>
+</ul>
+</tutorial-docsidebar>
         </nav>
     </aside>
-    <aside>
+    <aside style="border: none">
+        <mdu-routeindex>
+          <h1>Welcome to Modulo's documentation</h1>
+        </mdu-routeindex>
+
+        <mdu-route name="tutorial" src="./_docs/tutorial.html" ssgpath="docs/docs/tutorial.html"></mdu-route>
+
         <mdu-route name="templating" src="./_docs/templating.html" ssgpath="docs/docs/templating.html"></mdu-route>
 
         <mdu-route name="faq" src="./_docs/faq.html" ssgpath="docs/docs/faq.html"></mdu-route>

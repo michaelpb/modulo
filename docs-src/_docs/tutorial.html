@@ -1,208 +1,19 @@
-<!DOCTYPE HTML><head>
-    <meta charset="utf8">
-    <title>Start - Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/png" href="/img/mono_logo.png">
-    <script src="/js/Modulo.js"></script>
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <style id="mdu-Section_style">
-mdu-Section {
-            position: relative;
-        }
-mdu-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mdu-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mdu-Section:hover .mdu-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
+<h1>Tutorial</h1>
 
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+<blockquote>
+<p><strong>Prerequisites:</strong> Part 1 and Part 2 of this tutorial
+requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
+requires familiarity with JavaScript. Familiarity with React, Vue, or
+similar frameworks is helpful, but not required.</p></blockquote>
 
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mdu-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mdu-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mdu-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mdu-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mdu-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mdu-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mdu-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mdu-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
-        }
-    </style><style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
-    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+<h1>The Modulo Tutorial</h1>
+<p>Welcome to the Modulo tutorial. By following these short tutorials,
+you can learn how to use Modulo in your own projects.</p>
+<p><strong>Ready to dive in to Web Component development with
+Modulo?</strong></p>
 
 
-
-
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
-        <nav class="Navbar">
-            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li>
-                    <a href="/index.html#below">About</a>
-                </li>
-                <li>
-                    <a href="/start.html" class="Navbar--selected">Start</a>
-                </li>
-                <li>
-                    <a href="/docs.html">Docs</a>
-                </li>
-                <li>
-                    <a href="/literate/src/Modulo.html">Source</a>
-                </li>
-            </ul>
-
-            <div class="Navbar-rightInfo">
-                v: 0.0.1<br>
-                SLOC: 904 lines<br>
-                <a href="https://github.com/michaelpb/modulo/">github</a> | 
-                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-            </div>
-        </nav>
-    </mdu-navbar>
-
-<tutorial-tutnav selected="0">
-        <nav class="Navbar Navbar--subbar">
-            <ul>
-                
-                
-                    <li>
-                        <a href="/start.html" class="
-                            
-                          ">The Modulo Tutorial</a>
-                    </li>
-                
-                    <li>
-                        <a href="/start/tutorial1.html" class="
-                            
-                          ">1. Components, CParts, Loaders</a>
-                    </li>
-                
-                    <li>
-                        <a href="/start/tutorial2.html" class="
-                            
-                          ">2. Templating Language, Props</a>
-                    </li>
-                
-                    <li>
-                        <a href="/start/tutorial3.html" class="
-                            
-                          ">3. Script, State</a>
-                    </li>
-                
-            </ul>
-        </nav>
-    </tutorial-tutnav>
-
-<main class="Tutorial">
-
-    <mdu-routeindex></mdu-routeindex>
-
-    <mdu-route src="./_tutorials/part_1.html" name="tutorial1"><h2>Part 1: Components, CParts, Loaders</h2>
+<mdu-Section name="part1">Part 1: Components, CParts, Loaders</mdu-Section>
 
 
 <h3>Including Modulo</h3>
@@ -213,7 +24,7 @@ tutorial-DocSidebar li.ginactive > a::before {
     CDN <strong>(Recommended)</strong></li>
     <li>Downloading the Modulo.js and including it with a script tag, e.g.
     <code>&lt;script src="/js/Modulo.js"&gt;</code>
-</li></ol>
+</ol>
 
 <p>Then, Modulo needs to be explicitly activated. Somewhere before the closing body tag of your HTML file, you should activate Modulo with the following code:
     <code>&lt;script&gt;Modulo.defineAll();&lt;script&gt;</code>
@@ -269,10 +80,11 @@ referenced elsewhere like
         <li>Open that HTML file in your preferred web browser as well.</li>
         <li>Copy &amp; paste in the following code:
 
-<mdu-codesnippet text="
+<mdu-CodeSnippet
+text='
 <!-- Define a custom component -->
 <template modulo-embed>
-    <component name=&quot;HelloWorld&quot;>
+    <component name="HelloWorld">
         <template>
             Hello <strong>Modulo</strong> World!
         </template>
@@ -283,10 +95,10 @@ referenced elsewhere like
 <x-HelloWorld></x-HelloWorld>
 <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
 
-<!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
+<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
+<script src="https://modulojs.org/js/Modulo.js"></script>
 <script>Modulo.defineAll();</script>
-"></mdu-codesnippet>
+'></mdu-CodeSnippet>
 </li>
 <!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
         <li>Refresh the web browser to view the results.</li>
@@ -300,9 +112,9 @@ Because it is so central, saying <em>Component Parts</em> over and over
 gets tiresome, so it's typically shortened to <em>CParts</em>.</p>
 
 <blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the cast and
-crew of a musical. Each are assigned to a different task—some are
+crew of a musical. Each are assigned to a different task&mdash;some are
 more flashy and visible, others being stage-hands working behind the
-scenes—but they all work together to put on the same
+scenes&mdash;but they all work together to put on the same
 show!</p></blockquote>
 
 <p>All component definitions consist of some number of CParts.  Thus, a
@@ -364,14 +176,15 @@ sample code editors only focus on the CPart definitions within.</p>
         <li>Practice incorporating these CParts into your own components on
         a real page by copying the code here and pasting it within your
         component definition (that is, the one that you created in the
-        previous part of this tutorial)<p></p>
-    </li></ol>
+        previous part of this tutorial)</p>
+    </ol>
 
 
-<mdu-codeexample text="
+<mdu-CodeExample
+text='
 <template>
 Hello <strong>Modulo</strong> World!
-<p class=&quot;neat&quot;>Any HTML can be here!</p>
+<p class="neat">Any HTML can be here!</p>
 </template>
 <style>
 /* ...and any CSS here! */
@@ -382,8 +195,8 @@ strong {
     font-variant: small-caps;
 }
 </style>
-">
-</mdu-codeexample>
+'>
+</mdu-CodeExample>
 </section>
 
 
@@ -408,7 +221,8 @@ limitations.</p>
 
 <p>Loader tags look like the following:</p>
 
-<pre>&lt;modulo-load
+<pre>
+&lt;modulo-load
     src="./components/my-stuff.html"
     namespace="coolstuff"&gt;
 &lt;/modulo-load&gt;
@@ -451,7 +265,7 @@ limitations.</p>
         defined like <code>&lt;component name="MyThing"&gt;</code>
         imported with <code>namespace="coolstuff"</code>, then the
         resulting full name would be <code>coolstuff-MyThing</code>, and
-        we'd use the component like<br>
+        we'd use the component like<br />
         <code>&lt;coolstuff-MyThing&gt;&lt;/coolstuff-MyThing&gt;</code>.</p>
     </li>
 
@@ -481,13 +295,15 @@ limitations.</p>
         relative path to your new component library file, and namespace can
         be <code>lib</code>.  For example, if you named everything based on
         the above suggestions, it would look like this:
-<pre>&lt;modulo-load src="./components/my-component-lib.html"
+<pre>
+&lt;modulo-load src="./components/my-component-lib.html"
             namespace="lib"&gt;&lt;/modulo-load&gt;
 </pre></li>
 
         <li>Finally, update your component usage to now use the new
         namespace (instead of the "x" default namespace placeholder):
-<pre>&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
+<pre>
+&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
 &lt;p&gt;In a P tag: &lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;&lt;/p&gt;
 </pre></li>
         <li>Refresh the web browser to view the results. If done correctly,
@@ -518,17 +334,106 @@ capabilities of Templates, allow flexible and composable components with
 Props CPart, create custom behavior with Script CParts,  and finally create
 forms and interactive, changing components with the State CPart.</p>
 
-<p><a href="./tutorial2.html">Onward to the next tutorial!</a></p>
-
-</mdu-route>
-
-    <mdu-route src="./_tutorials/part_2.html" name="tutorial2"></mdu-route>
-
-    <mdu-route src="./_tutorials/part_3.html" name="tutorial3"></mdu-route>
-</main>
 
 
-<script>Modulo.defineAll();</script>
+
+<mdu-Section name="part2">Part 2: Props and Templating</mdu-Section>
+
+<blockquote> <p><strong>Why use Props?</strong>
+Components are "write once, use everywhere". That is to say, you only need to
+define a component once to use it throughout your pages. However, sometimes you
+want each instance of a component to have different content or modified
+behavior. This is where <em>Props</em> come into play: They allow you to
+customize differences in content or behavior between multiple uses of the same
+component.</p>
+</blockquote>
 
 
-</body>
+<h3>CPart: Props</h3>
+
+<p>The <em>Props</em> CPart defines the <em>properties</em> that can be
+customized about a component. It allows for options or other data to be
+"passed" to a component instance, in order to distinguish that instance from
+other ones. For example, a button component might have <em>Props</em> that
+specify its text, or which shape variation.</p>
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <p>Context: The <code>&lt;tutorial-Button&gt;</code> component has already
+    been defined for you. It was defined to accept two <em>props</em>:
+    <code>label</code>, and <code>shape</code>. We'll cover how it was defined
+    to use these <em>props</em> later on. For now, practice using the
+    button.</p>
+
+    <ol>
+        <li>Examine the code below. See how the code uses the
+        <code>tutorial-Button</code> component?</li>
+    </ol>
+
+
+<mdu-CodeExample
+text='
+<template>
+Hello <strong>Modulo</strong> World!
+<p class="neat">Any HTML can be here!</p>
+</template>
+<style>
+/* ...and any CSS here! */
+strong {
+    color: blue;
+}
+.neat {
+    font-variant: small-caps;
+}
+</style>
+'>
+</mdu-CodeExample>
+</section>
+
+
+<mdu-CodeExample
+text='
+<template>
+    <p>Trying out the button...</p>
+    <tutorial-Button
+        label="Button Example"
+        shape="square"
+    ></tutorial-Button>
+
+    <p>Another button...</p>
+    <tutorial-Button
+        label="Rounded is Great Too"
+        shape="rounded"
+    ></tutorial-Button>
+</template>
+'>
+</mdu-CodeExample>
+</section>
+
+
+<mdu-CodeSnippet
+text='
+<component name="Button">
+    <props
+        label
+        shape
+    ></props>
+    <template>
+        <button class="my-btn my-btn_{{ props.shape }}">
+            {{ props.label }}
+        </button>
+    </template>
+</component>
+'
+></mdu-CodeSnippet>
+
+
+
+
+
+<mdu-Section name="part3">Part 3: State and Script</md-Section>
+
+coming soon!
+
+

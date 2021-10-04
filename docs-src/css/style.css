@@ -108,6 +108,11 @@ main {
     margin: auto;
     clear: both;
 }
+main.Main--fluid {
+    max-width: 98%;
+    padding-left: 20px;
+    padding-right: 20px;
+}
 
 section {
     display: flex;
@@ -135,9 +140,10 @@ aside.TitleAside a {
 }
 
 
-.TitleAside--navBar {
-  /*position: fixed;*/
-  width: 250px;
+.TitleAside-navigation {
+  position: sticky;
+  top: 100px;
+  left: 0px;
 }
 
 .TitleAside--navBar nav {
@@ -146,8 +152,8 @@ aside.TitleAside a {
 
 @media (max-width: 992px) {
     .TitleAside--navBar {
-      position: static;
-      width: 100%;
+        position: static;
+        width: 100%;
     }
 }
 
@@ -356,10 +362,17 @@ a:visited {
     color: #666;
 }
 
-.Tutorial p {
+.Tutorial p,
+.Docs p {
     margin-top: 5px;
     margin-bottom: 20px;
 }
+
+.Tutorial p:last-of-type,
+.Docs p:last-of-type {
+    margin-bottom: 0;
+}
+
 .Tutorial p:first-of-type {
     text-indent: 0;
 }
@@ -367,10 +380,58 @@ a:visited {
 .Tutorial {
     font-size: 1.2rem;
 }
-.Tutorial ul li {
+
+.Tutorial ul li,
+.Docs ul li {
     list-style: disc;
     margin-left: 40px;
 }
+
+.Docs .InfoBox,
+.Tutorial .InfoBox {
+    border: 1px solid var(--highlight-color);
+    padding: 20px;
+    display: block;
+    position: relative;
+    clear: both;
+    font-size: 0.95rem;
+}
+
+.Docs hr {
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.Docs .InfoBox > h2 {
+    color: var(--highlight-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    margin-top: -10px;
+    letter-spacing: 1px;
+}
+
+.Docs > h2,
+.Docs > * > h2,
+.Docs > * > * > h2 {
+    border-top: 1px solid #888;
+    padding-top: 10px;
+    width: 80%;
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 1.6rem;
+}
+
+.Docs  h3 {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+.Docs  h4 {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 5px;
+}
+
 .Tutorial blockquote {
     max-width: 280px;
     float: right;
@@ -453,7 +514,13 @@ a:visited {
     content: counter(h2counter) "." counter(h3counter) ".\0000a0\0000a0";
 }
 
-
+.Docs {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+}
+@media (max-width: 992px) {
+    .Docs { display: block; }
+}
 
 @media (max-width: 992px) {
 

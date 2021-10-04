@@ -72,7 +72,7 @@ text='
             </div>
 
 
-            <div name="Todo">
+            <div name="ToDo">
 
 <mdu-CodeExample
 text='
@@ -95,8 +95,8 @@ text='
 
 <script>
     function addItem() {
-        state.list.push(state.text);
-        state.text = "";
+        state.list.push(state.text); // add to list
+        state.text = ""; // clear input
     }
 </script>
 '>
@@ -147,57 +147,68 @@ text='
             </div>
 
             <div name="Prime">
-
 <mdu-CodeExample
 text='
 <template>
-<div class="numbers">
-    {% for i in state.exports.range %}
-        {% if i > 2 %}{% if i < state.num %}
-            <div
-              class="
-                {% if state.number|divisibleby:i %}
-                  whole
-                {% endif %}
-              "
-            >{{ i }}</div>
-        {% endif %}{% endif %}
+  <div class="grid">
+    {% for i in script.exports.range %}
+      <div @mouseover:=script.setNum
+        class="
+            {# If-statements to check divisibility in template: #}
+            {% if state.number == i %}number{% endif %}
+            {% if state.number lt i %}hidden{% else %}
+              {% if state.number|divisibleby:i %}whole{% endif %}
+            {% endif %}
+        ">{{ i }}</div>
     {% endfor %}
-    <div class="whole">{{ state.number }}</div>
-</div>
+  </div>
 </template>
 
 <state
-    number:=10
+    number:=76
 ></state>
 
 <script>
-    module.exports.range_100 = Array.from(Array(100).keys())
-
-    function eventCallback() {
-        state.range = Array.from(
-            {length: state.number - 2}, (_, i) => i + 2);
+    // Getting big a range of numbers in JS. Use "script.exports"
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 75}, (x, i) => i + 2);
+    function setNum(ev) {
+        state.number = Number(ev.target.textContent);
     }
 </script>
 
 <style>
-.numbers {
-    display: flex;
-    flex-wrap: wrap;
+.grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+.grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+div.whole {
+    color: white;
+    background: #B90183;
+}
+div.hidden {
+    background: #ccc;
+    color: #ccc;
 }
 
-.numbers > div {
-  color: ccc;
-  border: 1px solid #ccc;
-}
-
-.numbers > div.whole {
-    color: black;
-}
+/* Color green and add asterisk */
+div.number { background: green; }
+div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+   If found, then hide asterisk and green. */
+div.whole ~ div.number { background: #B90183; }
+div.whole ~ div.number::after { opacity: 0; }
 </style>
-'>
-</mdu-CodeExample>
-
+'></mdu-CodeExample>
 
             </div>
 
