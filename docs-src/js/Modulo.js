@@ -12,6 +12,12 @@
 // interweaving Markdown-formatted comments on to tell this story, and uses a
 // tool (docco) to extract all these comments for easy reading.
 
+// ## Code standards
+// - SLOC limit: 1000 lines
+// - Line limit: 80 chars
+// - Indentation: 4 spaces
+
+
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
@@ -21,50 +27,6 @@ var Modulo = {
     cparts: {}, // used later, for custom CPart classes
     templating: {}, // used later, for custom Templating languages
 };
-
-// ## Code standards
-// - SLOC limit: 1000 lines
-// - Line limit: 80 chars
-// - Indentation: 4 spaces
-
-
-
-// ## Quick definitions:
-// * Component - A discrete, re-usable bit of code, typically used to show a
-//   graphical UI element (eg a button, or a rich-text area). Components can
-//   also use other components (eg a form).
-// * ComponentPart, or CPart - Each component consists of a "bag" or "bundle"
-//   of CParts, each CPart being a "pluggable" module that supplies different
-// * functionality for that component.
-// * customElement - The term used for a custom HTML5 web component
-// * Modulo.globals - Identical to "window", helps keep unit-tests simpler
-
-// ## Lifecycle ToC:
-
-// ### Group 1: Preparation
-// These happen once per component definition (in the case of `load` and
-// `factory`), or once per component usage (in the case of `initialized`)
-
-// * `load` - the stage of parsing a code file (eg static analysis). Note that
-//            if a Modulo-based project is compiled into a single JS file, this
-//            `load` happens BEFORE, and thus gets "baked-in".
-// * `factory` - any one-time, global set-up for a component (e.g. compiling the template)
-// * `initialized` - happens once, every time a component is used (mounted) on the page
-
-// ### Group 2: Rendering
-// These get repeated every time a component is rendered or rendered.
-// * `prepare` - Gather data needed before rendering (e.g. gather variables for
-// template)
-// * `render` - Use the Template to render HTML code
-// * `update` - Updates the DOM to reflect the newly generated HTML code, while
-//    applying directives. Each directive gets it's own set of lifecycle
-//    methods, like eventMount and eventUnmount.
-// * `updated` - Perform any clean-up tasks after DOM update
-
-// ### Group 3: Directives
-// * `event` & `eventCleanup` - Handle @click or @keyup events
-// * `resolve` - Handle resolving value set with =:
-
 
 // ## Modulo.defineAll()
 // Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
@@ -819,6 +781,9 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static getSymbolsAsObjectAssignment(contents) {
+        // TODO: Need to check for reserved words in capture group:
+        // filter away things like "// function for games"
+        // (which generates a syntax error with "typeof for")
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
         const matches = contents.match(regexpG) || [];
@@ -911,10 +876,17 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         el.getAttr = el.getAttr || el.getAttribute;
         const name = el.getAttr('name');
         Modulo.assert(name in this.data, `[state.bind]: no "${name}" in state`);
-        const func = () => this.set(name, el.value);
+        const func = () => {
+            let {value, type, checked} = el;
+            if (type && type === 'checkbox') {
+                value === !!checked;
+            }
+            this.set(name, value);
+        }
         // eventually customizable, eg [state.bind]mouseover=mouseY (event
         // name, el property name, and/or state propery name etc)
-        const evName = 'keyup';
+        const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
+        const evName = isText ? 'keyup' : 'change';
         this.boundElements[name] = [el, evName, func];
         el.value = this.data[name];
         el.addEventListener(evName, func);
@@ -948,7 +920,11 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             if (name in this.boundElements) {
                 if (this.data[name] !== this._oldData[name]) {
                     const [el, func, evName] = this.boundElements[name];
-                    el.value = this.data[name];
+                    if (el.type === 'checkbox') {
+                        el.checked = !!this.data[name];
+                    } else {
+                        el.value = this.data[name];
+                    }
                 }
             }
         }

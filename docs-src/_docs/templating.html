@@ -133,8 +133,9 @@ accessed, as that can be used to indicate private.</p>
 
 <h3>What variables are available</h3>
 
-<p>Variables come from the component's renderObj. More on the "renderObj" in
-the section on Lifecylce.</p>
+<p>Variables come from the component's renderObj that is produced in the
+<code>prepare</code> stage. <a href="/docs/directives.html#renderobj">More on
+the "renderObj" in the section on lifecycle.</a></p>
 
 <p>In practicality, this is another way to say that most variables typically
 "come from" the CParts of a component.</p>
@@ -178,8 +179,9 @@ into the mix as well. As a sneak-peak, examine the following code:</p>
 </pre>
 
 <p>Note how <code>athlete</code> declares a new variable, which can be reused
-in <code>{{ athlete.name }}</code>. For more on for-loops, see the built-in
-template-tag reference.</p>
+in <code>{{ athlete.name }}</code>. For more on for-loops, see the 
+<a href="/docs/template_reference.html#tags">built-in
+template-tag reference.</a></p>
 
 
 
@@ -194,7 +196,7 @@ filter.</p>
 
 <p>Filters can be "chained." The output of one filter is applied to the next.
 <code>{{ text|escape|linebreaks }}</code> is a common idiom for escaping text
-contents, then converting line breaks to &lt;p&gt; tags.
+contents, then converting line breaks to &lt;p&gt; tags.</p>
 
 <p>Some filters take arguments. A filter argument looks like this:
 <code>{{ bio|truncate:30 }}</code>.
@@ -205,13 +207,14 @@ appending an ellipsis if its full length exceeds that.</p>
 list with commas and spaces you'd use <code>{{ list|join:", " }}</code>.</p>
 
 <p>Modulo's templating language provides several dozen built-in template
-filters. You can read all about them in the built-in filter reference. To give
-you a taste of what's available, here are some of the more commonly used
-template filters:</p>
+filters. You can read all about them in the
+<a href="/docs/template_reference.html#filters">built-in filter reference</a>.
+To give you a taste of what's available, here are some of the more commonly
+used template filters:</p>
 
 
 <div class="InfoBox">
-  <h2>Common Tags</h2>
+  <h2>Common filters</h2>
 
 <h3>default</h3>
 <p>If a variable is false or empty, use given default. Otherwise, use the value of
@@ -236,8 +239,9 @@ example:</p>
 will be 4.</p>
 </div>
 
-<p>Again, these are just a few examples; see the built-in filter reference for
-the complete list.</p>
+<p>Again, these are just a few examples; see the <a
+href="/docs/template_reference.html#filters">built-in filter reference</a>.
+for the complete list.</p>
 
 <p>You can also create your own custom template filters; see Custom template
 tags and filters.</p>
@@ -253,16 +257,20 @@ by later variables.</p>
 <p>Some tags require beginning and ending tags (i.e. <code>{% tag %} ...
 tag contents ... {% endtag %}</code>).</p>
 
+<p>Modulo ships with several built-in template-tags. You can read all about
+them in the <a
+href="/docs/template_reference.html#filters">built-in template-tag reference</a>.</p>
 
 <div class="InfoBox">
-  <h2>Common Tags</h2>
+  <h2>Common Template-Tags</h2>
 
-<p>Modulo ships with several built-in template tags. You can read all about
-them in the built-in tag reference.  Here are the most commonly used tags:</p>
+<p>Here are a couple commonly used template-tags:</p>
 
 <h4>for</h4>
-<p>Loop over each item in an array. For example, to display a list of athletes
-provided in <code>state.athletes</code>:</p>
+<p>Duplicate a block of HTML code for every item in a collection of items (e.g.
+an array). This allows a HTML code to be repeated while looping over each item
+in an array. For example, to display a list of athletes provided in
+<code>state.athletes</code>:</p>
 
 <pre>
 &lt;ul&gt;
@@ -298,27 +306,36 @@ displayed by the {{ state.athletes|length }} variable.</p>
 
 
 <h3>Final notes on tags</h3>
-<p>While the above example works, be aware that some template filters return
-strings, so mathematical comparisons using filters will generally not work as
-you expect. <code>|length</code> is an exception. You can use
+
+<p>The most important difference between template tags and template filters are
+that template tags are interpreted at compile-time (when the template is first
+loaded), while filters are interpreted at render time (when the component is
+outputting it's HTML into the DOM). This means that mistakes with template tags
+might stop the component from rendering at all (mistakes such as syntax typo or
+a buggy third-party template tag), while mistakes with filters may only be
+detected when it tries using it, and could even be overlooked if the filter
+doesn't get used, e.g. it's only within an if statement that you haven't
+tested.</p>
+
+<p>Also, while the above examples work, be aware that some template filters
+return strings, so mathematical comparisons using filters will generally not
+work as you expect. <code>|length</code> is an exception. You can use
 <code>|number</code> in other cases.</p>
 
-<p>You can also create your own custom template tags; see Custom template tags and
-filters.</p>
+<p>Finally, just like filters, you can also create your own custom template
+tags; see <a href="/docs/template_reference.html">Template Reference</a>.</p>
 
 
 <mdu-Section name="comments">Comments</mdu-Section>
 
 <p>To comment-out part of a line in a template, use the comment syntax:
 <code>{# text in here is ignored #}</code>. This syntax should only be used for
-single-line comments (no newlines are permitted between the <code>{#</code> and
-<code>#}</code> delimiters). Due to this, it's not intended for "commenting
-out" or disabling portions of template code.</p>
+single-line comments. Due to this, it's not intended for "commenting out" or
+disabling portions of template code.</p>
 
 <p>If you need to comment out a multiline portion of the template, especially a
 block of other template code, use the comment tag instead syntax instead. This
-looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code>
-</p>
+looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p>
 
 <p>Examples of both are below:</p>
 
@@ -327,9 +344,8 @@ text='
 <template>
     <h1>hello {# greeting #}</h1>
     {% comment %}
-      {% if state.visible %}<div></div>
-      {% endif %}
-      <h3>{{ state.items|first }}
+      {% if a %}<div>{{ b }}</div>{% endif %}
+      <h3>{{ state.items|first }}</h3>
     {% endcomment %}
     <p>Below the greeting...</p>
 </template>
@@ -340,13 +356,13 @@ text='
 <p>By default in Modulo, every template automatically escapes the output of
 every variable value. Specifically, these five characters are escaped:</p>
 
-<ol>
+<ul>
     <li>&gt; is converted to &amp;lt;</li>
     <li>&lt; is converted to &amp;gt;</li>
     <li>' (single quote) is converted to &amp;#x27;</li>
     <li>" (double quote) is converted to &amp;quot;</li>
     <li>&amp; is converted to &amp;amp;</li>
-</ol>
+</ul>
 
 <div class="InfoBox">
 <h2>Why escape</h2>
@@ -395,3 +411,34 @@ be:</p>
 This will be escaped: &amp;lt;b&amp;gt;
 This will not be escaped: &lt;b&gt;
 </pre>
+
+<p>Keep in mind that you should only mark trusted data as <code>|safe</code>.
+You don't want anyone trying to slip in malicious JS behavior!  Examine the
+code below for a concrete example of how this escaping behaves:</p>
+
+<mdu-CodeExample
+text='
+<template>
+<p>User "<em>{{ state.username }}</em>" sent a message:</p>
+<div class="msgcontent">
+    {{ state.content|safe }}
+</div>
+</template>
+
+<state
+    username="Little <Bobby> <Drop> &tables"
+    content=&#x27;
+        I <i>love</i> the classic <a target="_blank"
+        href="https://xkcd.com/327/">xkcd #327</a> on
+        the risk of trusting <b>user inputed data</b>
+    &#x27;
+></state>
+<style>
+    .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style>
+'></mdu-CodeExample>
+

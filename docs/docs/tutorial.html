@@ -116,7 +116,86 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
-    </style><style id="tutorial-DocSidebar_style">
+    </style><style id="eg-Simple_style">
+eg-Simple em { color: darkblue; }
+eg-Simple * { text-decoration: underline; }
+</style><style id="eg-Prime_style">
+eg-Prime .grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+eg-Prime .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-Prime div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-Prime div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-Prime div.number { background: green; }
+eg-Prime div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-Prime If found, then hide asterisk and green. */
+eg-Prime div.whole ~ div.number { background: #B90183; }
+eg-Prime div.whole ~ div.number::after { opacity: 0; }
+</style><style id="eg-MemoryGame_style">
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style><style id="tutorial-DocSidebar_style">
 tutorial-DocSidebar li {
       margin-left: 20px;
   }
@@ -133,12 +212,13 @@ tutorial-DocSidebar li.ginactive > a::before {
       content: '+ ';
   }
 </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
 
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:914}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -158,7 +238,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 904 lines<br>
+                SLOC: 914 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -212,7 +292,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/cparts.html">Directives</a>
+            "><a href="/docs/templating.html">Templating</a>
             
         </li>
     
@@ -220,7 +300,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/templating.html">Templating</a>
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
             
         </li>
     
@@ -236,7 +316,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/examples.html">Example Library</a>
+            "><a href="/docs/example_library.html">Example Library</a>
             
         </li>
     
@@ -270,8 +350,8 @@ requires familiarity with JavaScript. Familiarity with React, Vue, or
 similar frameworks is helpful, but not required.</p></blockquote>
 
 <h1>The Modulo Tutorial</h1>
-<p>Welcome to the Modulo tutorial. By following these short tutorials,
-you can learn how to use Modulo in your own projects.</p>
+<p>Welcome to the Modulo tutorial. By following this short tutorial, you can
+learn how to use Modulo in your own projects.</p>
 <p><strong>Ready to dive in to Web Component development with
 Modulo?</strong></p>
 
@@ -314,23 +394,30 @@ file, which is the preferred way.</p>
 <p><strong>Component definitions</strong> start with a "component"
 opening tag in the format of
 <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>. Modulo will scan a
-document for these tags, creating components for each one it encounters.
+document for these tags, defining components for each one it encounters.
 Every component definition must specify a name, conventionally in
-<code>UpperCamelCase</code> (although technically component names are case
-insensitive).</p>
+<code>UpperCamelCase</code>. This is just a convention when writing code:
+Technically HTML tag names are all case insensitive, and so while inspecting
+the DOM, browsers may display them in <code>all-lowercase</code>.</p>
 
 <p>Once defined, you can use a component by referring to it's name as
 though it were a plain HTML tag like &lt;div&gt;. Components can go
 anywhere that plain HTML tags can go, and can be styled with CSS the same
 way as well. Unlike plain HTML tags, you must use a dash (<code>-</code>)
-when referring to a component, such as by prefixing with an "x" as such:
-<code>x-</code>. This is a rule of the HTML5 Custom Components
-standard, which Modulo is based upon.</p>
+when referring to a component. This is a rule of the HTML5 Custom
+Components standard, which Modulo is based upon.</p>
 
-<p>So, if a component is defined like
+<p>Modulo's default behavior is to prefix custom components with an
+<code>x-</code>. So, if a component is defined like
 <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, then it can be
 referenced elsewhere like
 <code>&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;</code>.</p>
+
+<p>Finally, one more thing: When defining custom components in an HTML
+document, you can't put them scattered everywhere. You have to keep them in one
+place.  Specifically, to keep things neater, Modulo searches for component
+definitions only within a <code>modulo-embed</code> HTML template tag:
+<code>&lt;template modulo-embed&gt;</code></p>
 
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
@@ -340,7 +427,6 @@ referenced elsewhere like
     <ol>
         <li>Open up an HTML file in your preferred text editor. It's okay
         to start from scratch, or use an existing project.</li>
-        <li>Open that HTML file in your preferred web browser as well.</li>
         <li>Copy &amp; paste in the following code:
 
 <mdu-codesnippet text="
@@ -352,17 +438,17 @@ referenced elsewhere like
         </template>
     </component>
 </template>
-
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <x-HelloWorld></x-HelloWorld>
 <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
-
 <!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) -->
 <script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
 <script>Modulo.defineAll();</script>
 "></mdu-codesnippet>
 </li>
 <!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
+        <li>Ensure that the HTML file is open in your preferred web browser as
+        well.</li>
         <li>Refresh the web browser to view the results.</li>
     </ol>
 </section>
@@ -587,6 +673,23 @@ useful results from using Modulo, since even without JavaScript usage we
 are already defining simple components that can help us re-use HTML code
 between different pages.</p>
 
+
+<h4>Summary definitions</h4>
+
+<ul>
+<li> Component - A discrete, re-usable bit of code, typically used to show a
+graphical UI element (eg a button, or a rich-text area). Components can also
+use other components (eg a form component might contain both of the above as
+child components).</li>
+
+<li>ComponentPart, or CPart - Each component consists of a "bag" or "bundle" of
+CParts, each CPart being a "pluggable" module that supplies different
+functionality for that component.</li>
+<li>customElement - The term used for a custom HTML5 web component</li>
+</ul>
+
+
+
 <p>In the subsequent tutorials we will go deeper: Explore the full
 capabilities of Templates, allow flexible and composable components with
 Props CPart, create custom behavior with Script CParts,  and finally create
@@ -693,7 +796,15 @@ coming soon!
 
 </mdu-section></mdu-route>
 
+        <mdu-route name="cparts" src="./_docs/cparts.html"></mdu-route>
+
+        <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
+
         <mdu-route name="templating" src="./_docs/templating.html"></mdu-route>
+
+        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
+
+        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
 
         <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
     </aside>

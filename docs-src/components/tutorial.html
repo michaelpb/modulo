@@ -11,6 +11,7 @@
 </component>
 
 
+<!--  dead code - - v          -->
 <component name="TutNav">
     <props
         selected
@@ -122,20 +123,6 @@
         },
 
         {
-            label: 'Directives',
-            filename: '/docs/cparts.html',
-            children: [
-                _child('Component'),
-                _child('Props'),
-                _child('Template'),
-                _child('State'),
-                _child('Script'),
-                _child('Style'),
-                _child('Custom CParts API', 'custom'),
-            ],
-        },
-
-        {
             label: 'Templating',
             filename: '/docs/templating.html',
             children: [
@@ -145,6 +132,17 @@
                 _child('Tags'),
                 _child('Comments'),
                 _child('Escaping'),
+            ],
+        },
+
+        {
+            label: 'Lifecycle & Directives',
+            filename: '/docs/directives.html',
+            children: [
+                _child('Lifecycle', 'lifecycle'),
+                _child('renderObj', 'renderobj'),
+                _child('Directives', 'directives'),
+                //_child('Built-in directives', 'builtin'),
             ],
         },
 
@@ -161,7 +159,7 @@
 
         {
             label: 'Example Library',
-            filename: '/docs/examples.html',
+            filename: '/docs/example_library.html',
             children: [
                 _child('Hello'),
                 _child('Simple'),
@@ -215,10 +213,6 @@
     <li>Directives
       <ul>
           <li>Built-ins</li>
-              <li>[state.bind]</li>
-              <li>[component.event] (@)</li>
-              <li>[component.resolve] (:)</li>
-              <li>[component.children]</li>
           <li>Extending</li>
           <li>API Reference</li>
           <li>Filters</li>

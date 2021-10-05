@@ -7,8 +7,8 @@ requires familiarity with JavaScript. Familiarity with React, Vue, or
 similar frameworks is helpful, but not required.</p></blockquote>
 
 <h1>The Modulo Tutorial</h1>
-<p>Welcome to the Modulo tutorial. By following these short tutorials,
-you can learn how to use Modulo in your own projects.</p>
+<p>Welcome to the Modulo tutorial. By following this short tutorial, you can
+learn how to use Modulo in your own projects.</p>
 <p><strong>Ready to dive in to Web Component development with
 Modulo?</strong></p>
 
@@ -51,23 +51,30 @@ file, which is the preferred way.</p>
 <p><strong>Component definitions</strong> start with a "component"
 opening tag in the format of
 <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>. Modulo will scan a
-document for these tags, creating components for each one it encounters.
+document for these tags, defining components for each one it encounters.
 Every component definition must specify a name, conventionally in
-<code>UpperCamelCase</code> (although technically component names are case
-insensitive).</p>
+<code>UpperCamelCase</code>. This is just a convention when writing code:
+Technically HTML tag names are all case insensitive, and so while inspecting
+the DOM, browsers may display them in <code>all-lowercase</code>.</p>
 
 <p>Once defined, you can use a component by referring to it's name as
 though it were a plain HTML tag like &lt;div&gt;. Components can go
 anywhere that plain HTML tags can go, and can be styled with CSS the same
 way as well. Unlike plain HTML tags, you must use a dash (<code>-</code>)
-when referring to a component, such as by prefixing with an "x" as such:
-<code>x-</code>. This is a rule of the HTML5 Custom Components
-standard, which Modulo is based upon.</p>
+when referring to a component. This is a rule of the HTML5 Custom
+Components standard, which Modulo is based upon.</p>
 
-<p>So, if a component is defined like
+<p>Modulo's default behavior is to prefix custom components with an
+<code>x-</code>. So, if a component is defined like
 <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, then it can be
 referenced elsewhere like
 <code>&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;</code>.</p>
+
+<p>Finally, one more thing: When defining custom components in an HTML
+document, you can't put them scattered everywhere. You have to keep them in one
+place.  Specifically, to keep things neater, Modulo searches for component
+definitions only within a <code>modulo-embed</code> HTML template tag:
+<code>&lt;template modulo-embed&gt;</code></p>
 
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
@@ -77,7 +84,6 @@ referenced elsewhere like
     <ol>
         <li>Open up an HTML file in your preferred text editor. It's okay
         to start from scratch, or use an existing project.</li>
-        <li>Open that HTML file in your preferred web browser as well.</li>
         <li>Copy &amp; paste in the following code:
 
 <mdu-CodeSnippet
@@ -90,17 +96,17 @@ text='
         </template>
     </component>
 </template>
-
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <x-HelloWorld></x-HelloWorld>
 <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
-
 <!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
 <script src="https://modulojs.org/js/Modulo.js"></script>
 <script>Modulo.defineAll();</script>
 '></mdu-CodeSnippet>
 </li>
 <!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
+        <li>Ensure that the HTML file is open in your preferred web browser as
+        well.</li>
         <li>Refresh the web browser to view the results.</li>
     </ol>
 </section>
@@ -328,6 +334,23 @@ into different HTML files. At this point, you can already start getting
 useful results from using Modulo, since even without JavaScript usage we
 are already defining simple components that can help us re-use HTML code
 between different pages.</p>
+
+
+<h4>Summary definitions</h4>
+
+<ul>
+<li> Component - A discrete, re-usable bit of code, typically used to show a
+graphical UI element (eg a button, or a rich-text area). Components can also
+use other components (eg a form component might contain both of the above as
+child components).</li>
+
+<li>ComponentPart, or CPart - Each component consists of a "bag" or "bundle" of
+CParts, each CPart being a "pluggable" module that supplies different
+functionality for that component.</li>
+<li>customElement - The term used for a custom HTML5 web component</li>
+</ul>
+
+
 
 <p>In the subsequent tutorials we will go deeper: Explore the full
 capabilities of Templates, allow flexible and composable components with

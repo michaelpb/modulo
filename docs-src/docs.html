@@ -9,6 +9,7 @@
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
     <mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
 </head>
 
@@ -36,8 +37,28 @@
         ></mdu-Route>
 
         <mdu-Route
+          name="cparts"
+          src="./_docs/cparts.html"
+        ></mdu-Route>
+
+        <mdu-Route
+          name="directives"
+          src="./_docs/directives.html"
+        ></mdu-Route>
+
+        <mdu-Route
           name="templating"
           src="./_docs/templating.html"
+        ></mdu-Route>
+
+        <mdu-Route
+          name="template_reference"
+          src="./_docs/template_reference.html"
+        ></mdu-Route>
+
+        <mdu-Route
+          name="example_library"
+          src="./_docs/example_library.html"
         ></mdu-Route>
 
         <mdu-Route

@@ -116,7 +116,86 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
-    </style><style id="tutorial-DocSidebar_style">
+    </style><style id="eg-Simple_style">
+eg-Simple em { color: darkblue; }
+eg-Simple * { text-decoration: underline; }
+</style><style id="eg-Prime_style">
+eg-Prime .grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+eg-Prime .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-Prime div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-Prime div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-Prime div.number { background: green; }
+eg-Prime div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-Prime If found, then hide asterisk and green. */
+eg-Prime div.whole ~ div.number { background: #B90183; }
+eg-Prime div.whole ~ div.number::after { opacity: 0; }
+</style><style id="eg-MemoryGame_style">
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style><style id="tutorial-DocSidebar_style">
 tutorial-DocSidebar li {
       margin-left: 20px;
   }
@@ -133,12 +212,13 @@ tutorial-DocSidebar li.ginactive > a::before {
       content: '+ ';
   }
 </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
 
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:904}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:914}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -158,7 +238,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 904 lines<br>
+                SLOC: 914 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -198,14 +278,6 @@ tutorial-DocSidebar li.ginactive > a::before {
     
         <li class="
             
-                ginactive
-            
-            "><a href="/docs/cparts.html">Directives</a>
-            
-        </li>
-    
-        <li class="
-            
                 gactive
             
             "><a href="/docs/templating.html">Templating</a>
@@ -234,6 +306,14 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
             "><a href="/docs/template_reference.html">Template Reference</a>
             
         </li>
@@ -242,7 +322,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/examples.html">Example Library</a>
+            "><a href="/docs/example_library.html">Example Library</a>
             
         </li>
     
@@ -268,6 +348,10 @@ tutorial-DocSidebar li.ginactive > a::before {
         <mdu-routeindex></mdu-routeindex>
 
         <mdu-route name="tutorial" src="./_docs/tutorial.html"></mdu-route>
+
+        <mdu-route name="cparts" src="./_docs/cparts.html"></mdu-route>
+
+        <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
 
         <mdu-route name="templating" src="./_docs/templating.html"><h1>Modulo Templating Language</h1>
 
@@ -399,8 +483,9 @@ accessed, as that can be used to indicate private.</p>
 
 <h3>What variables are available</h3>
 
-<p>Variables come from the component's renderObj. More on the "renderObj" in
-the section on Lifecylce.</p>
+<p>Variables come from the component's renderObj that is produced in the
+<code>prepare</code> stage. <a href="/docs/directives.html#renderobj">More on
+the "renderObj" in the section on lifecycle.</a></p>
 
 <p>In practicality, this is another way to say that most variables typically
 "come from" the CParts of a component.</p>
@@ -443,8 +528,9 @@ into the mix as well. As a sneak-peak, examine the following code:</p>
 </pre>
 
 <p>Note how <code>athlete</code> declares a new variable, which can be reused
-in <code>{{ athlete.name }}</code>. For more on for-loops, see the built-in
-template-tag reference.</p>
+in <code>{{ athlete.name }}</code>. For more on for-loops, see the 
+<a href="/docs/template_reference.html#tags">built-in
+template-tag reference.</a></p>
 
 
 
@@ -459,9 +545,9 @@ filter.</p>
 
 <p>Filters can be "chained." The output of one filter is applied to the next.
 <code>{{ text|escape|linebreaks }}</code> is a common idiom for escaping text
-contents, then converting line breaks to &lt;p&gt; tags.
+contents, then converting line breaks to &lt;p&gt; tags.</p>
 
-</p><p>Some filters take arguments. A filter argument looks like this:
+<p>Some filters take arguments. A filter argument looks like this:
 <code>{{ bio|truncate:30 }}</code>.
 This will display the first 30 characters of the bio variable, possibly
 appending an ellipsis if its full length exceeds that.</p>
@@ -470,13 +556,14 @@ appending an ellipsis if its full length exceeds that.</p>
 list with commas and spaces you'd use <code>{{ list|join:", " }}</code>.</p>
 
 <p>Modulo's templating language provides several dozen built-in template
-filters. You can read all about them in the built-in filter reference. To give
-you a taste of what's available, here are some of the more commonly used
-template filters:</p>
+filters. You can read all about them in the
+<a href="/docs/template_reference.html#filters">built-in filter reference</a>.
+To give you a taste of what's available, here are some of the more commonly
+used template filters:</p>
 
 
 <div class="InfoBox">
-  <h2>Common Tags</h2>
+  <h2>Common filters</h2>
 
 <h3>default</h3>
 <p>If a variable is false or empty, use given default. Otherwise, use the value of
@@ -499,8 +586,8 @@ example:</p>
 will be 4.</p>
 </div>
 
-<p>Again, these are just a few examples; see the built-in filter reference for
-the complete list.</p>
+<p>Again, these are just a few examples; see the <a href="/docs/template_reference.html#filters">built-in filter reference</a>.
+for the complete list.</p>
 
 <p>You can also create your own custom template filters; see Custom template
 tags and filters.</p>
@@ -516,16 +603,19 @@ by later variables.</p>
 <p>Some tags require beginning and ending tags (i.e. <code>{% tag %} ...
 tag contents ... {% endtag %}</code>).</p>
 
+<p>Modulo ships with several built-in template-tags. You can read all about
+them in the <a href="/docs/template_reference.html#filters">built-in template-tag reference</a>.</p>
 
 <div class="InfoBox">
-  <h2>Common Tags</h2>
+  <h2>Common Template-Tags</h2>
 
-<p>Modulo ships with several built-in template tags. You can read all about
-them in the built-in tag reference.  Here are the most commonly used tags:</p>
+<p>Here are a couple commonly used template-tags:</p>
 
 <h4>for</h4>
-<p>Loop over each item in an array. For example, to display a list of athletes
-provided in <code>state.athletes</code>:</p>
+<p>Duplicate a block of HTML code for every item in a collection of items (e.g.
+an array). This allows a HTML code to be repeated while looping over each item
+in an array. For example, to display a list of athletes provided in
+<code>state.athletes</code>:</p>
 
 <pre>&lt;ul&gt;
     {% for athlete in state.athletes %}
@@ -558,27 +648,36 @@ displayed by the {{ state.athletes|length }} variable.</p>
 
 
 <h3>Final notes on tags</h3>
-<p>While the above example works, be aware that some template filters return
-strings, so mathematical comparisons using filters will generally not work as
-you expect. <code>|length</code> is an exception. You can use
+
+<p>The most important difference between template tags and template filters are
+that template tags are interpreted at compile-time (when the template is first
+loaded), while filters are interpreted at render time (when the component is
+outputting it's HTML into the DOM). This means that mistakes with template tags
+might stop the component from rendering at all (mistakes such as syntax typo or
+a buggy third-party template tag), while mistakes with filters may only be
+detected when it tries using it, and could even be overlooked if the filter
+doesn't get used, e.g. it's only within an if statement that you haven't
+tested.</p>
+
+<p>Also, while the above examples work, be aware that some template filters
+return strings, so mathematical comparisons using filters will generally not
+work as you expect. <code>|length</code> is an exception. You can use
 <code>|number</code> in other cases.</p>
 
-<p>You can also create your own custom template tags; see Custom template tags and
-filters.</p>
+<p>Finally, just like filters, you can also create your own custom template
+tags; see <a href="/docs/template_reference.html">Template Reference</a>.</p>
 
 
 <mdu-section name="comments">Comments</mdu-section>
 
 <p>To comment-out part of a line in a template, use the comment syntax:
 <code>{# text in here is ignored #}</code>. This syntax should only be used for
-single-line comments (no newlines are permitted between the <code>{#</code> and
-<code>#}</code> delimiters). Due to this, it's not intended for "commenting
-out" or disabling portions of template code.</p>
+single-line comments. Due to this, it's not intended for "commenting out" or
+disabling portions of template code.</p>
 
 <p>If you need to comment out a multiline portion of the template, especially a
 block of other template code, use the comment tag instead syntax instead. This
-looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code>
-</p>
+looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p>
 
 <p>Examples of both are below:</p>
 
@@ -586,9 +685,8 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code>
 <template>
     <h1>hello {# greeting #}</h1>
     {% comment %}
-      {% if state.visible %}<div></div>
-      {% endif %}
-      <h3>{{ state.items|first }}
+      {% if a %}<div>{{ b }}</div>{% endif %}
+      <h3>{{ state.items|first }}</h3>
     {% endcomment %}
     <p>Below the greeting...</p>
 </template>
@@ -599,13 +697,13 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code>
 <p>By default in Modulo, every template automatically escapes the output of
 every variable value. Specifically, these five characters are escaped:</p>
 
-<ol>
+<ul>
     <li>&gt; is converted to &amp;lt;</li>
     <li>&lt; is converted to &amp;gt;</li>
     <li>' (single quote) is converted to &amp;#x27;</li>
     <li>" (double quote) is converted to &amp;quot;</li>
     <li>&amp; is converted to &amp;amp;</li>
-</ol>
+</ul>
 
 <div class="InfoBox">
 <h2>Why escape</h2>
@@ -651,7 +749,41 @@ be:</p>
 <pre>This will be escaped: &amp;lt;b&amp;gt;
 This will not be escaped: &lt;b&gt;
 </pre>
+
+<p>Keep in mind that you should only mark trusted data as <code>|safe</code>.
+You don't want anyone trying to slip in malicious JS behavior!  Examine the
+code below for a concrete example of how this escaping behaves:</p>
+
+<mdu-codeexample text="
+<template>
+<p>User &quot;<em>{{ state.username }}</em>&quot; sent a message:</p>
+<div class=&quot;msgcontent&quot;>
+    {{ state.content|safe }}
+</div>
+</template>
+
+<state
+    username=&quot;Little <Bobby> <Drop> &amp;tables&quot;
+    content='
+        I <i>love</i> the classic <a target=&quot;_blank&quot;
+        href=&quot;https://xkcd.com/327/&quot;>xkcd #327</a> on
+        the risk of trusting <b>user inputed data</b>
+    '
+></state>
+<style>
+    .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style>
+"></mdu-codeexample>
+
 </mdu-route>
+
+        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
+
+        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
 
         <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
     </aside>

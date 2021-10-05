@@ -29,6 +29,41 @@
     - All cparts get stored in a list. Simply assign cparts.template to
       something else!
 
+- Idea for testsuite CPart:
+    - Reads in sub-CParts, like:
+
+            <testsuite>
+                <test>
+                    <setup>
+                        <props a="3"></props>
+                        <state b="5"></state>
+                        <script>
+                            // example mocking
+                            element.dbConnection = () => {};
+                        </script>
+                    </setup>
+                    <!-- Exact DOM match of entire DOM -->
+                    <template snapshot>
+                        <p>Hello 3 world!</p>
+                        <h1>I have 5 bananas</h1>
+                    </template>
+                    <!-- Fuzzy DOM match, default (eg, can actual DOM be
+                         transformed into this DOM, by only doing "delete"?) -->
+                    <template subdom>
+                        <p>Hello 3 world!</p>
+                    </template>
+                    <!-- Check if ANYWHERE in template this string EXACTLY
+                    occurs -->
+                    <template includes>
+                        <p>Hello 3 world!</p>
+                    </template>
+                    <script message="Ensure HTML contains 3">
+                        assert element.innerHTML.includes('3'); // does an assert->return substitution
+                    </script>
+                </test>
+            </testsuite>
+    - More useful once we get CPart loading from files
+    - Could be used for better tests for documentation
 
 - Idea for custom CParts:
 

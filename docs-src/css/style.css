@@ -8,6 +8,11 @@ textarea {
   font-size: 14px;
 }
 
+code {
+  font-family: monospace;
+  border-bottom: 1px dotted var(--highlight-color);
+}
+
 html {
   box-sizing: border-box;
   font-size: 16px;
@@ -362,33 +367,21 @@ a:visited {
     color: #666;
 }
 
-.Tutorial p,
 .Docs p {
     margin-top: 5px;
     margin-bottom: 20px;
 }
 
-.Tutorial p:last-of-type,
 .Docs p:last-of-type {
     margin-bottom: 0;
 }
 
-.Tutorial p:first-of-type {
-    text-indent: 0;
-}
-
-.Tutorial {
-    font-size: 1.2rem;
-}
-
-.Tutorial ul li,
 .Docs ul li {
     list-style: disc;
     margin-left: 40px;
 }
 
-.Docs .InfoBox,
-.Tutorial .InfoBox {
+.Docs .InfoBox {
     border: 1px solid var(--highlight-color);
     padding: 20px;
     display: block;
@@ -422,18 +415,19 @@ a:visited {
     font-size: 1.6rem;
 }
 
-.Docs  h3 {
+.Docs h3 {
     font-weight: bold;
     font-size: 1.3rem;
+    margin-top: 10px;
 }
-.Docs  h4 {
+.Docs h4 {
     font-weight: bold;
     font-size: 1.1rem;
     margin-top: 5px;
 }
 
-.Tutorial blockquote {
-    max-width: 280px;
+.Docs blockquote {
+    max-width: 30%;
     float: right;
     border: 1px solid black;
     border-radius: 10px;
@@ -442,21 +436,28 @@ a:visited {
     line-height: 1.3;
     font-size: 0.98rem;
 }
+@media (max-width: 992px) {
+    .Docs blockquote {
+        max-width: none;
+        float: none;
+        clear: both;
+    }
+}
 
-.Tutorial blockquote > p {
+.Docs blockquote > p {
     margin-top: 5px;
     margin-bottom: 0;
 }
-.Tutorial blockquote > p:first-child {
+.Docs blockquote > p:first-child {
     margin-top: 0;
 }
 
-.Tutorial blockquote strong {
+.Docs blockquote strong {
     color: var(--highlight-color);
     font-size: 1.1rem;
 }
 
-.Tutorial blockquote strong:first-child::before {
+.Docs blockquote strong:first-child::before {
     content: '%   ';
 }
 
@@ -471,17 +472,6 @@ a:visited {
     clear: both;
 }
 
-.Tutorial > h2,
-.Tutorial > h3,
-.Tutorial > h4,
-.Tutorial > mdu-Route > h2,
-.Tutorial > mdu-Route > h3,
-.Tutorial > mdu-Route > h4 {
-    font-weight: bold;
-    color: var(--highlight-color);
-    margin-top: 30px;
-    margin-bottom: 0;
-}
 
 .Tutorial-tryit h4 {
     color: var(--highlight-color);
@@ -492,25 +482,22 @@ a:visited {
     letter-spacing: 1px;
 }
 
-.Tutorial ol > li {
+.Docs ol > li {
     list-style: decimal;
     margin-left: 40px;
 }
 
-.Tutorial {
-    counter-reset: h2counter;
-}
-.Tutorial > h2 {
+.Docs > h2 {
     counter-increment: h2counter;
     counter-reset: h3counter;
 }
-.Tutorial > h2:before {
+.Docs > h2:before {
     content: counter(h2counter) ".\0000a0\0000a0";
 }
-.Tutorial > h3 {
+.Docs > h3 {
     counter-increment: h3counter;
 }
-.Tutorial > h3:before {
+.Docs > h3:before {
     content: counter(h2counter) "." counter(h3counter) ".\0000a0\0000a0";
 }
 
