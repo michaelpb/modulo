@@ -33,6 +33,7 @@ var Modulo = {
 // "activate" all of Modulo by defining the "mod-load" web component. This
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
+    Modulo.fetchQ = new Modulo.FetchQueue();
     Modulo.globals.customElements.define('mod-load', Modulo.Loader);
 
     // Then, looks for embedded modulo components, found in <template modulo>
@@ -50,8 +51,7 @@ Modulo.Loader = class Loader extends HTMLElement {
 
     // ## Loader: connectedCallback()
     constructor(...args) {
-        super();
-        this.queue = new Modulo.FetchQueue(this.src || '');
+        super(...args);
         this.factoryData = [];
     }
 
@@ -67,7 +67,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         // After initializing data, send a new request to the URL specified by
         // the src attribute. When the response is received, load the text as a
         // Modulo component module definition.
-        this.queue.enqueue(this.src, text => this.loadString(text));
+        Modulo.fetchQ.enqueue(this.src, text => this.loadString(text));
         /*
 
         this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
@@ -124,7 +124,7 @@ Modulo.Loader = class Loader extends HTMLElement {
             const [name, loadObj] = this.loadFromDOMElement(tag);
             this.factoryData.push([name, loadObj]);
         }
-        this.queue.wait(() => this.defineComponents());
+        Modulo.fetchQ.wait(() => this.defineComponents());
     }
 
     defineComponents(extraDeps) {
@@ -183,7 +183,7 @@ Modulo.Loader = class Loader extends HTMLElement {
             if (data.dependencies) {
                 const cb = (text, label) =>
                     loadedCallback(data, text, label, this, loadObj);
-                this.queue.enqueue(data.dependencies, cb);
+                Modulo.fetchQ.enqueue(data.dependencies, cb, this.src);
             }
         }
         return [name, loadObj];
@@ -585,7 +585,7 @@ Modulo.ComponentPart = class ComponentPart {
     }
 
     static loadedCallback(data, content) {
-        data.content = (newData.src || '') + content;
+        data.content = (data.content || '') + (content || '');
     }
 
     static factoryCallback() {}
@@ -1433,7 +1433,7 @@ Modulo.utils = class utils {
         return key.split('.').reduce((o, name) => o[name], obj);
     }
     static dirname(path) {
-        return path.match(/.*\//);
+        return (path || '').match(/.*\//);
     }
     static hash(str) {
         // Simple, insecure, hashing function, returns hex hash
@@ -1444,15 +1444,13 @@ Modulo.utils = class utils {
     }
 }
 
-
 Modulo.FetchQueue = class FetchQueue {
-    constructor(relativeTo) {
+    constructor() {
         this.queue = {};
         this.data = {};
-        this.basePath = Modulo.utils.dirname(relativeTo);
     }
-    enqueue(queueObj, callback, opts = null, responseCb = null) {
-        opts = opts || {};
+    enqueue(queueObj, callback, basePath, opts, responseCb) {
+        opts = opts || this.defaultOpts || {};
         responseCb = responseCb || (response => response.text());
         queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
         for (let [label, src] of Object.entries(queueObj)) {

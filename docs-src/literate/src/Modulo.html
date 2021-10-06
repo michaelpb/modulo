@@ -110,6 +110,7 @@ constructs a Loader object for every <code>&lt;mod-load ...&gt;</code> tag it en
             </div>
             
             <div class="content"><div class='highlight'><pre>Modulo.defineAll = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">defineAll</span>(<span class="hljs-params"></span>) </span>{
+    Modulo.fetchQ = <span class="hljs-keyword">new</span> Modulo.FetchQueue();
     Modulo.globals.customElements.define(<span class="hljs-string">&#x27;mod-load&#x27;</span>, Modulo.Loader);</pre></div></div>
             
         </li>
@@ -187,8 +188,7 @@ the heavy lifting of fetching &amp; registering Modulo components.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">...args</span>)</span> {
-        <span class="hljs-built_in">super</span>();
-        <span class="hljs-built_in">this</span>.queue = <span class="hljs-keyword">new</span> Modulo.FetchQueue(<span class="hljs-built_in">this</span>.src || <span class="hljs-string">&#x27;&#x27;</span>);
+        <span class="hljs-built_in">super</span>(...args);
         <span class="hljs-built_in">this</span>.factoryData = [];
     }</pre></div></div>
             
@@ -228,7 +228,7 @@ Modulo component module definition.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.queue.enqueue(<span class="hljs-built_in">this</span>.src, <span class="hljs-function"><span class="hljs-params">text</span> =&gt;</span> <span class="hljs-built_in">this</span>.loadString(text));
+            <div class="content"><div class='highlight'><pre>        Modulo.fetchQ.enqueue(<span class="hljs-built_in">this</span>.src, <span class="hljs-function"><span class="hljs-params">text</span> =&gt;</span> <span class="hljs-built_in">this</span>.loadString(text));
         <span class="hljs-comment">/*
 
         this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
@@ -323,7 +323,7 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
             <span class="hljs-keyword">const</span> [name, loadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(tag);
             <span class="hljs-built_in">this</span>.factoryData.push([name, loadObj]);
         }
-        <span class="hljs-built_in">this</span>.queue.wait(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">this</span>.defineComponents());
+        Modulo.fetchQ.wait(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">this</span>.defineComponents());
     }
 
     <span class="hljs-function"><span class="hljs-title">defineComponents</span>(<span class="hljs-params">extraDeps</span>)</span> {
@@ -490,7 +490,7 @@ data necessary to define this CPart.</p>
             <span class="hljs-keyword">if</span> (data.dependencies) {
                 <span class="hljs-keyword">const</span> cb = <span class="hljs-function">(<span class="hljs-params">text, label</span>) =&gt;</span>
                     loadedCallback(data, text, label, <span class="hljs-built_in">this</span>, loadObj);
-                <span class="hljs-built_in">this</span>.queue.enqueue(data.dependencies, cb);
+                Modulo.fetchQ.enqueue(data.dependencies, cb, <span class="hljs-built_in">this</span>.src);
             }
         }
         <span class="hljs-keyword">return</span> [name, loadObj];
@@ -1355,7 +1355,7 @@ Modulo.ComponentPart = <span class="hljs-class"><span class="hljs-keyword">class
     }
 
     <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">loadedCallback</span>(<span class="hljs-params">data, content</span>)</span> {
-        data.content = (newData.src || <span class="hljs-string">&#x27;&#x27;</span>) + content;
+        data.content = (data.content || <span class="hljs-string">&#x27;&#x27;</span>) + (content || <span class="hljs-string">&#x27;&#x27;</span>);
     }
 
     <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">factoryCallback</span>(<span class="hljs-params"></span>)</span> {}
@@ -2951,7 +2951,7 @@ node to the new position if needed and diff it.</p>
         <span class="hljs-keyword">return</span> key.split(<span class="hljs-string">&#x27;.&#x27;</span>).reduce(<span class="hljs-function">(<span class="hljs-params">o, name</span>) =&gt;</span> o[name], obj);
     }
     <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">dirname</span>(<span class="hljs-params">path</span>)</span> {
-        <span class="hljs-keyword">return</span> path.match(<span class="hljs-regexp">/.*\//</span>);
+        <span class="hljs-keyword">return</span> (path || <span class="hljs-string">&#x27;&#x27;</span>).match(<span class="hljs-regexp">/.*\//</span>);
     }
     <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">hash</span>(<span class="hljs-params">str</span>)</span> {</pre></div></div>
             
@@ -2975,15 +2975,13 @@ node to the new position if needed and diff it.</p>
     }
 }
 
-
 Modulo.FetchQueue = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FetchQueue</span> </span>{
-    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">relativeTo</span>)</span> {
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"></span>)</span> {
         <span class="hljs-built_in">this</span>.queue = {};
         <span class="hljs-built_in">this</span>.data = {};
-        <span class="hljs-built_in">this</span>.basePath = Modulo.utils.dirname(relativeTo);
     }
-    <span class="hljs-function"><span class="hljs-title">enqueue</span>(<span class="hljs-params">queueObj, callback, opts = <span class="hljs-literal">null</span>, responseCb = <span class="hljs-literal">null</span></span>)</span> {
-        opts = opts || {};
+    <span class="hljs-function"><span class="hljs-title">enqueue</span>(<span class="hljs-params">queueObj, callback, basePath, opts, responseCb</span>)</span> {
+        opts = opts || <span class="hljs-built_in">this</span>.defaultOpts || {};
         responseCb = responseCb || (<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> response.text());
         queueObj = <span class="hljs-keyword">typeof</span> queueObj === <span class="hljs-string">&#x27;string&#x27;</span> ? {<span class="hljs-string">&#x27;:)&#x27;</span>: queueObj} : queueObj;
         <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> [label, src] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(queueObj)) {</pre></div></div>
