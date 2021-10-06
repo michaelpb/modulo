@@ -333,7 +333,7 @@
             const namespace = `eg${exCounter}-${state.nscounter}`; // TODO: later do hot reloading using same loader
             state.nscounter++;
             const loadOpts = {src: '', namespace};
-            const loader = Object.assign(new Modulo.Loader, loadOpts);
+            const loader = new Modulo.Loader(null, {options: loadOpts});
             const tagName = 'Example';
             let text = element.codeMirrorEditor.getValue();
             text = `<template mod-component="${tagName}">${text}</template>`;

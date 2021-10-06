@@ -34,40 +34,27 @@ var Modulo = {
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
     Modulo.fetchQ = new Modulo.FetchQueue();
-    Modulo.globals.customElements.define('mod-load', Modulo.Loader);
+    Modulo.globals.customElements.define('mod-load', Modulo.DOMLoader);
 
     // Then, looks for embedded modulo components, found in <template modulo>
     // tags or <script type="modulo/embed" tags>. For each of these, it loads
     // their contents into a global loader with namespace 'x'.
-    Modulo.globalLoader = new Modulo.Loader();
-    Modulo.globalLoader.namespace = 'x';
+    const opts = {options: {namespace: 'x'}};
+    Modulo.globalLoader = new Modulo.Loader(null, opts);
     Modulo.globalLoader.loadModules(Modulo.globals.document);
 };
 
-// # Modulo.Loader
-// Once registered by `defineAll()`, the `Modulo.Loader` will do the rest of
-// the heavy lifting of fetching & registering Modulo components.
-Modulo.Loader = class Loader extends HTMLElement {
-
-    // ## Loader: connectedCallback()
-    constructor(...args) {
-        super(...args);
-        this.factoryData = [];
-    }
-
+Modulo.DOMLoader = class DOMLoader extends HTMLElement {
+    // TODO: Delete DOMLoader
     // The Web Components specifies the use of a "connectedCallback" function.
     // In this case, this function will be invoked as soon as the DOM is loaded
     // with a `<mod-load>` tag in it.
     connectedCallback() {
-        this.src = this.getAttribute('src');
-        this.namespace = this.getAttribute('namespace');
-        Modulo.assert(this.src, 'Loader: Invalid or missing src= attribute');
-        Modulo.assert(this.namespace, 'Loader: Invalid or missing namespace= attribute');
-
-        // After initializing data, send a new request to the URL specified by
-        // the src attribute. When the response is received, load the text as a
-        // Modulo component module definition.
-        Modulo.fetchQ.enqueue(this.src, text => this.loadString(text));
+        const src = this.getAttribute('src');
+        const namespace = this.getAttribute('namespace');
+        const opts = {options: {namespace, src}};
+        this.loader = new Modulo.Loader(null, opts);
+        this.loader.doFetch();
         /*
 
         this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
@@ -85,6 +72,53 @@ Modulo.Loader = class Loader extends HTMLElement {
         } else {
         }
         */
+    }
+}
+
+Modulo.ComponentPart = class ComponentPart {
+    static loadCallback(node, loader, loadObj) {
+        // TODO rename "options" to "attrs", refactor this mess
+        const options = Modulo.utils.parseAttrs(node);
+        const content = node.tagName === 'TEMPLATE' ? node.innerHTML
+                                                    : node.textContent;
+        return {options, content, dependencies: options.src || null};
+    }
+
+    static loadedCallback(data, content) {
+        data.content = (data.content || '') + (content || '');
+    }
+
+    static factoryCallback() {}
+
+    constructor(element, options) {
+        this.component = element; // TODO: Remove
+        this.element = element;
+        this.content = options.content;
+        this.options = options.options; // TODO: Remove
+        this.attrs = options.options;
+    }
+}
+
+// # Modulo.Loader
+// Once registered by `defineAll()`, the `Modulo.Loader` will do the rest of
+// the heavy lifting of fetching & registering Modulo components.
+Modulo.Loader = class Loader extends Modulo.ComponentPart {
+    // ## Loader: connectedCallback()
+    constructor(element=null, options={options: {}}) { // TODO: refactor
+        super(element, options);
+        this.src = this.attrs.src;
+        this.namespace = this.attrs.namespace;
+        this.factoryData = [];
+    }
+
+    doFetch(element, options) {
+        Modulo.assert(this.src, 'Loader: Invalid or missing src= attribute');
+        Modulo.assert(this.namespace, 'Loader: Invalid or missing namespace= attribute');
+
+        // After initializing data, send a new request to the URL specified by
+        // the src attribute. When the response is received, load the text as a
+        // Modulo component module definition.
+        Modulo.fetchQ.enqueue(this.src, text => this.loadString(text));
     }
 
     loadModules(elem) {
@@ -250,6 +284,7 @@ Modulo.Loader = class Loader extends HTMLElement {
         return arr;
     }
 }
+Modulo.cparts.loader = Modulo.Loader;
 
 // # Modulo.ComponentFactory
 
@@ -574,30 +609,6 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
 
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.resolve'] ];
-
-Modulo.ComponentPart = class ComponentPart {
-    static loadCallback(node, loader, loadObj) {
-        // TODO rename "options" to "attrs", refactor this mess
-        const options = Modulo.utils.parseAttrs(node);
-        const content = node.tagName === 'TEMPLATE' ? node.innerHTML
-                                                    : node.textContent;
-        return {options, content, dependencies: options.src || null};
-    }
-
-    static loadedCallback(data, content) {
-        data.content = (data.content || '') + (content || '');
-    }
-
-    static factoryCallback() {}
-
-    constructor(element, options) {
-        this.component = element; // TODO: Remove
-        this.element = element;
-        this.content = options.content;
-        this.options = options.options; // TODO: Remove
-        this.attrs = options.options;
-    }
-}
 
 Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     prepareCallback() {

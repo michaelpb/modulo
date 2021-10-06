@@ -16,7 +16,7 @@ test('Modulo defineAll runs and registers built-in', t => {
 
 test('Loader loads libraries with expected properties', t => {
     const {document} = setupModulo('./testing/assets/loader_test.html');
-    const loader = document.querySelector('mod-load');
+    const loader = document.querySelector('mod-load').loader;
     t.truthy(loader);
     t.truthy(loader.factoryData);
     t.snapshot(Array.from(loader.factoryData));
