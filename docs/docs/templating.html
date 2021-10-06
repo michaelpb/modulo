@@ -218,7 +218,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:914}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1022}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -238,7 +238,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 914 lines<br>
+                SLOC: 1022 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -489,6 +489,7 @@ the "renderObj" in the section on lifecycle.</a></p>
 
 <p>In practicality, this is another way to say that most variables typically
 "come from" the CParts of a component.</p>
+
 
 <h4>Variables from CParts</h4>
 
@@ -743,8 +744,8 @@ This will not be escaped: {{ state.content|safe }}
 </pre>
 
 <p>Think of safe as shorthand for safe from further escaping or can be safely
-interpreted as HTML. In this example, if data contains '&lt;b&gt;', the output will
-be:</p>
+interpreted as HTML. In this example, if data contains '&lt;b&gt;', the output
+will be:</p>
 
 <pre>This will be escaped: &amp;lt;b&amp;gt;
 This will not be escaped: &lt;b&gt;

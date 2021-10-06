@@ -1,4 +1,91 @@
 
+
+- Idea for custom CParts:
+
+        <script type="modulo/cpart" name="fetcher">
+            class Fetcher extends Modulo.ComponentPart {
+            }
+            script.exports = Fetcher;
+        </script>
+
+        then used like (eg with namespacing)
+        <x-fetcher>
+        Or like
+        <mylib-fetcher>
+        </mylib-fetcher>
+
+- Idea for solving inheritance / libraries / composition etc:
+    - < library name="GoodTemplates" > .. identical to components, except will
+      not get registered, just stored in global vars
+    - Stored globally so we can then do < load template from="GoodTemplates">
+    - or < template load-from="GoodTemplates">
+    - Alternatively:
+    - < load template mystuff-GoodTemplates >< / load>
+    - < extends x-MyStuff> < template > < /template > < script > < /script > < / extends>
+    - Another idea: Maybe "src=" and "extends=" as the two CPart def attrs that
+      loader understands?
+        - Then, have a system of subcparts, so extends= and src= can be at
+          component level OR cpart level?
+
+
+# Extends & Src ideas
+* The next big necessary feature is src="" and extends=""
+* Behavior is very simple:
+    - src: content = fetch(path).content
+    - extends: content += fetch(path).content
+* Should work on ANY CPart
+* Will require rewriting parts of loader since async
+* Would be super powerful:
+    - Allows for template extension + blocks due to function hoisting
+    - if !(BLOCKsidebar in tmplt.output) then call right away (first definition)
+    - eg Blocks could be implemented as "function BLOCKsidebar (){} BLOCKsidebar();"
+    - Due to hoisting the last registered block implementation will be what runs
+
+* Mechanics:
+    - Node-based approach: Basically just hydrate the DOM nodes in memory
+      before loadFromDOM
+    - 1) First pass, loader finds src= and extends= and creates "round 2" queue
+    - 2) Processes queue until empty (if already empty, synchronous!)
+    - 3) Second pass is as it is now
+
+    preloadString(text) {
+        const frag = new Modulo.globals.DocumentFragment();
+        const div = Modulo.globals.document.createElement('div');
+        //text = text.replace( </(state|props|template)> -> </script>
+        const preloadSelector = 'script[src],template[src],script[extends],template[extends]
+
+        div.innerHTML = text;
+        frag.append(div);
+        if (!this.queue) {
+            this.queue = [];
+        }
+        for (const tag of div.querySelectorAll(preloadSelector)) {
+            this.queue.push([tag, tag.getAttribute('src'), tag.getAttribute('extends')])
+        }
+    }
+
+* Mechanics #2: (better!)
+    - CPart dependency system
+    - In loadCallback can send back "dependencies" obj
+        - eg {whatever: 'https://asdf.com/whatever.js'}
+    - ModuloLoad will detect, delay registration, & invoke dependencyCallback
+      with the required things
+    - Default loadCallback will return src and extends
+
+
+        // TODO -v test, think about, add examples, much more convenient way to
+        // add context variables, than script.exports, but might be too powerful
+        // const context = Object.assign({}, renderObj, renderObj.template.context);
+        // On second thought, we can already do this within script:
+        prepareCallback() {
+          return {
+            customData: 123,
+          }
+        }
+        // should work!
+        {{ script.customData }}
+
+
 # Ideas
 
     eventCleanupCallback() {

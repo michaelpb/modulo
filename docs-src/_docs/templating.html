@@ -140,6 +140,7 @@ the "renderObj" in the section on lifecycle.</a></p>
 <p>In practicality, this is another way to say that most variables typically
 "come from" the CParts of a component.</p>
 
+
 <h4>Variables from CParts</h4>
 
 <p>Each <em>CPart</em> within a given component may contribute a variable to
@@ -404,8 +405,8 @@ This will not be escaped: {{ state.content|safe }}
 </pre>
 
 <p>Think of safe as shorthand for safe from further escaping or can be safely
-interpreted as HTML. In this example, if data contains '&lt;b&gt;', the output will
-be:</p>
+interpreted as HTML. In this example, if data contains '&lt;b&gt;', the output
+will be:</p>
 
 <pre>
 This will be escaped: &amp;lt;b&amp;gt;

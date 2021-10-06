@@ -218,7 +218,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:914}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1022}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -238,7 +238,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 914 lines<br>
+                SLOC: 1022 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -362,7 +362,7 @@ it's job and set up for the next act.</p>
 think these phases is that typically, the "output" of a previous lifecycle
 phase in a group is the "input" of the next phase. As an example,
 <code>load</code> generates a flat, serializable structure that
-<code>factory</code> "hydrates" into more complicated JavaScript instances.
+<code>factory</code> uses to instantiate more complicated JavaScript instances.
 Similarly, <code>prepare</code> figures out the template variables,
 <code>render</code> causes the template to actually perform the render based on
 the variables in the previous phase, and <code>update</code> updates the HTML
@@ -370,36 +370,43 @@ of the element based on the rendered output of the previous phase.</p>
 
 
 <h4>Group 1: Component Definition</h4>
+
 <p>These phases happen <em>once per component definition</em>. These will
 happen even if the component is never used or instantiated anywhere, but only
 defined and loaded. They are intended for setting up the component "Factory"
 (blueprint for component instances).</p>
 
 <ul>
-    <li><code>load</code> - The stage of parsing a code file (eg static
-    analysis).  Note that if Modulo components are cached, or if they are ever
-    pre-compiled into a single JS file, this <code>load</code> phase happens
-    BEFORE, and thus gets "baked-in". This means that the results of a
-    <code>load</code> phase must be "serializable", such as in a JSON
-    format.</li>
+    <li><code>load</code> - The stage of parsing a code file. This is for
+    static analysis and similar pre-processing. Note that if Modulo components
+    are cached, or if they are ever pre-compiled into a single JS file, this
+    <code>load</code> phase happens BEFORE saving, and thus gets "baked-in".
+    This means that the results of a <code>load</code> phase must be
+    "serializable", such as in a JSON format.</li>
 
     <li><code>factory</code> - Any one-time, global set-up for a component
     (e.g. compiling the template). This happens after the <code>load</code>,
-    but before the component is used.  Note that unlike <code>load</code>,
-    <code>factory</code> happens AFTER when the page loads, and thus does not
-    need to generate serializable results.</li>
+    but before the component is used.  Unlike the <code>load</code> phase,
+    <code>factory</code> happens after the page loads, and thus does not need
+    to generate serializable results.</li>
 </ul>
+
+<p><strong>Note:</strong> "Group 1" is only accessible to <em>CPart</em>
+developers, and <em>not</em> accessible to component developers using script
+tags.</p>
 
 <h4>Group 2: Component Instantiation</h4>
 <p>Currently, only one lifecycle phase is triggered when a component is mounted
 on the page.</p>
 <ul>
-    <li><code>initialized</code> - happens once, every time a component is
-    instantiated or mounted  (i.e. used) on a page</li>
+    <li><code>initialized</code> - happens once per instance, every time a
+    component is instantiated or mounted (i.e. used) on a page. Useful for
+    fetching or setting up initial data on a component, as all the component
+    will be fully ready for use at this point.</li>
 </ul>
 
-<h4>Group 3: Component Rendering</h4>
 
+<h4>Group 3: Component Rendering</h4>
 <p>All of 4 these lifecycle phases trigger in the following sequence every time
 a component renders.  This including the first time, every manual rerender
 (e.g. invoking <code>element.rerender()</code>), and ever automatic rerender
@@ -412,19 +419,17 @@ you don't have a <em>Template</em> CPart defined, although without a
     variables for template)</li>
     <li><code>render</code> - Use the Template to render HTML code</li>
     <li><code>update</code> - Updates the DOM to reflect the newly generated
-    HTML code, while applying directives. Each directive gets it's own set of
-    lifecycle methods explained further below.</li>
-    <li><code>updated</code> - Perform any clean-up tasks after DOM update</li>
+    HTML code, while collecting directives.</li>
+    <li><code>updated</code> - Perform any clean-up tasks after DOM update, and
+    invoke the directive methods collected in the previous step.</li>
 </ul>
 
 
 <h4>Group 4: Directives</h4>
 
-
 <p>Directives can also have lifecycle phases. More information on them is <a href="#directives">covered below</a>. For now, we'll look at 2 lifecycle phases
 that are introduced whenever an event occurs. That is, these phases will be
 available whenever you attach an event, e.g. <code>@click</code>.</p>
-
 
 <ul>
     <li><code>event</code> - Triggers when an event is about to happen.</li>
@@ -530,6 +535,7 @@ CParts, and that CParts are central to Modulo components in general.
 Now, we will learn how <code>renderObj</code> is central to lifecycle methods.
 It's how lifecycle methods pass data and communicate, as a component passes
 through the different phases.</p>
+
 
 <h3>renderObj and lifecycle</h3>
 

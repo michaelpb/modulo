@@ -4,5 +4,58 @@
 it is so central, saying <em>Component Parts</em> over and over gets tiresome,
 so it's typically shortened to <em>CParts</em>.</p>
 
+<p>Every component definition consists of configuring one or more CPart
+definitions. In fact, the <em>Component</em> CPart
+
+
+
+<mdu-Section name="spares">CPart Spares</mdu-Section>
+
+<p>If you have extra car parts lying around, you call them <em>spare
+parts</em>, or just "spares". In Modulo, extra or inactive CParts are also
+called Spares.</p>
+
+<p>The use for this might be to have more than one <em>Template</em> that can
+be switched out depending on what data model is being used, more than one
+<em>State</em> to allow for both private and shared data between components, or
+more than one <em>Script</em> to be swapped to quickly change behavior based on
+if the user is logged in or out. Many of these things might be doable without
+CPart spares, such as with if-statements, but spares provide a paradigm for
+working comfortably with multiple CParts.</p>
+
+
+<p>When you have duplicate CParts of the same type in a component, one CPart
+a time of each type is the "active" CPart, accessible in the
+<code>element.cparts</code> object. The others are "spares", and accessible in
+<code>element.cpartSpares</code>.</p>
+
+<mdu-CodeExample
+text='
+<template name="shop">
+    <nav>Shop | <a @click:=script.swap payload="home">Home</a></nav>
+    <h1>Shop</h1>
+    <p>$10 - A banana</p>
+</template>
+<template name="home">
+    <nav><a @click:=script.swap payload="shop">Shop</a> | Home</nav>
+    <h1>Home</h1>
+    <p>Home sweet home...</p>
+</template>
+<script>
+    function swap(ev, payload) {
+        element.swapSpare("template", payload);
+    }
+</script>
+<style>
+a {
+    color: blue;
+    text-decoration: underline;
+}
+</style>
+'></mdu-CodeExample>
+
+
+
+<h3>CPart spares and renderObj</h3>
 
 

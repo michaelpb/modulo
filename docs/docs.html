@@ -1,0 +1,51 @@
+<!DOCTYPE HTML><head>
+    <meta charset="utf8">
+    <title>Modulo.js</title>
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    <script src="/js/Modulo.js"></script>
+    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
+    </head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
+    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+
+
+
+
+<mdu-navbar selected="docs"></mdu-navbar>
+
+
+<main class="Main--fluid Docs">
+    <aside class="TitleAside TitleAside--navBar">
+        <h3><span alt="Lower-case delta">%</span></h3>
+        <nav class="TitleAside-navigation">
+            <h3>Documentation</h3>
+            <tutorial-docsidebar></tutorial-docsidebar>
+        </nav>
+    </aside>
+    <aside style="border: none">
+        <mdu-routeindex>
+          <h1>Welcome to Modulo's documentation</h1>
+        </mdu-routeindex>
+
+        <mdu-route name="tutorial" src="./_docs/tutorial.html"></mdu-route>
+
+        <mdu-route name="cparts" src="./_docs/cparts.html"></mdu-route>
+
+        <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
+
+        <mdu-route name="templating" src="./_docs/templating.html"></mdu-route>
+
+        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
+
+        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
+
+        <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
+    </aside>
+</main>
+
+    <script>Modulo.defineAll()</script>
+
+
+</body>

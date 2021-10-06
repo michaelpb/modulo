@@ -16,6 +16,9 @@
       between renders, if a new element is introduced above it. Need to debug
       SET DOM how it uses key.
     - Linting Rules!!
+    - Big TODO: Finish Loading prefixing correctly
+        - 1) x- for local, or imported without namespace
+        - 2) x328f- get rewritten for imported ones
     - How to get better stack traces when everything is in an eval? Anyway to
       catch & throw?
 
@@ -64,26 +67,6 @@
             </testsuite>
     - More useful once we get CPart loading from files
     - Could be used for better tests for documentation
-
-- Idea for custom CParts:
-
-        <script type="modulo/cpart" name="fetcher">
-            class Fetcher extends Modulo.ComponentPart {
-            }
-            script.exports = Fetcher;
-        </script>
-
-        then used like (eg with namespacing)
-        <x-fetcher>
-        Or like
-        <mylib-fetcher>
-        </mylib-fetcher>
-
-- Idea for solving inheritance / libraries / composition etc:
-    - < library name="GoodTemplates" > .. identical to components, except will
-      not get registered, just stored in global vars
-    - Stored globally so we can then do < load template from="GoodTemplates">
-    - or < template load-from="GoodTemplates">
 
 
 - Idea for configuring cparts from within script tag:
