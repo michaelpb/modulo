@@ -52,6 +52,7 @@ Modulo.Loader = class Loader extends HTMLElement {
     constructor(...args) {
         super();
         this.queue = new Modulo.FetchQueue(this.src || '');
+        this.factoryData = [];
     }
 
     // The Web Components specifies the use of a "connectedCallback" function.
@@ -62,6 +63,12 @@ Modulo.Loader = class Loader extends HTMLElement {
         this.namespace = this.getAttribute('namespace');
         Modulo.assert(this.src, 'Loader: Invalid or missing src= attribute');
         Modulo.assert(this.namespace, 'Loader: Invalid or missing namespace= attribute');
+
+        // After initializing data, send a new request to the URL specified by
+        // the src attribute. When the response is received, load the text as a
+        // Modulo component module definition.
+        this.queue.enqueue(this.src, text => this.loadString(text));
+        /*
 
         this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
         const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
@@ -76,13 +83,8 @@ Modulo.Loader = class Loader extends HTMLElement {
                 this.defineComponent(name, loadObj);
             }
         } else {
-            /* 
-                if (this.getAttribute('reload')) {
-                    setInterval(this.doFetch, 2000);
-                }
-            */
-            this.doFetch();
         }
+        */
     }
 
     loadModules(elem) {
@@ -97,13 +99,6 @@ Modulo.Loader = class Loader extends HTMLElement {
         for (const embeddedModule of elem.querySelectorAll(query)) {
             this.loadString(embeddedModule.innerHTML);
         }
-    }
-
-    doFetch() {
-        // After initializing data, send a new request to the URL specified by
-        // the src attribute. When the response is received, load the text as a
-        // Modulo component module definition.
-        this.queue.enqueue(this.src, text => this.loadString(text));
     }
 
     // ## Loader: loadString
@@ -124,17 +119,12 @@ Modulo.Loader = class Loader extends HTMLElement {
         div.innerHTML = text;
         frag.append(div);
 
-        //this.queue = [];
-        if (!this.factoryData) {
-            this.factoryData = [];
-        }
-
         this.loadModules(div); // In case we are just loading an embedded component
         for (const tag of div.querySelectorAll('[mod-component],component')) {
             const [name, loadObj] = this.loadFromDOMElement(tag);
             this.factoryData.push([name, loadObj]);
         }
-        //this.processQueue(this.queue, () => this.defineComponents());
+        this.queue.wait(() => this.defineComponents());
     }
 
     defineComponents(extraDeps) {
@@ -142,42 +132,11 @@ Modulo.Loader = class Loader extends HTMLElement {
             this.defineComponent(name, loadObj);
         }
 
+        /*
         // TODO: rewrite / remove -v
         const serialized = JSON.stringify(this.factoryData);
         Modulo.globals.localStorage.setItem(this.cacheKey, serialized);
-    }
-
-    processQueue(queue, callback) {
-        if (queue.length === 0) {
-            return callback(); // synchronous if queue is empty
-        }
-        // TODO: refactor this, use it for normal fetch as well?
-        let totalLength = 0;
-        let totalCount = 0;
-
-
-        for (const [queueObj, queueCallback] of queue) {
-            const data = {};
-            for (let [label, src] of Object.entries(queueObj)) {
-                totalLength++;
-                if (src.startsWith('.')) {
-                    src = src.replace('.', Modulo.utils.dirname(this.src));
-                }
-                Modulo.globals.fetch(src)
-                    .then(response => response.text())
-                    .then(text => {
-                        data[label] = text;
-                        const {length} = Object.keys(data);
-                        if (length >= Object.keys(queueObj).length) {
-                            queueCallback(data);
-                        }
-                        totalCount++;
-                        if (totalCount >= totalLength) {
-                            callback();
-                        }
-                    });
-            }
-        }
+        */
     }
 
     // ## Loader: loadFromDOMElement
@@ -222,8 +181,9 @@ Modulo.Loader = class Loader extends HTMLElement {
             const data = loadCallback(node, this, loadObj)
             loadObj[cPartName].push(data);
             if (data.dependencies) {
-                const cb = newData => loadedCallback(newData, data, this, loadObj);
-                this.queue.push([data.dependencies, cb]);
+                const cb = (text, label) =>
+                    loadedCallback(data, text, label, this, loadObj);
+                this.queue.enqueue(data.dependencies, cb);
             }
         }
         return [name, loadObj];
@@ -621,16 +581,11 @@ Modulo.ComponentPart = class ComponentPart {
         const options = Modulo.utils.parseAttrs(node);
         const content = node.tagName === 'TEMPLATE' ? node.innerHTML
                                                     : node.textContent;
-        const data = {options, content};
-        const {src} = options;
-        if (src) {
-            data.dependencies = {src};
-        }
-        return data;
+        return {options, content, dependencies: options.src || null};
     }
 
-    static loadedCallback(newData, oldData) {
-        oldData.content = (newData.src || '') + oldData.content;
+    static loadedCallback(data, content) {
+        data.content = (newData.src || '') + content;
     }
 
     static factoryCallback() {}
@@ -1501,19 +1456,19 @@ Modulo.FetchQueue = class FetchQueue {
         responseCb = responseCb || (response => response.text());
         queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
         for (let [label, src] of Object.entries(queueObj)) {
-            if (src.startsWith('.')) {
+            // TODO remove! ------------------------------------v
+            if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
                 src = src.replace('.', this.basePath);
             }
             if (src in this.data) {
                 callback(this.data[src], label);
-                continue;
-            }
-            if (!(src in this.queue)) {
-                this.queue[src] = [];
+            } else if (!(src in this.queue)) {
+                this.queue[src] = [callback];
                 Modulo.globals.fetch(src, opts).then(responseCb)
                     .then(text => this.receiveData(text, label, src));
+            } else {
+                this.queue[src].push(callback);
             }
-            this.queue[src].push(callback);
         }
     }
     receiveData(text, label, src) {
@@ -1533,21 +1488,6 @@ Modulo.FetchQueue = class FetchQueue {
         }
     }
 }
-
-        // TODO: When refactoring, keep in midn the following:
-        //       - Ideally, queue should be mutable during fetch. E.g. like a
-        //         worker queue
-        //       - So, totalLength / totalCount does not work, need to do
-        //         keys().length for all
-        //       - Idea: Have a loader.queue and loader.data
-        //               - Loader simply churns through queue until
-        //                   this.queue.keys.length === this.data.keys.length
-        //               - Also have this.inflight = {} where callbacks get stored
-        //       - Anytime queue gets pushed to, then be sure to do
-        //       "this.generateFetchesForQueue()" to "catch up"
-        //       - When
-        //       "generateFetchesForQueue"
-        // this.totalData = {};
 
 Modulo.assert = function assert(value, ...info) {
     if (!value) {

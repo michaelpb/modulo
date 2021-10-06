@@ -273,3 +273,17 @@ directive:
     - Write some very simple CSS or HTML lexers
 
 
+        // TODO: When refactoring, keep in midn the following:
+        //       - Ideally, queue should be mutable during fetch. E.g. like a
+        //         worker queue
+        //       - So, totalLength / totalCount does not work, need to do
+        //         keys().length for all
+        //       - Idea: Have a loader.queue and loader.data
+        //               - Loader simply churns through queue until
+        //                   this.queue.keys.length === this.data.keys.length
+        //               - Also have this.inflight = {} where callbacks get stored
+        //       - Anytime queue gets pushed to, then be sure to do
+        //       "this.generateFetchesForQueue()" to "catch up"
+        //       - When
+        //       "generateFetchesForQueue"
+        // this.totalData = {};

@@ -6,7 +6,196 @@
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    </head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <style id="mdu-Section_style">
+mdu-Section {
+            position: relative;
+        }
+mdu-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mdu-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mdu-Section:hover .mdu-Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mdu-TabSet_style">
+mdu-TabSet {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
+        }
+mdu-TabSet .tab-nav {
+            /*border-bottom: 1px dotted var(--highlight-color);*/
+            width: 100%;
+        }
+mdu-TabSet .tab-nav > ul {
+            width: 100%;
+            display: flex;
+        }
+mdu-TabSet .tab-nav_title {
+            border: 2px solid black;
+            border-top-width: 4px;
+            border-bottom-width: 0;
+            border-radius: 8px 8px 0 0;
+            background: white;
+            min-width: 10%;
+        }
+
+mdu-TabSet .tab-nav_title a,
+mdu-TabSet .tab-nav_title a:visited,
+mdu-TabSet .tab-nav_title a:active {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+mdu-TabSet .tab-nav_title__selected {
+            background: var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
+            border-top-width: 1px;
+            border-radius: 1px;
+        }
+    </style><style id="mdu-CodeExample_style">
+mdu-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mdu-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mdu-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mdu-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mdu-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mdu-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+mdu-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mdu-CodeExample .split { display: block; }
+        }
+    </style><style id="eg-Simple_style">
+eg-Simple em { color: darkblue; }
+eg-Simple * { text-decoration: underline; }
+</style><style id="eg-Prime_style">
+eg-Prime .grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+eg-Prime .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-Prime div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-Prime div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-Prime div.number { background: green; }
+eg-Prime div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-Prime If found, then hide asterisk and green. */
+eg-Prime div.whole ~ div.number { background: #B90183; }
+eg-Prime div.whole ~ div.number::after { opacity: 0; }
+</style><style id="eg-MemoryGame_style">
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
     <!--<mod-load namespace="mdu" src="./components/pageparts.html"></mod-load>-->
 
@@ -48,7 +237,23 @@
     }
 </script>
 ">
-</mdu-codeexample>
+        <div class="split">
+            <div style="height: 172px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
 
             </div>
 
@@ -64,7 +269,23 @@
     * { text-decoration: underline; }
 </style>
 ">
-</mdu-codeexample>
+        <div class="split">
+            <div style="height: 172px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
 
             </div>
 
@@ -96,7 +317,23 @@
     }
 </script>
 ">
-</mdu-codeexample>
+        <div class="split">
+            <div style="height: 172px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
 
 
             </div>
@@ -136,7 +373,23 @@
     }
 </script>
 ">
-</mdu-codeexample>
+        <div class="split">
+            <div style="height: 172px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
 
 
             </div>
@@ -202,7 +455,24 @@ div.number::after { content: &quot;*&quot;; }
 div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
 </style>
-"></mdu-codeexample>
+">
+        <div class="split">
+            <div style="height: 172px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
 
             </div>
 
@@ -370,7 +640,23 @@ h3 {
 }
 </style>
 ">
-</mdu-codeexample>
+        <div class="split">
+            <div style="height: 172px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:="script.run">Run ⟳</button>
+                </div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
+                </div>
+                
+            </div>
+        </div>
+    </mdu-codeexample>
 
             </div>
 
@@ -383,7 +669,32 @@ h3 {
 
 
 <span id="below"></span>
-<mdu-navbar selected="about"></mdu-navbar>
+<mdu-navbar selected="about" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:976}">
+        <nav class="Navbar">
+            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li>
+                    <a href="/index.html#below" class="Navbar--selected">About</a>
+                </li>
+                <li>
+                    <a href="/start.html">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html">Docs</a>
+                </li>
+                <li>
+                    <a href="/literate/src/Modulo.html">Source</a>
+                </li>
+            </ul>
+
+            <div class="Navbar-rightInfo">
+                v: 0.0.1<br>
+                SLOC: 976 lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
+        </nav>
+    </mdu-navbar>
 
 <main id="About">
     <section>
