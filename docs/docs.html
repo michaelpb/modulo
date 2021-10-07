@@ -116,6 +116,17 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
+    </style><style id="mdu-CodeSnippet_style">
+mdu-CodeSnippet {
+            position: relative;
+            display: block;
+        }
+mdu-CodeSnippet .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
@@ -219,7 +230,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:994}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -239,7 +250,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 994 lines<br>
+                SLOC: 1003 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -257,7 +268,7 @@ tutorial-DocSidebar li.ginactive > a::before {
     
         <li class="
             
-            "><a href="/docs.html">Home</a>
+            "><a href="/docs.html">Table of Contents</a>
             
                 
             
@@ -331,7 +342,188 @@ tutorial-DocSidebar li.ginactive > a::before {
     </aside>
     <aside style="border: none">
         <mdu-routeindex>
-          <h1>Welcome to Modulo's documentation</h1>
+            <h1>Modulo documentation</h1>
+
+            <p>The complete Modulo documentation is found here.</p>
+
+            <p><strong>Navigate Modulo documentation either using the sidebar,
+            or the complete table of contents below.</strong></p>
+
+            <h3>Table of Contents</h3>
+
+            <tutorial-docsidebar showall="true" path="docs/docs.html">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs.html">Table of Contents</a>
+            
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/tutorial.html">Tutorial</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a></li>
+                    
+                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a></li>
+                    
+                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a></li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/cparts.html#component">Component</a></li>
+                    
+                        <li><a href="/docs/cparts.html#props">Props</a></li>
+                    
+                        <li><a href="/docs/cparts.html#template">Template</a></li>
+                    
+                        <li><a href="/docs/cparts.html#state">State</a></li>
+                    
+                        <li><a href="/docs/cparts.html#script">Script</a></li>
+                    
+                        <li><a href="/docs/cparts.html#style">Style</a></li>
+                    
+                        <li><a href="/docs/cparts.html#custom">Custom CParts API</a></li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/templating.html#templates">Templates</a></li>
+                    
+                        <li><a href="/docs/templating.html#variables">Variables</a></li>
+                    
+                        <li><a href="/docs/templating.html#filters">Filters</a></li>
+                    
+                        <li><a href="/docs/templating.html#tags">Tags</a></li>
+                    
+                        <li><a href="/docs/templating.html#comments">Comments</a></li>
+                    
+                        <li><a href="/docs/templating.html#escaping">Escaping</a></li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/directives.html#lifecycle">Lifecycle</a></li>
+                    
+                        <li><a href="/docs/directives.html#renderobj">renderObj</a></li>
+                    
+                        <li><a href="/docs/directives.html#directives">Directives</a></li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/template_reference.html">Template Reference</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/template_reference.html#filters">Built-in Filters</a></li>
+                    
+                        <li><a href="/docs/template_reference.html#tags">Built-in Template Tags</a></li>
+                    
+                        <li><a href="/docs/template_reference.html#customfilters">Custom Filters</a></li>
+                    
+                        <li><a href="/docs/template_reference.html#customtags">Custom Template Tags</a></li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/example_library.html">Example Library</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/example_library.html#hello">Hello</a></li>
+                    
+                        <li><a href="/docs/example_library.html#1">Simple</a></li>
+                    
+                        <li><a href="/docs/example_library.html#2">ToDo</a></li>
+                    
+                        <li><a href="/docs/example_library.html#3">API</a></li>
+                    
+                        <li><a href="/docs/example_library.html#4">Prime</a></li>
+                    
+                        <li><a href="/docs/example_library.html#5">MemoryGame</a></li>
+                    
+                        <li><a href="/docs/example_library.html#6">MiniExcel</a></li>
+                    
+                        <li><a href="/docs/example_library.html#7">AccessingLoader</a></li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+
+
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            </li><li>
+                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li>
+        </ul>
+
+    </li>
+</ul>
+</tutorial-docsidebar>
         </mdu-routeindex>
 
         <mdu-route name="tutorial" src="./_docs/tutorial.html" ssgpath="docs/docs/tutorial.html"></mdu-route>

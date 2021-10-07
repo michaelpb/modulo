@@ -32,24 +32,32 @@ a time of each type is the "active" CPart, accessible in the
 <mdu-CodeExample
 text='
 <template name="shop">
-    <nav>Shop | <a @click:=script.swap payload="home">Home</a></nav>
+    <nav>Shop|<a @click:=script.swap payload="home">Home</a></nav>
     <h1>Shop</h1>
     <p>$10 - A banana</p>
 </template>
 <template name="home">
-    <nav><a @click:=script.swap payload="shop">Shop</a> | Home</nav>
+    <nav><a @click:=script.swap payload="shop">Shop</a>|Home</nav>
     <h1>Home</h1>
-    <p>Home sweet home...</p>
+    <p>Welcome to my banana stand!</p>
 </template>
 <script>
     function swap(ev, payload) {
         element.swapSpare("template", payload);
     }
 </script>
+
+<!-- some basic styling -->
 <style>
+nav {
+    background: black;
+    color: gray;
+    padding: 3px;
+}
 a {
-    color: blue;
+    color: lightblue;
     text-decoration: underline;
+    cursor: pointer;
 }
 </style>
 '></mdu-CodeExample>

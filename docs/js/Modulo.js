@@ -220,6 +220,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         if (Modulo.globals.defineComponentCallback) {
             Modulo.globals.defineComponentCallback(factory); // TODO rm when possible
         }
+        return factory;
     }
 
     // ## Loader.getNodeCPartName
@@ -380,9 +381,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 
             for (const partOptions of partOptionsArr) {
                 const instance = new Modulo.cparts[name](element, partOptions);
-                if (name in element.cparts) {
-                    element.cpartSpares[name].push(instance);
-                }
+                element.cpartSpares[name].push(instance);
                 element.cparts[name] = instance;
 
                 /* // (NOTE: Untested after refactor) 
@@ -420,6 +419,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     initialize() {
         this.cparts = {};
+        this.isMounted = false;
 
         this.originalHTML = this.innerHTML;
         this.originalChildren = [];
@@ -434,7 +434,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
             //console.log('originalChildren has child nodes!', this.originalChildren);
         }
         this.fullName = this.factory.fullName;
-        this.isMounted = false;
         this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
     }
 
@@ -471,10 +470,17 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     swapSpare(type, name) {
         const arr = this.cpartSpares[type];
+        const spare = arr.find(({attrs}) => attrs.name === name);
+        Modulo.assert(spare, `No ${type} with name="${name}"`);
+        this.cparts[type] = spare;
+        /* (SPARES ONLY)
+        const arr = this.cpartSpares[type];
         const index = arr.findIndex(({attrs}) => attrs.name === name);
+        Modulo.assert(index >= 0, `No ${type} with name="${name}"`);
         const spare = arr[index];
         arr[index] = this.cparts[type];
         this.cparts[type] = spare;
+        */
     }
 
     rerender() {
@@ -602,6 +608,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     prepareCallback() {
         // TODO shouldn't have to do this ---v
         return {
+            innerHTML: null,
             eventMount: this.eventMount.bind(this),
             eventUnmount: this.eventUnmount.bind(this),
             resolveMount: this.resolveMount.bind(this),
@@ -612,15 +619,27 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     updateCallback(renderObj) {
-        const {element} = this;
-        if (renderObj.template) {
-            // TODO: delete old interface
-            let newContents = renderObj.template.renderedOutput || '';
-            element.reconcile(element, newContents);
-        }
-        if (renderObj.component && 'innerHTML' in renderObj.component) {
+        if (renderObj.component.innerHTML !== null) {
             let newContents = renderObj.component.innerHTML || '';
-            element.reconcile(element, newContents);
+            // TODO: move reconcile to this class
+            this.element.reconcile(this.element, newContents);
+
+            if (newContents.includes('Shop')) {
+                // TODO: extremely broken hack, remove after new reconciler is
+                // developed
+                if (this.directives) {
+                    this.directives.forEach(args => {
+                        if (args.tearDown) {
+                            args.tearDown(args)
+                        }
+                    });
+                }
+                this.directives = [];
+                for (const child of this.element.children) {
+                    Modulo.collectDirectives(this.element, child, this.directives);
+                }
+                this.element.applyDirectives(this.directives);
+            }
         }
     }
 
@@ -659,7 +678,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
         el.addEventListener(attrName, listener);
     }
 
-    eventUnmount({attrName, listener}) {
+    eventUnmount({el, attrName, listener}) {
         el.removeEventListener(attrName, listener);
     }
 
@@ -794,31 +813,37 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
 Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, loadObj) {
-        const {loader} = factory;
-        const tagPref = '$1' + loader.namespace + '-';
+        const tagPref = '$1' + factory.loader.namespace + '-';
 
-        const getAltTemplate = (name) =>
-            loadObj.template.find(({opts}) => opts.name === name).instance;
-
-        // Should be X, and maybe be a customizable preproccesor?
+        // TODO: Need to do '<x-' -> '<xa3d2af-' for private components, and do
+        // '<x-' -> '<tagPref-' for public components
+        // (and remove '<my-')
         //const content = (opts.content || '').replace(/(<\/?)x-/ig, tagPref);
-        const content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
-        const engineClass = Modulo.templating[opts.engine || 'MTL'];
-        return {instance: new engineClass(content, opts, getAltTemplate)};
-    }
-    /*
-    initializedCallback(renderObj) {
-        this.compiledTemplate = renderObj.template.compiledTemplate;
-        renderObj.template.swap = (ev, name) =>
-            this.element.switchToSpareByName('template', name);
-        renderObj.template.route = (ev, name) => {
-            this.element.switchToSpareByName('template', name);
+        let content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
+        // TODO -v prefered
+        //content = content.replace(/(<\/?)x-/g, tagPref);
+        let instance = null;
+        if (content.includes('txt="Click me! :)"')) {
+            // TODO: need to remove this, very broken work around for
+            // a particular test
+            instance = new Modulo.templating.MTL(content);
         }
+        return {content, instance};
     }
-    */
+
+    constructor(element, options) {
+        super(element, options);
+        const engineClass = Modulo.templating[this.attrs.engine || 'MTL'];
+        this.instance = new engineClass(this.content, this.attrs);
+    }
+
     renderCallback(renderObj) {
-        const result = renderObj.template.instance.render(renderObj)
-        renderObj.template.renderedOutput = result;
+        if (renderObj.template.instance) {
+            // TODO: broken
+            renderObj.component.innerHTML = renderObj.template.instance.render(renderObj);
+        } else {
+            renderObj.component.innerHTML = this.instance.render(renderObj);
+        }
         /*
         if (result.includes('undefined')) {
             console.log('ModuloTemplate: "undefined" in template');
@@ -865,7 +890,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         // localVars.push('parent'); // add in access to previous versions of renderObj (DEAD CODE)
         localVars.push('cparts');
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
-        const results = (new Function('Modulo,factory', wrappedJS)).call(null, Modulo, factory);
+        const module = factory.loader.modFactory ?
+                       factory.loader.modFactory.baseRenderObj : null;
+        const results = (new Function('Modulo, factory, module', wrappedJS))
+                           .call(null, Modulo, factory, module);
         results.localVars = localVars;
         return results;
     }
@@ -987,7 +1015,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         Object.assign(this, Modulo.templating.defaultOptions, options);
         this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.renderFunc = this.compile(text);
-        this.getAltTemplate = getAltTemplate || (() => {});
+        //this.getAltTemplate = getAltTemplate || (() => {});
     }
 
     tokenizeText(text) {
@@ -1000,7 +1028,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         let output = 'var OUT=[];';
         let mode = 'text'; // Start in text mode
         for (const token of this.tokenizeText(text)) {
-            if (mode) { // if in a "mode", then apply mode func
+            if (mode) { // if in a "mode" (text or token), then call mode func
                 const result = this.modes[mode](token, this, this.stack);
                 output += result || '';
             }
@@ -1046,9 +1074,6 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         return (text + '').replace(/&/g, '&amp;')
             .replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/'/g, '&#x27;').replace(/"/g, '&quot;');
-            // TODO: add this
-            //' (single quote) is converted to &#x27;
-            //" (double quote) is converted to &quot;
     }
 }
 Modulo.Template = Modulo.templating.MTL; // Alias
@@ -1146,19 +1171,15 @@ Modulo.templating.defaultOptions.tags = {
         const end = `}${varName} = false;`;
         return {start, end, close: 'endfor'};
     },
+    /*
     'include': (text, tmplt) => {
         const template = `G.getAltTemplate(${tmplt.parseExpr(text)})`;
         return {start: `G.OUT.push(${template}.render(CTX));`};
     },
+    */
 };
 
 // SetDomReconciler ------------------
-Modulo.reconcilers.InnerHtml = class InnerHtmlReconciler {
-    reconcile(element, newHTML) {
-        element.innerHTML = newHTML;
-        // TODO, add in directives stuff, or move elsewhere
-    }
-}
 Modulo.reconcilers.SetDom = class SetDomReconciler {
     constructor() {
         this.KEY = 'key'

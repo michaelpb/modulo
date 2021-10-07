@@ -135,6 +135,8 @@ test.skip('Components can have other components and namespaces get rewritten', t
 
 test('Parent components can pass down functions as props', t => {
     const {document} = setupModulo('./testing/assets/composition_test.html');
+    const comps1 = Array.from(document.querySelectorAll('lib-ParentComponent'));
+    console.log('documentinnerHTML', comps1[0].innerHTML);
     let buttons = Array.from(document.querySelectorAll('button'));
     t.is(buttons.length, 1);
     let btn = buttons[0];

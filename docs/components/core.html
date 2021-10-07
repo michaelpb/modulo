@@ -1,4 +1,62 @@
-<!DOCTYPE HTML><head><template mod-component="Navbar">
+<module>
+    <script>
+        function sloccount() {
+            const txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            return Modulo.require('sloc')(txt, 'js').source;
+        }
+
+        function getVersionInfo() {
+            // Only do once to speed up SSG
+            if (!Modulo.ssgStore.versionInfo) {
+                Modulo.ssgStore.versionInfo = {
+                    version: Modulo.require('../package.json').version,
+                    sloc: sloccount(),
+                };
+            }
+            return Modulo.ssgStore.versionInfo;
+        }
+
+        // https://stackoverflow.com/questions/400212/
+        const {document, navigator} = Modulo.globals;
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    </script>
+</module>
+
+
+<template mod-component="Navbar">
     <script type="modulo/template">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
@@ -26,25 +84,18 @@
         </nav>
     </script>
 
-    <props selected=""></props>
+    <props
+        selected
+    ></props>
 
     <script>
-        function sloccount() {
-            const txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
-            return Modulo.require('sloc')(txt, 'js').source;
-        }
-
         function initializedCallback() {
             if (Modulo.isBackend) {
-                // Only do once to speed up SSG
-                if (!Modulo.ssgStore.navbar) {
-                    Modulo.ssgStore.navbar = {
-                        version: Modulo.require('../package.json').version,
-                        sloc: sloccount(),
-                    };
-                }
+                //Modulo.ssgStore.navbar = module.script.getVersionInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getVersionInfo();
+                Object.assign(script.exports, info);
                 // Store results in DOM for FE JS
-                Object.assign(script.exports, Modulo.ssgStore.navbar);
                 element.setAttribute('script-exports', JSON.stringify(script.exports));
             } else {
                 // FE JS, retrieve from DOM
@@ -55,11 +106,17 @@
     </script>
 </template>
 
-</head><body><component name="Section">
-    <props name=""></props>
+<component name="Section">
+    <props
+        name
+    ></props>
     <template>
-        <a class="secanchor" title="Click to focus on this section." id="{{ props.name }}" name="{{ props.name }}" href="#{{ props.name }}">#</a>
-        <h2 [component.children]=""></h2>
+        <a class="secanchor"
+          title="Click to focus on this section."
+          id="{{ props.name }}"
+          name="{{ props.name }}"
+          href="#{{ props.name }}">#</a>
+        <h2 [component.children]></h2>
     </template>
     <style>
         Section {
@@ -91,11 +148,13 @@
                         {% if tab.title == state.selected %}
                             tab-nav_title__selected
                         {% endif %}
-                    "><a @click:="script.select" click.payload="{{ tab.title }}">{{ tab.title }}</a></li>
+                    "><a @click:=script.select
+                             click.payload="{{ tab.title }}"
+                        >{{ tab.title }}</a></li>
                 {% endfor %}
             </ul>
         </nav>
-        <div [component.children]="" modulo-ignore="">
+        <div [component.children] modulo-ignore>
         </div>
     </template>
     <style>
@@ -142,7 +201,10 @@
             border-radius: 1px;
         }
     </style>
-    <state selected="" tabs:="[]"></state>
+    <state
+        selected=''
+        tabs:='[]'
+    ></state>
     <script>
         function initializedCallback() {
             state.tabs = [];
@@ -190,17 +252,20 @@
 <template mod-component="CodeExample">
     <template>
         <div class="split">
-            <div style="height: {{ props.vsize|number|default:170|add:2 }}px;" modulo-ignore="">
-                <textarea [script.codemirror]="">                </textarea>
+            <div
+            style="height: {{ props.vsize|number|default:170|add:2 }}px;"
+            modulo-ignore>
+                <textarea [script.codemirror]>
+                </textarea>
             </div>
 
             <div>
                 <div class="toolbar">
                     <h2>Preview</h2>
-                    <button @click:="script.run">Run ⟳</button>
+                    <button @click:=script.run>Run &#10227;</button>
                 </div>
-                <div [script.previewspot]="" class="preview-wrapper">
-                    <div modulo-ignore=""></div>
+                <div [script.previewspot] class="preview-wrapper">
+                    <div modulo-ignore></div>
                 </div>
                 {% if props.showtag %}
                     {% if props.preview %}
@@ -265,10 +330,26 @@
         }
     </style>
 
-    <props text="" extraprops="" vsize="" textsrc=""></props>
+    <props
+        text
+        extraprops
+        vsize
+        textsrc
+        cname
+    ></props>
 
-    <state nscounter:="1" preview=""></state>
+    <state 
+        nscounter:=1
+        preview=''
+    ></state>
     <script>
+        let egTexts = null;
+        try {
+            egTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+        } catch {
+            console.log('couldnt get egTexts');
+        }
+
         let exCounter = 0; // global variable
         //console.log('gettin script tagged');
         /* Configure loader: */
@@ -276,8 +357,15 @@
             //console.log('hey i am getting initialized wow');
             //console.log('initialized callback', element.innerHTML);
             if (Modulo.isBackend) {
-                let html = (element.innerHTML || '').trim();
-                html = html.replace(/([\w\[\]\._-]+):="(\w+)"/, '$1:=$2'); // clean up due to DOM
+                let html;
+                if (egTexts && props.cname) {
+                    Modulo.assert(props.cname in egTexts, `${props.cname} not found`);
+                    html = egTexts[props.cname];
+                } else {
+                    html = (element.innerHTML || '').trim();
+                    html = html.replace(/([\w\[\]\._-]+):="(\w+)"/, '$1:=$2'); // clean up due to DOM
+                }
+
                 if (props.textsrc) {
                     const html = Modulo.require('fs')
                         .readFileSync('./docs-src/' + props.textsrc, 'utf8');
@@ -311,7 +399,9 @@
                 cm.setValue('');
                 cm.setSize(null, height);
                 cm.refresh();
-                const text = props.text.trim();
+
+                let text = props.text.trim();
+                text = text.replace(/&#39;/g, "'"); // correct double escape
                 cm.setValue(text);
                 setTimeout(() => {
                     cm.setValue(text);
@@ -360,15 +450,40 @@
 
 <template mod-component="CodeSnippet">
     <template>
-        <div modulo-ignore="">
-            <div [script.codemirror]=""></div>
+        <button class="m-Btn m-Btn--sm m-Btn--faded"
+                title="Copy this code" @click:=script.doCopy>
+            <span alt="Clipboard">&#128203;</span>
+        </button>
+        <div modulo-ignore>
+            <div [script.codemirror]></div>
         </div>
     </template>
-    <props text=""></props>
+    <props text
+    ></props>
+    <style>
+        CodeSnippet {
+            position: relative;
+            display: block;
+        }
+        .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
+    </style>
     <script>
+        function doCopy() {
+            module.script.copyTextToClipboard(props.text);
+        }
         function codemirrorMount({el}) {
+            let text = props.text.trim();
+            if (Modulo.isBackend && text.includes('$modulojs_sha384_checksum$')) {
+                const checksum = '';
+                text = text.replace('$modulojs_sha384_checksum$', checksum)
+                element.setAttribute('text', text);
+            }
             if (Modulo.globals.CodeMirror) {
-                const text = props.text.trim();
                 const cm = CodeMirror(el, {
                     //lineNumbers: true,
                     value: text,
@@ -379,14 +494,6 @@
                 });
                 element.codeMirrorEditor = cm;
             }
-        }
-    </script>
-</template>
-
-<template mod-component="Link">
-    <script>
-        if (Modulo.require) {
-            // is SSG
         }
     </script>
 </template>
@@ -404,7 +511,13 @@
 </template>
 
 <template mod-component="Route">
-    <props name="" src="" index="" loadedcontent="" ssgpath=""></props>
+    <props
+        name
+        src
+        index
+        loadedcontent
+        ssgpath
+    ></props>
     <script>
         function readFile(currentPath, src) {
             const path = Modulo.require('path');
@@ -492,4 +605,3 @@
 </template>
 
 
-</body>

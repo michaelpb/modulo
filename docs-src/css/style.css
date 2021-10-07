@@ -41,6 +41,59 @@ img {
   height: auto;
 }
 
+.m-Btn,
+.m-Btn:visited,
+.m-Btn:active,
+.m-Btn:hover {
+    display: inline-block;
+    border: 2px solid black;
+    border-top-width: 1px;
+    border-bottom-width: 3px;
+    border-radius: 3px;
+    background: white;
+    font-weight: lighter;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    color: black;
+    padding: 5px;
+    text-decoration: none;
+    margin-top: 2px;
+}
+
+.m-Btn.m-Btn--sm,
+.m-Btn.m-Btn--sm:hover {
+    font-size: 0.95rem;
+    border-bottom-width: 2px;
+    padding: 2px;
+}
+
+.m-Btn--faded {
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+.m-Btn--faded:hover {
+    opacity: 1.0;
+}
+
+.m-Btn:active {
+    border-top-width: 3px;
+    border-bottom-width: 1px;
+}
+
+.m-Btn:hover {
+    box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+}
+
+
+.Docs-squareInfo {
+    padding: 5px;
+    padding-top: 10px;
+}
+.Docs-squareInfo > h2 {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 10px;
+}
 
 nav.Navbar {
     padding-top: 10px;
@@ -407,10 +460,10 @@ a:visited {
 .Docs > h2,
 .Docs > * > h2,
 .Docs > * > * > h2 {
-    border-top: 1px solid #888;
-    padding-top: 10px;
+    /*border-top: 1px solid #888;*/
+    /*padding-top: 10px;*/
     width: 80%;
-    margin-top: 20px;
+    /*margin-top: 20px;*/
     font-weight: bold;
     font-size: 1.6rem;
 }

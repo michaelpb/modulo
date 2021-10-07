@@ -116,6 +116,17 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
+    </style><style id="mdu-CodeSnippet_style">
+mdu-CodeSnippet {
+            position: relative;
+            display: block;
+        }
+mdu-CodeSnippet .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
@@ -219,7 +230,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:994}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -239,7 +250,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 994 lines<br>
+                SLOC: 1003 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -257,7 +268,7 @@ tutorial-DocSidebar li.ginactive > a::before {
     
         <li class="
             
-            "><a href="/docs.html">Home</a>
+            "><a href="/docs.html">Table of Contents</a>
             
         </li>
     
@@ -547,7 +558,9 @@ component rerenders.</p>
 <ol>
     <li><code>loadObj</code> - This is the version created during the
     <code>load</code> phase, and is typically just the text and attributes of
-    the component definition with any pre-processing done.</li>
+    the component definition with any pre-processing done. Unlike the other
+    objects, <code>loadObj</code> <em>can only</em> contain plain or
+    JSON-friendly data types.</li>
 
     <li><code>baseRenderObj</code> - The <code>loadObj</code> is copied to the
     <code>baseRenderObj</code>, which is the result of the <code>factory</code>
@@ -781,12 +794,61 @@ stricter structure.</p>
     "hidden" values getting attached.</p>
 </div>
 
+<h3>Registering CPart directives with shortcuts</h3>
+
+<p>If you are a CPart developer, you might want to register a shortcut along
+with your CPart's directive. Note that this only applies to CPart developers:
+Component developers should never create shortcuts for the script-tag based
+custom directives used (which should be avoided to begin with).</p>
 
 
+<p>See below for an example:</p>
 
+<mdu-codeexample text="
+<template>
+    Game Shop: 31 moneys<br />
+    Avg Movie Creeps: 10 moneys<br />
+    <button @click:=script.toggle>
+        {% if state.show %}
+        Show controls (and trigger mount directive callbacks)
+        {% else %}
+        Hide controls (and trigger unmount callbacks)
+        {% endif %}
+    </button> <br />
+    {% if state.show %}
+        <button %%%buy=&quot;GMC&quot;>...gets replaced..</button>
+        <button %%%sell=&quot;GMC&quot;>...</button>
+        <button %%%long=&quot;AMC&quot;>...</button>
+        <button %%%short=&quot;AMC&quot;>...</button>
+    {% endif %}
+</template>
 
+<state
+    show:=false
+></state>
 
+<script>
+    Modulo.directiveShortcuts.push([/^%%%/, &quot;script.example&quot;]);
 
+    function exampleMount(info) {
+        console.log(&quot;Mounting directive:&quot;, info);
+        const {el, value, attrName, rawName} = info;
+        el.textContent = `${attrName} ${value}`;
+        el.onclick = () => alert(attrName + &quot;ing &quot; + value);
+    }
+    function exampleUnmount(info) {
+        console.log(&quot;Unmounting directive:&quot;, info);
+    }
+    function toggle() {
+        state.show = !state.show;
+    }
+</script>
+"></mdu-codeexample>
+
+<p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
+example simple, we are demonstrating it's use within a script tag in a
+component, but in general shortcuts are only intended for CPart directives, not
+custom script tag directives.</p>
 </mdu-route>
 
         <mdu-route name="templating" src="./_docs/templating.html"></mdu-route>

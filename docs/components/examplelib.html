@@ -1,4 +1,4 @@
-<!DOCTYPE HTML><head></head><body><module>
+<module>
     <script>
         script.exports.frontpage = [
             "Hello",
@@ -40,9 +40,10 @@
 <component name="Hello">
 
 <template>
-    <button @click:="script.countUp">Hello {{ state.num }}</button>
+    <button @click:=script.countUp>Hello {{ state.num }}</button>
 </template>
-<state num:="42"></state>
+<state num:=42
+></state>
 <script>
     function countUp() {
         state.num++;
@@ -70,13 +71,16 @@
         <li>{{ item }}</li>
     {% endfor %}
     <li>
-        <input [state.bind]="" name="text">
-        <button @click:="script.addItem">Add</button>
+        <input [state.bind] name="text" />
+        <button @click:=script.addItem>Add</button>
     </li>
 </ol>
 </template>
 
-<state list:="'[&quot;Milk&quot;," "bread",="" "candy"]&#39;="" text="Beer"></state>
+<state
+    list:=&#39;["Milk", "Bread", "Candy"]&#39;
+    text="Beer"
+></state>
 
 <script>
     function addItem() {
@@ -93,11 +97,17 @@
 <a href="https://github.com/{{ state.search }}/" target="_blank">
     {% if state.search %}github.com/{{ state.search }}/{% endif %}
 </a>
-<input [state.bind]="" name="search" placeholder="Type GitHub username">
-<button @click:="script.fetchGitHub">Get Info</button>
+<input [state.bind] name="search"
+    placeholder="Type GitHub username" />
+<button @click:=script.fetchGitHub>Get Info</button>
 </template>
 
-<state search="" name="" location="" bio=""></state>
+<state
+    search=""
+    name=""
+    location=""
+    bio=""
+></state>
 
 <script>
     function fetchGitHub() {
@@ -115,11 +125,17 @@
 </component>
 
 
+
+
+
+
+
 <component name="Prime">
 <template>
   <div class="grid">
     {% for i in script.exports.range %}
-      <div @mouseover:="script.setNum" class="
+      <div @mouseover:=script.setNum
+        class="
             {# If-statements to check divisibility in template: #}
             {% if state.number == i %}number{% endif %}
             {% if state.number lt i %}hidden{% else %}
@@ -130,7 +146,9 @@
   </div>
 </template>
 
-<state number:="76"></state>
+<state
+    number:=76
+></state>
 
 <script>
     // Getting big a range of numbers in JS. Use "script.exports"
@@ -181,25 +199,29 @@ div.whole ~ div.number::after { opacity: 0; }
 {% if not state.cards.length %}
     <h3>The Symbolic Memory Game</h3>
     <p>Choose your difficulty:</p>
-    <button @click:="script.setup" click.payload="8">2x4</button>
-    <button @click:="script.setup" click.payload="16">4x4</button>
-    <button @click:="script.setup" click.payload="36">6x6</button>
+    <button @click:=script.setup click.payload=8>2x4</button>
+    <button @click:=script.setup click.payload=16>4x4</button>
+    <button @click:=script.setup click.payload=36>6x6</button>
 {% else %}
     <div class="board
         {% if state.cards.length > 16 %}hard{% endif %}">
     {# Loop through each card in the "deck" (state.cards) #}
     {% for card in state.cards %}
         {# Using "key=" to speed up DOM reconciler #}
-        <div key="c{{ card.id }}" class="card
+        <div key="c{{ card.id }}"
+            class="card
             {% if state.revealed|includes:card.id %}
                 flipped
             {% endif %}
-            " style="
+            "
+            style="
             {% if state.win %}
                 animation: flipping 0.5s infinite alternate;
                 animation-delay: {{ card.id }}.{{ card.id }}s;
             {% endif %}
-            " @click:="script.flip" click.payload="{{ card.id }}">
+            "
+            @click:=script.flip
+            click.payload="{{ card.id }}">
             {% if state.revealed|includes:card.id %}
                 {{ card.symbol }}
             {% endif %}
@@ -212,10 +234,17 @@ div.whole ~ div.number::after { opacity: 0; }
 {% endif %}
 </template>
 
-<state message="Good luck!" win:="false" cards:="[]" revealed:="[]" lastflipped:="null" failedflip:="null"></state>
+<state
+    message="Good luck!"
+    win:=false
+    cards:=[]
+    revealed:=[]
+    lastflipped:=null
+    failedflip:=null
+></state>
 
 <script>
-const symbolsStr = "%!@#=?&+~Ã·â‰ âˆ‘Âµâ€°âˆ‚Î”Æ’Ïƒ"; // 16 options
+const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
 function setup(ev, payload) {
     const count = Number(payload);
     let symbols = symbolsStr.substr(0, count/2).split("");
@@ -326,4 +355,77 @@ h3 {
 </component>
 
 
-</body>
+
+
+
+
+
+
+
+
+<component name="MiniExcel">
+
+<template>
+    <table>
+        {{ state.data }}
+        {% for row in state.data %}
+            <tr>
+                {% for col in row %}
+                    <td>{{ col }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</template>
+
+<state
+    data:='[]'
+/><state>
+
+<script>
+    function initalizedCallback(renderObj) {
+        console.log('getting initialized', renderObj);
+        renderObj.state.data = [
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+        ];
+    }
+</script>
+
+</component>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<component name="AccessingLoader">
+
+<template>
+    <button @button>Click me and look in Dev Console</strong>
+</template>
+<script>
+    // Note how it's even available at load time
+    const moduleFactory = Modulo.factoryInstances['eg-eg'];
+    function onClick() {
+        // Examine this object. See how script tag exports
+        // are actually already available? This allows for
+        // cross-script dependencies, e.g. import in one,
+        // access in another
+        console.log('This is moduleFactory:', moduleFactory);
+    }
+</script>
+
+</component>
+

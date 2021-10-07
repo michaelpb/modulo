@@ -11,6 +11,8 @@
 </component>
 
 
+
+
 <!--  dead code - - v          -->
 <component name="TutNav">
     <props
@@ -45,6 +47,7 @@
 
 <props
     path
+    showall
 ></props>
 
 <template>
@@ -95,7 +98,7 @@
     const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
     script.exports.menu = [
         {
-            label: 'Home',
+            label: 'Table of Contents',
             filename: '/docs.html',
         },
 
@@ -175,6 +178,9 @@
             path = props.path;
         }
         for (const groupObj of script.exports.menu) {
+            if (props.showall) {
+                groupObj.active = true;
+            }
             if (groupObj.filename && path.endsWith(groupObj.filename)) {
                 groupObj.active = true;
             }
@@ -223,9 +229,13 @@
     const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
     script.exports.examples = [];
     for (const [name, content] of Object.entries(componentTexts)) {
+        //console.log("dis is conent", content);
         script.exports.examples.push({name, content});
     }
-    console.log('exports', script.exports);
+    //console.log('exports', script.exports);
+    //function codeExampleMount(el) {
+    //}
+
     function initializedCallback() {
     }
 </script>

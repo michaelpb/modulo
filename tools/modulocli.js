@@ -15,7 +15,13 @@ const commands = {
             const outputPath = outputDir + inputPath.slice(inputDir.length);
             utils.mkdirToContain(outputPath);
             const ext = path.extname(inputPath).slice(1).toLowerCase();
-            if (ext === 'html') {
+
+            // TODO: Should add "static" dir that's always copied, replace
+            // 'components' check with that
+            // OR, better yet, only "flip" HTML files it finds that
+            // start with <!DOCTYPE HTML
+            const isStatic = inputPath.includes('/components/');
+            if (ext === 'html' && !isStatic) {
                 utils.renderModuloHtml(rootPath, inputPath, outputPath, (subPaths, inputContents) => {
                     console.log('RENDERED:', inputPath, '->', outputPath);
                     if (subPaths) {

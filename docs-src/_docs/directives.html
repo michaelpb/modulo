@@ -201,7 +201,9 @@ component rerenders.</p>
 <ol>
     <li><code>loadObj</code> - This is the version created during the
     <code>load</code> phase, and is typically just the text and attributes of
-    the component definition with any pre-processing done.</li>
+    the component definition with any pre-processing done. Unlike the other
+    objects, <code>loadObj</code> <em>can only</em> contain plain or
+    JSON-friendly data types.</li>
 
     <li><code>baseRenderObj</code> - The <code>loadObj</code> is copied to the
     <code>baseRenderObj</code>, which is the result of the <code>factory</code>
@@ -442,9 +444,59 @@ text='
     "hidden" values getting attached.</p>
 </div>
 
+<h3>Registering CPart directives with shortcuts</h3>
+
+<p>If you are a CPart developer, you might want to register a shortcut along
+with your CPart's directive. Note that this only applies to CPart developers:
+Component developers should never create shortcuts for the script-tag based
+custom directives used (which should be avoided to begin with).</p>
 
 
+<p>See below for an example:</p>
 
+<mdu-CodeExample
+text='
+<template>
+    Game Shop: 31 moneys<br />
+    Avg Movie Creeps: 10 moneys<br />
+    <button @click:=script.toggle>
+        {% if state.show %}
+        Show controls (and trigger mount directive callbacks)
+        {% else %}
+        Hide controls (and trigger unmount callbacks)
+        {% endif %}
+    </button> <br />
+    {% if state.show %}
+        <button %%%buy="GMC">...gets replaced..</button>
+        <button %%%sell="GMC">...</button>
+        <button %%%long="AMC">...</button>
+        <button %%%short="AMC">...</button>
+    {% endif %}
+</template>
 
+<state
+    show:=false
+></state>
 
+<script>
+    Modulo.directiveShortcuts.push([/^%%%/, "script.example"]);
 
+    function exampleMount(info) {
+        console.log("Mounting directive:", info);
+        const {el, value, attrName, rawName} = info;
+        el.textContent = `${attrName} ${value}`;
+        el.onclick = () => alert(attrName + "ing " + value);
+    }
+    function exampleUnmount(info) {
+        console.log("Unmounting directive:", info);
+    }
+    function toggle() {
+        state.show = !state.show;
+    }
+</script>
+'></mdu-CodeExample>
+
+<p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
+example simple, we are demonstrating it's use within a script tag in a
+component, but in general shortcuts are only intended for CPart directives, not
+custom script tag directives.</p>

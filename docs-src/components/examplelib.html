@@ -125,6 +125,11 @@
 </component>
 
 
+
+
+
+
+
 <component name="Prime">
 <template>
   <div class="grid">
@@ -349,4 +354,78 @@ h3 {
 </style>
 </component>
 
+
+
+
+
+
+
+
+
+
+<component name="MiniExcel">
+
+<template>
+    <table>
+        {{ state.data }}
+        {% for row in state.data %}
+            <tr>
+                {% for col in row %}
+                    <td>{{ col }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</template>
+
+<state
+    data:='[]'
+/><state>
+
+<script>
+    function initalizedCallback(renderObj) {
+        console.log('getting initialized', renderObj);
+        renderObj.state.data = [
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+        ];
+    }
+</script>
+
+</component>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<component name="AccessingLoader">
+
+<template>
+    <button @button>Click me and look in Dev Console</strong>
+</template>
+<script>
+    // Note how it's even available at load time
+    const moduleFactory = Modulo.factoryInstances['eg-eg'];
+    function onClick() {
+        // Examine this object. See how script tag exports
+        // are actually already available? This allows for
+        // cross-script dependencies, e.g. import in one,
+        // access in another
+        console.log('This is moduleFactory:', moduleFactory);
+    }
+</script>
+
+</component>
 

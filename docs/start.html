@@ -116,6 +116,17 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
+    </style><style id="mdu-CodeSnippet_style">
+mdu-CodeSnippet {
+            position: relative;
+            display: block;
+        }
+mdu-CodeSnippet .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
     </style><style id="tutorial-DocSidebar_style">
 tutorial-DocSidebar li {
       margin-left: 20px;
@@ -133,13 +144,93 @@ tutorial-DocSidebar li.ginactive > a::before {
       content: '+ ';
   }
 </style><style id="tutorial-DocExampleLib_style">
+</style><style id="eg-Simple_style">
+eg-Simple em { color: darkblue; }
+eg-Simple * { text-decoration: underline; }
+</style><style id="eg-Prime_style">
+eg-Prime .grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+eg-Prime .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-Prime div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-Prime div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-Prime div.number { background: green; }
+eg-Prime div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-Prime If found, then hide asterisk and green. */
+eg-Prime div.whole ~ div.number { background: #B90183; }
+eg-Prime div.whole ~ div.number::after { opacity: 0; }
+</style><style id="eg-MemoryGame_style">
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
 </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
 
 
 
 
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:994}">
+<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -159,31 +250,82 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 994 lines<br>
+                SLOC: 1003 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
         </nav>
     </mdu-navbar>
 
-<main class="Tutorial">
+<main class="Docs">
+    <h1>Get started with Modulo</h1>
+    <br>
 
-    <blockquote>
-        <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this tutorial
-        requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
-        requires familiarity with JavaScript. Familiarity with React, Vue, or
-        similar frameworks is helpful, but not required.</p></blockquote>
+    <div class="Docs-squareInfo">
+        <section class="Tutorial-tryit">
+            <h4>Brand new?</h4>
 
-        <h1>The Modulo Tutorial</h1>
-        <p>Welcome to the Modulo tutorial. By following these short tutorials,
-        you can learn how to use Modulo in your own projects.</p>
-        <p><strong>Ready to dive in to Web Component development with
-        Modulo?</strong></p>
-        <a href="/docs/tutorial.html" style="font-size:1.5rem">&gt;&gt; 
-        <em> Part 1: Components, CParts, and Loaders</em></a>
+            <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
 
+            <p>Modulo is brand new in general, so chances are its brand new to
+            you as well! If you're new, your best bet is to get started with
+            the tutorial.  It walks through the basics of setting up Modulo in
+            a new project, and gives a tour of the "must-know" features.<br>Prerequisite: HTML, CSS.  </p>
+
+            <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
+        </section>
+    </div>
+
+    <div class="Docs-squareInfo">
+        <h2>CDN</h2>
+        <p>Want to get started as quickly as possible? Copy &amp; paste one of
+        the following CDN links:</p>
+
+<mdu-codesnippet text="<!-- Good: Use the latest version, served by GitHub pages -->
+<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
+
+<!-- Better: Include integrity checksum: -->
+<script src=&quot;https://modulojs.org/js/Modulo.js&quot;
+        integrity=&quot;sha384-&quot;
+        crossorigin=&quot;anonymous&quot;></script>
+
+<!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
+<!-- (Not yet functioning!) -->
+<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>">
+        <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+            <span alt="Clipboard">📋</span>
+        </button>
+        <div modulo-ignore="">
+            <div [script.codemirror]=""></div>
+        </div>
+    </mdu-codesnippet>
+    </div>
+
+    <div class="Docs-squareInfo">
+        <h2>NPM</h2>
+        <p>Coming soon!</p>
+    </div>
+
+    <div class="Docs-squareInfo">
+        <h2>Download</h2>
+        <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
+        <span alt="Down arrow">↧</span> Modulo.js
+        <span id="vnum"></span> (Latest)</a>
+
+
+        <p style="margin-top: 20px">Or run the following command:</p>
+
+        <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
+    </div>
 </main>
 
+<script>
+    (function () {
+        const {version} = JSON.parse(document.querySelector('mdu-Navbar')
+                                        .getAttribute('script-exports'));
+        document.querySelector('#vnum').textContent = 'v' + version;
+    })();
+</script>
 
 <script>Modulo.defineAll();</script>
 

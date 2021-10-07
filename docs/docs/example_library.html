@@ -116,6 +116,17 @@ mdu-CodeExample .split {
 @media (max-width: 992px) {
 mdu-CodeExample .split { display: block; }
         }
+    </style><style id="mdu-CodeSnippet_style">
+mdu-CodeSnippet {
+            position: relative;
+            display: block;
+        }
+mdu-CodeSnippet .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
@@ -219,7 +230,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:994}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -239,7 +250,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 994 lines<br>
+                SLOC: 1003 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -257,7 +268,7 @@ tutorial-DocSidebar li.ginactive > a::before {
     
         <li class="
             
-            "><a href="/docs.html">Home</a>
+            "><a href="/docs.html">Table of Contents</a>
             
         </li>
     
@@ -321,6 +332,10 @@ tutorial-DocSidebar li.ginactive > a::before {
                         <li><a href="/docs/example_library.html#4">Prime</a></li>
                     
                         <li><a href="/docs/example_library.html#5">MemoryGame</a></li>
+                    
+                        <li><a href="/docs/example_library.html#6">MiniExcel</a></li>
+                    
+                        <li><a href="/docs/example_library.html#7">AccessingLoader</a></li>
                     
                     </ul>
                 
@@ -697,6 +712,65 @@ h3 {
     to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
 </style>
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="MiniExcel">
+            MiniExcel
+        </mdu-section>
+        <mdu-codeexample text="
+<template>
+    <table>
+        {{ state.data }}
+        {% for row in state.data %}
+            <tr>
+                {% for col in row %}
+                    <td>{{ col }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</template>
+
+<state
+    data:='[]'
+/><state>
+
+<script>
+    function initalizedCallback(renderObj) {
+        console.log('getting initialized', renderObj);
+        renderObj.state.data = [
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+        ];
+    }
+</script>
+
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="AccessingLoader">
+            AccessingLoader
+        </mdu-section>
+        <mdu-codeexample text="
+<template>
+    <button @button>Click me and look in Dev Console</strong>
+</template>
+<script>
+    // Note how it's even available at load time
+    const moduleFactory = Modulo.factoryInstances['eg-eg'];
+    function onClick() {
+        // Examine this object. See how script tag exports
+        // are actually already available? This allows for
+        // cross-script dependencies, e.g. import in one,
+        // access in another
+        console.log('This is moduleFactory:', moduleFactory);
+    }
+</script>
+
 "></mdu-codeexample>
     
 </tutorial-docexamplelib>

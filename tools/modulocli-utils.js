@@ -225,9 +225,11 @@ function loadModuloDocument(path, html, subpath=null, rootPath=null, outputPath=
 
         Modulo.globals.fetch = url => {
             // Faked version of fetch
+            // TODO: Eventually just implement a backend version of FetchQueue
+            // (FetchQueueNode) that uses fs.readFile instead of fetch
             const rootDir = rootPath || pathlib.dirname(path);
             const fullPath = pathlib.join(rootDir, url);
-            console.log('this is rootDir', rootDir, url, fullPath);
+            //console.log('this is rootDir', rootDir, url, fullPath);
             const response = {
                 text: () => {},
                 // later, can add "json" that just sets a var
@@ -313,7 +315,24 @@ function mkdirToContain(path) {
     fs.mkdirSync(pathPrefix, mkdirOpts);
 }
 
-function copyIfDifferent(inputPath, outputPath, callback) {
+function ifDifferent(inputPath, outputPath, callbackSuccess, cbFailure) {
+    fs.stat(inputPath, (err1, inputStats) => fs.stat(outputPath, (err2, outputStats) => {
+        let shouldCopy = false;
+        if (err1 || err2 || !inputStats || !outputStats) {
+            shouldCopy = true; // if doesn't exist or inaccessible
+        } else if (String(inputStats.mtime) !== String(outputStats.mtime)) {
+            shouldCopy = true;
+        }
+        if (shouldCopy) {
+            callbackSuccess(inputStats, outputStats);
+        } else if (cbFailure) {
+            cbFailure(inputStats, outputStats);
+        }
+        /*else if (inputStats.size !== outputStats.size) { shouldCopy = true; }*/
+    }));
+}
+
+function copyIfDifferentDeadCode(inputPath, outputPath, callback) {
     fs.stat(inputPath, (err1, inputStats) => fs.stat(outputPath,
         (err2, outputStats) => {
             let shouldCopy = false;
@@ -339,6 +358,21 @@ function copyIfDifferent(inputPath, outputPath, callback) {
             }
         })
     );
+}
+
+function copyIfDifferent(inputPath, outputPath, callback) {
+    ifDifferent(inputPath, outputPath, (inputStats) => {
+        fs.copyFile(inputPath, outputPath, () => {
+            // Copy over mtime to new file
+            fs.utimes(outputPath, inputStats.atime, inputStats.mtime, (err) => {
+                if (err) {
+                    console.error('ERROR', err);
+                } else if (callback) {
+                    callback();
+                }
+            });
+        });
+    });
 }
 
 function renderModuloHtml(rootPath, inputPath, outputPath, callback) {
@@ -383,6 +417,7 @@ function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPa
 module.exports = {
     assert,
     checkArgs,
+    ifDifferent,
     copyIfDifferent,
     mkdirToContain,
     parseArgs,

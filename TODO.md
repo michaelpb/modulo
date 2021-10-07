@@ -16,14 +16,19 @@
       between renders, if a new element is introduced above it. Need to debug
       SET DOM implementation how it uses key.
     - Linting Rules!!
-    - component.innerHTML = ... is what does reconcile!
+    - component.innerHTML = ... is what does reconcile! ({component: {innerHTML: ..})
     - ShadowDOM + scoped style as an option (style could respect compnent)
+        - shadow - will attach component.innerHTML to shadow DOM
+        - shadow=only - will clear innerHTML, and then attach 
+                        component.innerHTML to shadow DOM
     - Big TODO: Finish Loading prefixing correctly
         - 1) x- for local, or imported without namespace
         - 2) x328f- get rewritten for imported ones
     - How to get better stack traces when everything is in an eval? Anyway to
       catch & throw?
 
+    - // TODO: Idea: Allow global dot resolution for config like this, so we
+        // can do settings=:module.script.exports.templateSettings
 - Code quality idea: Max cyclomatic complexity
     - (Can be configured via linting?)
     - Currently only collectDirectives (7) and "anon method-18" (6) violate
