@@ -1,4 +1,7 @@
 
+- Modulo.py - https://github.com/PiotrDabkowski/Js2Py
+- Could do a backend version that staticly renders modulo files
+- django-modulo --- static rendering on the fly!
 
 - Idea for custom CParts:
 

@@ -111,9 +111,12 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         this.factoryData = [];
     }
 
+    // factoryCallback() could be the new connectdCallback for <module><load>
+    // syntax!
+
     doFetch(element, options) {
-        Modulo.assert(this.src, 'Loader: Invalid or missing src= attribute');
-        Modulo.assert(this.namespace, 'Loader: Invalid or missing namespace= attribute');
+        Modulo.assert(this.src, 'Loader: Invalid src= attribute');
+        Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute');
 
         // After initializing data, send a new request to the URL specified by
         // the src attribute. When the response is received, load the text as a
@@ -122,15 +125,22 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
     }
 
     loadModules(elem) {
+        // TODO: Decide whether loadModules goes above or below
+        // because otherwise what if it accidentally picks up on a <load src="?
+        // ACTUALLY, it won't! Because that only happens AFTER. So, i have
+        // to figure out if it should drain queue sooner or later.
         this.mod = {};
         const mod = elem.querySelector('module');
         if (mod) {
             const [modName, modLoadObj] = this.loadFromDOMElement(mod);
             this.mod = modLoadObj;
+            // need to wait before we defineComponent here
+            //Modulo.fetchQ.wait(() => this.defineComponents());
             this.modFactory = this.defineComponent(this.namespace, modLoadObj);
         }
         const query = 'template[modulo-embed],script[type="modulo/embed"]';
         for (const embeddedModule of elem.querySelectorAll(query)) {
+            // TODO: Should be elem.content if tag===TEMPLATE
             this.loadString(embeddedModule.innerHTML);
         }
     }
@@ -161,7 +171,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         Modulo.fetchQ.wait(() => this.defineComponents());
     }
 
-    defineComponents(extraDeps) {
+    defineComponents() {
         for (const [name, loadObj] of this.factoryData) {
             this.defineComponent(name, loadObj);
         }
@@ -284,7 +294,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         return arr;
     }
 }
-Modulo.cparts.loader = Modulo.Loader;
+Modulo.cparts.load = Modulo.Loader;
 
 // # Modulo.ComponentFactory
 
@@ -1459,6 +1469,7 @@ Modulo.FetchQueue = class FetchQueue {
     constructor() {
         this.queue = {};
         this.data = {};
+        this.waitCallbacks = [];
     }
     enqueue(queueObj, callback, basePath, opts, responseCb) {
         opts = opts || this.defaultOpts || {};
@@ -1487,13 +1498,13 @@ Modulo.FetchQueue = class FetchQueue {
         this.checkWait();
     }
     wait(callback) {
-        this.waitCb = callback;
+        this.waitCallbacks.push(callback);
         this.checkWait();
     }
     checkWait() {
-        if (this.waitCb && Object.keys(this.queue).length === 0) {
-            this.waitCb();
-            this.waitCb = null;
+        if (Object.keys(this.queue).length === 0) {
+            this.waitCallbacks.forEach(func => func());;
+            this.waitCallbacks = [];
         }
     }
 }

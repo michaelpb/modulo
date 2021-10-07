@@ -120,7 +120,7 @@ mdu-CodeExample .split { display: block; }
 
 
 
-  <mdu-navbar selected="source" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:985}">
+  <mdu-navbar selected="source" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:986}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -140,7 +140,7 @@ mdu-CodeExample .split { display: block; }
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 985 lines<br>
+                SLOC: 986 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -288,8 +288,10 @@ with a <code>&lt;mod-load&gt;</code> tag in it.</p>
         <span class="hljs-keyword">const</span> src = <span class="hljs-built_in">this</span>.getAttribute(<span class="hljs-string">&#x27;src&#x27;</span>);
         <span class="hljs-keyword">const</span> namespace = <span class="hljs-built_in">this</span>.getAttribute(<span class="hljs-string">&#x27;namespace&#x27;</span>);
         <span class="hljs-keyword">const</span> opts = {<span class="hljs-attr">options</span>: {namespace, src}};
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;i am connected&#x27;</span>, opts);
         <span class="hljs-built_in">this</span>.loader = <span class="hljs-keyword">new</span> Modulo.Loader(<span class="hljs-literal">null</span>, opts);
         <span class="hljs-built_in">this</span>.loader.doFetch();
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;doin fetch&#x27;</span>, <span class="hljs-built_in">this</span>.loader);
         <span class="hljs-comment">/*
 
         this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
@@ -420,11 +422,7 @@ the heavy lifting of fetching &amp; registering Modulo components.</p>
         <span class="hljs-built_in">this</span>.src = <span class="hljs-built_in">this</span>.attrs.src;
         <span class="hljs-built_in">this</span>.namespace = <span class="hljs-built_in">this</span>.attrs.namespace;
         <span class="hljs-built_in">this</span>.factoryData = [];
-    }
-
-    <span class="hljs-function"><span class="hljs-title">doFetch</span>(<span class="hljs-params">element, options</span>)</span> {
-        Modulo.assert(<span class="hljs-built_in">this</span>.src, <span class="hljs-string">&#x27;Loader: Invalid or missing src= attribute&#x27;</span>);
-        Modulo.assert(<span class="hljs-built_in">this</span>.namespace, <span class="hljs-string">&#x27;Loader: Invalid or missing namespace= attribute&#x27;</span>);</pre></div></div>
+    }</pre></div></div>
             
         </li>
         
@@ -435,28 +433,14 @@ the heavy lifting of fetching &amp; registering Modulo components.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
-              <p>After initializing data, send a new request to the URL specified by
-the src attribute. When the response is received, load the text as a
-Modulo component module definition.</p>
+              <p>factoryCallback() could be the new connectdCallback for <module><load>
+syntax!</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        Modulo.fetchQ.enqueue(<span class="hljs-built_in">this</span>.src, <span class="hljs-function"><span class="hljs-params">text</span> =&gt;</span> <span class="hljs-built_in">this</span>.loadString(text));
-    }
-
-    <span class="hljs-function"><span class="hljs-title">loadModules</span>(<span class="hljs-params">elem</span>)</span> {
-        <span class="hljs-built_in">this</span>.mod = {};
-        <span class="hljs-keyword">const</span> mod = elem.querySelector(<span class="hljs-string">&#x27;module&#x27;</span>);
-        <span class="hljs-keyword">if</span> (mod) {
-            <span class="hljs-keyword">const</span> [modName, modLoadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(mod);
-            <span class="hljs-built_in">this</span>.mod = modLoadObj;
-            <span class="hljs-built_in">this</span>.modFactory = <span class="hljs-built_in">this</span>.defineComponent(<span class="hljs-built_in">this</span>.namespace, modLoadObj);
-        }
-        <span class="hljs-keyword">const</span> query = <span class="hljs-string">&#x27;template[modulo-embed],script[type=&quot;modulo/embed&quot;]&#x27;</span>;
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> embeddedModule <span class="hljs-keyword">of</span> elem.querySelectorAll(query)) {
-            <span class="hljs-built_in">this</span>.loadString(embeddedModule.innerHTML);
-        }
-    }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">doFetch</span>(<span class="hljs-params">element, options</span>)</span> {
+        Modulo.assert(<span class="hljs-built_in">this</span>.src, <span class="hljs-string">&#x27;Loader: Invalid src= attribute&#x27;</span>);
+        Modulo.assert(<span class="hljs-built_in">this</span>.namespace, <span class="hljs-string">&#x27;Loader: Invalid namespace= attribute&#x27;</span>);</pre></div></div>
             
         </li>
         
@@ -467,9 +451,16 @@ Modulo component module definition.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
-              <h2 id="loader-loadstring">Loader: loadString</h2>
+              <p>After initializing data, send a new request to the URL specified by
+the src attribute. When the response is received, load the text as a
+Modulo component module definition.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>        Modulo.fetchQ.enqueue(<span class="hljs-built_in">this</span>.src, <span class="hljs-function"><span class="hljs-params">text</span> =&gt;</span> <span class="hljs-built_in">this</span>.loadString(text));
+    }
+
+    <span class="hljs-function"><span class="hljs-title">loadModules</span>(<span class="hljs-params">elem</span>)</span> {</pre></div></div>
             
         </li>
         
@@ -479,6 +470,77 @@ Modulo component module definition.</p>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-16">&#x00a7;</a>
+              </div>
+              <p>TODO: Decide whether loadModules goes above or below
+because otherwise what if it accidentally picks up on a &lt;load src=”?
+ACTUALLY, it won’t! Because that only happens AFTER. So, i have
+to figure out if it should drain queue sooner or later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.mod = {};
+        <span class="hljs-keyword">const</span> mod = elem.querySelector(<span class="hljs-string">&#x27;module&#x27;</span>);
+        <span class="hljs-keyword">if</span> (mod) {
+            <span class="hljs-keyword">const</span> [modName, modLoadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(mod);
+            <span class="hljs-built_in">this</span>.mod = modLoadObj;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-17">&#x00a7;</a>
+              </div>
+              <p>need to wait before we defineComponent here
+Modulo.fetchQ.wait(() =&gt; this.defineComponents());</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">this</span>.modFactory = <span class="hljs-built_in">this</span>.defineComponent(<span class="hljs-built_in">this</span>.namespace, modLoadObj);
+        }
+        <span class="hljs-keyword">const</span> query = <span class="hljs-string">&#x27;template[modulo-embed],script[type=&quot;modulo/embed&quot;]&#x27;</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> embeddedModule <span class="hljs-keyword">of</span> elem.querySelectorAll(query)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
+              </div>
+              <p>TODO: Should be elem.content if tag===TEMPLATE</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">this</span>.loadString(embeddedModule.innerHTML);
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-19">&#x00a7;</a>
+              </div>
+              <h2 id="loader-loadstring">Loader: loadString</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-20">&#x00a7;</a>
               </div>
               <p>The main loading method. This will take a string with the source code to
 a module as an argument and loop through all <code>&lt;component ...&gt;</code> style
@@ -495,6 +557,7 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
           &lt;\s*(state|props|template)([\s&gt;]) -&gt; &lt;script type=&quot;modulo/\1&quot;\2
           &lt;/(state|props|template)&gt; -&gt; &lt;/script&gt;
         */</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;getting back data&#x27;</span>, <span class="hljs-built_in">this</span>.src);
         <span class="hljs-keyword">const</span> frag = <span class="hljs-keyword">new</span> Modulo.globals.DocumentFragment();
         <span class="hljs-keyword">const</span> div = Modulo.globals.document.createElement(<span class="hljs-string">&#x27;div&#x27;</span>);
         div.innerHTML = text;
@@ -508,7 +571,7 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         Modulo.fetchQ.wait(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">this</span>.defineComponents());
     }
 
-    <span class="hljs-function"><span class="hljs-title">defineComponents</span>(<span class="hljs-params">extraDeps</span>)</span> {
+    <span class="hljs-function"><span class="hljs-title">defineComponents</span>(<span class="hljs-params"></span>)</span> {
         <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [name, loadObj] <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.factoryData) {
             <span class="hljs-built_in">this</span>.defineComponent(name, loadObj);
         }
@@ -519,11 +582,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-17">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-17">&#x00a7;</a>
+                <a class="ss" href="#section-21">&#x00a7;</a>
               </div>
               <p>TODO: rewrite / remove -v</p>
 
@@ -537,11 +600,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-18">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-18">&#x00a7;</a>
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <h2 id="loader-loadfromdomelement">Loader: loadFromDOMElement</h2>
 
@@ -550,11 +613,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-19">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-19">&#x00a7;</a>
+                <a class="ss" href="#section-23">&#x00a7;</a>
               </div>
               <p>Create a ComponentFactory instance from a given <code>&lt;component&gt;</code> definition.</p>
 
@@ -565,11 +628,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-20">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-20">&#x00a7;</a>
+                <a class="ss" href="#section-24">&#x00a7;</a>
               </div>
               <h3 id="step-1-config">Step 1: Config</h3>
 
@@ -578,11 +641,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-21">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-21">&#x00a7;</a>
+                <a class="ss" href="#section-25">&#x00a7;</a>
               </div>
               <p>Get any custom component configuration (e.g. attributes <code>name=</code> or
 <code>extends=</code>)</p>
@@ -595,11 +658,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-22">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-22">&#x00a7;</a>
+                <a class="ss" href="#section-26">&#x00a7;</a>
               </div>
               <h3 id="step-2-set-up-loadobj">Step 2: Set-up <code>loadObj</code></h3>
 
@@ -608,11 +671,11 @@ definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
         </li>
         
         
-        <li id="section-23">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-23">&#x00a7;</a>
+                <a class="ss" href="#section-27">&#x00a7;</a>
               </div>
               <p>Modulo often uses plain objects to “pass around” during the lifecycle
 of each component. At this stage, we set up <code>loadObj</code>.</p>
@@ -634,11 +697,11 @@ structure:</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-24">&#x00a7;</a>
+                <a class="ss" href="#section-28">&#x00a7;</a>
               </div>
               <h3 id="step-3-define-cparts">Step 3: define CParts</h3>
 
@@ -647,11 +710,11 @@ structure:</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-25">&#x00a7;</a>
+                <a class="ss" href="#section-29">&#x00a7;</a>
               </div>
               <p>Loop through each CPart DOM definition within the component (e.g.
 <code>&lt;state&gt;</code>), invoking the <code>loadCallback</code> on each definition (e.g.
@@ -681,11 +744,11 @@ data necessary to define this CPart.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-26">&#x00a7;</a>
+                <a class="ss" href="#section-30">&#x00a7;</a>
               </div>
               <h2 id="loader-definecomponent">Loader: defineComponent</h2>
 
@@ -694,11 +757,11 @@ data necessary to define this CPart.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-27">&#x00a7;</a>
+                <a class="ss" href="#section-31">&#x00a7;</a>
               </div>
               <p>Helper function that constructs a new ComponentFactory for a component,
 based on a loadObj data structure.</p>
@@ -716,11 +779,11 @@ based on a loadObj data structure.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-28">&#x00a7;</a>
+                <a class="ss" href="#section-32">&#x00a7;</a>
               </div>
               <h2 id="loadergetnodecpartname">Loader.getNodeCPartName</h2>
 
@@ -729,11 +792,11 @@ based on a loadObj data structure.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-29">&#x00a7;</a>
+                <a class="ss" href="#section-33">&#x00a7;</a>
               </div>
               <p>Helper function that determines the CPart name from a DOM node.</p>
 
@@ -745,11 +808,11 @@ based on a loadObj data structure.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-30">&#x00a7;</a>
+                <a class="ss" href="#section-34">&#x00a7;</a>
               </div>
               <p>node.nodeType equals 1 if the node is a DOM element (as opposed to
 text, or comment). Ignore comments, tolerate empty text nodes, but
@@ -762,11 +825,11 @@ warn on others (since those are typically syntax mistakes).</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-31">&#x00a7;</a>
+                <a class="ss" href="#section-35">&#x00a7;</a>
               </div>
               <p>Text nodes, comment nodes, etc</p>
 
@@ -781,11 +844,11 @@ warn on others (since those are typically syntax mistakes).</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-32">&#x00a7;</a>
+                <a class="ss" href="#section-36">&#x00a7;</a>
               </div>
               <p>Determine the name: The tag name, or the type attribute in the case
 of the alt script-tag syntax (eg <code>&lt;script type=&quot;modulo/template&quot;&gt;</code>)</p>
@@ -807,11 +870,11 @@ of the alt script-tag syntax (eg <code>&lt;script type=&quot;modulo/template&quo
         </li>
         
         
-        <li id="section-33">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-33">&#x00a7;</a>
+                <a class="ss" href="#section-37">&#x00a7;</a>
               </div>
               <h2 id="loadergetcpartnamesfromdom">Loader.getCPartNamesFromDOM</h2>
 
@@ -820,11 +883,11 @@ of the alt script-tag syntax (eg <code>&lt;script type=&quot;modulo/template&quo
         </li>
         
         
-        <li id="section-34">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-34">&#x00a7;</a>
+                <a class="ss" href="#section-38">&#x00a7;</a>
               </div>
               <p>Helper function that loops through a component definitions children,
 generating an array of objects containing the node and CPart name.</p>
@@ -848,16 +911,16 @@ generating an array of objects containing the node and CPart name.</p>
         <span class="hljs-keyword">return</span> arr;
     }
 }
-Modulo.cparts.loader = Modulo.Loader;</pre></div></div>
+Modulo.cparts.load = Modulo.Loader;</pre></div></div>
             
         </li>
         
         
-        <li id="section-35">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-35">&#x00a7;</a>
+                <a class="ss" href="#section-39">&#x00a7;</a>
               </div>
               <h1 id="modulocomponentfactory">Modulo.ComponentFactory</h1>
 
@@ -866,11 +929,11 @@ Modulo.cparts.loader = Modulo.Loader;</pre></div></div>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-36">&#x00a7;</a>
+                <a class="ss" href="#section-40">&#x00a7;</a>
               </div>
               <p>Now that we have traversed the jungle of loading Modulo component
 definitions, what happens next? Well, for each component that is defined, a
@@ -887,11 +950,11 @@ CParts.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-37">&#x00a7;</a>
+                <a class="ss" href="#section-41">&#x00a7;</a>
               </div>
               <h2 id="componentfactory-constructor">ComponentFactory constructor</h2>
 
@@ -900,11 +963,11 @@ CParts.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-38">&#x00a7;</a>
+                <a class="ss" href="#section-42">&#x00a7;</a>
               </div>
               <p>When a ComponentFactory gets constructed (that is, by the Loader), it in
 turn sets up expected properties, and then invokes its methods
@@ -925,11 +988,11 @@ createClass and runFactoryLifeCycle explained next.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-39">&#x00a7;</a>
+                <a class="ss" href="#section-43">&#x00a7;</a>
               </div>
               <h2 id="componentfactory-factory-lifecycle">ComponentFactory: Factory lifecycle</h2>
 
@@ -938,11 +1001,11 @@ createClass and runFactoryLifeCycle explained next.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-40">&#x00a7;</a>
+                <a class="ss" href="#section-44">&#x00a7;</a>
               </div>
               <p>This “factory” lifecycle is a special lifecycle for any global or
 one-time setup, after component definitions are loaded, but before
@@ -987,11 +1050,11 @@ factoryCallback itself.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-41">&#x00a7;</a>
+                <a class="ss" href="#section-45">&#x00a7;</a>
               </div>
               <h2 id="componentfactory-createclass">ComponentFactory: createClass</h2>
 
@@ -1000,11 +1063,11 @@ factoryCallback itself.</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-42">&#x00a7;</a>
+                <a class="ss" href="#section-46">&#x00a7;</a>
               </div>
               <p>Finally, we are ready to create the class that the browser will use to
 actually instantiate each Component. At this stage, we set up the
@@ -1031,11 +1094,11 @@ brand-new class definition.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-43">&#x00a7;</a>
+                <a class="ss" href="#section-47">&#x00a7;</a>
               </div>
               <h2 id="componentfactory-buildcparts">ComponentFactory: buildCParts</h2>
 
@@ -1044,11 +1107,11 @@ brand-new class definition.</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-44">&#x00a7;</a>
+                <a class="ss" href="#section-48">&#x00a7;</a>
               </div>
               <p>This function does the heavy lifting of actually constructing a
 component, and is invoked when the component is mounted to the page.</p>
@@ -1063,11 +1126,11 @@ component, and is invoked when the component is mounted to the page.</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-45">&#x00a7;</a>
+                <a class="ss" href="#section-49">&#x00a7;</a>
               </div>
               <p>It loops through the parsed array of objects that define the
 Component Parts for this component, checking for errors.</p>
@@ -1100,11 +1163,11 @@ Component Parts for this component, checking for errors.</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-46">&#x00a7;</a>
+                <a class="ss" href="#section-50">&#x00a7;</a>
               </div>
               <h2 id="componentfactory-register--registerinstance">ComponentFactory: register &amp; registerInstance</h2>
 
@@ -1113,11 +1176,11 @@ Component Parts for this component, checking for errors.</p>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-47">&#x00a7;</a>
+                <a class="ss" href="#section-51">&#x00a7;</a>
               </div>
               <p>These are minor helper functions. The first registers with the browser,
 the second keeps a central location of all component factories defined.</p>
@@ -1126,6 +1189,7 @@ the second keeps a central location of all component factories defined.</p>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">register</span>(<span class="hljs-params"></span>)</span> {
         <span class="hljs-keyword">const</span> tagName = <span class="hljs-built_in">this</span>.fullName.toLowerCase();
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;registering&#x27;</span>, tagName, <span class="hljs-built_in">this</span>.fullName);
         Modulo.globals.customElements.define(tagName, <span class="hljs-built_in">this</span>.componentClass);
     }
     <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">registerInstance</span>(<span class="hljs-params">instance</span>)</span> {
@@ -1151,11 +1215,11 @@ Modulo.Element = <span class="hljs-class"><span class="hljs-keyword">class</span
         </li>
         
         
-        <li id="section-48">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-48">&#x00a7;</a>
+                <a class="ss" href="#section-52">&#x00a7;</a>
               </div>
               <p>console.log(‘originalChildren!’, this.originalChildren);
 console.log(‘originalInnerHTML!’, this.innerHTML);</p>
@@ -1169,11 +1233,11 @@ console.log(‘originalInnerHTML!’, this.innerHTML);</p>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-49">&#x00a7;</a>
+                <a class="ss" href="#section-53">&#x00a7;</a>
               </div>
               <p>this.originalChildren.push(this.removeChild(child)); // TODO: should i remove children?</p>
 
@@ -1185,11 +1249,11 @@ console.log(‘originalInnerHTML!’, this.innerHTML);</p>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-50">&#x00a7;</a>
+                <a class="ss" href="#section-54">&#x00a7;</a>
               </div>
               <p>console.log(‘originalChildren has child nodes!’, this.originalChildren);</p>
 
@@ -1249,11 +1313,11 @@ console.log(‘originalInnerHTML!’, this.innerHTML);</p>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-51">&#x00a7;</a>
+                <a class="ss" href="#section-55">&#x00a7;</a>
               </div>
               <p>NEW CODE: This is a quick re-implementation of lifecycle</p>
 
@@ -1264,11 +1328,11 @@ console.log(‘originalInnerHTML!’, this.innerHTML);</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-52">&#x00a7;</a>
+                <a class="ss" href="#section-56">&#x00a7;</a>
               </div>
               <p>todo: maybe sort cparts ahead of time based on lifecycles?</p>
 
@@ -1285,11 +1349,11 @@ console.log(‘originalInnerHTML!’, this.innerHTML);</p>
         </li>
         
         
-        <li id="section-53">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-53">&#x00a7;</a>
+                <a class="ss" href="#section-57">&#x00a7;</a>
               </div>
               <p>TODO: clean this up, renderObj should never “just”
 be cPart, should be the whole cparts.* being bare
@@ -1302,11 +1366,11 @@ name OOP, vs cparts.*  being factory-defined</p>
         </li>
         
         
-        <li id="section-54">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-54">&#x00a7;</a>
+                <a class="ss" href="#section-58">&#x00a7;</a>
               </div>
               <p>this.renderObj[cPartName] = cPart;</p>
 
@@ -1326,11 +1390,11 @@ name OOP, vs cparts.*  being factory-defined</p>
         </li>
         
         
-        <li id="section-55">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-55">&#x00a7;</a>
+                <a class="ss" href="#section-59">&#x00a7;</a>
               </div>
               <p>this.renderObj = null; // rendering is over, set to null</p>
 
@@ -1343,11 +1407,11 @@ name OOP, vs cparts.*  being factory-defined</p>
         </li>
         
         
-        <li id="section-56">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-56">&#x00a7;</a>
+                <a class="ss" href="#section-60">&#x00a7;</a>
               </div>
               <p>console.log(‘this is initRenderObj’, this.initRenderObj);
 console.log(‘this is renderObj’, this.renderObj);
@@ -1363,11 +1427,11 @@ console.log(‘this is eventRenderObj’, this.eventRenderObj);</p>
         </li>
         
         
-        <li id="section-57">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-57">&#x00a7;</a>
+                <a class="ss" href="#section-61">&#x00a7;</a>
               </div>
               <p>const hackName = this.factory.name;
 console.log(<code>   ${hackName} -- GET   ${key}</code>, rObj);
@@ -1404,11 +1468,11 @@ console.log(<code>   ${hackName} -- VALUE ${key} &lt;&lt;${result}&gt;&gt;</code
         </li>
         
         
-        <li id="section-58">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-58">&#x00a7;</a>
+                <a class="ss" href="#section-62">&#x00a7;</a>
               </div>
               <p>TODO: Make ‘template’ not hardcoded here, as well as
 Component’s updateCallback. OR do attrs?</p>
@@ -1423,11 +1487,11 @@ Component’s updateCallback. OR do attrs?</p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-59">&#x00a7;</a>
+                <a class="ss" href="#section-63">&#x00a7;</a>
               </div>
               <p>IDEA (2021-10-05): Call Collect directives during “update” phase, and return
 a trimmed version of its structure in the component CPart data in renderObj.
@@ -1447,11 +1511,11 @@ documentation says happens (IRL, right now both happen in “update”)</p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-60">&#x00a7;</a>
+                <a class="ss" href="#section-64">&#x00a7;</a>
               </div>
               <p>todo: optimize skipping most elements or attributes</p>
 
@@ -1478,11 +1542,11 @@ documentation says happens (IRL, right now both happen in “update”)</p>
         </li>
         
         
-        <li id="section-61">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-61">&#x00a7;</a>
+                <a class="ss" href="#section-65">&#x00a7;</a>
               </div>
               <p>console.log(‘dName’, dName, attrName, component);</p>
 
@@ -1497,11 +1561,11 @@ documentation says happens (IRL, right now both happen in “update”)</p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-62">&#x00a7;</a>
+                <a class="ss" href="#section-66">&#x00a7;</a>
               </div>
               <p>tail recursion into children</p>
 
@@ -1521,11 +1585,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-63">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-63">&#x00a7;</a>
+                <a class="ss" href="#section-67">&#x00a7;</a>
               </div>
               <p>TODO shouldn’t have to do this —v</p>
 
@@ -1557,11 +1621,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-64">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-64">&#x00a7;</a>
+                <a class="ss" href="#section-68">&#x00a7;</a>
               </div>
               <p>TODO: Add if (!this.component.options.controlledRender)</p>
 
@@ -1576,11 +1640,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-65">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-65">&#x00a7;</a>
+                <a class="ss" href="#section-69">&#x00a7;</a>
               </div>
               <p>this.element.originalChildren = [];</p>
 
@@ -1593,11 +1657,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-66">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-66">&#x00a7;</a>
+                <a class="ss" href="#section-70">&#x00a7;</a>
               </div>
               <p>this.element.innerHTML = ‘’;</p>
 
@@ -1612,11 +1676,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-67">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-67">&#x00a7;</a>
+                <a class="ss" href="#section-71">&#x00a7;</a>
               </div>
               <p>console.log(‘this is eventMount’, info);</p>
 
@@ -1627,11 +1691,11 @@ Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-68">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-68">&#x00a7;</a>
+                <a class="ss" href="#section-72">&#x00a7;</a>
               </div>
               <p>window.C = this;
 console.log(‘this is rawName’, rawName, value);</p>
@@ -1646,11 +1710,11 @@ console.log(‘this is rawName’, rawName, value);</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-69">&#x00a7;</a>
+                <a class="ss" href="#section-73">&#x00a7;</a>
               </div>
               <p>console.log(‘this is payload’, <code>${attrName}.payload</code>, payload);</p>
 
@@ -1671,11 +1735,11 @@ console.log(‘this is rawName’, rawName, value);</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-70">&#x00a7;</a>
+                <a class="ss" href="#section-74">&#x00a7;</a>
               </div>
               <p>console.log(‘this is it’, resolutionContext);
 console.log(‘this is resolve mount’, attrName, value);</p>
@@ -1695,11 +1759,11 @@ console.log(‘this is resolve mount’, attrName, value);</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-71">&#x00a7;</a>
+                <a class="ss" href="#section-75">&#x00a7;</a>
               </div>
               <p>console.log(‘——————-‘, n, val);</p>
 
@@ -1724,11 +1788,11 @@ Modulo.cparts.props = <span class="hljs-class"><span class="hljs-keyword">class<
         </li>
         
         
-        <li id="section-72">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-72">&#x00a7;</a>
+                <a class="ss" href="#section-76">&#x00a7;</a>
               </div>
               <p>dead code?
 change to “this.element”</p>
@@ -1768,11 +1832,11 @@ change to “this.element”</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-73">&#x00a7;</a>
+                <a class="ss" href="#section-77">&#x00a7;</a>
               </div>
               <p>console.log(‘this is props’, props);</p>
 
@@ -1815,11 +1879,11 @@ Modulo.cparts.style = <span class="hljs-class"><span class="hljs-keyword">class<
         </li>
         
         
-        <li id="section-74">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-74">&#x00a7;</a>
+                <a class="ss" href="#section-78">&#x00a7;</a>
               </div>
               <p>To prefix the selectors, we loop through them, with this RegExp that
 looks for { chars</p>
@@ -1834,11 +1898,11 @@ looks for { chars</p>
         </li>
         
         
-        <li id="section-75">
+        <li id="section-79">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-75">&#x00a7;</a>
+                <a class="ss" href="#section-79">&#x00a7;</a>
               </div>
               <p>TODO: Make a regexp to check if matches other keyframe
 stuff, 90% etc
@@ -1852,11 +1916,11 @@ Skip, is @media or @keyframes, or already prefixed</p>
         </li>
         
         
-        <li id="section-76">
+        <li id="section-80">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-76">&#x00a7;</a>
+                <a class="ss" href="#section-80">&#x00a7;</a>
               </div>
               <p>Upgrade the “bare” component name to be the full name</p>
 
@@ -1867,11 +1931,11 @@ Skip, is @media or @keyframes, or already prefixed</p>
         </li>
         
         
-        <li id="section-77">
+        <li id="section-81">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-77">&#x00a7;</a>
+                <a class="ss" href="#section-81">&#x00a7;</a>
               </div>
               <p>If it is not prefixed at this point, then be sure to prefix</p>
 
@@ -1892,11 +1956,11 @@ Skip, is @media or @keyframes, or already prefixed</p>
         </li>
         
         
-        <li id="section-78">
+        <li id="section-82">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-78">&#x00a7;</a>
+                <a class="ss" href="#section-82">&#x00a7;</a>
               </div>
               <p>TODO: Move prefixing to factoryCallback (?)</p>
 
@@ -1920,11 +1984,11 @@ Modulo.cparts.template = <span class="hljs-class"><span class="hljs-keyword">cla
         </li>
         
         
-        <li id="section-79">
+        <li id="section-83">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-79">&#x00a7;</a>
+                <a class="ss" href="#section-83">&#x00a7;</a>
               </div>
               <p>Should be X, and maybe be a customizable preproccesor?
 const content = (opts.content || ‘’).replace(/(&lt;/?)x-/ig, tagPref);</p>
@@ -1963,11 +2027,11 @@ Modulo.cparts.script = <span class="hljs-class"><span class="hljs-keyword">class
         </li>
         
         
-        <li id="section-80">
+        <li id="section-84">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-80">&#x00a7;</a>
+                <a class="ss" href="#section-84">&#x00a7;</a>
               </div>
               <p>TODO: Need to check for reserved words in capture group:
 filter away things like “// function for games”
@@ -1992,11 +2056,11 @@ filter away things like “// function for games”
         </li>
         
         
-        <li id="section-81">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-81">&#x00a7;</a>
+                <a class="ss" href="#section-85">&#x00a7;</a>
               </div>
               <p>TODO: Rename script to script to be consistent with event-time lifecycle</p>
 
@@ -2020,11 +2084,11 @@ filter away things like “// function for games”
         </li>
         
         
-        <li id="section-82">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-82">&#x00a7;</a>
+                <a class="ss" href="#section-86">&#x00a7;</a>
               </div>
               <p>localVars.push(‘parent’); // add in access to previous versions of renderObj (DEAD CODE)</p>
 
@@ -2043,11 +2107,11 @@ filter away things like “// function for games”
         </li>
         
         
-        <li id="section-83">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-83">&#x00a7;</a>
+                <a class="ss" href="#section-87">&#x00a7;</a>
               </div>
               <p>Attach callbacks from script to this, to hook into lifecycle.</p>
 
@@ -2070,11 +2134,11 @@ filter away things like “// function for games”
         </li>
         
         
-        <li id="section-84">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-84">&#x00a7;</a>
+                <a class="ss" href="#section-88">&#x00a7;</a>
               </div>
               <h2 id="cpartsscript-preplocalvars">cparts.Script: prepLocalVars</h2>
 
@@ -2083,11 +2147,11 @@ filter away things like “// function for games”
         </li>
         
         
-        <li id="section-85">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-85">&#x00a7;</a>
+                <a class="ss" href="#section-89">&#x00a7;</a>
               </div>
               <p>To allow for local variables access to APIs provided by other CParts,
 sets local variables equal to the data returned by their callbacks.
@@ -2121,11 +2185,11 @@ Modulo.cparts.state = <span class="hljs-class"><span class="hljs-keyword">class<
         </li>
         
         
-        <li id="section-86">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-86">&#x00a7;</a>
+                <a class="ss" href="#section-90">&#x00a7;</a>
               </div>
               <p>TODO —v delete these</p>
 
@@ -2151,11 +2215,11 @@ Modulo.cparts.state = <span class="hljs-class"><span class="hljs-keyword">class<
         </li>
         
         
-        <li id="section-87">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-87">&#x00a7;</a>
+                <a class="ss" href="#section-91">&#x00a7;</a>
               </div>
               <p>eventually customizable, eg [state.bind]mouseover=mouseY (event
 name, el property name, and/or state propery name etc)</p>
@@ -2181,11 +2245,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-88">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-88">&#x00a7;</a>
+                <a class="ss" href="#section-92">&#x00a7;</a>
               </div>
               <p>Used for hot-reloading: Merge data with oldPart’s data</p>
 
@@ -2225,11 +2289,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-89">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-89">&#x00a7;</a>
+                <a class="ss" href="#section-93">&#x00a7;</a>
               </div>
               <p>ModuloTemplate</p>
 
@@ -2261,11 +2325,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-90">
+        <li id="section-94">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-90">&#x00a7;</a>
+                <a class="ss" href="#section-94">&#x00a7;</a>
               </div>
               <p>FSM for mode: (‘text’ -&gt; null) (null -&gt; token) (* -&gt; ‘text’)</p>
 
@@ -2277,11 +2341,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-91">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-91">&#x00a7;</a>
+                <a class="ss" href="#section-95">&#x00a7;</a>
               </div>
               <p>console.log(‘this is the rsulting template code’, output.replace(/([;}{])/g, ‘$1\n’));</p>
 
@@ -2310,11 +2374,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-92">
+        <li id="section-96">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-92">&#x00a7;</a>
+                <a class="ss" href="#section-96">&#x00a7;</a>
               </div>
               <p>console.log(text.split(RegExp(reText)));</p>
 
@@ -2341,11 +2405,11 @@ name, el property name, and/or state propery name etc)</p>
         </li>
         
         
-        <li id="section-93">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-93">&#x00a7;</a>
+                <a class="ss" href="#section-97">&#x00a7;</a>
               </div>
               <p>TODO: add this
 ‘ (single quote) is converted to &#x27;
@@ -2363,11 +2427,11 @@ Modulo.templating.defaultOptions = {
         </li>
         
         
-        <li id="section-94">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-94">&#x00a7;</a>
+                <a class="ss" href="#section-98">&#x00a7;</a>
               </div>
               <p>opTokens: ‘==,&gt;,&lt;,&gt;=,&lt;=,!=,not in,is not,is,in,not,and,or’,</p>
 
@@ -2384,11 +2448,11 @@ Modulo.templating.defaultOptions = {
         </li>
         
         
-        <li id="section-95">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-95">&#x00a7;</a>
+                <a class="ss" href="#section-99">&#x00a7;</a>
               </div>
               <p>‘and’: ‘X &amp;&amp; Y’,
 ‘or’: ‘X || Y’,</p>
@@ -2438,11 +2502,11 @@ Modulo.templating.defaultOptions.filters = {
         </li>
         
         
-        <li id="section-96">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-96">&#x00a7;</a>
+                <a class="ss" href="#section-100">&#x00a7;</a>
               </div>
               <p>invoke: (s, arg) =&gt; s(arg),
 getAttribute: (s, arg) =&gt; s.getAttribute(arg),</p>
@@ -2473,11 +2537,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-97">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-97">&#x00a7;</a>
+                <a class="ss" href="#section-101">&#x00a7;</a>
               </div>
               <p>Make variable name be based on nested-ness of tag stack</p>
 
@@ -2499,11 +2563,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-98">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-98">&#x00a7;</a>
+                <a class="ss" href="#section-102">&#x00a7;</a>
               </div>
               <p>Make variable name be based on nested-ness of tag stack</p>
 
@@ -2524,11 +2588,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-99">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-99">&#x00a7;</a>
+                <a class="ss" href="#section-103">&#x00a7;</a>
               </div>
               <p>SetDomReconciler ——————</p>
 
@@ -2541,11 +2605,11 @@ Modulo.templating.defaultOptions.tags = {
         </li>
         
         
-        <li id="section-100">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-100">&#x00a7;</a>
+                <a class="ss" href="#section-104">&#x00a7;</a>
               </div>
               <p>TODO, add in directives stuff, or move elsewhere</p>
 
@@ -2582,11 +2646,11 @@ Modulo.reconcilers.SetDom = <span class="hljs-class"><span class="hljs-keyword">
         </li>
         
         
-        <li id="section-101">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-101">&#x00a7;</a>
+                <a class="ss" href="#section-105">&#x00a7;</a>
               </div>
               <p>console.log(‘this is element’, element); // NOT sure why text nodes get here</p>
 
@@ -2616,11 +2680,11 @@ Modulo.reconcilers.SetDom = <span class="hljs-class"><span class="hljs-keyword">
         </li>
         
         
-        <li id="section-102">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-102">&#x00a7;</a>
+                <a class="ss" href="#section-106">&#x00a7;</a>
               </div>
               <p>We have to fully replace the node — the tag/type doesn’t match
 this.dismount(oldNode);</p>
@@ -2634,11 +2698,11 @@ this.dismount(oldNode);</p>
         </li>
         
         
-        <li id="section-103">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-103">&#x00a7;</a>
+                <a class="ss" href="#section-107">&#x00a7;</a>
               </div>
               <p>Handle other types of node updates (text/comments/etc).
 TODO: Is this if statement even a useful optimization..?
@@ -2653,11 +2717,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-104">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-104">&#x00a7;</a>
+                <a class="ss" href="#section-108">&#x00a7;</a>
               </div>
               <p>Update children &amp; attributes</p>
 
@@ -2669,11 +2733,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-105">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-105">&#x00a7;</a>
+                <a class="ss" href="#section-109">&#x00a7;</a>
               </div>
               <p>TODO: do dismounts as necessary</p>
 
@@ -2696,11 +2760,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-106">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-106">&#x00a7;</a>
+                <a class="ss" href="#section-110">&#x00a7;</a>
               </div>
               <p>Remove old attributes.</p>
 
@@ -2717,11 +2781,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-107">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-107">&#x00a7;</a>
+                <a class="ss" href="#section-111">&#x00a7;</a>
               </div>
               <p>Set new attributes.</p>
 
@@ -2737,11 +2801,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-108">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-108">&#x00a7;</a>
+                <a class="ss" href="#section-112">&#x00a7;</a>
               </div>
               <p>Add a new attribute.</p>
 
@@ -2754,11 +2818,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-109">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-109">&#x00a7;</a>
+                <a class="ss" href="#section-113">&#x00a7;</a>
               </div>
               <p>Update existing attribute.</p>
 
@@ -2787,11 +2851,11 @@ if (oldNode.nodeValue !== newNode.nodeValue) {
         </li>
         
         
-        <li id="section-110">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-110">&#x00a7;</a>
+                <a class="ss" href="#section-114">&#x00a7;</a>
               </div>
               <p>Extract keyed nodes from previous children and keep track of total
 count.</p>
@@ -2811,11 +2875,11 @@ count.</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-111">&#x00a7;</a>
+                <a class="ss" href="#section-115">&#x00a7;</a>
               </div>
               <p>Loop over new nodes and perform updates.</p>
 
@@ -2835,11 +2899,11 @@ count.</p>
         </li>
         
         
-        <li id="section-112">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-112">&#x00a7;</a>
+                <a class="ss" href="#section-116">&#x00a7;</a>
               </div>
               <p>If we have a key and it existed before we move the previous
 node to the new position if needed and diff it.</p>
@@ -2861,11 +2925,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-113">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-113">&#x00a7;</a>
+                <a class="ss" href="#section-117">&#x00a7;</a>
               </div>
               <p>If the old child had a key we skip over it until the end.</p>
 
@@ -2878,11 +2942,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-114">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-114">&#x00a7;</a>
+                <a class="ss" href="#section-118">&#x00a7;</a>
               </div>
               <p>Otherwise we diff the two non-keyed nodes.</p>
 
@@ -2895,11 +2959,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-115">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-115">&#x00a7;</a>
+                <a class="ss" href="#section-119">&#x00a7;</a>
               </div>
               <p>Finally if there was no old node we add the new node.</p>
 
@@ -2915,11 +2979,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-116">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-116">&#x00a7;</a>
+                <a class="ss" href="#section-120">&#x00a7;</a>
               </div>
               <p>Remove old keyed nodes.</p>
 
@@ -2933,11 +2997,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-117">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-117">&#x00a7;</a>
+                <a class="ss" href="#section-121">&#x00a7;</a>
               </div>
               <p>If we have any remaining unkeyed nodes remove them from the end.</p>
 
@@ -2977,11 +3041,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-118">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-118">&#x00a7;</a>
+                <a class="ss" href="#section-122">&#x00a7;</a>
               </div>
               <p>Check if both nodes are ignored.</p>
 
@@ -2992,11 +3056,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-119">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-119">&#x00a7;</a>
+                <a class="ss" href="#section-123">&#x00a7;</a>
               </div>
               <p>Check if both nodes have the same checksum.</p>
 
@@ -3007,11 +3071,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-120">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-120">&#x00a7;</a>
+                <a class="ss" href="#section-124">&#x00a7;</a>
               </div>
               <p>Fall back to native isEqualNode check.</p>
 
@@ -3059,11 +3123,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-121">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-121">&#x00a7;</a>
+                <a class="ss" href="#section-125">&#x00a7;</a>
               </div>
               <p>/setDOM ——————</p>
 
@@ -3104,11 +3168,11 @@ node to the new position if needed and diff it.</p>
         </li>
         
         
-        <li id="section-122">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-122">&#x00a7;</a>
+                <a class="ss" href="#section-126">&#x00a7;</a>
               </div>
               <p>Simple, insecure, hashing function, returns hex hash</p>
 
@@ -3135,11 +3199,11 @@ Modulo.FetchQueue = <span class="hljs-class"><span class="hljs-keyword">class</s
         </li>
         
         
-        <li id="section-123">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-123">&#x00a7;</a>
+                <a class="ss" href="#section-127">&#x00a7;</a>
               </div>
               <p>TODO remove! ————————————v</p>
 
@@ -3192,11 +3256,11 @@ Pls ignore all
         </li>
         
         
-        <li id="section-124">
+        <li id="section-128">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-124">&#x00a7;</a>
+                <a class="ss" href="#section-128">&#x00a7;</a>
               </div>
               <p>HACK</p>
 

@@ -329,7 +329,7 @@
                 return;
             }
             exCounter++;
-            console.log('There are ', exCounter, ' examples on this page. Gee!')
+            //console.log('There are ', exCounter, ' examples on this page. Gee!')
             const namespace = `eg${exCounter}-${state.nscounter}`; // TODO: later do hot reloading using same loader
             state.nscounter++;
             const loadOpts = {src: '', namespace};
@@ -439,6 +439,7 @@
                 if (ssgCurrentSubPath === ssgCurrentOutputPath &&
                         ssgCurrentSubPath.endsWith(name + '.html')) {
                     element.innerHTML = data;
+                    //Modulo.defineAll();
                 }
             } else {
                 // otherwise, transform the path

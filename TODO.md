@@ -9,13 +9,14 @@
         - Cache for components in localStorage
         - (DONE) "settingProps" as a means to squirrel away data during ssg
     - Do immediately prefixing components
-    - Work on Modulo Router
+    - (DONE) Work on Modulo Router
     - MTL: Support for "or" and "and" operators in if statements, and better
       error messages if encountering unknown conditional operators
     - ERROR: On GitHub API search, key= doesn't work to keep input focus
       between renders, if a new element is introduced above it. Need to debug
-      SET DOM how it uses key.
+      SET DOM implementation how it uses key.
     - Linting Rules!!
+    - ShadowDOM + scoped style as an option (style could respect compnent)
     - Big TODO: Finish Loading prefixing correctly
         - 1) x- for local, or imported without namespace
         - 2) x328f- get rewritten for imported ones

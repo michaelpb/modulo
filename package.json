@@ -7,10 +7,12 @@
   "scripts": {
     "build-complexity-report": "complexity-report-html ./src/",
     "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
-    "update-and-build-docs": "npm run build-docco && npm run update-docs-js && npm run build-docs",
-    "build-docs-watch": "find src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
+    "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
+    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
+    "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
     "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
-    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
+    "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
+    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
     "test": "ava -v --serial"
   },
   "devDependencies": {
