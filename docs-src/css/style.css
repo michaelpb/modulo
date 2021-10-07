@@ -588,3 +588,8 @@ a:visited {
 
 }
 
+footer {
+    border-top: #aaa 1px solid;
+    color: #aaa;
+    padding: 20px;
+}

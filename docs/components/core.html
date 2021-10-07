@@ -1,8 +1,24 @@
 <module>
     <script>
+        let txt
         function sloccount() {
-            const txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
             return Modulo.require('sloc')(txt, 'js').source;
+        }
+        function checksum() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            const CryptoJS = Modulo.require("crypto-js");
+            const hash = CryptoJS['SHA384'](txt);
+            return hash.toString(CryptoJS.enc.Base64);
+            //const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
+
+            //shaObj.update(txt);
+            //const hash = shaObj.getHash("B64");
+            //return hash;
         }
 
         function getVersionInfo() {
@@ -11,6 +27,7 @@
                 Modulo.ssgStore.versionInfo = {
                     version: Modulo.require('../package.json').version,
                     sloc: sloccount(),
+                    checksum: checksum(),
                 };
             }
             return Modulo.ssgStore.versionInfo;
@@ -479,7 +496,8 @@
         function codemirrorMount({el}) {
             let text = props.text.trim();
             if (Modulo.isBackend && text.includes('$modulojs_sha384_checksum$')) {
-                const checksum = '';
+                const info = module.script.getVersionInfo();
+                const checksum = info.checksum || '';
                 text = text.replace('$modulojs_sha384_checksum$', checksum)
                 element.setAttribute('text', text);
             }

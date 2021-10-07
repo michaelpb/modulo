@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="/img/mono_logo.png" />
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
+
     <mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
     <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
@@ -50,8 +51,8 @@ text='
 
 <!-- Better: Include integrity checksum: -->
 <script src="https://modulojs.org/js/Modulo.js"
-        integrity="sha384-$modulojs_sha384_checksum$"
-        crossorigin="anonymous"></script>
+    integrity="sha384-$modulojs_sha384_checksum$"
+    crossorigin="anonymous"></script>
 
 <!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
 <!-- (Not yet functioning!) -->
@@ -88,5 +89,12 @@ text='
 </script>
 
 <script>Modulo.defineAll();</script>
+
+<footer>
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
 </body>
 </html>

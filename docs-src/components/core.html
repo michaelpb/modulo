@@ -2,16 +2,23 @@
     <script>
         let txt
         function sloccount() {
-            txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
             return Modulo.require('sloc')(txt, 'js').source;
         }
         function checksum() {
-            const jsSHA = require("jssha");
-            const txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
-            const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
-            shaObj.update(txt);
-            const hash = shaObj.getHash("HEX");
-            return hash;
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            const CryptoJS = Modulo.require("crypto-js");
+            const hash = CryptoJS['SHA384'](txt);
+            return hash.toString(CryptoJS.enc.Base64);
+            //const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
+
+            //shaObj.update(txt);
+            //const hash = shaObj.getHash("B64");
+            //return hash;
         }
 
         function getVersionInfo() {
@@ -20,7 +27,7 @@
                 Modulo.ssgStore.versionInfo = {
                     version: Modulo.require('../package.json').version,
                     sloc: sloccount(),
-                    //checksum: checksum,
+                    checksum: checksum(),
                 };
             }
             return Modulo.ssgStore.versionInfo;
