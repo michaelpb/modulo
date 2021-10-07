@@ -614,7 +614,12 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     updateCallback(renderObj) {
         const {element} = this;
         if (renderObj.template) {
+            // TODO: delete old interface
             let newContents = renderObj.template.renderedOutput || '';
+            element.reconcile(element, newContents);
+        }
+        if (renderObj.component && 'innerHTML' in renderObj.component) {
+            let newContents = renderObj.component.innerHTML || '';
             element.reconcile(element, newContents);
         }
     }
@@ -1039,7 +1044,8 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
             return text;
         }
         return (text + '').replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/'/g, '&#x27;').replace(/"/g, '&quot;');
             // TODO: add this
             //' (single quote) is converted to &#x27;
             //" (double quote) is converted to &quot;

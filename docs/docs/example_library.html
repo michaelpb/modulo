@@ -211,6 +211,7 @@ tutorial-DocSidebar li.gactive > ul::before {
 tutorial-DocSidebar li.ginactive > a::before {
       content: '+ ';
   }
+</style><style id="tutorial-DocExampleLib_style">
 </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
@@ -218,7 +219,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:989}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:994}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -238,7 +239,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 989 lines<br>
+                SLOC: 994 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -311,15 +312,15 @@ tutorial-DocSidebar li.ginactive > a::before {
                     
                         <li><a href="/docs/example_library.html#hello">Hello</a></li>
                     
-                        <li><a href="/docs/example_library.html#simple">Simple</a></li>
+                        <li><a href="/docs/example_library.html#1">Simple</a></li>
                     
-                        <li><a href="/docs/example_library.html#todo">ToDo</a></li>
+                        <li><a href="/docs/example_library.html#2">ToDo</a></li>
                     
-                        <li><a href="/docs/example_library.html#api">API</a></li>
+                        <li><a href="/docs/example_library.html#3">API</a></li>
                     
-                        <li><a href="/docs/example_library.html#prime">Prime</a></li>
+                        <li><a href="/docs/example_library.html#4">Prime</a></li>
                     
-                        <li><a href="/docs/example_library.html#memorygame">MemoryGame</a></li>
+                        <li><a href="/docs/example_library.html#5">MemoryGame</a></li>
                     
                     </ul>
                 
@@ -369,6 +370,336 @@ Idea:
 component instead (later: stripping certain CParts, so we can embed testing)
 -->
 
+<tutorial-docexamplelib>
+    
+        
+        <mdu-section name="Hello">
+            Hello
+        </mdu-section>
+        <mdu-codeexample text="
+<template>
+    <button @click:=script.countUp>Hello {{ state.num }}</button>
+</template>
+<state num:=42
+></state>
+<script>
+    function countUp() {
+        state.num++;
+    }
+</script>
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="Simple">
+            Simple
+        </mdu-section>
+        <mdu-codeexample text="
+<template>
+    Components can use <strong>any</strong> number
+    of <em title=&quot;Component Parts&quot;>CParts</em>.
+</template>
+<style>
+    em { color: darkblue; }
+    * { text-decoration: underline; }
+</style>
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="ToDo">
+            ToDo
+        </mdu-section>
+        <mdu-codeexample text="<template>
+<ol>
+    {% for item in state.list %}
+        <li>{{ item }}</li>
+    {% endfor %}
+    <li>
+        <input [state.bind] name=&quot;text&quot; />
+        <button @click:=script.addItem>Add</button>
+    </li>
+</ol>
+</template>
+
+<state
+    list:=&amp;#39;[&quot;Milk&quot;, &quot;Bread&quot;, &quot;Candy&quot;]&amp;#39;
+    text=&quot;Beer&quot;
+></state>
+
+<script>
+    function addItem() {
+        state.list.push(state.text); // add to list
+        state.text = &quot;&quot;; // clear input
+    }
+</script>
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="API">
+            API
+        </mdu-section>
+        <mdu-codeexample text="<template>
+<p>{{ state.name }} | {{ state.location }}</p>
+<p>{{ state.bio }}</p>
+<a href=&quot;https://github.com/{{ state.search }}/&quot; target=&quot;_blank&quot;>
+    {% if state.search %}github.com/{{ state.search }}/{% endif %}
+</a>
+<input [state.bind] name=&quot;search&quot;
+    placeholder=&quot;Type GitHub username&quot; />
+<button @click:=script.fetchGitHub>Get Info</button>
+</template>
+
+<state
+    search=&quot;&quot;
+    name=&quot;&quot;
+    location=&quot;&quot;
+    bio=&quot;&quot;
+></state>
+
+<script>
+    function fetchGitHub() {
+        fetch(`https://api.github.com/users/${state.search}`)
+            .then(response => response.json())
+            .then(githubCallback);
+    }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
+    }
+</script>
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="Prime">
+            Prime
+        </mdu-section>
+        <mdu-codeexample text="<template>
+  <div class=&quot;grid&quot;>
+    {% for i in script.exports.range %}
+      <div @mouseover:=script.setNum
+        class=&quot;
+            {# If-statements to check divisibility in template: #}
+            {% if state.number == i %}number{% endif %}
+            {% if state.number lt i %}hidden{% else %}
+              {% if state.number|divisibleby:i %}whole{% endif %}
+            {% endif %}
+        &quot;>{{ i }}</div>
+    {% endfor %}
+  </div>
+</template>
+
+<state
+    number:=76
+></state>
+
+<script>
+    // Getting big a range of numbers in JS. Use &quot;script.exports&quot;
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 75}, (x, i) => i + 2);
+    function setNum(ev) {
+        state.number = Number(ev.target.textContent);
+    }
+</script>
+
+<style>
+.grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+.grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+div.whole {
+    color: white;
+    background: #B90183;
+}
+div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+div.number { background: green; }
+div.number::after { content: &quot;*&quot;; }
+/* Check for whole factors (an adjacent div.whole).
+   If found, then hide asterisk and green. */
+div.whole ~ div.number { background: #B90183; }
+div.whole ~ div.number::after { opacity: 0; }
+</style>
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="MemoryGame">
+            MemoryGame
+        </mdu-section>
+        <mdu-codeexample text="<!-- A much more complicated example application -->
+<template>
+{% if not state.cards.length %}
+    <h3>The Symbolic Memory Game</h3>
+    <p>Choose your difficulty:</p>
+    <button @click:=script.setup click.payload=8>2x4</button>
+    <button @click:=script.setup click.payload=16>4x4</button>
+    <button @click:=script.setup click.payload=36>6x6</button>
+{% else %}
+    <div class=&quot;board
+        {% if state.cards.length > 16 %}hard{% endif %}&quot;>
+    {# Loop through each card in the &quot;deck&quot; (state.cards) #}
+    {% for card in state.cards %}
+        {# Using &quot;key=&quot; to speed up DOM reconciler #}
+        <div key=&quot;c{{ card.id }}&quot;
+            class=&quot;card
+            {% if state.revealed|includes:card.id %}
+                flipped
+            {% endif %}
+            &quot;
+            style=&quot;
+            {% if state.win %}
+                animation: flipping 0.5s infinite alternate;
+                animation-delay: {{ card.id }}.{{ card.id }}s;
+            {% endif %}
+            &quot;
+            @click:=script.flip
+            click.payload=&quot;{{ card.id }}&quot;>
+            {% if state.revealed|includes:card.id %}
+                {{ card.symbol }}
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+    <p style=&quot;{% if state.failedflip %}
+                color: red{% endif %}&quot;>
+        {{ state.message }}</p>
+{% endif %}
+</template>
+
+<state
+    message=&quot;Good luck!&quot;
+    win:=false
+    cards:=[]
+    revealed:=[]
+    lastflipped:=null
+    failedflip:=null
+></state>
+
+<script>
+const symbolsStr = &quot;%!@#=?&amp;+~÷≠∑µ‰∂Δƒσ&quot;; // 16 options
+function setup(ev, payload) {
+    const count = Number(payload);
+    let symbols = symbolsStr.substr(0, count/2).split(&quot;&quot;);
+    symbols = symbols.concat(symbols); // duplicate cards
+    let id = 0;
+    while (id < count) {
+        const index = Math.floor(Math.random()
+                                    * symbols.length);
+        const symbol = symbols.splice(index, 1)[0];
+        state.cards.push({symbol, id});
+        id++;
+    }
+}
+
+function failedFlipCallback(ev) {
+    // Remove both from revealed array &amp; set to null
+    state.revealed = state.revealed.filter(
+            id => id !== state.failedflip
+                    &amp;&amp; id !== state.lastflipped);
+    state.failedflip = null;
+    state.lastflipped = null;
+    state.message = &quot;&quot;;
+    element.rerender();
+}
+
+function flip(ev, id) {
+    if (state.failedflip !== null) {
+        return;
+    }
+    id = Number(id);
+    if (state.revealed.includes(id)) {
+        return; // double click
+    } else if (state.lastflipped === null) {
+        state.lastflipped = id;
+        state.revealed.push(id);
+    } else {
+        state.revealed.push(id);
+        const {symbol} = state.cards[id];
+        const lastCard = state.cards[state.lastflipped];
+        if (symbol === lastCard.symbol) {
+            // Successful match! Check for win.
+            const {revealed, cards} = state;
+            if (revealed.length === cards.length) {
+                state.message = &quot;You win!&quot;;
+                state.win = true;
+            } else {
+                state.message = &quot;Nice match!&quot;;
+            }
+            state.lastflipped = null;
+        } else {
+            state.message = &quot;No match.&quot;;
+            state.failedflip = id;
+            setTimeout(failedFlipCallback, 1000);
+        }
+    }
+}
+</script>
+
+<style>
+h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+.board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+.board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+.board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+.board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+.board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+    from { transform: scaleX(-1.1); background: #B90183; }
+    to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style>
+"></mdu-codeexample>
+    
+</tutorial-docexamplelib>
 
 
 

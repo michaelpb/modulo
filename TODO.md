@@ -16,6 +16,7 @@
       between renders, if a new element is introduced above it. Need to debug
       SET DOM implementation how it uses key.
     - Linting Rules!!
+    - component.innerHTML = ... is what does reconcile!
     - ShadowDOM + scoped style as an option (style could respect compnent)
     - Big TODO: Finish Loading prefixing correctly
         - 1) x- for local, or imported without namespace

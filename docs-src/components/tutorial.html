@@ -92,6 +92,7 @@
         }
         return {label, hash};
     }
+    const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
     script.exports.menu = [
         {
             label: 'Home',
@@ -160,14 +161,7 @@
         {
             label: 'Example Library',
             filename: '/docs/example_library.html',
-            children: [
-                _child('Hello'),
-                _child('Simple'),
-                _child('ToDo'),
-                _child('API'),
-                _child('Prime'),
-                _child('MemoryGame'),
-            ],
+            children: Object.keys(componentTexts).map(_child),
         },
     ];
 
@@ -207,6 +201,40 @@
 </style>
 
 </component>
+
+
+
+
+<component name="DocExampleLib">
+
+<template>
+    {% for example in script.exports.examples %}
+        {# not good, not namespaced #}
+        <mdu-Section name="{{ example.name }}">
+            {{ example.name }}
+        </mdu-Section>
+        <mdu-CodeExample
+            text='{{ example.content }}'
+        ></mdu-CodeExample>
+    {% endfor %}
+</template>
+
+<script>
+    const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
+    script.exports.examples = [];
+    for (const [name, content] of Object.entries(componentTexts)) {
+        script.exports.examples.push({name, content});
+    }
+    console.log('exports', script.exports);
+    function initializedCallback() {
+    }
+</script>
+
+<style>
+</style>
+
+</component>
+
 
 
       <!--
