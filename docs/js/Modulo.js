@@ -55,23 +55,6 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
         const opts = {options: {namespace, src}};
         this.loader = new Modulo.Loader(null, opts);
         this.loader.doFetch();
-        /*
-
-        this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
-        const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
-
-        // TODO: Finish cache feature, maybe fold into hot reload, eg it always
-        // first loads from cache, then it tries hotreloading from origin.
-        // This would make "never-cache" less important, but "always-cache"
-        // would be useful and be the inverse.
-        const skipCache = true || this.hasAttribute('never-cache') || Modulo.require;
-        if (!skipCache && cachedData && cachedData.length > 2) {
-            for (const [name, loadObj] of JSON.parse(cachedData)) {
-                this.defineComponent(name, loadObj);
-            }
-        } else {
-        }
-        */
     }
 }
 
@@ -113,7 +96,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
 
     // factoryCallback() could be the new connectdCallback for <module><load>
     // syntax!
-
     doFetch(element, options) {
         Modulo.assert(this.src, 'Loader: Invalid src= attribute');
         Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute');
@@ -162,25 +144,21 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = text;
         frag.append(div);
+        const factoryData = [];
+        this.factoryData = factoryData; // for testing
 
         this.loadModules(div); // In case we are just loading an embedded component
         for (const tag of div.querySelectorAll('[mod-component],component')) {
             const [name, loadObj] = this.loadFromDOMElement(tag);
             this.factoryData.push([name, loadObj]);
         }
-        Modulo.fetchQ.wait(() => this.defineComponents());
+        Modulo.fetchQ.wait(() => this.defineComponents(factoryData));
     }
 
-    defineComponents() {
-        for (const [name, loadObj] of this.factoryData) {
+    defineComponents(factoryData) {
+        for (const [name, loadObj] of factoryData) {
             this.defineComponent(name, loadObj);
         }
-
-        /*
-        // TODO: rewrite / remove -v
-        const serialized = JSON.stringify(this.factoryData);
-        Modulo.globals.localStorage.setItem(this.cacheKey, serialized);
-        */
     }
 
     // ## Loader: loadFromDOMElement
@@ -1466,6 +1444,24 @@ Modulo.utils = class utils {
 }
 
 Modulo.FetchQueue = class FetchQueue {
+    /*
+
+    this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
+    const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
+
+    // TODO: Finish cache feature, maybe fold into hot reload, eg it always
+    // first loads from cache, then it tries hotreloading from origin.
+    // This would make "never-cache" less important, but "always-cache"
+    // would be useful and be the inverse.
+    const skipCache = true || this.hasAttribute('never-cache') || Modulo.require;
+    if (!skipCache && cachedData && cachedData.length > 2) {
+        for (const [name, loadObj] of JSON.parse(cachedData)) {
+            this.defineComponent(name, loadObj);
+        }
+    } else {
+    }
+    */
+
     constructor() {
         this.queue = {};
         this.data = {};
@@ -1503,8 +1499,9 @@ Modulo.FetchQueue = class FetchQueue {
     }
     checkWait() {
         if (Object.keys(this.queue).length === 0) {
-            this.waitCallbacks.forEach(func => func());;
-            this.waitCallbacks = [];
+            while (this.waitCallbacks.length > 0) {
+                this.waitCallbacks.shift()(); // clear while invoking
+            }
         }
     }
 }

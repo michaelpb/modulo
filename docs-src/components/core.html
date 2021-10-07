@@ -355,7 +355,7 @@
             }
             exCounter++;
             //console.log('There are ', exCounter, ' examples on this page. Gee!')
-            const namespace = `eg${exCounter}-${state.nscounter}`; // TODO: later do hot reloading using same loader
+            const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
             state.nscounter++;
             const loadOpts = {src: '', namespace};
             const loader = new Modulo.Loader(null, {options: loadOpts});
@@ -375,8 +375,8 @@
             */
 
             const preview = `<${tag}${extraPropsStr}></${tag}>`;
-            state.preview = preview;
             element.previewSpot.innerHTML = preview;
+            //state.preview = preview;
             //document.querySelector('#previewSpot').innerHTML = preview;
             //console.log('adding preview', preview);
         }
