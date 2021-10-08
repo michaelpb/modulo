@@ -125,6 +125,131 @@
 </component>
 
 
+<component name="SearchBox">
+<template>
+<p>Start typing a book name to see "search as you type" (e.g. try &ldquo;the
+lord of the rings&rdquo;)</p>
+
+<input [state.bind] name="search" @keyup:=script.typingCallback />
+
+<div class="results {% if state.search.length gt 0 %}visible{% endif %}">
+    <div class="results-container">
+        {% if state.loading %}
+            <img style="margin-top: 30px"
+                src="{{ script.exports.loadingGif  }}" alt="loading" />
+        {% else %}
+            {% for result in state.results %}
+                <div class="result">
+                    <img src="http://covers.openlibrary.org/b/id/{{ result.cover_i }}-S.jpg" />
+                    <label>{{ result.title }}</label>
+                </div>
+            {% empty %}
+                <p>No books found.</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+</template>
+
+<state
+    search=""
+    results:=[]
+    loading:=false
+></state>
+
+<script>
+    // Because this variable is created "loose" in the script tag, it becomes a
+    // static variable global to all instances of this class (though,
+    // thankfully, not global in general -- it's still in an "IFFE")
+    // (If we had wanted individual components to be debounced, we'd have
+    // needed to attach it to state)
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+
+    function typingCallback() {
+        state.loading = true;
+        const apiBase = 'http://openlibrary.org/search.json'
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    // Puting this long URL down here to declutter
+    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
+                                 'semantic-ui/0.16.1/images/loader-large.gif');
+</script>
+
+<style>
+    SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+    input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+    input::after {
+        content: '\1F50E';
+    }
+    .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+    .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+    .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+    .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</style>
+
+
+</component>
+
 
 
 
@@ -364,10 +489,10 @@ h3 {
 
 
 <component name="MiniExcel">
+<!-- This example is unfinished, sorry! -->
 
 <template>
     <table>
-        {{ state.data }}
         {% for row in state.data %}
             <tr>
                 {% for col in row %}
@@ -379,13 +504,16 @@ h3 {
 </template>
 
 <state
-    data:='[]'
+    data:='[[""]]'
 /><state>
 
 <script>
+    console.log('factory for miniexcel');
+/*
+    console.log('factory for miniexcel');
     function initalizedCallback(renderObj) {
         console.log('getting initialized', renderObj);
-        renderObj.state.data = [
+        state.data = [
             ['', '', '', '', '', ''],
             ['', '', '', '', '', ''],
             ['', '', '', '', '', ''],
@@ -393,6 +521,7 @@ h3 {
             ['', '', '', '', '', ''],
         ];
     }
+*/
 </script>
 
 </component>
@@ -416,14 +545,12 @@ h3 {
     <button @button>Click me and look in Dev Console</strong>
 </template>
 <script>
-    // Note how it's even available at load time
-    const moduleFactory = Modulo.factoryInstances['eg-eg'];
+    // console.log(module); // 
     function onClick() {
         // Examine this object. See how script tag exports
         // are actually already available? This allows for
-        // cross-script dependencies, e.g. import in one,
-        // access in another
-        console.log('This is moduleFactory:', moduleFactory);
+        // cross-component dependencies.
+        console.log('This is module:', module);
     }
 </script>
 

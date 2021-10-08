@@ -64,7 +64,13 @@
                     {% for childLink in linkGroup.children %}
                         <li><a
                           href="{{ linkGroup.filename }}#{{ childLink.hash }}"
-                            >{{ childLink.label }}</a></li>
+                            >{{ childLink.label }}</a>
+                        {% if props.showall %}
+                            {% if childLink.keywords.length gt 0 %}
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: {{ childLink.keywords|join:', ' }}</em>)</span>
+                            {% endif %}
+                        {% endif %}
+                        </li>
                     {% endfor %}
                     </ul>
                 {% endif %}
@@ -79,8 +85,9 @@
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            <li>
-                <a href="/literate/src/Modulo.html">Literate source</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
@@ -89,11 +96,11 @@
 </template>
 
 <script>
-    function _child(label, hash) {
+    function _child(label, hash, keywords=[]) {
         if (!hash) {
             hash = label.toLowerCase()
         }
-        return {label, hash};
+        return {label, hash, keywords};
     }
     const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
     script.exports.menu = [
@@ -106,9 +113,9 @@
             label: 'Tutorial',
             filename: '/docs/tutorial.html',
             children: [
-                _child('Part 1: Components, CParts, Loaders', 'part1'),
-                _child('Part 2: Props and Templating', 'part2'),
-                _child('Part 3: State and Script', 'part3'),
+                _child('Part 1: Components, CParts, Loaders', 'part1', ['cdn', 'module-embed']),
+                _child('Part 2: Props and Templating', 'part2', ['cparts', 'props', 'basic templating']),
+                _child('Part 3: State and Script', 'part3', ['state', 'basic scripting']),
             ],
         },
 
@@ -130,15 +137,25 @@
             label: 'Templating',
             filename: '/docs/templating.html',
             children: [
-                _child('Templates'),
-                _child('Variables'),
-                _child('Filters'),
-                _child('Tags'),
-                _child('Comments'),
-                _child('Escaping'),
+                _child('Templates', null, ['templating philosophy', 'templating overview']),
+                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
+                _child('Filters', null, ['filter syntax', 'example filters']),
+                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
+                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
+                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
             ],
         },
 
+        {
+            label: 'Testing & Debugging',
+            filename: '/docs/testing.html',
+            children: [
+                _child('Debugger'),
+                _child('Test Suites'),
+                _child('Test Setup'),
+                _child('Assertions'),
+            ],
+        },
         {
             label: 'Lifecycle & Directives',
             filename: '/docs/directives.html',
@@ -164,7 +181,7 @@
         {
             label: 'Example Library',
             filename: '/docs/example_library.html',
-            children: Object.keys(componentTexts).map(_child),
+            children: Object.keys(componentTexts).map(name => _child(name)),
         },
     ];
 
@@ -216,7 +233,7 @@
 <template>
     {% for example in script.exports.examples %}
         {# not good, not namespaced #}
-        <mdu-Section name="{{ example.name }}">
+        <mdu-Section name="{{ example.name|lower }}">
             {{ example.name }}
         </mdu-Section>
         <mdu-CodeExample
@@ -236,8 +253,6 @@
     //function codeExampleMount(el) {
     //}
 
-    function initializedCallback() {
-    }
 </script>
 
 <style>

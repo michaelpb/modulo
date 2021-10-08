@@ -3,6 +3,30 @@
 - Could do a backend version that staticly renders modulo files
 - django-modulo --- static rendering on the fly!
 
+
+// Truly worst idea: (pointy brackets... IN JS, etc :( )
+    static parseHtml(html, callbacks) {
+        let tagname;
+        const options = {
+              modeTokens: ['< >', '</ >'],
+              modes: {
+                  '<': (text, tmplt, stack) => {
+                      tagname = text.match(/^([a-zA-Z-]+)\s/);
+                      while (text.trim()) {
+                          text = text.trim();
+                          if (text.
+                      }
+                  },
+                  '</': () => {
+                  },
+              },
+        }
+        const mtl = new Modulo.template.MTL(html, options);
+        mtl.render();
+    }
+
+
+
 - Idea for custom CParts:
 
         <script type="modulo/cpart" name="fetcher">

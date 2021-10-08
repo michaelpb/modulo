@@ -130,6 +130,56 @@ mdu-CodeSnippet .m-Btn {
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
+</style><style id="eg-SearchBox_style">
+eg-SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
 </style><style id="eg-Prime_style">
 eg-Prime .grid {
     display: grid;
@@ -230,7 +280,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003,&quot;checksum&quot;:&quot;F4xWO0rEsRPGpi2t2s82ywX9vGghrq1MkhnF7nxkSMR9oqEdg61OZ9mNn4ViAUbW&quot;}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1002,&quot;checksum&quot;:&quot;zkbmbavSx232nu3dW8oMNINuwizI4DMYjOyIZ+yRM7WprzaIU/nA4TE4qSRtHCf1&quot;}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -243,14 +293,16 @@ tutorial-DocSidebar li.ginactive > a::before {
                 <li>
                     <a href="/docs.html" class="Navbar--selected">Docs</a>
                 </li>
+                <!--
                 <li>
-                    <a href="/literate/src/Modulo.html">Source</a>
+                    <a href="/literate/src/Modulo.html" >Source</a>
                 </li>
+                -->
             </ul>
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 1003 lines<br>
+                SLOC: 1002 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -289,19 +341,33 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/cparts.html#component">Component</a></li>
+                        <li><a href="/docs/cparts.html#component">Component</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#props">Props</a></li>
+                        <li><a href="/docs/cparts.html#props">Props</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#template">Template</a></li>
+                        <li><a href="/docs/cparts.html#template">Template</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#state">State</a></li>
+                        <li><a href="/docs/cparts.html#state">State</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#script">Script</a></li>
+                        <li><a href="/docs/cparts.html#script">Script</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#style">Style</a></li>
+                        <li><a href="/docs/cparts.html#style">Style</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#custom">Custom CParts API</a></li>
+                        <li><a href="/docs/cparts.html#custom">Custom CParts API</a>
+                        
+                        </li>
                     
                     </ul>
                 
@@ -313,6 +379,14 @@ tutorial-DocSidebar li.ginactive > a::before {
                 ginactive
             
             "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
             
         </li>
     
@@ -348,8 +422,9 @@ tutorial-DocSidebar li.ginactive > a::before {
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li>
-                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br><em>* Coming soon!</em>
             </li>
         </ul>
 
@@ -388,11 +463,13 @@ if the user is logged in or out. Many of these things might be doable without
 CPart spares, such as with if-statements, but spares provide a paradigm for
 working comfortably with multiple CParts.</p>
 
-
 <p>When you have duplicate CParts of the same type in a component, one CPart
 a time of each type is the "active" CPart, accessible in the
-<code>element.cparts</code> object. The others are "spares", and accessible in
-<code>element.cpartSpares</code>.</p>
+<code>element.cparts</code> object. Both the active and extra (spare)
+CParts are available in <code>element.cpartSpares</code>. Simply by assigning a
+property of <code>element.cparts</code> you can select which one is active.</p>
+
+<p>For a concrete example, examine how the following behaves:</p>
 
 <mdu-codeexample text="
 <template name=&quot;shop&quot;>
@@ -406,8 +483,11 @@ a time of each type is the "active" CPart, accessible in the
     <p>Welcome to my banana stand!</p>
 </template>
 <script>
+    // swap: Set the active cpart by searching through the spare
+    // array and selecting the one with a name matching payload:
     function swap(ev, payload) {
-        element.swapSpare(&quot;template&quot;, payload);
+        element.cparts.template = element.cpartSpares.template
+            .find(({attrs}) => attrs.name === payload);
     }
 </script>
 
@@ -427,6 +507,13 @@ a {
 "></mdu-codeexample>
 
 
+<p><strong>Note:</strong> Switching templates should <em>not</em> be a suitable
+replacement for real links or an adequate frontend system. In other words,
+consider them for things like alternate themes, filter views, logged-in vs
+logged-out, and other such scenarios, but not for general page navigation. This
+is because they break many web standards, search bots, and user expectations by
+not looking like links, having no URL, and no effect on browser history.</p>
+
 
 <h3>CPart spares and renderObj</h3>
 
@@ -435,13 +522,16 @@ a {
 
         <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
 
-        <mdu-route name="templating" src="./_docs/templating.html"></mdu-route>
+        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
+
+        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
 
         <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
 
         <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
 
         <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
+
     </aside>
 </main>
 
@@ -449,9 +539,7 @@ a {
 
 
 <footer>
-    <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-    </main>
+    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
 </footer>
 
 

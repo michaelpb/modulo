@@ -67,6 +67,17 @@
                     <template includes>
                         <p>Hello 3 world!</p>
                     </template>
+
+                    <style>
+                      /* This is very simple: It loops through the selectors,
+                      ** ensuring all of their resolved values resolve to green
+                      ** etc */
+                      /* Could use dom reconciler as a diff tool, just like with template? */
+                      p {
+                          color: green;
+                      }
+                    </style>
+
                     <script message="Ensure HTML contains 3">
                         assert element.innerHTML.includes('3'); // does an assert->return substitution
                     </script>

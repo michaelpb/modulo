@@ -23,11 +23,13 @@ if the user is logged in or out. Many of these things might be doable without
 CPart spares, such as with if-statements, but spares provide a paradigm for
 working comfortably with multiple CParts.</p>
 
-
 <p>When you have duplicate CParts of the same type in a component, one CPart
 a time of each type is the "active" CPart, accessible in the
-<code>element.cparts</code> object. The others are "spares", and accessible in
-<code>element.cpartSpares</code>.</p>
+<code>element.cparts</code> object. Both the active and extra (spare)
+CParts are available in <code>element.cpartSpares</code>. Simply by assigning a
+property of <code>element.cparts</code> you can select which one is active.</p>
+
+<p>For a concrete example, examine how the following behaves:</p>
 
 <mdu-CodeExample
 text='
@@ -42,8 +44,11 @@ text='
     <p>Welcome to my banana stand!</p>
 </template>
 <script>
+    // swap: Set the active cpart by searching through the spare
+    // array and selecting the one with a name matching payload:
     function swap(ev, payload) {
-        element.swapSpare("template", payload);
+        element.cparts.template = element.cpartSpares.template
+            .find(({attrs}) => attrs.name === payload);
     }
 </script>
 
@@ -62,6 +67,13 @@ a {
 </style>
 '></mdu-CodeExample>
 
+
+<p><strong>Note:</strong> Switching templates should <em>not</em> be a suitable
+replacement for real links or an adequate frontend system. In other words,
+consider them for things like alternate themes, filter views, logged-in vs
+logged-out, and other such scenarios, but not for general page navigation. This
+is because they break many web standards, search bots, and user expectations by
+not looking like links, having no URL, and no effect on browser history.</p>
 
 
 <h3>CPart spares and renderObj</h3>

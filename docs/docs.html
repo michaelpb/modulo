@@ -130,6 +130,56 @@ mdu-CodeSnippet .m-Btn {
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
+</style><style id="eg-SearchBox_style">
+eg-SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
 </style><style id="eg-Prime_style">
 eg-Prime .grid {
     display: grid;
@@ -230,7 +280,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003,&quot;checksum&quot;:&quot;F4xWO0rEsRPGpi2t2s82ywX9vGghrq1MkhnF7nxkSMR9oqEdg61OZ9mNn4ViAUbW&quot;}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1002,&quot;checksum&quot;:&quot;zkbmbavSx232nu3dW8oMNINuwizI4DMYjOyIZ+yRM7WprzaIU/nA4TE4qSRtHCf1&quot;}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -243,14 +293,16 @@ tutorial-DocSidebar li.ginactive > a::before {
                 <li>
                     <a href="/docs.html" class="Navbar--selected">Docs</a>
                 </li>
+                <!--
                 <li>
-                    <a href="/literate/src/Modulo.html">Source</a>
+                    <a href="/literate/src/Modulo.html" >Source</a>
                 </li>
+                -->
             </ul>
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 1003 lines<br>
+                SLOC: 1002 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -302,6 +354,14 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
+            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
             "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
             
         </li>
@@ -330,8 +390,9 @@ tutorial-DocSidebar li.ginactive > a::before {
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li>
-                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br><em>* Coming soon!</em>
             </li>
         </ul>
 
@@ -344,12 +405,19 @@ tutorial-DocSidebar li.ginactive > a::before {
         <mdu-routeindex>
             <h1>Modulo documentation</h1>
 
-            <p>The complete Modulo documentation is found here.</p>
+            <p>The complete Modulo documentation is found here.  You can
+            navigate Modulo documentation by either using the sidebar, which
+            contains links to all pages, or by using the complete table of
+            contents below, which has all topics listed.</p>
 
-            <p><strong>Navigate Modulo documentation either using the sidebar,
-            or the complete table of contents below.</strong></p>
+            <p><strong>Search:</strong> Use your browser's
+            <code>Control-F</code> or <code>Command-F</code> page search
+            feature—topic keywords are listed on this page for that very
+            purpose.</p>
 
-            <h3>Table of Contents</h3>
+            <p><strong>Not sure where to begin?</strong> <a href="/docs/tutorial.html">Get started with the tutorial.</a></p>
+
+            <h2>Table of Contents</h2>
 
             <tutorial-docsidebar showall="true" path="docs/docs.html">
 <ul>
@@ -371,11 +439,29 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a></li>
+                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: cdn, module-embed</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a></li>
+                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: cparts, props, basic templating</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a></li>
+                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: state, basic scripting</em>)</span>
+                            
+                        
+                        </li>
                     
                     </ul>
                 
@@ -391,19 +477,47 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/cparts.html#component">Component</a></li>
+                        <li><a href="/docs/cparts.html#component">Component</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#props">Props</a></li>
+                        <li><a href="/docs/cparts.html#props">Props</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#template">Template</a></li>
+                        <li><a href="/docs/cparts.html#template">Template</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#state">State</a></li>
+                        <li><a href="/docs/cparts.html#state">State</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#script">Script</a></li>
+                        <li><a href="/docs/cparts.html#script">Script</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#style">Style</a></li>
+                        <li><a href="/docs/cparts.html#style">Style</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/cparts.html#custom">Custom CParts API</a></li>
+                        <li><a href="/docs/cparts.html#custom">Custom CParts API</a>
+                        
+                            
+                        
+                        </li>
                     
                     </ul>
                 
@@ -419,17 +533,91 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/templating.html#templates">Templates</a></li>
+                        <li><a href="/docs/templating.html#templates">Templates</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: templating philosophy, templating overview</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#variables">Variables</a></li>
+                        <li><a href="/docs/templating.html#variables">Variables</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: variable syntax, variable sources, cparts as variables</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#filters">Filters</a></li>
+                        <li><a href="/docs/templating.html#filters">Filters</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: filter syntax, example filters</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#tags">Tags</a></li>
+                        <li><a href="/docs/templating.html#tags">Tags</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: template-tag syntax, example use of templatetags</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#comments">Comments</a></li>
+                        <li><a href="/docs/templating.html#comments">Comments</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: syntax, inline comments, block comments</em>)</span>
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#escaping">Escaping</a></li>
+                        <li><a href="/docs/templating.html#escaping">Escaping</a>
+                        
+                            
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: escaping HTML, safe filter, XSS injection protection</em>)</span>
+                            
+                        
+                        </li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/testing.html#debugger">Debugger</a>
+                        
+                            
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#test suites">Test Suites</a>
+                        
+                            
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#test setup">Test Setup</a>
+                        
+                            
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#assertions">Assertions</a>
+                        
+                            
+                        
+                        </li>
                     
                     </ul>
                 
@@ -445,11 +633,23 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/directives.html#lifecycle">Lifecycle</a></li>
+                        <li><a href="/docs/directives.html#lifecycle">Lifecycle</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/directives.html#renderobj">renderObj</a></li>
+                        <li><a href="/docs/directives.html#renderobj">renderObj</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/directives.html#directives">Directives</a></li>
+                        <li><a href="/docs/directives.html#directives">Directives</a>
+                        
+                            
+                        
+                        </li>
                     
                     </ul>
                 
@@ -465,13 +665,29 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/template_reference.html#filters">Built-in Filters</a></li>
+                        <li><a href="/docs/template_reference.html#filters">Built-in Filters</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/template_reference.html#tags">Built-in Template Tags</a></li>
+                        <li><a href="/docs/template_reference.html#tags">Built-in Template Tags</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/template_reference.html#customfilters">Custom Filters</a></li>
+                        <li><a href="/docs/template_reference.html#customfilters">Custom Filters</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/template_reference.html#customtags">Custom Template Tags</a></li>
+                        <li><a href="/docs/template_reference.html#customtags">Custom Template Tags</a>
+                        
+                            
+                        
+                        </li>
                     
                     </ul>
                 
@@ -487,21 +703,59 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/example_library.html#hello">Hello</a></li>
+                        <li><a href="/docs/example_library.html#hello">Hello</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#1">Simple</a></li>
+                        <li><a href="/docs/example_library.html#simple">Simple</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#2">ToDo</a></li>
+                        <li><a href="/docs/example_library.html#todo">ToDo</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#3">API</a></li>
+                        <li><a href="/docs/example_library.html#api">API</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#4">Prime</a></li>
+                        <li><a href="/docs/example_library.html#searchbox">SearchBox</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#5">MemoryGame</a></li>
+                        <li><a href="/docs/example_library.html#prime">Prime</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#6">MiniExcel</a></li>
+                        <li><a href="/docs/example_library.html#memorygame">MemoryGame</a>
+                        
+                            
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#7">AccessingLoader</a></li>
+                        <li><a href="/docs/example_library.html#miniexcel">MiniExcel</a>
+                        
+                            
+                        
+                        </li>
+                    
+                        <li><a href="/docs/example_library.html#accessingloader">AccessingLoader</a>
+                        
+                            
+                        
+                        </li>
                     
                     </ul>
                 
@@ -516,8 +770,9 @@ tutorial-DocSidebar li.ginactive > a::before {
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li>
-                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br><em>* Coming soon!</em>
             </li>
         </ul>
 
@@ -532,13 +787,16 @@ tutorial-DocSidebar li.ginactive > a::before {
 
         <mdu-route name="directives" src="./_docs/directives.html" ssgpath="docs/docs/directives.html"></mdu-route>
 
-        <mdu-route name="templating" src="./_docs/templating.html" ssgpath="docs/docs/templating.html"></mdu-route>
+        <mdu-route name="testing" src="./_docs/testing.html" ssgpath="docs/docs/testing.html"></mdu-route>
+
+        <mdu-route name="testing" src="./_docs/testing.html" ssgpath="docs/docs/testing.html"></mdu-route>
 
         <mdu-route name="template_reference" src="./_docs/template_reference.html" ssgpath="docs/docs/template_reference.html"></mdu-route>
 
         <mdu-route name="example_library" src="./_docs/example_library.html" ssgpath="docs/docs/example_library.html"></mdu-route>
 
         <mdu-route name="faq" src="./_docs/faq.html" ssgpath="docs/docs/faq.html"></mdu-route>
+
     </aside>
 </main>
 
@@ -546,9 +804,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 <footer>
-    <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-    </main>
+    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
 </footer>
 
 

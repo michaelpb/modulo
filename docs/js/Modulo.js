@@ -116,8 +116,8 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         if (mod) {
             const [modName, modLoadObj] = this.loadFromDOMElement(mod);
             this.mod = modLoadObj;
-            // need to wait before we defineComponent here
-            //Modulo.fetchQ.wait(() => this.defineComponents());
+            // TODO need to wait before we defineComponent here
+            //Modulo.fetchQ.wait(() => this.defineComponent(this.namespace, modLoadObj));
             this.modFactory = this.defineComponent(this.namespace, modLoadObj);
         }
         const query = 'template[modulo-embed],script[type="modulo/embed"]';
@@ -257,14 +257,10 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
     // Helper function that loops through a component definitions children,
     // generating an array of objects containing the node and CPart name.
     getCPartNamesFromDOM(elem) {
-        let children = elem.content ? elem.content.childNodes : elem.children;
-        return Array.from(children)
-            .map(node => ({node, cPartName: this.getNodeCPartName(node)}))
-            .filter(obj => obj.cPartName);
-
         /* TODO: rewrite this */
         const arr = [];
-        for (const node of elem.content.childNodes) {
+        const nodes = elem.content ? elem.content.childNodes : elem.children;
+        for (const node of nodes) {
             const cPartName = this.getNodeCPartName(node);
             if (cPartName) {
                 arr.push({node, cPartName});
@@ -327,7 +323,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     // ```javascript
     // this.baseRenderObj = {
-    //     script: {text: '"use static"\nvar state;\nfunction inpCh(....etc)'},
+    //     script: {text: '"use strict"\nvar state;\nfunction inpCh(....etc)'},
     //     template: {compiledTemplate: function () { ...etc... }},
     //     (...etc...)
     // }
@@ -468,21 +464,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
     }
 
-    swapSpare(type, name) {
-        const arr = this.cpartSpares[type];
-        const spare = arr.find(({attrs}) => attrs.name === name);
-        Modulo.assert(spare, `No ${type} with name="${name}"`);
-        this.cparts[type] = spare;
-        /* (SPARES ONLY)
-        const arr = this.cpartSpares[type];
-        const index = arr.findIndex(({attrs}) => attrs.name === name);
-        Modulo.assert(index >= 0, `No ${type} with name="${name}"`);
-        const spare = arr[index];
-        arr[index] = this.cparts[type];
-        this.cparts[type] = spare;
-        */
-    }
-
     rerender() {
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
@@ -494,17 +475,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         for (const lcName of lifecycleNames) {
             for (const [cPartName, cPart] of Object.entries(this.cparts)) {
                 const method = cPart[lcName + 'Callback'];
-                if (!this.renderObj) {
-                    console.log('lolwut - renderobj is falsy', this.renderObj);
-                    break;
-                }
-
-                // TODO: clean this up, renderObj should never "just"
-                // be cPart, should be the whole cparts.* being bare
-                // name OOP, vs cparts.*  being factory-defined
-                if (!(cPartName in this.renderObj)) {
-                    //this.renderObj[cPartName] = cPart;
-                }
                 if (method) {
                     const results = method.call(cPart, this.renderObj);
                     if (results) {
@@ -533,15 +503,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         return result;
     }
 
-    resolveAttributeName(name) {
-        if (this.hasAttribute(name)) {
-            return name;
-        } else if (this.hasAttribute(name + ':')) {
-            return name + ':';
-        }
-        return null;
-    }
-
     connectedCallback() {
         /*
         Note: For testability, setupCParts is invoked on first mount, before
@@ -552,10 +513,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.setupCParts();
         this.lifecycle(['initialized'])
         this.rerender();
-        if (!this.isMounted && !('template' in this.cparts)) {
-            // TODO: Make 'template' not hardcoded here, as well as
-            // Component's updateCallback. OR do attrs?
-        }
         this.isMounted = true;
     }
 }
@@ -590,7 +547,9 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
             const setUp = component.resolveValue(dName + 'Mount');
             const tearDown = component.resolveValue(dName + 'Unmount');
             //console.log('dName', dName, attrName, component);
-            Modulo.assert(setUp || tearDown, `Unknown directive: "${dName}"`);
+            if (dName !== 'script.codemirror') { // TODO HACK UGH NO
+                Modulo.assert(setUp || tearDown, `Unknown directive "${dName}" `, el);
+            }
             arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
         }
     }
@@ -606,9 +565,9 @@ Modulo.directiveShortcuts = [[/^@/, 'component.event'],
 
 Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     prepareCallback() {
-        // TODO shouldn't have to do this ---v
         return {
             innerHTML: null,
+            // TODO shouldn't have to do this ---v
             eventMount: this.eventMount.bind(this),
             eventUnmount: this.eventUnmount.bind(this),
             resolveMount: this.resolveMount.bind(this),
@@ -708,32 +667,6 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
         /* untested / daedcode ---v */
         componentClass.observedAttributes = Object.keys(options);
     }
-
-    copyMount({el}) {
-        // dead code?
-        // change to "this.element"
-        for (const attr of this.element.getAttributeNames()) {
-            el.setAttribute(attr, this.element.getAttribute(attr));
-        }
-        /*
-        const props = {};
-        for (let propName of Object.keys(this.options)) {
-            propName = propName.replace(/:$/, ''); // normalize
-            let attrName = this.element.resolveAttributeName(propName);
-            if (!attrName) {
-                console.error('Prop', propName, 'is required for', this.element.tagName);
-                continue;
-            }
-            let value = this.element.getAttribute(attrName);
-            if (attrName.endsWith(':')) {
-                attrName = attrName.slice(0, -1); // trim ':'
-                value = this.element.moduloRenderContext.resolveValue(value);
-            }
-            props[propName] = value;
-        }
-        */
-    }
-
     initializedCallback(renderObj) {
         const props = {};
         const getAttr = getGetAttr(this.element);
@@ -746,18 +679,45 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     }
 }
 
-/*
-Modulo.cparts.attributes = class Attributes extends Modulo.ComponentPart {
-    initializedCallback() {
-        for (let [name, value] of Object.entries(this.options)) {
-            if (name.includes('.')) {
-                name = '[' + nae
-            }
-            this.element.setAttribute(name, value);
+Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
+    static loadCallback(node, loader, loadObj) {
+        if (!Modulo.isDebug) {
+            return {};
         }
+        const [name, tests] = loader.loadFromDOMElement(node);
+        return {name: loader.namespace + '-testsuite' + name, tests};
+    }
+    static factoryCallback({name, tests}, factory, renderObj) {
+        if (!name || !tests) {
+            return;
+        }
+        console.log('   % Modulo Test goes brrrrrr %%%%%%');
+        this.patchCPartContent(name, tests);
+        return this.runTestsObj(name, tests, originalLoadObj);
+    }
+    runTestsObj(name, tests, originalLoadObj) {
+        /*
+        const testFrag = new Modulo.globals.DocumentFragment();
+        const div = Modulo.globals.document.createElement('div');
+        Modulo.utils.patch({
+            'Modulo.cparts.Testsuite.loadCallback': () => ({}),
+            'Modulo.globals.document': testFrag,
+            'Modulo.globals.fetch': () => { throw new Error('no fetch!') },
+        }, (originals) => {
+            let loader = null;
+            const testComp = loader.defineComponent('tsns', loadObj);
+            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
+            div.innerHTML = '<ts-${}-${}></ts-....>';
+            frag.append(div);
+            // Patch CParts to turn them into tests
+            //const subfactory = new Modulo.ComponentFactory(this.element.loader, name, tests);
+            const results = subfactory.baseRenderObj;
+            //subfactory.buildCParts(div);
+        );
+        */
     }
 }
-*/
+
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
@@ -844,11 +804,6 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         } else {
             renderObj.component.innerHTML = this.instance.render(renderObj);
         }
-        /*
-        if (result.includes('undefined')) {
-            console.log('ModuloTemplate: "undefined" in template');
-        }
-        */
     }
 }
 
@@ -872,9 +827,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const localVarsIfs = localVars
           .map(n => `if (name === '${n}') ${n} = value;`).join('\n');
 
-        // TODO: Rename script to script to be consistent with event-time lifecycle
-        return `
-            'use strict';
+        return `'use strict';
             var ${localVarsLet};
             var script = {exports: {}};
             function __set(name, value) { ${localVarsIfs} }
@@ -898,22 +851,40 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         return results;
     }
 
+    cb(func) {
+        const renderObj = this.element.getCurrentRenderObj();
+        return (...args) => {
+            this.prepLocalVars(renderObj);
+            func(...args);
+            //this.clearLocalVariablesj(renderObj);
+        };
+    }
+
     constructor(element, options) {
         super(element, options);
 
         // Attach callbacks from script to this, to hook into lifecycle.
         const {script} = element.initRenderObj;
-        const cbs = Object.keys(script)
-            .filter(key => key.endsWith('Callback') || key.endsWith('Mount'));
+        const isCbRegex = /(Unmount|Mount|Callback)$/;
+        const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
             this[cbName] = renderObj => {
-                this.prepLocalVars(renderObj);
+                this.prepLocalVars(renderObj); // always prep (for event CB)
                 if (cbName in script) {
                     script[cbName](renderObj);
                 }
             };
         }
+        /*
+        const originalScript = Object.assign({}, script);
+        this[cbName] = script[cbName] = (renderObj => {
+            this.prepLocalVars(renderObj);
+            if (cbName in originalScript) {
+                originalScript[cbName](renderObj);
+            }
+        });
+        */
     }
 
     // ## cparts.Script: prepLocalVars
@@ -1019,6 +990,8 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     }
 
     tokenizeText(text) {
+        // Join all modeTokens with | (OR in regex).
+        // Replace space with wildcard capture.
         const re = '(' + this.modeTokens.join('|(').replace(/ +/g, ')(.+?)');
         return text.split(RegExp(re)).filter(token => token !== undefined);
     }
@@ -1124,6 +1097,7 @@ Modulo.templating.defaultOptions.filters = {
     length: s => s.length,
     safe: s => Object.assign(new String(s), {safe: true}),
     join: (s, arg) => s.join(arg),
+    json: (s) => JSON.stringify(s),
     pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
     add: (s, arg) => s + arg,
     subtract: (s, arg) => s - arg,
@@ -1175,6 +1149,14 @@ Modulo.templating.defaultOptions.tags = {
     'include': (text, tmplt) => {
         const template = `G.getAltTemplate(${tmplt.parseExpr(text)})`;
         return {start: `G.OUT.push(${template}.render(CTX));`};
+    },
+    */
+    /*
+    // Should complete, very useful template tag: Basically the ... splat
+    // operator.
+    'attrs': (text, tmplt) {
+        const expr = tmplt.parseExpr(text);
+        return {start: `G.OUT.push(Modulo.utils.escapeAttrs(${expr}));`};
     },
     */
 };
@@ -1445,6 +1427,7 @@ Modulo.utils = class utils {
         }
         return obj;
     }
+
     static parseAttrs(elem) {
         const obj = {};
         for (let name of elem.getAttributeNames()) {
@@ -1501,6 +1484,7 @@ Modulo.FetchQueue = class FetchQueue {
         for (let [label, src] of Object.entries(queueObj)) {
             // TODO remove! ------------------------------------v
             if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
+                // TODO: should this need to invoke utils.dirname?
                 src = src.replace('.', this.basePath);
             }
             if (src in this.data) {
@@ -1545,10 +1529,11 @@ Pls ignore all
 */
 function getGetAttr(element) {
     // HACK
-    if (element.getAttr) {
-        return element.getAttr;
+    const myElement = element;
+    if (myElement.getAttr) {
+        return (...args) => myElement.getAttr(...args);
     } else {
-        return (...args) => element.getAttribute(...args);
+        return (...args) => myElement.getAttribute(...args);
     }
 }
 

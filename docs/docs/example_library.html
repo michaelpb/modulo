@@ -130,6 +130,56 @@ mdu-CodeSnippet .m-Btn {
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
+</style><style id="eg-SearchBox_style">
+eg-SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
 </style><style id="eg-Prime_style">
 eg-Prime .grid {
     display: grid;
@@ -230,7 +280,7 @@ tutorial-DocSidebar li.ginactive > a::before {
 
 
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1003,&quot;checksum&quot;:&quot;F4xWO0rEsRPGpi2t2s82ywX9vGghrq1MkhnF7nxkSMR9oqEdg61OZ9mNn4ViAUbW&quot;}">
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1002,&quot;checksum&quot;:&quot;zkbmbavSx232nu3dW8oMNINuwizI4DMYjOyIZ+yRM7WprzaIU/nA4TE4qSRtHCf1&quot;}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -243,14 +293,16 @@ tutorial-DocSidebar li.ginactive > a::before {
                 <li>
                     <a href="/docs.html" class="Navbar--selected">Docs</a>
                 </li>
+                <!--
                 <li>
-                    <a href="/literate/src/Modulo.html">Source</a>
+                    <a href="/literate/src/Modulo.html" >Source</a>
                 </li>
+                -->
             </ul>
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 1003 lines<br>
+                SLOC: 1002 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -300,6 +352,14 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
+            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
             "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
             
         </li>
@@ -321,21 +381,41 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/example_library.html#hello">Hello</a></li>
+                        <li><a href="/docs/example_library.html#hello">Hello</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#1">Simple</a></li>
+                        <li><a href="/docs/example_library.html#simple">Simple</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#2">ToDo</a></li>
+                        <li><a href="/docs/example_library.html#todo">ToDo</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#3">API</a></li>
+                        <li><a href="/docs/example_library.html#api">API</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#4">Prime</a></li>
+                        <li><a href="/docs/example_library.html#searchbox">SearchBox</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#5">MemoryGame</a></li>
+                        <li><a href="/docs/example_library.html#prime">Prime</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#6">MiniExcel</a></li>
+                        <li><a href="/docs/example_library.html#memorygame">MemoryGame</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/example_library.html#7">AccessingLoader</a></li>
+                        <li><a href="/docs/example_library.html#miniexcel">MiniExcel</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/example_library.html#accessingloader">AccessingLoader</a>
+                        
+                        </li>
                     
                     </ul>
                 
@@ -350,8 +430,9 @@ tutorial-DocSidebar li.ginactive > a::before {
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li>
-                <a href="/literate/src/Modulo.html">Literate source</a>
+            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br><em>* Coming soon!</em>
             </li>
         </ul>
 
@@ -369,7 +450,9 @@ tutorial-DocSidebar li.ginactive > a::before {
 
         <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
 
-        <mdu-route name="templating" src="./_docs/templating.html"></mdu-route>
+        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
+
+        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
 
         <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
 
@@ -388,7 +471,7 @@ component instead (later: stripping certain CParts, so we can embed testing)
 <tutorial-docexamplelib>
     
         
-        <mdu-section name="Hello">
+        <mdu-section name="hello">
             Hello
         </mdu-section>
         <mdu-codeexample text="
@@ -405,7 +488,7 @@ component instead (later: stripping certain CParts, so we can embed testing)
 "></mdu-codeexample>
     
         
-        <mdu-section name="Simple">
+        <mdu-section name="simple">
             Simple
         </mdu-section>
         <mdu-codeexample text="
@@ -420,7 +503,7 @@ component instead (later: stripping certain CParts, so we can embed testing)
 "></mdu-codeexample>
     
         
-        <mdu-section name="ToDo">
+        <mdu-section name="todo">
             ToDo
         </mdu-section>
         <mdu-codeexample text="<template>
@@ -449,7 +532,7 @@ component instead (later: stripping certain CParts, so we can embed testing)
 "></mdu-codeexample>
     
         
-        <mdu-section name="API">
+        <mdu-section name="api">
             API
         </mdu-section>
         <mdu-codeexample text="<template>
@@ -486,7 +569,135 @@ component instead (later: stripping certain CParts, so we can embed testing)
 "></mdu-codeexample>
     
         
-        <mdu-section name="Prime">
+        <mdu-section name="searchbox">
+            SearchBox
+        </mdu-section>
+        <mdu-codeexample text="<template>
+<p>Start typing a book name to see &quot;search as you type&quot; (e.g. try &amp;ldquo;the
+lord of the rings&amp;rdquo;)</p>
+
+<input [state.bind] name=&quot;search&quot; @keyup:=script.typingCallback />
+
+<div class=&quot;results {% if state.search.length gt 0 %}visible{% endif %}&quot;>
+    <div class=&quot;results-container&quot;>
+        {% if state.loading %}
+            <img style=&quot;margin-top: 30px&quot;
+                src=&quot;{{ script.exports.loadingGif  }}&quot; alt=&quot;loading&quot; />
+        {% else %}
+            {% for result in state.results %}
+                <div class=&quot;result&quot;>
+                    <img src=&quot;http://covers.openlibrary.org/b/id/{{ result.cover_i }}-S.jpg&quot; />
+                    <label>{{ result.title }}</label>
+                </div>
+            {% empty %}
+                <p>No books found.</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+</template>
+
+<state
+    search=&quot;&quot;
+    results:=[]
+    loading:=false
+></state>
+
+<script>
+    // Because this variable is created &quot;loose&quot; in the script tag, it becomes a
+    // static variable global to all instances of this class (though,
+    // thankfully, not global in general -- it's still in an &quot;IFFE&quot;)
+    // (If we had wanted individual components to be debounced, we'd have
+    // needed to attach it to state)
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+
+    function typingCallback() {
+        state.loading = true;
+        const apiBase = 'http://openlibrary.org/search.json'
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&amp;fields=title,author_name,cover_i';
+        const url = `${apiBase}?${search}&amp;${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    // Puting this long URL down here to declutter
+    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
+                                 'semantic-ui/0.16.1/images/loader-large.gif');
+</script>
+
+<style>
+    SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+    input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+    input::after {
+        content: '\1F50E';
+    }
+    .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+    .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+    .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+    .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</style>
+
+
+"></mdu-codeexample>
+    
+        
+        <mdu-section name="prime">
             Prime
         </mdu-section>
         <mdu-codeexample text="<template>
@@ -551,7 +762,7 @@ div.whole ~ div.number::after { opacity: 0; }
 "></mdu-codeexample>
     
         
-        <mdu-section name="MemoryGame">
+        <mdu-section name="memorygame">
             MemoryGame
         </mdu-section>
         <mdu-codeexample text="<!-- A much more complicated example application -->
@@ -715,13 +926,13 @@ h3 {
 "></mdu-codeexample>
     
         
-        <mdu-section name="MiniExcel">
+        <mdu-section name="miniexcel">
             MiniExcel
         </mdu-section>
-        <mdu-codeexample text="
+        <mdu-codeexample text="<!-- This example is unfinished, sorry! -->
+
 <template>
     <table>
-        {{ state.data }}
         {% for row in state.data %}
             <tr>
                 {% for col in row %}
@@ -733,13 +944,16 @@ h3 {
 </template>
 
 <state
-    data:='[]'
+    data:='[[&quot;&quot;]]'
 /><state>
 
 <script>
+    console.log('factory for miniexcel');
+/*
+    console.log('factory for miniexcel');
     function initalizedCallback(renderObj) {
         console.log('getting initialized', renderObj);
-        renderObj.state.data = [
+        state.data = [
             ['', '', '', '', '', ''],
             ['', '', '', '', '', ''],
             ['', '', '', '', '', ''],
@@ -747,12 +961,13 @@ h3 {
             ['', '', '', '', '', ''],
         ];
     }
+*/
 </script>
 
 "></mdu-codeexample>
     
         
-        <mdu-section name="AccessingLoader">
+        <mdu-section name="accessingloader">
             AccessingLoader
         </mdu-section>
         <mdu-codeexample text="
@@ -760,14 +975,12 @@ h3 {
     <button @button>Click me and look in Dev Console</strong>
 </template>
 <script>
-    // Note how it's even available at load time
-    const moduleFactory = Modulo.factoryInstances['eg-eg'];
+    // console.log(module); // 
     function onClick() {
         // Examine this object. See how script tag exports
         // are actually already available? This allows for
-        // cross-script dependencies, e.g. import in one,
-        // access in another
-        console.log('This is moduleFactory:', moduleFactory);
+        // cross-component dependencies.
+        console.log('This is module:', module);
     }
 </script>
 
@@ -780,6 +993,7 @@ h3 {
 </mdu-route>
 
         <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
+
     </aside>
 </main>
 
@@ -787,9 +1001,7 @@ h3 {
 
 
 <footer>
-    <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-    </main>
+    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
 </footer>
 
 
