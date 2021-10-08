@@ -1,0 +1,564 @@
+<!DOCTYPE HTML><head>
+    <meta charset="utf8">
+    <title>Modulo.js</title>
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    <script src="/js/Modulo.js"></script>
+    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
+    <style id="mdu-Section_style">
+mdu-Section {
+            position: relative;
+        }
+mdu-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mdu-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mdu-Section:hover .mdu-Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mdu-TabSet_style">
+mdu-TabSet {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
+        }
+mdu-TabSet .tab-nav {
+            /*border-bottom: 1px dotted var(--highlight-color);*/
+            width: 100%;
+        }
+mdu-TabSet .tab-nav > ul {
+            width: 100%;
+            display: flex;
+        }
+mdu-TabSet .tab-nav_title {
+            border: 2px solid black;
+            border-top-width: 4px;
+            border-bottom-width: 0;
+            border-radius: 8px 8px 0 0;
+            background: white;
+            min-width: 10%;
+        }
+
+mdu-TabSet .tab-nav_title a,
+mdu-TabSet .tab-nav_title a:visited,
+mdu-TabSet .tab-nav_title a:active {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+mdu-TabSet .tab-nav_title__selected {
+            background: var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
+            border-top-width: 1px;
+            border-radius: 1px;
+        }
+    </style><style id="mdu-CodeExample_style">
+mdu-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mdu-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mdu-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mdu-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mdu-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mdu-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+mdu-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mdu-CodeExample .split { display: block; }
+        }
+    </style><style id="mdu-CodeSnippet_style">
+mdu-CodeSnippet {
+            position: relative;
+            display: block;
+        }
+mdu-CodeSnippet .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
+    </style><style id="eg-Simple_style">
+eg-Simple em { color: darkblue; }
+eg-Simple * { text-decoration: underline; }
+</style><style id="eg-SearchBox_style">
+eg-SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</style><style id="eg-Prime_style">
+eg-Prime .grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    color: #ccc;
+    font-weight: bold;
+}
+eg-Prime .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-Prime div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-Prime div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-Prime div.number { background: green; }
+eg-Prime div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-Prime If found, then hide asterisk and green. */
+eg-Prime div.whole ~ div.number { background: #B90183; }
+eg-Prime div.whole ~ div.number::after { opacity: 0; }
+</style><style id="eg-MemoryGame_style">
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style><style id="tutorial-DocSidebar_style">
+tutorial-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+tutorial-DocSidebar li.ginactive > ul::before,
+tutorial-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+tutorial-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style><style id="tutorial-DocExampleLib_style">
+</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
+    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+
+
+
+
+<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1002,&quot;checksum&quot;:&quot;zkbmbavSx232nu3dW8oMNINuwizI4DMYjOyIZ+yRM7WprzaIU/nA4TE4qSRtHCf1&quot;}">
+        <nav class="Navbar">
+            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+            <ul>
+                <li>
+                    <a href="/index.html#below">About</a>
+                </li>
+                <li>
+                    <a href="/start.html">Start</a>
+                </li>
+                <li>
+                    <a href="/docs.html" class="Navbar--selected">Docs</a>
+                </li>
+                <!--
+                <li>
+                    <a href="/literate/src/Modulo.html" >Source</a>
+                </li>
+                -->
+            </ul>
+
+            <div class="Navbar-rightInfo">
+                v: 0.0.1<br>
+                SLOC: 1002 lines<br>
+                <a href="https://github.com/michaelpb/modulo/">github</a> | 
+                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+            </div>
+        </nav>
+    </mdu-navbar>
+
+
+<main class="Main--fluid Docs">
+    <aside class="TitleAside TitleAside--navBar">
+        <h3><span alt="Lower-case delta">%</span></h3>
+        <nav class="TitleAside-navigation">
+            <h3>Documentation</h3>
+            <tutorial-docsidebar path="docs/docs/cparts.html">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs.html">Table of Contents</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/tutorial.html">Tutorial</a>
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/cparts.html#component">Component</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#props">Props</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#template">Template</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#state">State</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#script">Script</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#style">Style</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#custom">Custom CParts API</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/template_reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/example_library.html">Example Library</a>
+            
+        </li>
+    
+
+
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br><em>* Coming soon!</em>
+            </li>
+        </ul>
+
+    </li>
+</ul>
+</tutorial-docsidebar>
+        </nav>
+    </aside>
+    <aside style="border: none">
+        <mdu-routeindex></mdu-routeindex>
+
+        <mdu-route name="tutorial" src="./_docs/tutorial.html"></mdu-route>
+
+        <mdu-route name="cparts" src="./_docs/cparts.html"><h1>CParts</h1>
+
+<p>The central concept to Modulo is that of <em>Component Parts</em>. Because
+it is so central, saying <em>Component Parts</em> over and over gets tiresome,
+so it's typically shortened to <em>CParts</em>.</p>
+
+<p>Every component definition consists of configuring one or more CPart
+definitions. In fact, the <em>Component</em> CPart
+
+
+
+<mdu-section name="spares">CPart Spares</mdu-section>
+
+</p><p>If you have extra car parts lying around, you call them <em>spare
+parts</em>, or just "spares". In Modulo, extra or inactive CParts are also
+called Spares.</p>
+
+
+<h3>Mechanics of Spares</h3>
+
+<p>The use for this might be to have more than one <em>Template</em> that can
+be switched out depending on what data model is being used, more than one
+<em>State</em> to allow for both private and shared data between components, or
+more than one <em>Script</em> to be swapped to quickly change behavior based on
+if the user is logged in or out. Many of these things might be doable without
+CPart spares, such as with if-statements, but spares provide a paradigm for
+working comfortably with multiple CParts.</p>
+
+<p>When you have duplicate CParts of the same type in a component, <em>only
+one</em> CPart a time of each type is the "active" CPart, accessible in the
+<code>element.cparts</code> object. That is to say, there can never be more
+than one active CPart.  Both the active and extra (spare) CParts are available
+in <code>element.cpartSpares</code>. Simply by assigning a property of
+<code>element.cparts</code> you can select which one is active.</p>
+
+<p>By default, the last CPart defined will be the active CPart.</p>
+
+<p>For a concrete example, examine how the following behaves:</p>
+
+<mdu-codeexample text="
+<template name=&quot;shop&quot;>
+    <nav>Shop|<a @click:=script.swap payload=&quot;home&quot;>Home</a></nav>
+    <h1>Shop</h1>
+    <p>$10 - A banana</p>
+</template>
+<template name=&quot;home&quot;>
+    <nav><a @click:=script.swap payload=&quot;shop&quot;>Shop</a>|Home</nav>
+    <h1>Home</h1>
+    <p>Welcome to my banana stand!</p>
+</template>
+<script>
+    // swap: Set the active cpart by searching through the spare
+    // array and selecting the one with a name matching payload:
+    function swap(ev, payload) {
+        element.cparts.template = element.cpartSpares.template
+            .find(({attrs}) => attrs.name === payload);
+    }
+</script>
+
+<!-- some basic styling -->
+<style>
+nav {
+    background: black;
+    color: gray;
+    padding: 3px;
+}
+a {
+    color: lightblue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+</style>
+"></mdu-codeexample>
+
+
+<p><strong>Note:</strong> Swapping templates should <em>not</em> be a suitable
+replacement for real links or an adequate frontend routing system. In other
+words, consider swapping templates as a technique only for things like
+alternate themes, filter views, logged-in vs logged-out, and other such
+scenarios, but not for general page navigation. This is because they break
+many web standards, confuse search bots crawling for SEO, and ruin user
+experience by not looking like links for accessibility purposes, having no URL,
+and no effect on browser history.</p>
+
+
+<h3>CPart spares and renderObj</h3>
+
+<p>CPart spares (inactive CParts) can still influence your component, even if
+they are never activated.
+Specifically, they still get the <code>loadCallback</code> and
+<code>factoryCallback</code> invoked, meaning they still contribute to the
+<code>loadObj</code> and the <code>baseRenderObj</code> like any other CPart of
+their type (<a href="/docs/directives.html#renderobj">see relevant docs on
+these renderObj</a>). For some types of spares, this effectively causes them to
+be "squashed" into a single renderObj.</p>
+
+
+</mdu-route>
+
+        <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
+
+        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
+
+        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
+
+        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
+
+        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
+
+        <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
+
+    </aside>
+</main>
+
+<script>Modulo.defineAll()</script>
+
+
+<footer>
+    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+</footer>
+
+
+
+</body>
