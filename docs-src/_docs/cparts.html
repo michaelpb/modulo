@@ -15,6 +15,9 @@ definitions. In fact, the <em>Component</em> CPart
 parts</em>, or just "spares". In Modulo, extra or inactive CParts are also
 called Spares.</p>
 
+
+<h3>Mechanics of Spares</h3>
+
 <p>The use for this might be to have more than one <em>Template</em> that can
 be switched out depending on what data model is being used, more than one
 <em>State</em> to allow for both private and shared data between components, or
@@ -23,11 +26,14 @@ if the user is logged in or out. Many of these things might be doable without
 CPart spares, such as with if-statements, but spares provide a paradigm for
 working comfortably with multiple CParts.</p>
 
-<p>When you have duplicate CParts of the same type in a component, one CPart
-a time of each type is the "active" CPart, accessible in the
-<code>element.cparts</code> object. Both the active and extra (spare)
-CParts are available in <code>element.cpartSpares</code>. Simply by assigning a
-property of <code>element.cparts</code> you can select which one is active.</p>
+<p>When you have duplicate CParts of the same type in a component, <em>only
+one</em> CPart a time of each type is the "active" CPart, accessible in the
+<code>element.cparts</code> object. That is to say, there can never be more
+than one active CPart.  Both the active and extra (spare) CParts are available
+in <code>element.cpartSpares</code>. Simply by assigning a property of
+<code>element.cparts</code> you can select which one is active.</p>
+
+<p>By default, the last CPart defined will be the active CPart.</p>
 
 <p>For a concrete example, examine how the following behaves:</p>
 
@@ -68,14 +74,25 @@ a {
 '></mdu-CodeExample>
 
 
-<p><strong>Note:</strong> Switching templates should <em>not</em> be a suitable
-replacement for real links or an adequate frontend system. In other words,
-consider them for things like alternate themes, filter views, logged-in vs
-logged-out, and other such scenarios, but not for general page navigation. This
-is because they break many web standards, search bots, and user expectations by
-not looking like links, having no URL, and no effect on browser history.</p>
+<p><strong>Note:</strong> Swapping templates should <em>not</em> be a suitable
+replacement for real links or an adequate frontend routing system. In other
+words, consider swapping templates as a technique only for things like
+alternate themes, filter views, logged-in vs logged-out, and other such
+scenarios, but not for general page navigation. This is because they break
+many web standards, confuse search bots crawling for SEO, and ruin user
+experience by not looking like links for accessibility purposes, having no URL,
+and no effect on browser history.</p>
 
 
 <h3>CPart spares and renderObj</h3>
+
+<p>CPart spares (inactive CParts) can still influence your component, even if
+they are never activated.
+Specifically, they still get the <code>loadCallback</code> and
+<code>factoryCallback</code> invoked, meaning they still contribute to the
+<code>loadObj</code> and the <code>baseRenderObj</code> like any other CPart of
+their type (<a href="/docs/directives.html#renderobj">see relevant docs on
+these renderObj</a>). For some types of spares, this effectively causes them to
+be "squashed" into a single renderObj.</p>
 
 
