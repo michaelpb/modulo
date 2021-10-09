@@ -1,10 +1,8 @@
-// Reimplementing Modulo Node
-const baseModulo = require('../src/Modulo.js');
-const patchModuloWithSSGFeatures = require('./modulocli-utils.js');
+const baseModulo = require('../../src/Modulo.js');
 const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
-const cliutils = require('./modulocli-utils');
+//const utils = require('./utils');
 
 class ModuloNode {
     constructor() {

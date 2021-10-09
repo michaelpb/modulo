@@ -1,5 +1,5 @@
-const Modulo = require('./modulo-node');
-const cliutils = require('./modulocli-utils');
+const Modulo = require('./lib/ModuloNode');
+const cliutils = require('./lib/utils');
 const fs = require('fs');
 
 const defaultConfig = {
