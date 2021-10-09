@@ -123,192 +123,6 @@ function patchModuloWithSSGFeatures(Modulo, path, subpath, outputPath) {
     */
 }
 
-function loadModuloDocument(path, html, subpath=null, rootPath=null, outputPath=null) {
-    const includeRequire = true;
-    /*
-      Very hacky function to load Modulo and mock set it up with a path to
-      a given HTML file. The JSDOM document is returned.
-    */
-    return setupModulo(path, false, html);
-
-    // Very simple hacky way to do mocked web-components define
-    function webComponentsUpgrade(dom, el, cls, secondTime=false) {
-        // Manually "upgrading" the JSDOM element with the webcomponent
-        const instance = new cls();
-        const protos = [instance, Reflect.getPrototypeOf(instance)];
-        if (!el.tagName.startsWith('MOD-')) {
-            protos.push(Reflect.getPrototypeOf(protos[1]));
-        }
-        protos.reverse();
-
-        // Get every prototype key
-        const allKeys = [];
-        for (const proto of protos) {
-            allKeys.push(...Reflect.ownKeys(proto));
-        }
-
-        // Loop through binding functions to element
-        for (const key of allKeys) {
-            if (instance[key] instanceof Function) {
-                el[key] = instance[key].bind(el);
-            } else {
-                el[key] = instance[key];
-            }
-        }
-
-        // "Re-initialize" so we get innerHTML etc
-        if (el.lifecycle) { // Is a modulo Element
-            el.initialize();
-        }
-
-        if (el.connectedCallback && !secondTime) {
-            // console.log('connected callback for:', el.tagName);
-            //setTimeout(() => {
-            //}, 0);
-            el.connectedCallback();
-        }
-    }
-
-    function makeMockStorage() {
-        const map = new Map();
-        map.getItem = map.get.bind(map);
-        map.setItem = map.set.bind(map);
-        return map;
-    }
-
-    function setupModulo(path = null, includeDebugger = false, html = '') {
-        let Modulo;
-        if (includeDebugger) {
-            Modulo = require('../src/ModuloDebugger.js');
-        } else {
-            Modulo = require('../src/Modulo.js');
-        }
-
-        let htmlCode = html;
-        if (html === '') {
-            htmlCode = fs.readFileSync(path, 'utf-8');
-        }
-
-        const dom = new JSDOM(htmlCode);
-        if (includeRequire) {
-            patchModuloWithSSGFeatures(Modulo, path, subpath, outputPath);
-        }
-        Modulo.document = dom.window.document; // for easier testing
-        Modulo.globals.DOMParser = DOMParser;
-        Modulo.globals.HTMLElement.prototype.getAttribute = a => 'XYZYX getAttribute plcholder hack';
-        Modulo.globals.HTMLElement.prototype.hasChildNodes = a => false; // HACK
-        Modulo.globals.window =  dom.window;
-        Modulo.globals.document =  dom.window.document;
-        Modulo.globals.mockConsole = [];
-        const {mockConsole} = Modulo.globals;
-        Modulo.globals.console = {log: mockConsole.push.bind(mockConsole)};
-        Modulo.globals.DocumentFragment =  dom.window.DocumentFragment;
-        Modulo.globals.mockRegistered = [];
-        Modulo.globals.mockMounted = [];
-        Modulo.globals.mockTimeouts = [];
-        const {mockTimeouts} = Modulo.globals;
-        const mockTOPush = (func, time) => mockTimeouts.push({func, time});
-        Modulo.globals.setTimeout = mockTOPush;
-        Modulo.globals.setInterval = mockTOPush;
-        Modulo.globals.localStorage = makeMockStorage();
-        Modulo.globals.sessionStorage = makeMockStorage();
-
-        Modulo.globals.mockModifyFile = [];
-
-        Modulo.globals.MutationObserver = class {
-            observe(el) {
-                const {setAttribute} = el;
-                el.setAttribute = (...args) => {
-                    //console.log('fake set attribute happening!', args);
-                    setAttribute.apply(el, args);
-                    el.attributeMutated();
-                };
-            }
-        };
-
-        Modulo.globals.fetch = url => {
-            // Faked version of fetch
-            // TODO: Eventually just implement a backend version of FetchQueue
-            // (FetchQueueNode) that uses fs.readFile instead of fetch
-            const rootDir = rootPath || pathlib.dirname(path);
-            const fullPath = pathlib.join(rootDir, url);
-            //console.log('this is rootDir', rootDir, url, fullPath);
-            const response = {
-                text: () => {},
-                // later, can add "json" that just sets a var
-            };
-            return {
-                then: callback => {
-                    callback(response);
-                    return {
-                        then: callback => {
-                            //let data = fs.readFileSync(fullPath, 'utf-8');
-                            let data = cachedReadFileSync(fullPath);
-                            for (const func of Modulo.globals.mockModifyFile) {
-                                data = func(fullPath, data);
-                            }
-                            callback(data);
-                            /*
-                            fs.readFile(fullPath, 'utf-8', (err, data) => {
-                                if (err) {
-                                    console.error('ERROR', err);
-                                    return;
-                                }
-                                for (const func of Modulo.globals.mockModifyFile) {
-                                    data = func(fullPath, data);
-                                }
-                                callback(data);
-                            });
-                            */
-                        }
-                    };
-                },
-            }
-        };
-
-        Modulo.globals.customElements = {
-            define: (name, cls) => {
-                const elements = dom.window.document.querySelectorAll(name);
-                for (const el of elements) {
-                    if (el.hasAttribute('modulo-ssg-skip')) {
-                        continue;
-                    }
-                    webComponentsUpgrade(dom, el, cls);
-                    Modulo.globals.mockMounted.push({el, cls});
-                    //setTimeout(() => {
-                    //}, 0);
-                }
-                Modulo.globals.mockRegistered.push({name, cls});
-            },
-        };
-        if (path) {
-            Modulo.defineAll();
-        }
-        return Modulo;
-    }
-}
-
-function walkSync(basePath) {
-    let results = [];
-    const bareFileNames = fs.readdirSync(basePath);
-    for (const baseName of bareFileNames) {
-        file = basePath + '/' + baseName;
-        // $mypath/ -- eventually use for backend
-        if (baseName.startsWith('_') || baseName.startsWith('.') ||
-                                        baseName.startsWith('$')) {
-            console.log('(Skipping: ', file, ')');
-            continue;
-        }
-        const stat = fs.statSync(file);
-        if (stat && stat.isDirectory()) {
-            results = results.concat(walkSync(file));
-        } else {
-            results.push(file);
-        }
-    }
-    return results;
-}
-
 function mkdirToContain(path) {
     const pathPrefix = path.slice(0, path.lastIndexOf('/'));
     const mkdirOpts = {
@@ -333,34 +147,6 @@ function ifDifferent(inputPath, outputPath, callbackSuccess, cbFailure) {
         }
         /*else if (inputStats.size !== outputStats.size) { shouldCopy = true; }*/
     }));
-}
-
-function copyIfDifferentDeadCode(inputPath, outputPath, callback) {
-    fs.stat(inputPath, (err1, inputStats) => fs.stat(outputPath,
-        (err2, outputStats) => {
-            let shouldCopy = false;
-            if (err1 || err2 || !inputStats || !outputStats) {
-                shouldCopy = true; // if doesn't exist or inaccessible
-            } else if (inputStats.size !== outputStats.size) {
-                shouldCopy = true;
-            } else if (String(inputStats.mtime) !== String(outputStats.mtime)) {
-                shouldCopy = true;
-            }
-
-            if (shouldCopy) {
-                fs.copyFile(inputPath, outputPath, () => {
-                    // Copy over mtime to new file
-                    fs.utimes(outputPath, inputStats.atime, inputStats.mtime, (err) => {
-                        if (err) {
-                            console.error('ERROR', err);
-                        } else if (callback) {
-                            callback();
-                        }
-                    });
-                });
-            }
-        })
-    );
 }
 
 function copyIfDifferent(inputPath, outputPath, callback) {
@@ -417,6 +203,55 @@ function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPa
 }
 
 
+function doSSG(args) {
+    // DEAD CODE
+    const inputDir = args.positional[0];
+    const outputDir = args.flags.output;
+    utils.assert(inputDir, 'Specify a source directory');
+    utils.assert(outputDir, 'Specify output dir, e.g. --output=docs/');
+
+    const rootPath = path.resolve(inputDir);
+    const filenames = utils.walkSync(inputDir);
+    for (const inputPath of filenames) {
+        const outputPath = outputDir + inputPath.slice(inputDir.length);
+        utils.mkdirToContain(outputPath);
+        const ext = path.extname(inputPath).slice(1).toLowerCase();
+
+        const isStatic = inputPath.includes('/components/');
+        if (ext === 'html' && !isStatic) {
+            utils.renderModuloHtml(rootPath, inputPath, outputPath, (subPaths, inputContents) => {
+                console.log('RENDERED:', inputPath, '->', outputPath);
+                if (subPaths) {
+                    console.log('         ', Array.from(inputPath.length).join(' '),
+                                `-> NOTE: ${subPaths.length} subpaths`);
+                    for (const newFilePath of subPaths) {
+                        utils.mkdirToContain(newFilePath);
+                        utils.renderModuloHtmlForSubpath(rootPath,
+                                inputContents, inputPath, newFilePath, () => {
+                            console.log('RENDERED SUB-PATH:', inputPath, '->', newFilePath);
+                        });
+                    }
+                }
+
+            });
+        } else if (ext in args.flags) {
+            // DEADCODE, unused code path
+            const tmpltPath = args.flags[ext];
+            fs.readFile(inputPath, 'utf8', (err, content) => {
+                //const args = {inputPath, outputPath, filenames, content};
+                utils.renderModuloHtml(inputDir, tmpltPath, outputPath, (subPaths) => {
+                    console.log('TEMPLATE:', inputPath, '->', outputPath,
+                                `(USING: ${tmpltPath})`);
+                });
+            });
+        } else {
+            utils.copyIfDifferent(inputPath, outputPath, null, () => {
+                console.log('COPIED:', inputPath, '->', outputPath);
+            });
+        }
+    }
+}
+
 const TERM = {
     MAGENTA_BG: '\x1b[45m',
 
@@ -444,7 +279,6 @@ module.exports = {
     parseArgs,
     renderModuloHtml,
     renderModuloHtmlForSubpath,
-    walkSync,
     patchModuloWithSSGFeatures,
     TERM,
 }

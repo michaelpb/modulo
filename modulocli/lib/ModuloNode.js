@@ -1,4 +1,5 @@
-const baseModulo = require('../../src/Modulo.js');
+const baseModulo = require('./BaseModulo');
+const CommandMenuNode = require('./CommandMenuNode');
 const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
@@ -67,10 +68,16 @@ class ModuloNode {
         }
     }
 
-    defineAll() {
+    defineAll(config) {
+        const {verbose} = config;
         if (!this.doc) {
-            console.warn('Modulo Warning: No preloaded document(s) specified');
+            if (verbose) {
+                console.warn('Modulo Warning: No preloaded document(s) specified');
+            }
             baseModulo.CommandMenu.setup(); // just do command setup
+            const fetchQ = new this.FetchQueue();
+            baseModulo.fetchQ = fetchQ;
+            this.fetchQ = fetchQ;
         } else {
             baseModulo.defineAll(); // do normal behavior
         }
@@ -132,55 +139,6 @@ function webComponentsUpgrade(el, instance, secondTime=false) {
     }
 }
 
-class CommandMenuNode extends baseModulo.CommandMenu {
-    help() {
-        // not elegant -v
-        const properties = Object.getOwnPropertyNames(this.__proto__).concat(
-            Object.getOwnPropertyNames(this.__proto__.__proto__))
-        console.log('Usage: modulocli CMD_NAME')
-        console.log('Example: modulocli build')
-        console.log('Available commands:')
-        for (const key of properties) {
-            if (key.startsWith('_') || key === 'constructor') {
-                continue;
-            }
-            console.log(`    ${key}`);
-        }
-    }
-
-    repl(modulo) {
-        const repl = require('repl');
-        this.repl = repl.start('[%] ', process.stdin);
-        this.repl.context = {m: this, modulo};
-    }
-
-    generate(modulo) {
-        // Generate a single file
-        if (modulo) {
-            modulo.getHTML();
-        }
-    }
-
-    serve() {
-        if (!this.app) {
-            const express = require('express');
-            const www = 'www';
-            this.app = express();
-            this.app.use(express.json());
-            function logger(req, res, next) {
-                console.log(req.method, req.url);
-                next();
-            }
-            app.use(logger);
-            app.use(express.static(www))
-            let PORT = 3333;
-        }
-        app.listen(PORT, () => {
-            console.log(`Listening on ${PORT} (serving ${www})`);
-        });
-        this.generate(); // watch for changes & copy as well
-        //this.repl();
-    }
-}
+ModuloNode.baseModulo = baseModulo; // gives access to imports
 
 module.exports = ModuloNode;
