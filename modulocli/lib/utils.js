@@ -203,53 +203,22 @@ function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPa
 }
 
 
-function doSSG(args) {
-    // DEAD CODE
-    const inputDir = args.positional[0];
-    const outputDir = args.flags.output;
-    utils.assert(inputDir, 'Specify a source directory');
-    utils.assert(outputDir, 'Specify output dir, e.g. --output=docs/');
-
-    const rootPath = path.resolve(inputDir);
-    const filenames = utils.walkSync(inputDir);
-    for (const inputPath of filenames) {
-        const outputPath = outputDir + inputPath.slice(inputDir.length);
-        utils.mkdirToContain(outputPath);
-        const ext = path.extname(inputPath).slice(1).toLowerCase();
-
-        const isStatic = inputPath.includes('/components/');
-        if (ext === 'html' && !isStatic) {
-            utils.renderModuloHtml(rootPath, inputPath, outputPath, (subPaths, inputContents) => {
-                console.log('RENDERED:', inputPath, '->', outputPath);
-                if (subPaths) {
-                    console.log('         ', Array.from(inputPath.length).join(' '),
-                                `-> NOTE: ${subPaths.length} subpaths`);
-                    for (const newFilePath of subPaths) {
-                        utils.mkdirToContain(newFilePath);
-                        utils.renderModuloHtmlForSubpath(rootPath,
-                                inputContents, inputPath, newFilePath, () => {
-                            console.log('RENDERED SUB-PATH:', inputPath, '->', newFilePath);
-                        });
-                    }
-                }
-
-            });
-        } else if (ext in args.flags) {
-            // DEADCODE, unused code path
-            const tmpltPath = args.flags[ext];
-            fs.readFile(inputPath, 'utf8', (err, content) => {
-                //const args = {inputPath, outputPath, filenames, content};
-                utils.renderModuloHtml(inputDir, tmpltPath, outputPath, (subPaths) => {
-                    console.log('TEMPLATE:', inputPath, '->', outputPath,
-                                `(USING: ${tmpltPath})`);
+function doSSG(inputFile, outputFile) {
+    mkdirToContain(outputFile);
+    renderModuloHtml(rootPath, inputFile, outputFile, (subPaths, inputContents) => {
+        console.log('RENDERED:', inputFile, '->', outputFile);
+        if (subPaths) {
+            console.log('         ', Array.from(inputFile.length).join(' '),
+                        `-> NOTE: ${subPaths.length} subpaths`);
+            for (const newFilePath of subPaths) {
+                mkdirToContain(newFilePath);
+                renderModuloHtmlForSubpath(rootPath,
+                        inputContents, inputFile, newFilePath, () => {
+                    console.log('RENDERED SUB-PATH:', inputFile, '->', newFilePath);
                 });
-            });
-        } else {
-            utils.copyIfDifferent(inputPath, outputPath, null, () => {
-                console.log('COPIED:', inputPath, '->', outputPath);
-            });
+            }
         }
-    }
+    });
 }
 
 const TERM = {

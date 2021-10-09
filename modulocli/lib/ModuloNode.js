@@ -7,13 +7,7 @@ const {JSDOM} = require('jsdom');
 
 class ModuloNode {
     constructor() {
-        this.patchModulo(baseModulo);
-        const {defineAll} = this;
-        Object.assign(this, baseModulo, this); // in conflicts, "this" wins
-        delete this.moduloNode; // prevent ugly ref loop
-        this.doc = null;
-        this.allDoms = [];
-        this.defineAll = defineAll.bind(this); // ensure bound
+        this.clearAll();
     }
 
     loadText(text) {
@@ -89,6 +83,17 @@ class ModuloNode {
         // selector, in repl mode!
         baseModulo.cmd = null; // remove internal cmd
     }
+
+    clearAll() {
+        baseModulo.factoryInstances = {};
+        this.patchModulo(baseModulo);
+        const {defineAll} = this;
+        Object.assign(this, baseModulo, this); // in conflicts, "this" wins
+        delete this.moduloNode; // prevent ugly ref loop
+        this.doc = null;
+        this.allDoms = [];
+        this.defineAll = defineAll.bind(this); // ensure bound
+    }
 }
 
 class ComponentFactoryNode extends baseModulo.ComponentFactory {
@@ -105,7 +110,6 @@ class ComponentFactoryNode extends baseModulo.ComponentFactory {
         return el; // Finally, return the upgraded element
     }
 }
-
 
 // Very simple hacky way to do mocked web-components define
 function webComponentsUpgrade(el, instance, secondTime=false) {

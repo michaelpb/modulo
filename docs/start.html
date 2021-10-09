@@ -1,318 +1,27 @@
-<!DOCTYPE HTML><head>
-    <meta charset="utf8">
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf8" />
     <title>Start - Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
 
-    <style id="mdu-Section_style">
-mdu-Section {
-            position: relative;
-        }
-mdu-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mdu-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mdu-Section:hover .mdu-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
-
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mdu-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mdu-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mdu-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mdu-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mdu-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mdu-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mdu-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mdu-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
-        }
-    </style><style id="mdu-CodeSnippet_style">
-mdu-CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mdu-CodeSnippet .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style><style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
-eg-Simple * { text-decoration: underline; }
-</style><style id="eg-SearchBox_style">
-eg-SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-eg-SearchBox input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-eg-SearchBox input::after {
-        content: '\1F50E';
-    }
-eg-SearchBox .results-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-eg-SearchBox .results {
-        position: absolute;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        display: block;
-        border: 2px solid coral;
-        border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
-        background: white;
-    }
-eg-SearchBox .results.visible {
-        height: 200px;
-        width: 200px;
-    }
-eg-SearchBox .result {
-        padding: 10px;
-        width: 80px;
-        position: relative;
-    }
-eg-SearchBox .result label {
-        position: absolute;
-        width: 80px;
-        background: rgba(255, 255, 255, 0.5);
-        font-size: 0.7rem;
-        top: 0;
-        left: 0;
-    }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    color: #ccc;
-    font-weight: bold;
-}
-eg-Prime .grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-eg-Prime div.whole {
-    color: white;
-    background: #B90183;
-}
-eg-Prime div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
-</style><style id="eg-MemoryGame_style">
-eg-MemoryGame h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-eg-MemoryGame .board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-eg-MemoryGame .board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-eg-MemoryGame .board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-eg-MemoryGame .board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-eg-MemoryGame .board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
     <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
+</head>
 
+<body>
 
-
-
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1081,&quot;checksum&quot;:&quot;72nzyK++J9W2CnsniNXT6vRx0T1F98325sdNYnFGXjKm7Sbi1oeIDtGe6gGtb9w0&quot;}">
-        <nav class="Navbar">
-            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li>
-                    <a href="/index.html#below">About</a>
-                </li>
-                <li>
-                    <a href="/start.html" class="Navbar--selected">Start</a>
-                </li>
-                <li>
-                    <a href="/docs.html">Docs</a>
-                </li>
-                <!--
-                <li>
-                    <a href="/literate/src/Modulo.html" >Source</a>
-                </li>
-                -->
-            </ul>
-
-            <div class="Navbar-rightInfo">
-                v: 0.0.1<br>
-                SLOC: 1081 lines<br>
-                <a href="https://github.com/michaelpb/modulo/">github</a> | 
-                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-            </div>
-        </nav>
-    </mdu-navbar>
+<mdu-Navbar selected="start"></mdu-Navbar>
 
 <main class="Docs">
     <h1>Get started with Modulo</h1>
-    <br>
+    <br />
 
     <div class="Docs-squareInfo">
         <section class="Tutorial-tryit">
@@ -323,9 +32,11 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
             <p>Modulo is brand new in general, so chances are its brand new to
             you as well! If you're new, your best bet is to get started with
             the tutorial.  It walks through the basics of setting up Modulo in
-            a new project, and gives a tour of the "must-know" features.<br>Prerequisite: HTML, CSS.  </p>
+            a new project, and gives a tour of the "must-know" features.<br
+            />Prerequisite: HTML, CSS.  </p>
 
-            <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
+            <a class="m-Btn" style="margin-top: 30px"
+                href="/docs/tutorial.html">Start the Modulo Tutorial &#187;</a>
         </section>
     </div>
 
@@ -334,24 +45,20 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
         <p>Want to get started as quickly as possible? Copy &amp; paste one of
         the following CDN links:</p>
 
-<mdu-codesnippet text="<!-- Good: Use the latest version, served by GitHub pages -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
+<mdu-CodeSnippet
+text='
+<!-- Good: Use the latest version, served by GitHub pages -->
+<script src="https://modulojs.org/js/Modulo.js"></script>
 
 <!-- Better: Include integrity checksum: -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;
-    integrity=&quot;sha384-72nzyK++J9W2CnsniNXT6vRx0T1F98325sdNYnFGXjKm7Sbi1oeIDtGe6gGtb9w0&quot;
-    crossorigin=&quot;anonymous&quot;></script>
+<script src="https://modulojs.org/js/Modulo.js"
+    integrity="sha384-$modulojs_sha384_checksum$"
+    crossorigin="anonymous"></script>
 
 <!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
 <!-- (Not yet functioning!) -->
-<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>">
-        <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-            <span alt="Clipboard">📋</span>
-        </button>
-        <div modulo-ignore="">
-            <div [script.codemirror]=""></div>
-        </div>
-    </mdu-codesnippet>
+<script src="https://cdn.skypack.dev/modulo?min"></script>
+'></mdu-CodeSnippet>
     </div>
 
     <div class="Docs-squareInfo">
@@ -361,7 +68,9 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
 
     <div class="Docs-squareInfo">
         <h2>Download</h2>
-        <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
+        <a style="text-transform: none"
+            class="m-Btn"
+            href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
         <span alt="Down arrow">↧</span> Modulo.js
         <span id="vnum"></span> (Latest)</a>
 
@@ -386,6 +95,5 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
     (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
 </footer>
 
-
-
 </body>
+</html>

@@ -71,6 +71,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             isCopyOnly,
             isCustomFilter,
             isCustomFunc,
+            isolateBeforeGenerate,
+            clearBeforeGenerate,
         } = config;
         const action = this._getGenerateAction(config);
         // Generate a single file
@@ -84,11 +86,18 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             console.log(` \`> - - Skip ${inputFile}`);
         } else if (check(isGenerate) && !check(isCopyOnly)) {
             console.log(` \`> - - Generate ${inputFile} -> ${outputFile}`);
+            if (isolateBeforeGenerate) {
+                // TODO force reload Modulo.js & run main('generate', ...)
+                throw new Error('isolateBeforeGenerate: Not implemented yet');
+            }
+            if (clearBeforeLoad) {
+                modulo.clearAll();
+            }
+            this.fetchFile(inputFile, modulo.loadString);
             // TODO: Do generate
-            copyIfDifferent(inputFile, outputFile);
         } else {
             console.log(` \`> - - Copy ${inputFile} -> ${outputFile}`);
-            // TODO: Do copy
+            copyIfDifferent(inputFile, outputFile);
         }
     }
 
