@@ -1,6 +1,7 @@
 
 # More notes: 2021 (later)
 
+
 - Main next steps:
     - (DONE) Remove ".name"
     - (DONE) Do cparts.state vs state conversion
@@ -27,6 +28,19 @@
     - How to get better stack traces when everything is in an eval? Anyway to
       catch & throw?
 
+- Look into replacing JSDom with linkedom: https://github.com/WebReflection/linkedom#readme
+
+- Supposed to be much faster and support customElements out of the box.
+
+### Good ideas
+        // Post setdom refactor idea:
+        // 1. CParts can contain other CParts
+        // 2. CParts classes self-configure:
+        //         - parentCPart = true;
+
+--------------
+
+
     - // TODO: Idea: Allow global dot resolution for config like this, so we
         // can do settings=:module.script.exports.templateSettings
 - Code quality idea: Max cyclomatic complexity
@@ -34,59 +48,7 @@
     - Currently only collectDirectives (7) and "anon method-18" (6) violate
       this
 
-- Idea for template selection:
-    - Last template always wins (right now)
-    - All cparts get stored in a list. Simply assign cparts.template to
-      something else!
-
-- Idea for testsuite CPart:
-    - Reads in sub-CParts, like:
-
-            <testsuite>
-                <test>
-                    <setup>
-                        <props a="3"></props>
-                        <state b="5"></state>
-                        <script>
-                            // example mocking
-                            element.dbConnection = () => {};
-                        </script>
-                    </setup>
-                    <!-- Exact DOM match of entire DOM -->
-                    <template snapshot>
-                        <p>Hello 3 world!</p>
-                        <h1>I have 5 bananas</h1>
-                    </template>
-                    <!-- Fuzzy DOM match, default (eg, can actual DOM be
-                         transformed into this DOM, by only doing "delete"?) -->
-                    <template subdom>
-                        <p>Hello 3 world!</p>
-                    </template>
-                    <!-- Check if ANYWHERE in template this string EXACTLY
-                    occurs -->
-                    <template includes>
-                        <p>Hello 3 world!</p>
-                    </template>
-
-                    <style>
-                      /* This is very simple: It loops through the selectors,
-                      ** ensuring all of their resolved values resolve to green
-                      ** etc */
-                      /* Could use dom reconciler as a diff tool, just like with template? */
-                      p {
-                          color: green;
-                      }
-                    </style>
-
-                    <script message="Ensure HTML contains 3">
-                        assert element.innerHTML.includes('3'); // does an assert->return substitution
-                    </script>
-                </test>
-            </testsuite>
-    - More useful once we get CPart loading from files
-    - Could be used for better tests for documentation
-
-
+- Why doesn't this already work, via factory properties? -v (see below for more thoughts)
 - Idea for configuring cparts from within script tag:
     - Set already-constructed cparts in script before running script
     - Allow global / static code like such:
@@ -96,71 +58,19 @@
     -   OR have someting like factory.configure('template', 'filters', ...)
     - (best, since should be static/factory, thus passed in at time of Function)
 
-- Idea for Modulo Router
-    - Could make easier to develop navbar
-    - Detect if in SSG step:
-        - If not, then use fragment style routing + fetch (for simplicity)
-        - If in SSG step, provide an external escape hatch in SSG that allows
-          for writing to multiple files. Then loop through each named URL,
-          generating a new file, maybe like... index__my-stuff.html
-            - Exact mechanics:
-                - mdu-Link would be fairly simplistic
-                - mdu-Route would house most of the logic
-                - mdu-Route would also set something globally so that mdu-Link
-                  can look different if necessary (using class-if-active)
-        - This would be extremely useful, and basically make the SSG 100x more
-          useful
-
-      <nav>
-          <mdu-Link target="my-stuff" class="cool" class-if-active="active">
-            Check out my stuff
-          </mdu-Link>
-      </nav>
-
-      <main>
-          <mdu-Route
-              name="my-stuff"
-              src="./content/relevant_my_stuff_content.html"
-          ></mdu-Route>
-
-          <mdu-Route
-              name="blog-posts-and-stuff"
-              src="./content/blog_post.md"
-          ></mdu-Route>
-      </main>
-
-
-- Ideas & untested code on inheritance:
-
-        // ## Loader: loadFromDOMElement
-        /*
-          Two other ideas:
-          - Create a CPart that handles inheritance / composition:
-
-            <inherits state from lib-CoolThing></inherits>
-            <inherits>lib-CoolThing</inherits>
-            <parent is lib-CoolThing></parent>
-            (Then we'd get parent.XYZ syntax for free!)
-
-          - Only have extends on a per-CPart basis. So,
-
-            <state inherits from lib-CoolThing></state>
-            <template inherits from lib-CoolThing></template>
-        */
-
-        /* Untested TODO: Change this.componentFactoryData to be a map, also,
-                 refactor this mess in general
-        const extend = attrs['extends'];
-        if (extend) {
-            for (const [name, data] of this.componentFactoryData) {
-                if (name === extend) {
-                    for (const key of Object.keys(data)) {
-                        loadingObj[name] = [data[key]];
-                    }
-                }
-            }
-        }
-        */
+- Why doesn't this already work, via factory properties? (possible improvement) -v
+      - One improvement would be an explicit "config stack":
+        loader.config.push({'template': {defaultOptions}});
+        const obj = Object.assign({}, ...loader.config);
+      - It would actually better resemble inheritence... as such:
+          - Modulo.config
+              - each Loader gets: this.config = Object.create(Modulo.config);
+              - each Factory gets: this.config = Object.create(loader.config);
+              - each instance gets: this.config = Object.create(factory.config);
+              - each cpart gets: this.attrs = Object.create(factory.config[cpartName]);
+              - template attrs put onto config!!!
+      - This would also play nicely with the "cparts all the way down" approach
+      - Cparts get attrs of parents. It would go up to Loader.
 
 
 

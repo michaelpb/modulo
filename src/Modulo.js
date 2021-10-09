@@ -42,6 +42,7 @@ Modulo.defineAll = function defineAll() {
     const opts = {options: {namespace: 'x'}};
     Modulo.globalLoader = new Modulo.Loader(null, opts);
     Modulo.globalLoader.loadModules(Modulo.globals.document);
+    Modulo.CommandMenu.setup();
 };
 
 Modulo.DOMLoader = class DOMLoader extends HTMLElement {
@@ -163,7 +164,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
 
     // ## Loader: loadFromDOMElement
     // Create a ComponentFactory instance from a given `<component>` definition.
-    loadFromDOMElement(elem) {
+    loadFromDOMElement(elem, array=null) {
         // ### Step 1: Config
         // Get any custom component configuration (e.g. attributes `name=` or
         // `extends=`)
@@ -200,15 +201,18 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
                 loadObj[cPartName] = [];
             }
             const {loadCallback, loadedCallback} = Modulo.cparts[cPartName];
-            const data = loadCallback(node, this, loadObj)
+            const data = loadCallback(node, this, loadObj);
             loadObj[cPartName].push(data);
+            if (array) {
+                array.push([cPartName, data]);
+            }
             if (data.dependencies) {
                 const cb = (text, label) =>
                     loadedCallback(data, text, label, this, loadObj);
                 Modulo.fetchQ.enqueue(data.dependencies, cb, this.src);
             }
         }
-        return [name, loadObj];
+        return [name, array || loadObj];
     }
 
     // ## Loader: defineComponent
@@ -295,6 +299,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         Modulo.ComponentFactory.registerInstance(this);
         this.componentClass = this.createClass();
         this.baseRenderObj = this.runFactoryLifecycle(options);
+        //if (!skipFactory) { }
     }
 
     // ## ComponentFactory: Factory lifecycle
@@ -390,6 +395,14 @@ Modulo.ComponentFactory = class ComponentFactory {
                 }*/
             }
         }
+    }
+
+    createTestElement() {
+        console.log('REAL createTestElement');
+        const element = new this.componentClass();
+        delete element.cparts.testsuite; // for testing, never include testsuite
+        element.connectedCallback(); // ensure this is called
+        return element;
     }
 
     // ## ComponentFactory: register & registerInstance
@@ -581,6 +594,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
         if (renderObj.component.innerHTML !== null) {
             let newContents = renderObj.component.innerHTML || '';
             // TODO: move reconcile to this class
+            //console.log('element reconcile:', this.element, newContents);
             this.element.reconcile(this.element, newContents);
 
             if (newContents.includes('Shop')) {
@@ -681,40 +695,77 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static loadCallback(node, loader, loadObj) {
-        if (!Modulo.isDebug) {
-            return {};
+        const cName = loadObj.component[0].name;
+        const tests = [];
+        for (const testNode of node.children) {
+            tests.push(loader.loadFromDOMElement(testNode, []));
         }
-        const [name, tests] = loader.loadFromDOMElement(node);
-        return {name: loader.namespace + '-testsuite' + name, tests};
+        return {name: loader.namespace + '-' + cName + '-testsuite', tests};
     }
-    static factoryCallback({name, tests}, factory, renderObj) {
-        if (!name || !tests) {
-            return;
+    static runTests(testsuiteData, factory) {
+        const element = factory.createTestElement();
+
+        // could be implied first test?
+        Modulo.assert(element.isMounted, 'Successfully mounted element');
+
+        console.log('TESTSUITE', testsuiteData.name);
+        for (const [testName, stepArray] of testsuiteData.tests) {
+            console.log('BEGINNING TEST', testName);
+            //console.log('results', cf.baseRenderObj);
+            const testObj = {};
+            //console.log('this is element', element);
+            const results = [];
+            for (let [sName, data] of stepArray) {
+                const options = {content: data.content, options: data};
+                if (sName === 'state') { // assign state data
+                    const cpart = new Modulo.cparts[sName](element, options);
+                    const initData = cpart.initializedCallback({[sName]: data});
+                    Object.assign(element.cparts.state.data, initData);
+                } else if (sName === 'props') { // assign props data
+                    const cpart = new Modulo.cparts[sName](element, options);
+                    const initData = cpart.initializedCallback({[sName]: data});
+                    element.initRenderObj.props = initData;
+                /*} else if (sName === 'style') {
+                    console.log('this is content', data.content);
+                    const content = data.content.replace(/\*\/.*?\*\//ig, '');
+                    // To prefix the selectors, we loop through them,
+                    // with this RegExp that looks for { chars
+                    content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, (selector, data) => {
+                        console.log('selector', selector);
+                        console.log('data', data);
+                    });*/
+                } else if (sName === 'template') {
+                    const cpart = new Modulo.cparts[sName](element, options);
+                    element.rerender(); // ensure re-rendered before checking 
+                    const text = cpart.instance.render(options);
+                    //console.log('this is element status', element.innerHTML);
+                    // TODO: Write subtree algo, possibly based on reconciler
+                    const result = String(element.innerHTML).includes(text);
+                    if ('snapshot' in options) {
+                        result = String(element.innerHTML).trim() === text.trim();
+                    }
+                    results.push([data.name || sName, result]);
+                }
+                /*
+                else if (sName === 'script') {
+                    const cpCls = Modulo.cparts.script;
+                    element.rerender(); // ensure re-rendered before checking 
+                    data.content = data.content.replace('assert:', 'script.exports =');
+                    const renderObj = element.getCurrentRenderObj();
+                    // TODO: need to make wrapScript it's own thing, and do that instead
+                    const r = cpCls.factoryCallback(data, testFac, element.initRenderObj);
+                    console.log('result of r', r.exports);
+                    results.push([data.name || sName, r.exports]);
+                }*/
+            }
+            for (const [name, result] of results) {
+                if (!result) {
+                    console.log('Failed:', name, result);
+                } else {
+                    console.log('Success:', name, result);
+                }
+            }
         }
-        console.log('   % Modulo Test goes brrrrrr %%%%%%');
-        this.patchCPartContent(name, tests);
-        return this.runTestsObj(name, tests, originalLoadObj);
-    }
-    runTestsObj(name, tests, originalLoadObj) {
-        /*
-        const testFrag = new Modulo.globals.DocumentFragment();
-        const div = Modulo.globals.document.createElement('div');
-        Modulo.utils.patch({
-            'Modulo.cparts.Testsuite.loadCallback': () => ({}),
-            'Modulo.globals.document': testFrag,
-            'Modulo.globals.fetch': () => { throw new Error('no fetch!') },
-        }, (originals) => {
-            let loader = null;
-            const testComp = loader.defineComponent('tsns', loadObj);
-            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
-            div.innerHTML = '<ts-${}-${}></ts-....>';
-            frag.append(div);
-            // Patch CParts to turn them into tests
-            //const subfactory = new Modulo.ComponentFactory(this.element.loader, name, tests);
-            const results = subfactory.baseRenderObj;
-            //subfactory.buildCParts(div);
-        );
-        */
     }
 }
 
@@ -842,6 +893,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         localVars.push('element'); // add in element as a local var
         // localVars.push('parent'); // add in access to previous versions of renderObj (DEAD CODE)
         localVars.push('cparts');
+        // TODO: shouldn't use "this" in static
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
         const module = factory.loader.modFactory ?
                        factory.loader.modFactory.baseRenderObj : null;
@@ -1173,6 +1225,8 @@ Modulo.reconcilers.SetDom = class SetDomReconciler {
     }
 
     reconcile(element, newHTML) {
+        //console.log('this is element', typeof element);
+        //Modulo.assert(element && element.tagName, 'Invalid element');
         this.elemCtx = element;
         if (!element.isMounted) {
             element.innerHTML = newHTML;
@@ -1476,6 +1530,7 @@ Modulo.FetchQueue = class FetchQueue {
         this.queue = {};
         this.data = {};
         this.waitCallbacks = [];
+        this.fetch = Modulo.globals.fetch;
     }
     enqueue(queueObj, callback, basePath, opts, responseCb) {
         opts = opts || this.defaultOpts || {};
@@ -1491,8 +1546,9 @@ Modulo.FetchQueue = class FetchQueue {
                 callback(this.data[src], label);
             } else if (!(src in this.queue)) {
                 this.queue[src] = [callback];
-                Modulo.globals.fetch(src, opts).then(responseCb)
-                    .then(text => this.receiveData(text, label, src));
+                this.fetch(src, opts).then(responseCb)
+                    .then(text => this.receiveData(text, label, src))
+                    .catch(err => console.error('Modulo Load ERR', src, err));
             } else {
                 this.queue[src].push(callback);
             }
@@ -1523,6 +1579,55 @@ Modulo.assert = function assert(value, ...info) {
         throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
     }
 }
+
+Modulo.CommandMenu = class CommandMenu {
+    static setup() {
+        /*
+        const propObj = {};
+        Object.entries(Modulo.CommandMenu).forEach(([key, value]) => {
+            if (key.startsWith('cmd_') {
+                propObj[key.slice(4)] = { get: value };
+            }
+        });
+        Modulo.cmd = Object.create(Modulo.CommandMenu, propObj);
+        */
+        Modulo.cmd = new Modulo.CommandMenu();
+        Modulo.globals.m = Modulo.cmd;
+    }
+    constructor() {
+        this.clear;
+    }
+    clear() {
+        this.targeted = [];
+    }
+    target(elem) {
+        this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
+    }
+    test() {
+        console.table(this.targeted);
+        const {runTests} = Modulo.cparts.testsuite;
+        for (const [name, factory] of Object.entries(Modulo.factoryInstances)) {
+            const {testsuite} = factory.baseRenderObj;
+            if (testsuite) {
+                const info = ' ' + (testsuite.name || '');
+                console.group(['%'], 'TestSuite: ' + name + info);
+                runTests(testsuite, factory);
+            }
+        }
+    }
+    build() {
+        const {document, console} = Modulo.globals;
+        console.group('BUILD');
+        const {src} = document.querySelector('script[src*="/Modulo.js"]');
+        Modulo.fetchQ.enqueue(src, source => {
+            const dataStr = JSON.stringify(Modulo.fetchQ); // is stable?
+            const dataHash = Modulo.utils.hash(dataStr);
+            this.fileContent = `// Modulo.cmd.build ${dataHash}\n` + source +
+                `Modulo.fetchQ = JSON.parse(${dataStr})`;
+        });
+    }
+}
+
 /*
 # HACKY FUNCTIONS
 Pls ignore all

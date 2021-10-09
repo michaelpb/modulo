@@ -6,7 +6,7 @@
   "main": "tools/modulocli.js",
   "scripts": {
     "build-complexity-report": "complexity-report-html ./src/",
-    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
+    "build-docs": "node tools/modulocli-old.js ssg docs-src/ --output docs/",
     "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
     "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
     "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",

@@ -16,24 +16,27 @@ function assert(value, ...info) {
     }
 }
 
-function parseArgs(argArray) {
-    argArray.shift(); // always get rid of first argument
-    if (argArray[0].endsWith('modulocli.js')
-          || argArray[0].endsWith('modulocli')) {
+function parseArgs(argArray, shiftFirst=true) {
+    if (shiftFirst) {
+        argArray.shift(); // always get rid of first argument
+    }
+    if (argArray[0].endsWith('.js') || argArray[0].endsWith('modulocli')) {
         argArray.shift(); // shift again, if necessary
     }
+    const flags = {};
 
+    /*
     const confPath = process.env.MODCLI_CONF || './modulocli.json';
     let stat = null;
     try {
       const stat = fs.statSync(confPath); // throws Error if not found
     } catch {}
 
-    const flags = {};
     if (stat && !stat.isDirectory()) {
         const jsonText = fs.readFileSync(confPath, 'utf-8');
         flags = JSON.parse(jsonText);
     }
+    */
 
     const args = {flags, positional: [], command: null};
     let currentFlag = null;
@@ -414,6 +417,24 @@ function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPa
 }
 
 
+const TERM = {
+    MAGENTA_BG: '\x1b[45m',
+
+    BLACK_FG: '\x1b[30m',
+    MAGENTA_FG: '\x1b[35m',
+    RED_FG: '\x1b[31m',
+    GREEN_FG: '\x1b[32m',
+    YELLOW_FG: '\x1b[33m',
+    BLUE_FG: '\x1b[34m',
+
+    RESET: '\x1b[0m',
+    BRIGHT: '\x1b[1m',
+    DIM: '\x1b[2m',
+    UNDERSCORE: '\x1b[4m',
+};
+TERM.LOGO = TERM.MAGENTA_FG + '[%]' + TERM.RESET;
+TERM.LOGOLINE = TERM.MAGENTA_FG + '[%]' + TERM.RESET + TERM.UNDERSCORE;
+
 module.exports = {
     assert,
     checkArgs,
@@ -424,4 +445,6 @@ module.exports = {
     renderModuloHtml,
     renderModuloHtmlForSubpath,
     walkSync,
+    patchModuloWithSSGFeatures,
+    TERM,
 }
