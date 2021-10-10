@@ -5,6 +5,11 @@ const path = require('path');
 
 const inspect = Symbol.for('nodejs.util.inspect.custom');
 
+const CUSTOM = 'CUSTOM';
+const SKIP = 'SKIP';
+const GENERATE = 'GENERATE';
+const COPY = 'COPY';
+
 class CommandMenuNode extends baseModulo.CommandMenu {
     _getCmds() {
         // not elegant -v
@@ -14,11 +19,6 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             (!name.startsWith('_') && name !== 'constructor'));
         list.sort(); // keep alphabetical
         return list;
-    }
-
-    _getGenerateAction(config) {
-        const {inputFile, outputFile, verbose} = config;
-
     }
 
     help() {
@@ -61,30 +61,75 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         Object.defineProperty(this.repl.context, 'm', _ro(this));
     }
 
+    _matchGenerateAction(config, inputFile) {
+        const {isGenerate, isSkip, isCopyOnly, isCustomFilter} = config;
+        if (isCustomFilter && isCustomFilter(inputFile)) {
+            return CUSTOM;  // isCustomFilter is a function checked against entire path
+        }
+
+        const check = (re, part) => (new RegExp(re, 'i').test(part));
+        const contains = re => inputFile.split('/').find(part => check(re, part));
+        if (contains(isSkip)) { // isSkip is applied to every path part
+            return SKIP;
+        }
+        if (contains(isCopyOnly)) { // isCopyOnly is also applied to every path part
+            return COPY;
+        }
+        if (check(isGenerate, inputFile)) { // isGenerate is applied to entire path
+            return GENERATE;
+        }
+        return COPY; // default (i.e. copy every file from input -> output)
+    }
+
     generate(config, modulo) {
-        const {
-            inputFile,
-            outputFile,
-            verbose,
-            isGenerate,
-            isSkip,
-            isCopyOnly,
-            isCustomFilter,
-            isCustomFunc,
-        } = config;
-        const action = this._getGenerateAction(config);
+        const {inputFile, outputFile, verbose, isCustomFunc} = config;
         // Generate a single file
+        /*
         let filename = path.basename(inputFile);
         if (isCustomFilter && isCustomFilter(filename)) {
             filename = isCustomFunc(filename);
         }
 
+        let shouldSkip = false;
+        let pathPart;
+        const check = regexp => (new RegExp(regexp, 'i').test(pathPart));
+        for (pathPart of inputFile.split('/')) {
+            if (check(isSkip)) {
+                return true;
+            }
+        }
+
         const check = regexp => (new RegExp(regexp, 'i').test(filename));
         const allowGenerate = !(new RegExp(isCopyOnly, 'i').test(inputFile));
+        */
+        let action = this._matchGenerateAction(config, inputFile);
+        if (action === CUSTOM) {
+            if (verbose) {
+                console.log(` \`> - - Custom ${inputFile}`);
+            }
+            action = isCustomFunc(config, modulo);
+            if (!action) {
+                return;
+            }
+        }
+
+        if (action === SKIP) {
+            console.log(` \`> - - Skip ${inputFile}`);
+        } else if (action === GENERATE) {
+            console.log(` \`> - - Generate ${inputFile} -> ${outputFile}`);
+            // Get file while assigning prefix to be input directory
+            const src = inputFile.replace(config.input, '');
+            modulo.fetchPrefix = config.input;
+            modulo.fetchFile(src)
+                .then(response => response.text())
+                .then(text => doGenerate(config, modulo, text, outputFile));
+
+        }
+
+        /*
         if (check(isSkip)) {
             console.log(` \`> - - Skip ${inputFile}`);
         } else if (check(isGenerate) && allowGenerate) {
-            console.log(` \`> - - Generate ${inputFile} -> ${outputFile}`);
 
             // Get file while assigning prefix to be input directory
             const src = inputFile.replace(config.input, '');
@@ -96,6 +141,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             console.log(` \`> - - Copy ${inputFile} -> ${outputFile}`);
             copyIfDifferent(inputFile, outputFile);
         }
+        */
     }
 
     ssg(config, modulo) {
@@ -103,18 +149,17 @@ class CommandMenuNode extends baseModulo.CommandMenu {
     }
 
     watch(config, modulo) {
+        this.ssg(); // do a full build across all
         const nodeWatch = require('node-watch');
         const {isSkip, isCopyOnly, isGenerate, verbose} = config;
+        const log = msg => verbose ? console.log(` '> - - ${msg}`) : null;
         const shouldSkip = new RegExp(isSkip, 'i');
-        if (verbose) {
-            console.log(` '> - - Skipping: ${shouldSkip}`);
-        }
+        log(`Skipping all that match: ${shouldSkip}`);
+
         const filter = (f, skip) => (shouldSkip.test(f) ? skip : true);
         const watchConf = {recursive: true, filter};
         this.watcher = nodeWatch(config.input, watchConf, (evt, inputFile) => {
-            if (verbose) {
-                console.log(` '> - - Change ${inputFile}`);
-            }
+            log(`CHANGE DETECTED IN ${inputFile}`);
             const outputFile = inputFile.replace(config.input, config.output);
             if (evt == 'update') {
                 // on create or modify
@@ -130,19 +175,16 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                 }
                 */
                 for (const depPath of filesToDelete) {
-                    console.log(` \`> - - Delete ${depPath}`);
-                    modulo.assert(depPath.startsWith(config.output));
-                    console.log('WOULD BE DELETE:', depPath);
+                    modulo.assert(depPath.startsWith(config.output)); // prevent mistakes
+                    log(`Deleting ${depPath}`);
                     //fs.unlink(depPath);
                 }
             }
         });
-        this.watcher.on('ready', (evt, name) => {
-            console.log(` '> - - Watching: ${config.input}`);
-        });
-        this.watcher.on('error', (evt, name) => {
-            console.log('Moulo: node-watch ERROR:', evt, name);
-        });
+
+        // Add some verbose logging
+        this.watcher.on('ready', () => log(`Watching: ${config.input}`));
+        this.watcher.on('error', err => log(`Watch Error: ${err}`));
         process.on('SIGINT', () => this.watcher.close());
     }
 
@@ -171,7 +213,6 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         app.listen(port, host, () => {
             console.log(` '> - - Listening on http://${host}:${port}`);
         });
-        this.ssg(); // do a full build across all
         this.watch(); // watch for changes & copy as well
         //this.repl();
     }

@@ -51,6 +51,12 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
     // In this case, this function will be invoked as soon as the DOM is loaded
     // with a `<mod-load>` tag in it.
     connectedCallback() {
+        if (this.loader) {
+            console.log('Warning: Duplicate connected?', this.loader.attrs);
+        }
+        this.initialize();
+    }
+    initialize() {
         const src = this.getAttribute('src');
         const namespace = this.getAttribute('namespace');
         const opts = {options: {namespace, src}};
@@ -1530,7 +1536,6 @@ Modulo.FetchQueue = class FetchQueue {
         this.queue = {};
         this.data = {};
         this.waitCallbacks = [];
-        this.fetch = Modulo.globals.fetch;
     }
     enqueue(queueObj, callback, basePath, opts, responseCb) {
         opts = opts || this.defaultOpts || {};
@@ -1546,8 +1551,10 @@ Modulo.FetchQueue = class FetchQueue {
                 callback(this.data[src], label);
             } else if (!(src in this.queue)) {
                 this.queue[src] = [callback];
-                this.fetch(src, opts).then(responseCb)
-                    .then(text => this.receiveData(text, label, src));
+                Modulo.globals.fetch(src, opts).then(responseCb)
+                    .then(text => this.receiveData(text, label, src))
+                    // v- uncomment after switch to new BE
+                    //.catch(err => console.error('Modulo Load ERR', src, err));
             } else {
                 this.queue[src].push(callback);
             }

@@ -7,6 +7,7 @@ const defaultConfig = {
     output: 'www',
     serverApp: null,
     serverAppPath: 'server/index.js',
+    ssgRenderDepth: 10,
     isSkip: '^(\\.|_)', // starts with a dot or underscore
     //isCopyOnly: '/?(components?|static)/', // in a one of 2 dirs
     isCopyOnly: '/components?/', // in a one of 2 dirs

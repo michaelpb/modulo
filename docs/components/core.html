@@ -1,4 +1,5 @@
-<module>
+<!DOCTYPE HTML>
+<head></head><body><module>
     <script>
         let txt
         function sloccount() {
@@ -106,9 +107,7 @@
         </nav>
     </script>
 
-    <props
-        selected
-    ></props>
+    <props selected=""></props>
 
     <script>
         function initializedCallback() {
@@ -129,16 +128,10 @@
 </template>
 
 <component name="Section">
-    <props
-        name
-    ></props>
+    <props name=""></props>
     <template>
-        <a class="secanchor"
-          title="Click to focus on this section."
-          id="{{ props.name }}"
-          name="{{ props.name }}"
-          href="#{{ props.name }}">#</a>
-        <h2 [component.children]></h2>
+        <a class="secanchor" title="Click to focus on this section." id="{{ props.name }}" name="{{ props.name }}" href="#{{ props.name }}">#</a>
+        <h2 [component.children]=""></h2>
     </template>
     <style>
         Section {
@@ -170,13 +163,11 @@
                         {% if tab.title == state.selected %}
                             tab-nav_title__selected
                         {% endif %}
-                    "><a @click:=script.select
-                             click.payload="{{ tab.title }}"
-                        >{{ tab.title }}</a></li>
+                    "><a @click:="script.select" click.payload="{{ tab.title }}">{{ tab.title }}</a></li>
                 {% endfor %}
             </ul>
         </nav>
-        <div [component.children] modulo-ignore>
+        <div [component.children]="" modulo-ignore="">
         </div>
     </template>
     <style>
@@ -223,10 +214,7 @@
             border-radius: 1px;
         }
     </style>
-    <state
-        selected=''
-        tabs:='[]'
-    ></state>
+    <state selected="" tabs:="[]"></state>
     <script>
         function initializedCallback() {
             state.tabs = [];
@@ -274,20 +262,17 @@
 <template mod-component="CodeExample">
     <template>
         <div class="split">
-            <div
-            style="height: {{ props.vsize|number|default:170|add:2 }}px;"
-            modulo-ignore>
-                <textarea [script.codemirror]>
-                </textarea>
+            <div style="height: {{ props.vsize|number|default:170|add:2 }}px;" modulo-ignore="">
+                <textarea [script.codemirror]="">                </textarea>
             </div>
 
             <div>
                 <div class="toolbar">
                     <h2>Preview</h2>
-                    <button @click:=script.run>Run &#10227;</button>
+                    <button @click:="script.run">Run ⟳</button>
                 </div>
-                <div [script.previewspot] class="preview-wrapper">
-                    <div modulo-ignore></div>
+                <div [script.previewspot]="" class="preview-wrapper">
+                    <div modulo-ignore=""></div>
                 </div>
                 {% if props.showtag %}
                     {% if props.preview %}
@@ -352,18 +337,9 @@
         }
     </style>
 
-    <props
-        text
-        extraprops
-        vsize
-        textsrc
-        cname
-    ></props>
+    <props text="" extraprops="" vsize="" textsrc="" cname=""></props>
 
-    <state 
-        nscounter:=1
-        preview=''
-    ></state>
+    <state nscounter:="1" preview=""></state>
     <script>
         let egTexts = null;
         try {
@@ -475,16 +451,14 @@
 
 <template mod-component="CodeSnippet">
     <template>
-        <button class="m-Btn m-Btn--sm m-Btn--faded"
-                title="Copy this code" @click:=script.doCopy>
-            <span alt="Clipboard">&#128203;</span>
+        <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+            <span alt="Clipboard">📋</span>
         </button>
-        <div modulo-ignore>
-            <div [script.codemirror]></div>
+        <div modulo-ignore="">
+            <div [script.codemirror]=""></div>
         </div>
     </template>
-    <props text
-    ></props>
+    <props text=""></props>
     <style>
         CodeSnippet {
             position: relative;
@@ -537,13 +511,7 @@
 </template>
 
 <template mod-component="Route">
-    <props
-        name
-        src
-        index
-        loadedcontent
-        ssgpath
-    ></props>
+    <props name="" src="" index="" loadedcontent="" ssgpath=""></props>
     <script>
         function readFile(currentPath, src) {
             const path = Modulo.require('path');
@@ -631,3 +599,4 @@
 </template>
 
 
+</body>

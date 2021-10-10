@@ -279,26 +279,28 @@ function doGenerate(config, modulo, text, outputFile) {
 
     modulo.loadText(text);
     modulo.defineAll(config);
+    //console.log('length of fetch q', modulo.fetchQ.queue);
     modulo.fetchQ.wait(() => {
-        const {ssgSubPaths} = modulo;
-        // TODO later
+        const {ssgSubPaths} = modulo; // TODO: need to add this in to support mdu-Route
 
-        let html = modulo.getHTML();
-        modulo.assert(html, 'Generate results cannot be falsy');
-        if (!/^<!doctype html>/i.test(html)) {
-            // Ensure all documents start with doctype
-            html = '<!DOCTYPE HTML>\n' + html;
-        }
-
-        mkdirToContain(outputFile); // todo, make async (?)
-        fs.writeFile(outputFile, html, {encoding: 'utf8'}, err => {
-            if (err) {
-                if (config.fail) {
-                    throw err;
-                }
-                console.error('Modulo - writeFile ERROR: ', err);
-                console.error('(fail with --fail)');
+        modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
+            let html = modulo.getHTML();
+            modulo.assert(html, 'Generate results cannot be falsy');
+            if (!/^<!doctype html>/i.test(html)) {
+                // Ensure all documents start with doctype
+                html = '<!DOCTYPE HTML>\n' + html;
             }
+
+            mkdirToContain(outputFile); // todo, make async (?)
+            fs.writeFile(outputFile, html, {encoding: 'utf8'}, err => {
+                if (err) {
+                    if (config.fail) {
+                        throw err;
+                    }
+                    console.error('Modulo - writeFile ERROR: ', err);
+                    console.error('(fail with --fail)');
+                }
+            });
         });
     });
 }

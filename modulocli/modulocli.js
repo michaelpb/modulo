@@ -78,17 +78,18 @@ function doCommand(cliConfig, args) {
 
     modulo.preloadQueue.wait(() => {
         //modulo.loadText(require('./lib/testdata').TEST_HTML);
-        modulo.defineAll(config);
-
-        if (!command) {
-            command = 'help';
-        }
-        if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
-            command = 'help';
-        }
-        console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
-        modulo.fetchQ.wait(() => {
-            modulo.commands[command](config, modulo);
+        modulo.defineAll();
+        modulo.resolveCustomComponents(config.ssgMaxDepth, () => {
+            if (!command) {
+                command = 'help';
+            }
+            if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
+                command = 'help';
+            }
+            console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
+            modulo.fetchQ.wait(() => {
+                modulo.commands[command](config, modulo);
+            });
         });
     })
 }
@@ -112,4 +113,13 @@ module.exports = {
     getModuloInstance,
     main,
 };
+
+/*
+// Previously, waited for "stabilized" HTML
+//lastHTML = currentHTML;
+//currentHTML = this.getHTML();
+for (const el of Object.values(
+this.customElements[instance.fullName] = el;
+//const domNodes = this.doc.querySelector('
+*/
 

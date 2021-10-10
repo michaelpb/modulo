@@ -8,6 +8,7 @@ const utils = require('./utils');
 class ModuloNode {
     constructor() {
         this.clearAll();
+        this.loadText('');
     }
 
     clearAll(config) {
@@ -18,7 +19,6 @@ class ModuloNode {
         delete this.moduloNode; // prevent ugly ref loop
         this.doc = null;
         this.allDoms = [];
-        this.allMountedComponents = [];
         this.defineAll = defineAll.bind(this); // ensure bound
         if (this.fetchQ) {
             this.fetchQ.data = {};
@@ -76,6 +76,12 @@ class ModuloNode {
     }
 
     defineCustomElement(name, cls) {
+        /*
+        console.log('defineCustomElement was called');
+        if (name === 'mod-load') {
+            console.log('ready to define mod-laod', name, cls);
+        }
+        */
         const elements = this.doc.querySelectorAll(name);
         for (const el of elements) {
             if (el.hasAttribute('modulo-backend-skip')) {
@@ -83,46 +89,75 @@ class ModuloNode {
             }
             const instance = new cls();
             webComponentsUpgrade(el, instance);
-            this.allMountedComponents.push(el);
         }
     }
 
-    rerenderUntilReady() {
-        let maxTries = 10;
-        let lastHtml = '';
-        let currentHTML = this.getHTML();
-        while (currentHTML !== lastHTML) {
-            for (const component in this.allMountedComponents) {
-                component.rerender();
-            }
-            currentHTML = this.getHTML();
-            maxTries--;
-            if (maxTries < 0) {
-                console.log('Did not resolve in 10 tries');
-                break;
+    resolveCustomComponents(maxDepth, callback, tries=0) {
+        tries++;
+        if (tries > maxDepth) {
+            // Base case 1:  Prevent infinite recursion:
+            // Could be caused by components being too nested (in which case ssgRenderDepth should be increased)
+            // non-deterministic components (in which case they should become deterministic!)
+            console.log(`WARNING: Hit limit: ssgRenderDepth=${maxDepth}`);
+            return callback();
+        }
+
+        const findFac = (elem) => {
+            const lowerTag = (elem.tagName || '').toLowerCase();
+            for (const factory of Object.values(this.factoryInstances)) {
+                if (lowerTag === factory.fullName.toLowerCase()) {
+                    return factory;
+                }
             }
         }
 
-        /*
-        for (const el of Object.values(
-        this.customElements[instance.fullName] = el;
-        //const domNodes = this.doc.querySelector('
-        */
+        // Loop through every element in the HTML, looking to mount them
+        //          (TODO: Remove, when mod-load is removed)----------v
+        const sel = Object.keys(this.factoryInstances).join(',') + ',mod-load';
+        const allModElems = this.doc.querySelectorAll(sel);
+        let allMounted = true;
+        // TODO: needs work here, should isolate the mod-load upgrade
+        // somewhere else and simplify the rest of the logic with defineComponent above
+        for (const el of allModElems) {
+            if (el.isMounted) {
+                continue; // all good! TODO: Would it hurt to rerender here?
+            }
+            allMounted = false;
+            const factory = findFac(el);
+            let instance;
+            if (factory) {
+                instance = new factory.componentClass();
+            } else if (el.tagName === 'MOD-LOAD') { // TODO: delete after deleting mod-load
+                instance = new this.DOMLoader();
+            } else {
+                throw new Error('Could not find factory for:', el)
+            }
+            webComponentsUpgrade(el, instance);
+        }
+
+        // Wait for any further files to be fetched
+        this.fetchQ.wait(() => {
+            if (allMounted) {
+                // Base Case #2: Didn't encounter any that need mounting: Stop
+                callback();
+            } else {
+                // Recursive Case: There were more to mount: Keep on trying
+                this.resolveCustomComponents(maxDepth, callback, tries);
+            }
+        });
     }
 
-    defineAll(config) {
-        const {verbose} = (config || {});
-        if (!this.doc) {
-            if (verbose) {
-                console.warn('Modulo Warning: No preloaded document(s) specified');
-            }
-            baseModulo.CommandMenu.setup(); // just do command setup
-        } else {
-            baseModulo.defineAll(); // do normal behavior
-        }
-        const fetchQ = new this.FetchQueue();
-        baseModulo.fetchQ = fetchQ;
-        this.fetchQ = fetchQ;
+    defineAll() {
+        baseModulo.defineAll(); // do normal behavior
+
+        // ensure both share same fetchQ
+        this.fetchQ = baseModulo.fetchQ;
+
+        //const fetchQ = new this.FetchQueue();
+        //baseModulo.fetchQ = fetchQ;
+        //this.fetchQ = fetchQ;
+
+        // get rid of cruft after defineAll
         this.globals.m = null; // remove 'm' shortcut
         this.commands = baseModulo.cmd; // copy commands
         baseModulo.cmd = null; // remove internal cmd
@@ -145,13 +180,20 @@ class ComponentFactoryNode extends baseModulo.ComponentFactory {
 }
 
 // Very simple hacky way to do mocked web-components define
-function webComponentsUpgrade(el, instance, secondTime=false) {
+function webComponentsUpgrade(el, instance) {
+
+    // Both MOD-LOADER and ModuloElement have
+    // "initialize" property, so anything we
+    // upgrade will have that.
+    const secondTime = Boolean(el.initialize);
+
     // Manually "upgrading" the JSDOM element with the webcomponent
     const protos = [instance, Reflect.getPrototypeOf(instance)];
     if (!el.tagName.startsWith('MOD-')) { // TODO: verify that this is deletable after mod-load is deleted
+        // Only add in prototype of ModuloElement if necessary
         protos.push(Reflect.getPrototypeOf(protos[1]));
     }
-    protos.reverse();
+    protos.reverse(); // apply in reverse order so last "wins"
 
     // Get every prototype key
     const allKeys = [];
@@ -167,12 +209,15 @@ function webComponentsUpgrade(el, instance, secondTime=false) {
             el[key] = instance[key];
         }
     }
-    // "Re-initialize" so we get innerHTML etc
-    if (el.lifecycle) { // Is a modulo Element
-        el.initialize();
-    }
-    if (el.connectedCallback && !secondTime) {
-        el.connectedCallback();
+
+    if (!secondTime) {
+        // "Re-initialize" so we get innerHTML etc
+        if (el.initialize) { // Is a modulo Element
+            el.initialize();
+        }
+        if (el.connectedCallback) {
+            el.connectedCallback();
+        }
     }
 }
 

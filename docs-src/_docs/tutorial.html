@@ -73,6 +73,12 @@ place.  Specifically, to keep things neater, Modulo searches for component
 definitions only within a <code>modulo-embed</code> HTML template tag:
 <code>&lt;template modulo-embed&gt;</code></p>
 
+<p>To quickly summarize: Components are reusable bits of HTML, JS, and CSS
+code, and must be defined within a tag like
+<code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
+can be embedded in an HTML page within a tag like
+<code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
+
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
 
@@ -86,7 +92,7 @@ definitions only within a <code>modulo-embed</code> HTML template tag:
 <mdu-CodeSnippet
 text='
 <!-- Define a custom component -->
-<template modulo-embed>
+<template is="modulo-embed">
     <component name="HelloWorld">
         <template>
             Hello <strong>Modulo</strong> World!
@@ -102,9 +108,9 @@ text='
 '></mdu-CodeSnippet>
 </li>
 <!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
-        <li>Ensure that the HTML file is open in your preferred web browser as
-        well.</li>
-        <li>Refresh the web browser to view the results.</li>
+        <li>Ensure that the HTML file is opened in your preferred, modern web
+        browser (such as Firefox or Chrome) as well.</li>
+        <li>Refresh your web browser to view the results.</li>
     </ol>
 </section>
 
@@ -333,18 +339,20 @@ are already defining simple components that can help us re-use HTML code
 between different pages.</p>
 
 
-<h4>Summary definitions</h4>
+<h4>Key terms</h4>
 
 <ul>
-<li> Component - A discrete, re-usable bit of code, typically used to show a
+<li> <strong>Component</strong> - A discrete, re-usable bit of code, typically used to show a
 graphical UI element (eg a button, or a rich-text area). Components can also
 use other components (eg a form component might contain both of the above as
-child components).</li>
-
-<li>ComponentPart, or CPart - Each component consists of a "bag" or "bundle" of
-CParts, each CPart being a "pluggable" module that supplies different
-functionality for that component.</li>
-<li>customElement - The term used for a custom HTML5 web component</li>
+child components).  Every component is defined as a collection of CParts (e.g.
+HTML <em>Template</em>, or <em>Style</em> tag).</li>
+<li>ComponentPart, or <strong>CPart</strong> - Each component consists of a
+"bag" or "bundle" of CParts, each CPart being a "pluggable" module that
+supplies different functionality for that component.</li>
+<li><strong>customElement</strong> - The term used for a custom HTML5 web
+component, which is the underlying technology that Modulo is a thin wrapper
+over. They all have dashes (<code>-</code>) in the name.</li>
 </ul>
 
 
