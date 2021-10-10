@@ -23,9 +23,12 @@
 
         function getVersionInfo() {
             // Only do once to speed up SSG
+            //console.log('this is Modulo', Object.keys(Modulo));
             if (!Modulo.ssgStore.versionInfo) {
+                const bytes = Modulo.require('fs').readFileSync('./package.json');
+                const data = JSON.parse(bytes);
                 Modulo.ssgStore.versionInfo = {
-                    version: Modulo.require('../package.json').version,
+                    version: data.version,
                     sloc: sloccount(),
                     checksum: checksum(),
                 };
@@ -364,7 +367,10 @@
     <script>
         let egTexts = null;
         try {
-            egTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+            if ('eg-eg' in Modulo.factoryInstances) {
+                egTexts = Modulo.factoryInstances['eg-eg']
+                    .baseRenderObj.script.exports.componentTexts;
+            }
         } catch {
             console.log('couldnt get egTexts');
         }

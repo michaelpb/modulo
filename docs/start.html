@@ -1,27 +1,25 @@
 <!DOCTYPE HTML>
-<html>
-
 <head>
-    <meta charset="utf8" />
+    <meta charset="utf8">
     <title>Start - Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
+    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
 
-    <mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    </head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
     <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
-</head>
 
-<body>
 
-<mdu-Navbar selected="start"></mdu-Navbar>
+
+
+<mdu-navbar selected="start"></mdu-navbar>
 
 <main class="Docs">
     <h1>Get started with Modulo</h1>
-    <br />
+    <br>
 
     <div class="Docs-squareInfo">
         <section class="Tutorial-tryit">
@@ -32,11 +30,9 @@
             <p>Modulo is brand new in general, so chances are its brand new to
             you as well! If you're new, your best bet is to get started with
             the tutorial.  It walks through the basics of setting up Modulo in
-            a new project, and gives a tour of the "must-know" features.<br
-            />Prerequisite: HTML, CSS.  </p>
+            a new project, and gives a tour of the "must-know" features.<br>Prerequisite: HTML, CSS.  </p>
 
-            <a class="m-Btn" style="margin-top: 30px"
-                href="/docs/tutorial.html">Start the Modulo Tutorial &#187;</a>
+            <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
         </section>
     </div>
 
@@ -45,20 +41,19 @@
         <p>Want to get started as quickly as possible? Copy &amp; paste one of
         the following CDN links:</p>
 
-<mdu-CodeSnippet
-text='
+<mdu-codesnippet text="
 <!-- Good: Use the latest version, served by GitHub pages -->
-<script src="https://modulojs.org/js/Modulo.js"></script>
+<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
 
 <!-- Better: Include integrity checksum: -->
-<script src="https://modulojs.org/js/Modulo.js"
-    integrity="sha384-$modulojs_sha384_checksum$"
-    crossorigin="anonymous"></script>
+<script src=&quot;https://modulojs.org/js/Modulo.js&quot;
+    integrity=&quot;sha384-$modulojs_sha384_checksum$&quot;
+    crossorigin=&quot;anonymous&quot;></script>
 
 <!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
 <!-- (Not yet functioning!) -->
-<script src="https://cdn.skypack.dev/modulo?min"></script>
-'></mdu-CodeSnippet>
+<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>
+"></mdu-codesnippet>
     </div>
 
     <div class="Docs-squareInfo">
@@ -68,9 +63,7 @@ text='
 
     <div class="Docs-squareInfo">
         <h2>Download</h2>
-        <a style="text-transform: none"
-            class="m-Btn"
-            href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
+        <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
         <span alt="Down arrow">↧</span> Modulo.js
         <span id="vnum"></span> (Latest)</a>
 
@@ -89,11 +82,13 @@ text='
     })();
 </script>
 
+
 <script>Modulo.defineAll();</script>
 
 <footer>
     (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
 </footer>
 
+
+
 </body>
-</html>

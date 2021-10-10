@@ -3,11 +3,26 @@ const CommandMenuNode = require('./CommandMenuNode');
 const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
-//const utils = require('./utils');
+const utils = require('./utils');
 
 class ModuloNode {
     constructor() {
         this.clearAll();
+    }
+
+    clearAll(config) {
+        baseModulo.factoryInstances = {};
+        this.patchModulo(baseModulo, config);
+        const {defineAll} = this;
+        Object.assign(this, baseModulo, this); // in conflicts, "this" wins
+        delete this.moduloNode; // prevent ugly ref loop
+        this.doc = null;
+        this.allDoms = [];
+        this.allMountedComponents = [];
+        this.defineAll = defineAll.bind(this); // ensure bound
+        if (this.fetchQ) {
+            this.fetchQ.data = {};
+        }
     }
 
     loadText(text) {
@@ -19,10 +34,10 @@ class ModuloNode {
     }
 
     getHTML() {
-        return this.jsdom.window.document.innerHTML;
+        return this.doc.documentElement.innerHTML;
     }
 
-    patchModulo(m) {
+    patchModulo(m, config) {
         m.isBackend = true;
         m.moduloNode = this;
         m.globals.fetch = this.fetchFile.bind(this);
@@ -33,11 +48,20 @@ class ModuloNode {
         m.globals.HTMLElement.prototype.hasChildNodes = a => false; // HACK
         m.ComponentFactory = ComponentFactoryNode;
         m.CommandMenu = CommandMenuNode;
+
         //const element = new this.element.factory.createTestElement();
+        let {inputFile, outputFile} = (config || {});
+        // TODO: to finish compatibility, add null replacer here
+        if (inputFile) {
+            utils.patchModuloWithSSGFeatures(m, inputFile, null, outputFile);
+        }
     }
 
     fetchFile(src) {
         // Similar interface to window.fetch, except using fs.readFile
+        if (this.fetchPrefix) {
+            src = this.fetchPrefix + '/' + src;
+        }
         return new Promise((resolve, reject) => {
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {
@@ -59,40 +83,49 @@ class ModuloNode {
             }
             const instance = new cls();
             webComponentsUpgrade(el, instance);
+            this.allMountedComponents.push(el);
         }
     }
 
+    rerenderUntilReady() {
+        let maxTries = 10;
+        let lastHtml = '';
+        let currentHTML = this.getHTML();
+        while (currentHTML !== lastHTML) {
+            for (const component in this.allMountedComponents) {
+                component.rerender();
+            }
+            currentHTML = this.getHTML();
+            maxTries--;
+            if (maxTries < 0) {
+                console.log('Did not resolve in 10 tries');
+                break;
+            }
+        }
+
+        /*
+        for (const el of Object.values(
+        this.customElements[instance.fullName] = el;
+        //const domNodes = this.doc.querySelector('
+        */
+    }
+
     defineAll(config) {
-        const {verbose} = config;
+        const {verbose} = (config || {});
         if (!this.doc) {
             if (verbose) {
                 console.warn('Modulo Warning: No preloaded document(s) specified');
             }
             baseModulo.CommandMenu.setup(); // just do command setup
-            const fetchQ = new this.FetchQueue();
-            baseModulo.fetchQ = fetchQ;
-            this.fetchQ = fetchQ;
         } else {
             baseModulo.defineAll(); // do normal behavior
         }
+        const fetchQ = new this.FetchQueue();
+        baseModulo.fetchQ = fetchQ;
+        this.fetchQ = fetchQ;
         this.globals.m = null; // remove 'm' shortcut
         this.commands = baseModulo.cmd; // copy commands
-        //delete this.commands.target; // frontend only
-        //delete this.commands.clear; // frontend only
-        // Target works in CLI too, will show text of element matching
-        // selector, in repl mode!
         baseModulo.cmd = null; // remove internal cmd
-    }
-
-    clearAll() {
-        baseModulo.factoryInstances = {};
-        this.patchModulo(baseModulo);
-        const {defineAll} = this;
-        Object.assign(this, baseModulo, this); // in conflicts, "this" wins
-        delete this.moduloNode; // prevent ugly ref loop
-        this.doc = null;
-        this.allDoms = [];
-        this.defineAll = defineAll.bind(this); // ensure bound
     }
 }
 

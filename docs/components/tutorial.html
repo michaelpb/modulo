@@ -102,7 +102,13 @@
         }
         return {label, hash, keywords};
     }
-    const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
+    let componentTexts;
+    try {
+        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    } catch {
+        console.log('couldnt get componentTexts');
+        componentTexts = {};
+    }
     script.exports.menu = [
         {
             label: 'Table of Contents',
@@ -253,7 +259,14 @@
 </template>
 
 <script>
-    const {componentTexts} = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports;
+    let componentTexts;
+    try {
+        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    } catch {
+        console.log('couldnt get componentTexts (2)');
+        componentTexts = {}
+    }
+
     script.exports.examples = [];
     for (const [name, content] of Object.entries(componentTexts)) {
         //console.log("dis is conent", content);

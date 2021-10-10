@@ -80,11 +80,16 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
 
         const check = regexp => (new RegExp(regexp, 'i').test(filename));
+        const allowGenerate = !(new RegExp(isCopyOnly, 'i').test(inputFile));
         if (check(isSkip)) {
             console.log(` \`> - - Skip ${inputFile}`);
-        } else if (check(isGenerate) && !check(isCopyOnly)) {
+        } else if (check(isGenerate) && allowGenerate) {
             console.log(` \`> - - Generate ${inputFile} -> ${outputFile}`);
-            modulo.fetchFile(inputFile)
+
+            // Get file while assigning prefix to be input directory
+            const src = inputFile.replace(config.input, '');
+            modulo.fetchPrefix = config.input;
+            modulo.fetchFile(src)
                 .then(response => response.text())
                 .then(text => doGenerate(config, modulo, text, outputFile));
         } else {
@@ -118,16 +123,18 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             } else if (evt == 'remove') {
                 // on delete
                 const filesToDelete = [outputFile];
-                if (outputFile in this.fileDependencies) {
+                /*
+                // TODO: Generalize this "dependency" backwards to generate as well
+                if (outputFile in (this.fileDependencies || {})) {
                     filesToDelete.extend(this.fileDependencies[outputFile]);
                 }
+                */
                 for (const depPath of filesToDelete) {
                     console.log(` \`> - - Delete ${depPath}`);
                     modulo.assert(depPath.startsWith(config.output));
-                    fs.unlink(depPath);
+                    console.log('WOULD BE DELETE:', depPath);
+                    //fs.unlink(depPath);
                 }
-                //fs.unlink(outputFile
-                //this.generate(config, modulo, inputFile, 'remove');
             }
         });
         this.watcher.on('ready', (evt, name) => {
