@@ -202,6 +202,28 @@ function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPa
     });
 }
 
+function walkSync(basePath, config) {
+    const {isSkip, verbose} = config;
+    let results = [];
+    const bareFileNames = fs.readdirSync(basePath);
+    const regexp = new RegExp(isSkip);
+    for (const baseName of bareFileNames) {
+        file = basePath + '/' + baseName;
+        if (regexp.test(baseName)) {
+            if (verbose) {
+                console.log('        (Skipping: ', file, ')');
+            }
+            continue;
+        }
+        const stat = fs.statSync(file);
+        if (stat && stat.isDirectory()) {
+            results = results.concat(walkSync(file, config));
+        } else {
+            results.push(file);
+        }
+    }
+    return results;
+}
 
 function doSSG(inputFile, outputFile) {
     mkdirToContain(outputFile);
@@ -239,6 +261,43 @@ const TERM = {
 TERM.LOGO = TERM.MAGENTA_FG + '[%]' + TERM.RESET;
 TERM.LOGOLINE = TERM.MAGENTA_FG + '[%]' + TERM.RESET + TERM.UNDERSCORE;
 
+function doGenerate(config, modulo, text, outputFile) {
+    const {
+        newGlobalsBeforeGenerate,
+        clearBeforeGenerate,
+        fail,
+    } = config;
+    if (newGlobalsBeforeGenerate) {
+        // TODO force reload Modulo.js & run main('generate', ...)
+        throw new Error('newGlobalsBeforeGenerate: Not implemented yet');
+    }
+    if (clearBeforeGenerate) {
+        modulo.clearAll();
+    }
+    modulo.loadString(text);
+    modulo.defineAll();
+    const {ssgSubPaths} = modulo;
+    // TODO later
+
+    const html = modulo.getHTML();
+    if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
+        // Ensure all documents start with doctype
+        html = '<!DOCTYPE HTML>\n' + html;
+    }
+
+    mkdirToContain(outputFile); // todo, make async (?)
+    fs.writeFile(outputFile, html, {encoding: 'utf8'}, err => {
+        if (err) {
+            if (fail) {
+                throw err;
+            }
+            console.error('Modulo - writeFile ERROR: ', err);
+            console.error('(fail with --fail)');
+        }
+    });
+}
+
+
 module.exports = {
     assert,
     checkArgs,
@@ -250,4 +309,5 @@ module.exports = {
     renderModuloHtmlForSubpath,
     patchModuloWithSSGFeatures,
     TERM,
+    doGenerate,
 }

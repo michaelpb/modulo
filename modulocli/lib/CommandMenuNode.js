@@ -1,5 +1,5 @@
 const baseModulo = require('./BaseModulo');
-const {TERM, copyIfDifferent} = require('./utils');
+const {TERM, copyIfDifferent, doGenerate} = require('./utils');
 const util = require('util');
 const path = require('path');
 
@@ -71,8 +71,6 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             isCopyOnly,
             isCustomFilter,
             isCustomFunc,
-            isolateBeforeGenerate,
-            clearBeforeGenerate,
         } = config;
         const action = this._getGenerateAction(config);
         // Generate a single file
@@ -86,15 +84,9 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             console.log(` \`> - - Skip ${inputFile}`);
         } else if (check(isGenerate) && !check(isCopyOnly)) {
             console.log(` \`> - - Generate ${inputFile} -> ${outputFile}`);
-            if (isolateBeforeGenerate) {
-                // TODO force reload Modulo.js & run main('generate', ...)
-                throw new Error('isolateBeforeGenerate: Not implemented yet');
-            }
-            if (clearBeforeLoad) {
-                modulo.clearAll();
-            }
-            this.fetchFile(inputFile, modulo.loadString);
-            // TODO: Do generate
+            modulo.fetchFile(inputFile)
+                .then(response => response.text())
+                .then(text => doGenerate(config, modulo, text, outputFile));
         } else {
             console.log(` \`> - - Copy ${inputFile} -> ${outputFile}`);
             copyIfDifferent(inputFile, outputFile);
@@ -172,6 +164,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         app.listen(port, host, () => {
             console.log(` '> - - Listening on http://${host}:${port}`);
         });
+        this.ssg(); // do a full build across all
         this.watch(); // watch for changes & copy as well
         //this.repl();
     }
