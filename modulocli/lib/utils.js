@@ -189,7 +189,7 @@ function renderModuloHtml(rootPath, inputPath, outputPath, callback) {
 }
 
 function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPath, callback) {
-    console.log('loadModuloDocument', inputPath, outputPath, rootPath);
+    //console.log('loadModuloDocument', inputPath, outputPath, rootPath);
     const {document} = loadModuloDocument(inputPath, inputContents, outputPath, rootPath, outputPath);
     let html = document.documentElement.innerHTML;
     if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
@@ -262,9 +262,12 @@ TERM.LOGO = TERM.MAGENTA_FG + '[%]' + TERM.RESET;
 TERM.LOGOLINE = TERM.MAGENTA_FG + '[%]' + TERM.RESET + TERM.UNDERSCORE;
 
 function doGenerate(config, modulo, text, outputFile) {
+    // TODO: Clean up subpaths, probably remove
     const {
         newGlobalsBeforeGenerate,
         clearBeforeGenerate,
+        verbose,
+        inputFile,
     } = config;
     modulo.fetchPrefix = config.input;
     if (newGlobalsBeforeGenerate) {
@@ -281,9 +284,13 @@ function doGenerate(config, modulo, text, outputFile) {
     modulo.defineAll(config);
     //console.log('length of fetch q', modulo.fetchQ.queue);
     modulo.fetchQ.wait(() => {
-        const {ssgSubPaths} = modulo; // TODO: need to add this in to support mdu-Route
 
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
+            const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this system with something else
+            if (verbose) {
+                const s = '' + ssgSubPaths;
+                console.log(` '-> Document resolved; Subpaths: ${s}`);
+            }
             let html = modulo.getHTML();
             modulo.assert(html, 'Generate results cannot be falsy');
             if (!/^<!doctype html>/i.test(html)) {
@@ -299,6 +306,16 @@ function doGenerate(config, modulo, text, outputFile) {
                     }
                     console.error('Modulo - writeFile ERROR: ', err);
                     console.error('(fail with --fail)');
+                }
+
+                // And now try any ssgSubPaths
+                if (ssgSubPaths && ssgSubPaths.length > 0) {
+                    console.log(`   '-> Rendering subpaths: ${ssgSubPaths.length}`);
+                    for (const subpath of ssgSubPaths) {
+                        patchModuloWithSSGFeatures(modulo.baseModulo, inputFile, subpath, outputFile);
+                        modulo.ssgSubPaths = null;
+                        doGenerate(config, modulo, text, subpath);
+                    }
                 }
             });
         });

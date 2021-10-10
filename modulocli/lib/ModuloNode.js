@@ -20,6 +20,7 @@ class ModuloNode {
         this.doc = null;
         this.allDoms = [];
         this.defineAll = defineAll.bind(this); // ensure bound
+        this.baseModulo = baseModulo;
         if (this.fetchQ) {
             this.fetchQ.data = {};
         }
@@ -152,10 +153,6 @@ class ModuloNode {
 
         // ensure both share same fetchQ
         this.fetchQ = baseModulo.fetchQ;
-
-        //const fetchQ = new this.FetchQueue();
-        //baseModulo.fetchQ = fetchQ;
-        //this.fetchQ = fetchQ;
 
         // get rid of cruft after defineAll
         this.globals.m = null; // remove 'm' shortcut
