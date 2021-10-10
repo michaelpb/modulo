@@ -533,6 +533,11 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.lifecycle(['initialized'])
         this.rerender();
         this.isMounted = true;
+
+        // Finally, check for vanishAfterMount
+        if (this.getAttribute('modulossg-vanish') || this.vanishAfterMount) {
+            this.replaceWith(...this.childNodes); // and remove
+        }
     }
 }
 
@@ -618,6 +623,14 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
                     Modulo.collectDirectives(this.element, child, this.directives);
                 }
                 this.element.applyDirectives(this.directives);
+            }
+        }
+    }
+
+    updatedCallback(renderObj) {
+        if (!this.isMounted) { // First time initialized
+            if (this.element.getAttribute('modulo-vanish') || this.attrs.vanish) {
+                this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
     }

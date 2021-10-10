@@ -310,6 +310,16 @@ function doGenerate(config, modulo, text, outputFile) {
 
                 // And now try any ssgSubPaths
                 if (ssgSubPaths && ssgSubPaths.length > 0) {
+                    // NEXT TODO
+                    // NEXT TODO
+                    // NEXT TODO
+                    // NEXT TODO
+                    // NEXT TODO
+                    // NEXT TODO Eliminate "subpaths" feature, replace with
+                    // "ephemeral" components that deletethemeslves after
+                    // mounting, so then the dir layout is exactly the same.
+                    // <DocsPage>  // all docspage stuff contained
+                    // </DocsPage>
                     console.log(`   '-> Rendering subpaths: ${ssgSubPaths.length}`);
                     for (const subpath of ssgSubPaths) {
                         patchModuloWithSSGFeatures(modulo.baseModulo, inputFile, subpath, outputFile);

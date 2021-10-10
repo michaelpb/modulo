@@ -144,6 +144,39 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         */
     }
 
+    build(config, modulo) {
+        // TODO: Watch out, key order might not be stable, affect hash
+        const dataStr = JSON.stringify(modulo.fetchQ.data);
+        const dataHash = modulo.utils.hash(dataStr);
+        let {buildOutput, input, verbose} = config;
+        if (verbose) {
+            console.log(` \`> - - Compiled: ${dataHash}`);
+        }
+        buildOutput = buildOutput.replace('$input', input);
+        const d = new Date();
+        const versiondate = `${d.getYear()}.${(d.getMonth() + 1)}`
+        buildOutput = buildOutput.replace('$versiondate', versiondate);
+        buildOutput = buildOutput.replace('$hash', dataHash);
+        let output = `// modulocli build ${dataHash}\n`;${modulo.SOURCE_CODE}`;
+        output += modulo.SOURCE_CODE;
+        output += '\n// // // //\n';
+        output += `Modulo.fetchQ = ` + dataStr;
+        if (verbose) {
+            const length = output.length;
+            console.log(` \`> - - Saving to ${buildOutput} (${length} chars)`);
+        }
+
+        mkdirToContain(buildOutput);
+        fs.writeFile(buildOutput, output, {encoding: 'utf8'}, err => {
+            console.log(` \`> - - Success: ${buildOutput}`);
+        });
+    }
+
+    buildPreload(config, modulo) {
+        const buildOutput = config.buildPreload;
+        this.build(Object.assign({}, config, {buildOutput}), modulo);
+    }
+
     ssg(config, modulo) {
         // Does a full generate across a directory
     }
