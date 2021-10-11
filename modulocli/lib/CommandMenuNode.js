@@ -13,17 +13,16 @@ const COPY = 'COPY';
 
 let lastStatusBar = '';
 
-function statusBar(shoutyWord, finishedFiles, generateCount) {
-    const maxCount = 24;
+function logStatusBar(shoutyWord, finishedFiles, generateCount, maxCount=8) {
     const charCent = Math.round((finishedFiles / generateCount) * maxCount);
     const perCent = Math.round((finishedFiles / generateCount) * 100);
     const statusBar = '%'.repeat(charCent) + ' '.repeat(maxCount - charCent);
     const str = TERM.MAGENTA_FG + shoutyWord + TERM.RESET +
                     '  |' + statusBar + '|' + TERM.RESET + ` ${perCent}%`;
-    if (lastStatusBar !== str) {
+    if (lastStatusBar !== statusBar) { // never repeat the bars
         console.log(str);
     }
-    lastStatusBar = str;
+    lastStatusBar = statusBar;
 }
 
 class CommandMenuNode extends baseModulo.CommandMenu {
@@ -157,6 +156,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         let buildOutputTmpl = new modulo.templating.MTL(config.buildOutput);
         const buildOutput = buildOutputTmpl.render(filePathCtx);
         // TODO: Switch defaultOptions to use {{ }} style templating
+        // OR, formalize $$ syntax (though probably want to save that for path
+        // matching)
         */
         let {buildOutput} = config;
         buildOutput = buildOutput.replace('$input', input);
@@ -164,6 +165,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         buildOutput = buildOutput.replace('$versiondate', versiondate);
         buildOutput = buildOutput.replace('$buildversion', buildversion);
         buildOutput = buildOutput.replace('$hash', hash);
+        // TODO remove this
+        modulo.tmp_buildOutputPath = buildOutput;
 
         // Build the output string
         const source = modulo.SOURCE_CODE;
@@ -209,10 +212,10 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         this.build(_buildConf(config.buildPreload), modulo, true); // empty = ok
 
         // Build output bundle only after SSG'ing the rest of the site
-        const buildOutputBundle = () => {
+        const buildOutputBundle = (cb) => {
             log(`Building output bundle (using path ${config.ssgBuildOutput})`);
             this.build(_buildConf(config.ssgBuildOutput), modulo, true); // empty = ok
-            callback();
+            cb();
         }
 
         // Now, synchronously walk through input and apply generate command
@@ -225,7 +228,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             const genConf = Object.assign({}, config, {inputFile, outputFile});
             this.generate(genConf, modulo, () => {
                 finishedFiles++;
-                statusBar('GENERATE', finishedFiles, generateCount);
+                logStatusBar('GENERATE', finishedFiles, generateCount);
                 if (finishedFiles >= generateCount) {
                     log(`GENERATE step complete, ${finishedFiles} files examined!`);
                     buildOutputBundle(callback);
@@ -234,8 +237,11 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
     }
 
-    watch(config, modulo) {
-        this.ssg(); // do a full build across all
+    watch(config, modulo, callback) {
+        // Start each watch with an SSG
+        this.ssg(config, modulo, () => this._watch(config, modulo, callback));
+    }
+    _watch(config, modulo, callback) {
         const nodeWatch = require('node-watch');
         const {isSkip, isCopyOnly, isGenerate, verbose, input, output} = config;
         const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
@@ -244,7 +250,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
         const filter = (f, skip) => (shouldSkip.test(f) ? skip : true);
         const watchConf = {recursive: true, filter};
-        this.watcher = nodeWatch(input, watchConf, (evt, inputFile) => {
+        this._watcher = nodeWatch(input, watchConf, (evt, inputFile) => {
             log(`CHANGE DETECTED IN ${inputFile}`);
             //const outputFile = inputFile.replace(config.input, config.output);
             const outputFile = output + inputFile.slice(input.length); // better
@@ -270,42 +276,49 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         });
 
         // Add some verbose logging
-        this.watcher.on('ready', () => log(`Watching: ${config.input}`));
-        this.watcher.on('error', err => log(`Watch Error: ${err}`));
-        process.on('SIGINT', () => this.watcher.close());
+        this._watcher.on('error', err => log(`Watch Error: ${err}`));
+        process.on('SIGINT', () => {
+            this._watcher.close();
+            process.exit(0);
+        });
+        log(`Starting watch of: ${config.input}`);
+        this._watcher.on('ready', callback);
     }
 
     serve(config, modulo) {
-        const {port, host, serverApp, serverAppPath} = config;
+        // Start each serve with a watch
+        this.watch(config, modulo, () => this._serve(config, modulo));
+    }
+    _serve(config, modulo) {
+        const {port, host, serverApp, serverAppPath, serverFramework} = config;
+        const express = require(serverFramework || 'express');
         console.log(`Preparing to lisen on http://${host}:${port}`);
         const appPath = serverApp || serverAppPath;
         try {
-            this.app = require(appPath);
+            this._app = require(appPath);
         } catch {
             console.log(`|%| - - (No app found at ${appPath})`);
         }
 
-        if (!this.app) {
-            const express = require('express');
-            this.app = express();
-            this.app.use(express.json());
+        if (!this._app) {
+            this._app = express();
+            this._app.use(express.json());
             function logger(req, res, next) {
                 console.log(req.method, req.url);
                 next();
             }
-            this.app.use(logger);
+            this._app.use(logger);
             // TODO: Add in "/$username/" style wildcard matches, auto .html
             //       prefixing, etc before static. Behavior is simple:
             //       $username becomes Modulo.route.username for any generates
             //       within this dir (or something)
-            //this.app.use(this.wildcardPatchMiddleware);
+            //this._app.use(this.wildcardPatchMiddleware);
         }
-        this.app.use(express.static(config.output))
+        this._app.use(express.static(config.output))
         console.log(`|%| - - Serving: ${config.output})`);
-        this.app.listen(port, host, () => {
+        this._app.listen(port, host, () => {
             console.log(`|%| - - Listening on http://${host}:${port}`);
         });
-        this.watch(); // watch for changes & copy as well
     }
 
 }

@@ -291,12 +291,8 @@ function doGenerate(config, modulo, text, outputFile, callback) {
                 const s = '' + ssgSubPaths;
                 console.log(`|%|  Document resolved; Subpaths: ${s}`);
             }
-            let html = modulo.getHTML();
+            let html = modulo.doBuildPostProcessing(modulo.getHTML());
             modulo.assert(html, 'Generate results cannot be falsy');
-            if (!/^<!doctype html>/i.test(html)) {
-                // Ensure all documents start with doctype
-                html = '<!DOCTYPE HTML>\n' + html;
-            }
 
             mkdirToContain(outputFile); // todo, make async (?)
             fs.writeFile(outputFile, html, {encoding: 'utf8'}, err => {

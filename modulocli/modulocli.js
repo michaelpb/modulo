@@ -45,18 +45,27 @@ function getConfig(cliConfig, flags) {
     // Using PORT is so it "does the right thing" on herokulike platforms
     const envFlags = {port: process.env.PORT};
     envFlags.host = envFlags.port ? '0.0.0.0' : undefined;
+    // Allow -p, -a, and -v as short-flags from CLI (but not conf):
     const shortFlags = {port: flags.p, host: flags.a, verbose: flags.v};
+    console.log('this is envFlags', envFlags);
 
     // Finally, generate the config "stack", with items at the end taking
     // precedent over items at the top.
-    return Object.assign(
-        {},
-        defaultConfig,
-        cliConfig,
-        envFlags,
-        shortFlags,
-        flags,
-    );
+    const runtimeConfig = [envFlags, shortFlags, flags];
+    const config = Object.assign({}, defaultConfig, cliConfig);
+    for (const key of Object.keys(defaultConfig)) {
+        for (const conf of runtimeConfig) {
+            if (key in conf && conf[key] !== undefined) {
+                config[key] = conf[key];
+            }
+        }
+    }
+
+    // TODO: With this implementation, defaultConfig must include all flags
+    // before preload. Later, allow preload (eg of CParts, or management cmds)
+    // to add new flags.  Expose registerDefaultConfig interface to preloaded
+    // files, and then do a 2nd getConfig step after.
+    return config;
 }
 
 
@@ -96,6 +105,15 @@ function doCommand(cliConfig, args) {
 
 function main(argv, shiftFirst=false) {
     const args = cliutils.parseArgs(argv, shiftFirst);
+    process.on('SIGINT', () => {
+        if (modulo.commands._watcher) {
+            modulo._watcher.close(); // stop node-watch
+        }
+        if (modulo.commands._app) {
+            modulo._app.close(); // stop express
+        }
+        process.exit(0);
+    });
     findConfig(args, doCommand);
 }
 

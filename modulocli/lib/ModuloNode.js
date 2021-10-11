@@ -38,6 +38,24 @@ class ModuloNode {
         return this.doc.documentElement.innerHTML;
     }
 
+    doBuildPostProcessing(html) {
+        if (!/^<!doctype html>/i.test(html)) {
+            // Ensure all documents start with doctype
+            html = '<!DOCTYPE HTML>\n' + html;
+        }
+
+        const scriptTagRe = /<script \s*src="\/?m.js">\s*<\/script>/i;
+        if (scriptTagRe.test(html)) {
+            const buildOutput = modulo.tmp_buildOutputPath;
+            if (buildOutput) {
+                const newScript = `<script src="${buildOutput}"></script>`;
+                html = html.replace(scriptTagRe, newScript);
+                console.loG('Adding in script:', newScript);
+            }
+        }
+        return html;
+    }
+
     patchModulo(m, config) {
         m.isBackend = true;
         m.moduloNode = this;
