@@ -275,7 +275,7 @@ function doGenerate(config, modulo, text, outputFile) {
         throw new Error('newGlobalsBeforeGenerate: Not implemented yet');
     } else {
         modulo.fetchQ.data = {}; // always clear fetchQ data to prevent caching
-        if (clearBeforeGenerate) {
+        if (clearBeforeGenerate) { // TODO: try with this disabled
             modulo.clearAll(config);
         }
     }
@@ -286,7 +286,7 @@ function doGenerate(config, modulo, text, outputFile) {
     modulo.fetchQ.wait(() => {
 
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
-            const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this system with something else
+            const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this, after <Docs> done
             if (verbose) {
                 const s = '' + ssgSubPaths;
                 console.log(` '-> Document resolved; Subpaths: ${s}`);
@@ -310,14 +310,7 @@ function doGenerate(config, modulo, text, outputFile) {
 
                 // And now try any ssgSubPaths
                 if (ssgSubPaths && ssgSubPaths.length > 0) {
-                    // NEXT TODO
-                    // NEXT TODO
-                    // NEXT TODO
-                    // NEXT TODO
-                    // NEXT TODO
                     // NEXT TODO Eliminate "subpaths" feature, replace with
-                    // "ephemeral" components that deletethemeslves after
-                    // mounting, so then the dir layout is exactly the same.
                     // <DocsPage>  // all docspage stuff contained
                     // </DocsPage>
                     console.log(`   '-> Rendering subpaths: ${ssgSubPaths.length}`);
@@ -345,4 +338,5 @@ module.exports = {
     patchModuloWithSSGFeatures,
     TERM,
     doGenerate,
+    walkSync,
 }

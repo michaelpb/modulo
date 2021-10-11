@@ -6,10 +6,11 @@ const defaultConfig = {
     input: 'srcwww',
     output: 'www',
     buildOutput: './modulo-build-$versiondate-$hash.js',
+    buildPreload: '$input/m.js',
     serverApp: null,
     serverAppPath: 'srv/index.js',
     ssgRenderDepth: 10,
-    buildPreload: '$input/m.js',
+    ssgBuildOutput: '$output/js/modulo-build-$versiondate-$hash.js',
     isSkip: '^(\\.|_)', // starts with a dot or underscore
     //isCopyOnly: '?(components?|static)', // in a one of 2 dirs
     isCopyOnly: '^components?$',

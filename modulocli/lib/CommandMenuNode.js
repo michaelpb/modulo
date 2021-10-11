@@ -1,7 +1,8 @@
 const baseModulo = require('./BaseModulo');
-const {TERM, copyIfDifferent, doGenerate} = require('./utils');
+const {TERM, copyIfDifferent, doGenerate, mkdirToContain, walkSync} = require('./utils');
 const util = require('util');
 const path = require('path');
+const fs = require('fs');
 
 const inspect = Symbol.for('nodejs.util.inspect.custom');
 
@@ -15,8 +16,10 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         // not elegant -v
         const properties = Object.getOwnPropertyNames(this.__proto__).concat(
             Object.getOwnPropertyNames(this.__proto__.__proto__))
-        const list = properties.filter(name =>
-            (!name.startsWith('_') && name !== 'constructor'));
+        // (because of use of proto, there are dupes, need to use set to dedupe)
+        const uniqueProps = new Set(properties.filter(name =>
+            (!name.startsWith('_') && name !== 'constructor')));
+        const list = Array.from(uniqueProps);
         list.sort(); // keep alphabetical
         return list;
     }
@@ -144,41 +147,78 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         */
     }
 
-    build(config, modulo) {
+    build(config, modulo, allowEmpty=false) {
         // TODO: Watch out, key order might not be stable, affect hash
-        const dataStr = JSON.stringify(modulo.fetchQ.data);
+        const {preloadQueue, fetchQ} = modulo;
+        const preloadData = Object.assign({}, preloadQueue.data, fetchQ.data);
+        const dataStr = JSON.stringify(preloadData);
+        if (!allowEmpty) {
+            modulo.assert(dataStr !== '{}', `No components (none loaded?)`);
+        }
         const dataHash = modulo.utils.hash(dataStr);
         let {buildOutput, input, verbose} = config;
         if (verbose) {
             console.log(` \`> - - Compiled: ${dataHash}`);
         }
+
+        // Build the output path
         buildOutput = buildOutput.replace('$input', input);
         const d = new Date();
         const versiondate = `${d.getYear()}.${(d.getMonth() + 1)}`
         buildOutput = buildOutput.replace('$versiondate', versiondate);
         buildOutput = buildOutput.replace('$hash', dataHash);
-        let output = `// modulocli build ${dataHash}\n`;${modulo.SOURCE_CODE}`;
+
+        // Build the output string (should refactor with Modulo.js)
+        let output = `// modulocli build ${dataHash}\n`;
         output += modulo.SOURCE_CODE;
         output += '\n// // // //\n';
         output += `Modulo.fetchQ = ` + dataStr;
+        output += '\n;\n'
+        for (const [path, text] of Object.entries(preloadQueue.data)) {
+            const escapedText = JSON.stringify(text);
+            output += `\nModulo.globalLoader.loadString(${escapedText});\n`;
+        }
+        output += '\nModulo.defineAll();\n'
         if (verbose) {
             const length = output.length;
             console.log(` \`> - - Saving to ${buildOutput} (${length} chars)`);
         }
 
         mkdirToContain(buildOutput);
-        fs.writeFile(buildOutput, output, {encoding: 'utf8'}, err => {
-            console.log(` \`> - - Success: ${buildOutput}`);
-        });
+        fs.writeFileSync(buildOutput, output, {encoding: 'utf8'});
+        console.log(` \`> - - Successful build: ${buildOutput}`);
     }
 
-    buildPreload(config, modulo) {
+    buildpreload(config, modulo) {
         const buildOutput = config.buildPreload;
-        this.build(Object.assign({}, config, {buildOutput}), modulo);
+        const preloadBuildConf = Object.assign({}, config, {buildOutput});
+        this.build(preloadBuildConf, modulo);
     }
 
     ssg(config, modulo) {
         // Does a full generate across a directory
+        const {verbose, input, output} = config;
+        const log = msg => verbose ? console.log(` '> - - ${msg}`) : null;
+
+        const _buildConf = val => Object.assign({}, config, {buildOutput: val})
+        log(`Building preload bundle: ${config.buildPreload}`);
+        this.build(_buildConf(config.buildPreload), modulo, true); // empty = ok
+
+        // Now, synchronously walk through input and apply generate command
+        const filenames = walkSync(input);
+        for (const inputFile of filenames) {
+            const outputFile = output + inputFile.slice(input.length);
+            const genConf = Object.assign({}, config, {inputFile, outputFile});
+            this.generate(genConf, modulo);
+        }
+
+        // TODO: Not sure if this works or is needed
+        // (We don't want this queue to happen before anything from above
+        // "generates" finish loading)
+        modulo.fetchQ.wait(() => modulo.fetchQ.wait(() => {
+            log(`Building output bundle: ${config.ssgBuildOutput}`);
+            this.build(_buildConf(config.ssgBuildOutput), modulo, true); // empty = ok
+        }));
     }
 
     watch(config, modulo) {
@@ -194,6 +234,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         this.watcher = nodeWatch(config.input, watchConf, (evt, inputFile) => {
             log(`CHANGE DETECTED IN ${inputFile}`);
             const outputFile = inputFile.replace(config.input, config.output);
+            //const outputFile = output + inputFile.slice(input.length); // better
             if (evt == 'update') {
                 // on create or modify
                 const conf = Object.assign({}, config, {inputFile, outputFile});

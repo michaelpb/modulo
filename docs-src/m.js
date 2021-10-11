@@ -1,3 +1,4 @@
+// modulocli build f62
 'use strict';
 
 // # Introduction
@@ -1570,19 +1571,19 @@ Modulo.FetchQueue = class FetchQueue {
                     // v- uncomment after switch to new BE
                     //.catch(err => console.error('Modulo Load ERR', src, err));
             } else {
-                this.queue[src].push(callback); // add to end of src queue
+                this.queue[src].push(callback);
             }
         }
     }
     receiveData(text, label, src) {
-        this.data[src] = text; // load data
+        this.data[src] = text;
         this.queue[src].forEach(func => func(text, label, src));
-        delete this.queue[src]; // remove queue
+        delete this.queue[src];
         this.checkWait();
     }
     wait(callback) {
-        this.waitCallbacks.push(callback); // add to end of queue
-        this.checkWait(); // attempt to consume wait queue
+        this.waitCallbacks.push(callback);
+        this.checkWait();
     }
     checkWait() {
         if (Object.keys(this.queue).length === 0) {
@@ -1672,3 +1673,6 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
+
+// // // //
+Modulo.fetchQ = {}

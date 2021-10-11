@@ -42,6 +42,7 @@ class ModuloNode {
         m.isBackend = true;
         m.moduloNode = this;
         m.globals.fetch = this.fetchFile.bind(this);
+        m.assert = this.assert.bind(this);
         const define = this.defineCustomElement.bind(this);
         m.globals.customElements = {define};
         // TODO -v should clean this up? Probably replace with JSDOM HTMLElement impl
@@ -74,6 +75,14 @@ class ModuloNode {
                 resolve({text, json});
             });
         });
+    }
+
+    assert(value, ...info) {
+        if (!value) {
+            console.error('Modulo Error:')
+            console.error(...info)
+            process.exit(1);
+        }
     }
 
     defineCustomElement(name, cls) {
