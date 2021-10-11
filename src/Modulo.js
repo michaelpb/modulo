@@ -629,8 +629,12 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
 
     updatedCallback(renderObj) {
         if (!this.isMounted) { // First time initialized
-            if (this.element.getAttribute('modulo-vanish') || this.attrs.vanish) {
-                this.element.replaceWith(...this.element.childNodes); // Delete self
+            const {attrs} = this;
+            if (attrs) {
+                const {vanish} = attrs;
+                if (this.element.getAttribute('modulo-vanish') || vanish) {
+                    this.element.replaceWith(...this.element.childNodes); // Delete self
+                }
             }
         }
     }
@@ -1053,11 +1057,10 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
 // ModuloTemplate
 Modulo.templating.MTL = class ModuloTemplateLanguage {
-    constructor(text, options, getAltTemplate) {
+    constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
         this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.renderFunc = this.compile(text);
-        //this.getAltTemplate = getAltTemplate || (() => {});
     }
 
     tokenizeText(text) {
@@ -1083,8 +1086,8 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         return new Function('CTX,G', output + ';return OUT.join("");');
     }
 
-    render(renderContext) {
-        return this.renderFunc(Object.assign({}, renderContext), this);
+    render(renderObj) {
+        return this.renderFunc(Object.assign({renderObj}, renderObj), this);
     }
 
     parseExpr(text) {
@@ -1168,7 +1171,7 @@ Modulo.templating.defaultOptions.filters = {
     length: s => s.length,
     safe: s => Object.assign(new String(s), {safe: true}),
     join: (s, arg) => s.join(arg),
-    json: (s) => JSON.stringify(s),
+    json: (s, arg) => JSON.stringify(s, null, arg || undefined),
     pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
     add: (s, arg) => s + arg,
     subtract: (s, arg) => s - arg,
@@ -1181,6 +1184,12 @@ Modulo.templating.defaultOptions.filters = {
     truncate: (s, arg) => ((s.length > arg*1) ?
                             (s.substr(0, arg-1) + '…') : s),
     divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+    //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+    // {% for rowData in table %}
+    //    {{ rowData|renderas:template.row }}
+    // {% endfor %}
+    renderas: (renderCtx, template) => Object.assign(new String(
+                    template.instance.render(renderCtx)), {safe: true}),
 };
 
 Modulo.templating.defaultOptions.tags = {
@@ -1200,6 +1209,8 @@ Modulo.templating.defaultOptions.tags = {
         const arrName = 'ARR' + tmplt.stack.length;
         const [varExp, arrExp] = text.split(' in ');
         let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
+        // TODO: Upgrade to of (after good testing), since probably
+        // no need to support for..in
         start += `for (var KEY in ${arrName}) {`;
         const [keyVar, valVar] = varExp.split(',').map(cleanWord);
         if (valVar) {
@@ -1216,12 +1227,6 @@ Modulo.templating.defaultOptions.tags = {
         const end = `}${varName} = false;`;
         return {start, end, close: 'endfor'};
     },
-    /*
-    'include': (text, tmplt) => {
-        const template = `G.getAltTemplate(${tmplt.parseExpr(text)})`;
-        return {start: `G.OUT.push(${template}.render(CTX));`};
-    },
-    */
     /*
     // Should complete, very useful template tag: Basically the ... splat
     // operator.
@@ -1511,6 +1516,20 @@ Modulo.utils = class utils {
         return obj;
     }
 
+    // e.g. try key in elem, try resolving val in rCtx, if not found default
+    static resolveAttr(key, elem, resolveCtx, defaultVal) {
+        // Dead code, but should refactor all := eventually to use a common
+        // function like this
+        // Resolves a := style attr
+        if (elem.attrs) {
+            // First attempt
+        }
+        if (elem.getAttribute) {
+            // Second attempt
+        }
+        // etc
+    }
+
     static get(obj, key) {
         return key.split('.').reduce((o, name) => o[name], obj);
     }
@@ -1518,38 +1537,21 @@ Modulo.utils = class utils {
         return (path || '').match(/.*\//);
     }
     static hash(str) {
-        // Simple, insecure, hashing function, returns hex hash
+        // Simple, insecure, hashing function, returns base36 hash
         let h = 0;
         for(let i = 0; i < str.length; i++) {
             h = Math.imul(31, h) + str.charCodeAt(i) | 0;
         }
-        return (h || 0xabc123).toString(16); // empty string is abc123
+        return (h || 0).toString(36);
     }
 }
 
 Modulo.FetchQueue = class FetchQueue {
-    /*
-
-    this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
-    const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
-
-    // TODO: Finish cache feature, maybe fold into hot reload, eg it always
-    // first loads from cache, then it tries hotreloading from origin.
-    // This would make "never-cache" less important, but "always-cache"
-    // would be useful and be the inverse.
-    const skipCache = true || this.hasAttribute('never-cache') || Modulo.require;
-    if (!skipCache && cachedData && cachedData.length > 2) {
-        for (const [name, loadObj] of JSON.parse(cachedData)) {
-            this.defineComponent(name, loadObj);
-        }
-    } else {
-    }
-    */
-
     constructor() {
         this.queue = {};
         this.data = {};
         this.waitCallbacks = [];
+        this.finallyCallbacks = [];
     }
     enqueue(queueObj, callback, basePath, opts, responseCb) {
         opts = opts || this.defaultOpts || {};
@@ -1584,10 +1586,19 @@ Modulo.FetchQueue = class FetchQueue {
         this.waitCallbacks.push(callback); // add to end of queue
         this.checkWait(); // attempt to consume wait queue
     }
+    waitFinally(callback) {
+        this.wait(() => this.finallyCallbacks.push(callback));
+        this.checkWait(); // attempt to consume wait queue
+    }
     checkWait() {
         if (Object.keys(this.queue).length === 0) {
             while (this.waitCallbacks.length > 0) {
                 this.waitCallbacks.shift()(); // clear while invoking
+            }
+        }
+        if (Object.keys(this.queue).length === 0) {
+            while (this.finallyCallbacks.length > 0) {
+                this.finallyCallbacks.shift()(); // clear while invoking
             }
         }
     }
@@ -1599,6 +1610,17 @@ Modulo.assert = function assert(value, ...info) {
         throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
     }
 }
+
+Modulo.buildTemplate = new Modulo.templating.MTL(
+`// modulo build {{ hash }}
+{{ source|safe }};\n
+Modulo.fetchQ = {{ fetchQ.data|json:1|safe }};
+{% for path, text in preloadData %}
+//  Preload: {{ path }}
+Modulo.globalLoader.loadString({{ text|escapejs|safe }});
+{% endfor %}
+Modulo.defineAll();
+`);
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
@@ -1639,11 +1661,10 @@ Modulo.CommandMenu = class CommandMenu {
         const {document, console} = Modulo.globals;
         console.group('BUILD');
         const {src} = document.querySelector('script[src*="/Modulo.js"]');
-        Modulo.fetchQ.enqueue(src, source => {
-            const dataStr = JSON.stringify(Modulo.fetchQ); // is stable?
-            const dataHash = Modulo.utils.hash(dataStr);
-            this.fileContent = `// Modulo.cmd.build ${dataHash}\n` + source +
-                `Modulo.fetchQ = JSON.parse(${dataStr})`;
+        const {fetchQ} = Modulo;
+        fetchQ.enqueue(src, source => {
+            //const js = Modulo.buildTemplate.render({hash, fetchQ, source});
+            // TODO: finish, offer to download, also build CSS
         });
     }
 }

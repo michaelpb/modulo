@@ -8,24 +8,7 @@
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
 
-    <style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style><style id="eg-Simple_style">
+    <style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
 </style><style id="eg-SearchBox_style">
@@ -275,14 +258,31 @@ mdu-CodeSnippet .m-Btn {
             right: 1px;
             z-index: 10;
         }
-    </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    </style><style id="tutorial-DocSidebar_style">
+tutorial-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+tutorial-DocSidebar li.ginactive > ul::before,
+tutorial-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+tutorial-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style><style id="tutorial-DocExampleLib_style">
+</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
     <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
     <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
 
 
 
 
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1086,&quot;checksum&quot;:&quot;NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;}">
+<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1125,&quot;checksum&quot;:&quot;8DG4eYIlxGUX5bDMeUUht8OSWAOGY9saqPM+SVAlj4TsxvOLQOH21b4rqD5W/sdW&quot;}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -304,7 +304,7 @@ mdu-CodeSnippet .m-Btn {
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 1086 lines<br>
+                SLOC: 1125 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
@@ -340,7 +340,7 @@ mdu-CodeSnippet .m-Btn {
 
 <!-- Better: Include integrity checksum: -->
 <script src=&quot;https://modulojs.org/js/Modulo.js&quot;
-    integrity=&quot;sha384-NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;
+    integrity=&quot;sha384-8DG4eYIlxGUX5bDMeUUht8OSWAOGY9saqPM+SVAlj4TsxvOLQOH21b4rqD5W/sdW&quot;
     crossorigin=&quot;anonymous&quot;></script>
 
 <!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->

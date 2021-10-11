@@ -161,7 +161,7 @@ function copyIfDifferent(inputPath, outputPath, callback) {
                 }
             });
         });
-    });
+    }, callback);
 }
 
 function renderModuloHtml(rootPath, inputPath, outputPath, callback) {
@@ -261,7 +261,7 @@ const TERM = {
 TERM.LOGO = TERM.MAGENTA_FG + '[%]' + TERM.RESET;
 TERM.LOGOLINE = TERM.MAGENTA_FG + '[%]' + TERM.RESET + TERM.UNDERSCORE;
 
-function doGenerate(config, modulo, text, outputFile) {
+function doGenerate(config, modulo, text, outputFile, callback) {
     // TODO: Clean up subpaths, probably remove
     const {
         newGlobalsBeforeGenerate,
@@ -289,7 +289,7 @@ function doGenerate(config, modulo, text, outputFile) {
             const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this, after <Docs> done
             if (verbose) {
                 const s = '' + ssgSubPaths;
-                console.log(` '-> Document resolved; Subpaths: ${s}`);
+                console.log(`|%|  Document resolved; Subpaths: ${s}`);
             }
             let html = modulo.getHTML();
             modulo.assert(html, 'Generate results cannot be falsy');
@@ -307,8 +307,10 @@ function doGenerate(config, modulo, text, outputFile) {
                     console.error('Modulo - writeFile ERROR: ', err);
                     console.error('(fail with --fail)');
                 }
+                callback();
 
                 // And now try any ssgSubPaths
+                return; // XXX
                 if (ssgSubPaths && ssgSubPaths.length > 0) {
                     // NEXT TODO Eliminate "subpaths" feature, replace with
                     // <DocsPage>  // all docspage stuff contained
