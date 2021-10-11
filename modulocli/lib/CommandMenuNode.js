@@ -212,13 +212,16 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             this.generate(genConf, modulo);
         }
 
-        // TODO: Not sure if this works or is needed
-        // (We don't want this queue to happen before anything from above
-        // "generates" finish loading)
-        modulo.fetchQ.wait(() => modulo.fetchQ.wait(() => {
+        // TODO: Not sure if this works or is needed. It is definitely in need
+        // of refactor, as a "lastWait" method (a queue that's drained only
+        // after the wait queue).
+        // We don't want this queue to happen before anything from above
+        // "generates" finish loading, so we push to the end the first two
+        // times we are visited.
+        modulo.fetchQ.wait(() => modulo.fetchQ.wait(() => modulo.fetchQ.wait(() => {
             log(`Building output bundle: ${config.ssgBuildOutput}`);
             this.build(_buildConf(config.ssgBuildOutput), modulo, true); // empty = ok
-        }));
+        })));
     }
 
     watch(config, modulo) {
