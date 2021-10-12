@@ -1,0 +1,22 @@
+<component name="MainPage" mode="vanish">
+    <template src="./templates/Page.html"></template>
+</component>
+
+<component name="DocPage" mode="vanish">
+    <template src="./templates/Page.html"></template>
+</component>
+
+<component name="SimpleTestComponent">
+    <template>
+        <button @click:=script.countUp>Hello {{ state.num }}</button>
+    </template>
+    <state num:=42
+    ></state>
+    <script>
+        function countUp() {
+            state.num++;
+        }
+    </script>
+</component>
+
+
