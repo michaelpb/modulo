@@ -43,7 +43,12 @@ Modulo.defineAll = function defineAll() {
     // their contents into a global loader with namespace 'x'.
     const opts = {options: {namespace: 'x'}};
     Modulo.globalLoader = new Modulo.Loader(null, opts);
-    Modulo.globalLoader.loadModules(Modulo.globals.document);
+
+    const query = 'template[modulo-embed],script[type="modulo/embed"]';
+    for (const embedElem of Modulo.globals.document.querySelectorAll(query)) {
+        // TODO: Should be elem.content if tag===TEMPLATE
+        Modulo.globalLoader.loadString(embedElem.innerHTML);
+    }
     Modulo.CommandMenu.setup();
 };
 
@@ -129,11 +134,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
             //Modulo.fetchQ.wait(() => this.defineComponent(this.namespace, modLoadObj));
             this.modFactory = this.defineComponent(this.namespace, modLoadObj);
         }
-        const query = 'template[modulo-embed],script[type="modulo/embed"]';
-        for (const embeddedModule of elem.querySelectorAll(query)) {
-            // TODO: Should be elem.content if tag===TEMPLATE
-            this.loadString(embeddedModule.innerHTML);
-        }
     }
 
     // ## Loader: loadString
@@ -149,6 +149,9 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
           <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
           </(state|props|template)> -> </script>
         */
+        if (this.src) {
+            Modulo.fetchQ.basePath = this.src;
+        }
         const frag = new Modulo.globals.DocumentFragment();
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = text;
@@ -1161,36 +1164,57 @@ Modulo.templating.defaultOptions.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-Modulo.templating.defaultOptions.filters = {
-    upper: s => s.toUpperCase(),
-    lower: s => s.toLowerCase(),
-    escapejs: s => JSON.stringify(s),
-    first: s => s[0],
-    last: s => s[s.length - 1],
-    length: s => s.length,
-    //trim: s => s.trim(), // TODO: improve interface to be more useful
-    safe: s => Object.assign(new String(s), {safe: true}),
-    join: (s, arg) => s.join(arg),
-    json: (s, arg) => JSON.stringify(s, null, arg || undefined),
-    pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
-    add: (s, arg) => s + arg,
-    subtract: (s, arg) => s - arg,
-    default: (s, arg) => s || arg,
-    number: (s) => Number(s),
-    //invoke: (s, arg) => s(arg),
-    //getAttribute: (s, arg) => s.getAttribute(arg),
-    get: (s, arg) => s[arg],
-    includes: (s, arg) => s.includes(arg),
-    truncate: (s, arg) => ((s.length > arg*1) ?
-                            (s.substr(0, arg-1) + '…') : s),
-    divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
-    //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
-    // {% for rowData in table %}
-    //    {{ rowData|renderas:template.row }}
-    // {% endfor %}
-    renderas: (renderCtx, template) => Object.assign(new String(
-                    template.instance.render(renderCtx)), {safe: true}),
-};
+Modulo.templating.defaultOptions.filters = (function () {
+    function jsobj(obj, arg) {
+        let s = '{\n';
+        for (const [key, value] of Object.entries(obj)) {
+            s += '  ' + JSON.stringify(key) + ': ';
+            if (typeof value === 'string') {
+                s += '// (' + value.split('\n').length + ' lines)\n`';
+                s += value.replace(/\\/g , '\\\\')
+                          .replace(/`/g, '\\`').replace(/\$/g, '\\$');
+                s += '`,// (ends: ' + key + ') \n\n';
+            } else {
+                s += JSON.stringify(value, null, 4) + ',\n';
+            }
+        }
+        return s + '}';
+    }
+    const safe = s => Object.assign(new String(s), {safe: true});
+
+    const filters = {
+        upper: s => s.toUpperCase(),
+        lower: s => s.toLowerCase(),
+        escapejs: s => JSON.stringify(s),
+        first: s => s[0],
+        last: s => s[s.length - 1],
+        length: s => s.length,
+        //trim: s => s.trim(), // TODO: improve interface to be more useful
+        join: (s, arg) => s.join(arg),
+        json: (s, arg) => JSON.stringify(s, null, arg || undefined),
+        pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        add: (s, arg) => s + arg,
+        subtract: (s, arg) => s - arg,
+        default: (s, arg) => s || arg,
+        number: (s) => Number(s),
+        //invoke: (s, arg) => s(arg),
+        //getAttribute: (s, arg) => s.getAttribute(arg),
+        get: (s, arg) => s[arg],
+        includes: (s, arg) => s.includes(arg),
+        truncate: (s, arg) => ((s.length > arg*1) ?
+                                (s.substr(0, arg-1) + '…') : s),
+        divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+        //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+        // {% for rowData in table %}
+        //    {{ rowData|renderas:template.row }}
+        // {% endfor %}
+
+        //Object.assign(new String(
+        //                ), {safe: true}),
+        renderas: (renderCtx, template) => safe(template.instance.render(renderCtx)),
+    };
+    return Object.assign(filters, {jsobj, safe});
+})();
 
 Modulo.templating.defaultOptions.tags = {
     'if': (text, tmplt) => {
@@ -1614,7 +1638,7 @@ Modulo.assert = function assert(value, ...info) {
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
 Modulo.defineAll();
-Modulo.fetchQ.data = {{ allData|json:1|safe }};
+Modulo.fetchQ.data = {{ allData|jsobj|safe }};
 {% for path, text in preloadData %}
 //  Preloading page: {{ path|escapejs|safe }} {# Simulates loading page #}
 Modulo.fetchQ.basePath = {{ path|escapejs|safe }};
@@ -1692,3 +1716,12 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
+
+// And that's the end of the Modulo source code story. This means it's where
+// your own Modulo story begins!
+
+// No, really, your story will begin right here. When Modulo is compiled,
+// whatever code exists below this point is user-created code.
+
+// So... keep on reading for the latest Modulo project:
+// ------------------------------------------------------------------

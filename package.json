@@ -13,6 +13,7 @@
     "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
     "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
     "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
+    "cli": "node ./modulocli/modulocli.js",
     "test": "ava -v --serial"
   },
   "devDependencies": {
