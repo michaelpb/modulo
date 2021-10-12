@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Minimalist Web Component based framework",
   "homepage": "https://github.com/michaelpb/modulo#readme",
-  "main": "tools/modulocli.js",
+  "main": "modulocli/modulocli.js",
   "scripts": {
     "build-complexity-report": "complexity-report-html ./src/",
     "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",

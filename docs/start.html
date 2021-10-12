@@ -8,7 +8,128 @@
     <script src="/js/Modulo.js"></script>
     <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
 
-    <style id="eg-Simple_style">
+    <style id="mdu-Section_style">
+mdu-Section {
+            position: relative;
+        }
+mdu-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mdu-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mdu-Section:hover .mdu-Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mdu-TabSet_style">
+mdu-TabSet {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            /*border: 1px dotted var(--highlight-color);*/
+            /*border-top: 1px dotted black;*/
+        }
+mdu-TabSet .tab-nav {
+            /*border-bottom: 1px dotted var(--highlight-color);*/
+            width: 100%;
+        }
+mdu-TabSet .tab-nav > ul {
+            width: 100%;
+            display: flex;
+        }
+mdu-TabSet .tab-nav_title {
+            border: 2px solid black;
+            border-top-width: 4px;
+            border-bottom-width: 0;
+            border-radius: 8px 8px 0 0;
+            background: white;
+            min-width: 10%;
+        }
+
+mdu-TabSet .tab-nav_title a,
+mdu-TabSet .tab-nav_title a:visited,
+mdu-TabSet .tab-nav_title a:active {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+mdu-TabSet .tab-nav_title__selected {
+            background: var(--highlight-color);
+            box-shadow: 0 0 0 5px var(--highlight-color);
+            padding-top: 3px;
+            border-top-width: 1px;
+            border-radius: 1px;
+        }
+    </style><style id="mdu-CodeExample_style">
+mdu-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mdu-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mdu-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mdu-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mdu-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mdu-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+mdu-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mdu-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mdu-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mdu-CodeExample .split { display: block; }
+        }
+    </style><style id="mdu-CodeSnippet_style">
+mdu-CodeSnippet {
+            position: relative;
+            display: block;
+        }
+mdu-CodeSnippet .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
+    </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
 eg-Simple * { text-decoration: underline; }
 </style><style id="eg-SearchBox_style">
@@ -137,128 +258,7 @@ eg-MemoryGame .board > .card.flipped {
 from { transform: scaleX(-1.1); background: #B90183; }
 to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
-</style><style id="mdu-Section_style">
-mdu-Section {
-            position: relative;
-        }
-mdu-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mdu-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mdu-Section:hover .mdu-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
-
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mdu-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mdu-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mdu-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mdu-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mdu-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mdu-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mdu-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mdu-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
-        }
-    </style><style id="mdu-CodeSnippet_style">
-mdu-CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mdu-CodeSnippet .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style><style id="tutorial-DocSidebar_style">
+</style><style id="tutorial-DocSidebar_style">
 tutorial-DocSidebar li {
       margin-left: 20px;
   }

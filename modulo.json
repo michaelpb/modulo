@@ -1,4 +1,5 @@
 {
-    "output": "docs",
-    "input": "docs-src"
+    "preload": ["www-src/components/layouts.html"],
+    "output": "www",
+    "input": "www-src"
 }

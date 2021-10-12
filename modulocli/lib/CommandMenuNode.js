@@ -98,7 +98,12 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         return COPY; // default (i.e. copy every file from input -> output)
     }
 
-    generate(config, modulo, callback) {
+    generate(config, modulo, finalCallback) {
+        const callback = () => {
+            if (finalCallback) {
+                finalCallback(action);
+            }
+        }
         const {inputFile, outputFile, verbose, isCustomFunc} = config;
         const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
 
@@ -115,10 +120,10 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
 
         if (action === SKIP) {
-            log(`|%| - - Skip ${inputFile}`);
+            log(`Skip ${inputFile}`);
             callback();
         } else if (action === GENERATE) {
-            log(`|%| - - Generate ${inputFile} -> ${outputFile}`);
+            log(`Generate ${inputFile} -> ${outputFile}`);
             // Get file while assigning prefix to be input directory
             const src = inputFile.replace(config.input, '');
             modulo.fetchPrefix = config.input;
@@ -126,73 +131,54 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                 .then(response => response.text())
                 .then(text => doGenerate(config, modulo, text, outputFile, callback));
         } else if (action === COPY) {
-            log(`|%| - - Copy ${inputFile} -> ${outputFile}`);
+            log(`Copy ${inputFile} -> ${outputFile}`);
             copyIfDifferent(inputFile, outputFile, callback);
         } else {
             modulo.assert(false, `Invalid "action" (from CustomFunc?): ${action}`);
         }
     }
 
-    build(config, modulo, allowEmpty=false) {
+    build(config, modulo, allowEmpty=false, justBuildPath=false) {
         // NOTE: build is synchronous
         // TODO: Watch out, key order might not be stable, affect hash
         const {preloadQueue, fetchQ} = modulo;
-        const preloadData = Object.assign({}, preloadQueue.data, fetchQ.data);
-        const dataStr = JSON.stringify(preloadData);
+        const allData = Object.assign({}, preloadQueue.data, fetchQ.data);
+        const dataStr = JSON.stringify(allData);
         if (!allowEmpty) {
             modulo.assert(dataStr !== '{}', `No components (none loaded?)`);
         }
         const hash = modulo.utils.hash(dataStr);
-        const {input, output, verbose, buildversion} = config;
+        const {input, output, verbose, buildOutput} = config;
         if (verbose) {
             console.log(` \`> - - Compiled: ${hash}`);
         }
 
-        // Build the output path
         const d = new Date();
         const versiondate = `${d.getYear()}.${(d.getMonth() + 1)}`
-        const filePathCtx = {input, output, versiondate, buildversion, hash};
-        /*
-        let buildOutputTmpl = new modulo.templating.MTL(config.buildOutput);
-        const buildOutput = buildOutputTmpl.render(filePathCtx);
-        // TODO: Switch defaultOptions to use {{ }} style templating
-        // OR, formalize $$ syntax (though probably want to save that for path
-        // matching)
-        */
-        let {buildOutput} = config;
-        buildOutput = buildOutput.replace('$input', input);
-        buildOutput = buildOutput.replace('$output', output);
-        buildOutput = buildOutput.replace('$versiondate', versiondate);
-        buildOutput = buildOutput.replace('$buildversion', buildversion);
-        buildOutput = buildOutput.replace('$hash', hash);
-        // TODO remove this
-        modulo.tmp_buildOutputPath = buildOutput;
+        const filePathCtx = {input, output, versiondate, hash};
+        const buildOutputTmpl = new modulo.templating.MTL(buildOutput);
+        const targetPath = buildOutputTmpl.render(filePathCtx).trim();
+        if (justBuildPath) {
+            return targetPath;
+        }
 
         // Build the output string
-        const source = modulo.SOURCE_CODE;
-        const buildCtx = Object.assign(filePathCtx,
-            {source, dataStr, fetchQ, preloadData: preloadQueue.data});
-        const str = modulo.buildTemplate.render(buildCtx);
-        /*
-        let str = `// modulocli build ${hash}\n`;
-        str += modulo.SOURCE_CODE;
-        str += '\n// // // //\n';
-        str += `Modulo.fetchQ = ` + dataStr;
-        str += '\n;\n'
-        for (const [path, text] of Object.entries(preloadQueue.data)) {
-            const escapedText = JSON.stringify(text);
-            str += `\nModulo.globalLoader.loadString(${escapedText});\n`;
+        const preloadData = {};
+        for (const [absPath, str] of Object.entries(allData)) {
+            preloadData[absPath.replace(config.input, '')] = str;
         }
-        str += '\nModulo.defineAll();\n'
-        */
+        const source = modulo.SOURCE_CODE;
+        const newCtx ={source, dataStr, fetchQ, preloadData}
+        const buildCtx = Object.assign(filePathCtx, newCtx);
+        const str = modulo.buildTemplate.render(buildCtx);
         if (verbose) {
             const length = str.length;
-            console.log(`|%| - - Saving to ${buildOutput} (${length} chars)`);
+            console.log(`|%| - - Saving to ${targetPath} (${length} chars)`);
         }
 
-        mkdirToContain(buildOutput);
-        fs.writeFileSync(buildOutput, str, {encoding: 'utf8'});
-        console.log(`|%| - - Successful build: ${buildOutput}`);
+        mkdirToContain(targetPath);
+        fs.writeFileSync(targetPath, str, {encoding: 'utf8'});
+        console.log(`|%| - - Successful build: ${targetPath}`);
     }
 
     buildpreload(config, modulo) {
@@ -201,9 +187,38 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         this.build(preloadBuildConf, modulo);
     }
 
+    _ssgPostProcess(outPath, config, modulo, callback) {
+        callback = callback || (() => null); // default NOOP
+        const {inputFile, outputFile, verbose} = config;
+        const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
+
+        log(`Postprocessing ${outputFile}`);
+        // Get file while clearing any prefix
+        modulo.fetchPrefix = null; // clear prefix (we are accessing output)
+        modulo.fetchFile(outputFile)
+            .then(response => response.text())
+            .then(text => {
+                log(`Postprocessing ${outputFile}`);
+                const newText = modulo.ssgPostProcessCallback(config, text, outPath);
+                if (newText.trim() === text.trim()) {
+                    // no change, don't write
+                    log(`Postprocess: Write-back skipped for ${outputFile}`);
+                    callback();
+                    return;
+                }
+                log(`Postprocess: Write-back needed, writing ${outputFile}`);
+                fs.writeFile(outputFile, newText, {encoding: 'utf8'}, (err) => {
+                    log(`Postprocess: Write-back successful for ${outputFile}`);
+                    modulo.assert(!err, 'postprocessing error', err);
+                    callback();
+                });
+            });
+    }
+
     ssg(config, modulo, callback) {
         // Does a full generate across a directory
         const {verbose, input, output} = config;
+        callback = callback || (() => null); // default NOOP
         const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
 
         // Build preload first
@@ -212,26 +227,52 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         this.build(_buildConf(config.buildPreload), modulo, true); // empty = ok
 
         // Build output bundle only after SSG'ing the rest of the site
-        const buildOutputBundle = (cb) => {
-            log(`Building output bundle (using path ${config.ssgBuildOutput})`);
-            this.build(_buildConf(config.ssgBuildOutput), modulo, true); // empty = ok
-            cb();
+        const buildOutputBundle = (ppFiles) => {
+            // Prepare for the final build -- calculate hash, filename, etc
+            const conf = _buildConf(config.ssgBuildOutput);
+            const outPath = this.build(conf, modulo, true, true); // justPath=true
+            modulo.assert(outPath, 'Invalid path for output bundle:', outPath);
+            log(`Building output bundle (using path ${outPath})`);
+
+            // Now, actually do the final build
+            this.build(conf, modulo, true); // empty = ok
+
+            // Finally, do postprocessing
+            log(`Beginning postprocessing (${ppFiles.length} file(s) may need it)`);
+            let ppCount = 0;
+            for (const outputFile of ppFiles) {
+                const ppConf = Object.assign({}, config, {outputFile});
+                this._ssgPostProcess(outPath, ppConf, modulo, () => {
+                    ppCount++;
+                    if (verbose) {
+                        logStatusBar('POSTPROCESS', ppCount, ppFiles.length);
+                    }
+                    if (ppCount >= ppFiles.length) {
+                        callback(); // this is the last step, so callback
+                    }
+                });
+            }
         }
 
         // Now, synchronously walk through input and apply generate command
         const filenames = walkSync(input, config);
         const generateCount = filenames.length;
         console.log('|%| - - SSG started, total files detected: ' + generateCount)
+
         let finishedFiles = 0;
+        const postProcessFiles = [];
         for (const inputFile of filenames) {
             const outputFile = output + inputFile.slice(input.length);
             const genConf = Object.assign({}, config, {inputFile, outputFile});
-            this.generate(genConf, modulo, () => {
+            this.generate(genConf, modulo, (action) => {
                 finishedFiles++;
+                if (action === GENERATE) {
+                    postProcessFiles.push(outputFile);
+                }
                 logStatusBar('GENERATE', finishedFiles, generateCount);
                 if (finishedFiles >= generateCount) {
                     log(`GENERATE step complete, ${finishedFiles} files examined!`);
-                    buildOutputBundle(callback);
+                    buildOutputBundle(postProcessFiles);
                 }
             });
         }
@@ -254,6 +295,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             log(`CHANGE DETECTED IN ${inputFile}`);
             //const outputFile = inputFile.replace(config.input, config.output);
             const outputFile = output + inputFile.slice(input.length); // better
+
+            modulo.fetchQ.data = {}; // always clear fetchQ data to prevent caching
             if (evt == 'update') {
                 // on create or modify
                 const conf = Object.assign({}, config, {inputFile, outputFile});
@@ -277,34 +320,41 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
         // Add some verbose logging
         this._watcher.on('error', err => log(`Watch Error: ${err}`));
-        process.on('SIGINT', () => {
-            this._watcher.close();
-            process.exit(0);
-        });
         log(`Starting watch of: ${config.input}`);
         this._watcher.on('ready', callback);
+    }
+
+    servesrc(config, modulo) {
+          const port = Number(config.port) + 1;
+          const output = config.input; // serve src, not output
+          const _serveConf = Object.assign({}, config, {port, output})
+          this._serve(_serveConf, modulo, true);
     }
 
     serve(config, modulo) {
         // Start each serve with a watch
         this.watch(config, modulo, () => this._serve(config, modulo));
     }
-    _serve(config, modulo) {
-        const {port, host, serverApp, serverAppPath, serverFramework} = config;
-        const express = require(serverFramework || 'express');
-        console.log(`Preparing to lisen on http://${host}:${port}`);
+    _serve(config, modulo, isSrcServe=false) {
+        const {port, host, verbose, serverApp, serverAppPath, serverFramework} = config;
+        const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
+        log(`Preparing to lisen on http://${host}:${port}`);
         const appPath = serverApp || serverAppPath;
         try {
             this._app = require(appPath);
         } catch {
-            console.log(`|%| - - (No app found at ${appPath})`);
+            log(`No app found at ${appPath}`);
+            this._app = null;
         }
 
+        log(`Loading server framework ${serverFramework}`);
+        const express = require(serverFramework);
         if (!this._app) {
+            log(`Instantiating new ${serverFramework} app (as Modulo.commands._app)`);
             this._app = express();
             this._app.use(express.json());
             function logger(req, res, next) {
-                console.log(req.method, req.url);
+                log(`${req.method} ${req.url}`);
                 next();
             }
             this._app.use(logger);
@@ -315,10 +365,25 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             //this._app.use(this.wildcardPatchMiddleware);
         }
         this._app.use(express.static(config.output))
-        console.log(`|%| - - Serving: ${config.output})`);
-        this._app.listen(port, host, () => {
-            console.log(`|%| - - Listening on http://${host}:${port}`);
+        log(`Serving: ${config.output})`);
+
+        const _server = this._app.listen(port, host, () => {
+            console.log('|%|--------------');
+            console.log(`|%| - - Serving "${config.output}" on http://${host}:${port}`);
+            if (isSrcServe) {
+                console.log(`|%| - - (source server)`);
+            } else {
+                this.servesrc(config, modulo);
+            }
+            console.log('|%|--------------');
         });
+
+        if (isSrcServe){
+            this._serverSrc = _server;
+        } else {
+            this._server = _server;
+        }
+
     }
 
 }

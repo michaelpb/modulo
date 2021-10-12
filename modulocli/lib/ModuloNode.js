@@ -26,19 +26,27 @@ class ModuloNode {
         }
     }
 
-    loadText(text) {
+    loadText(text, basePath=null) {
         this.jsdom = new JSDOM(text);
         this.allDoms.push(this.jsdom);
         this.globals.document = this.jsdom.window.document;
         this.globals.DocumentFragment =  this.jsdom.window.DocumentFragment;
         this.doc = this.globals.document; // easier property
+        if (this.fetchQ) {
+            // Set the current basePath so that any fetches caused by render
+            // will be relative to this file
+            if (!basePath) {
+                basePath = null;
+            }
+            this.fetchQ.basePath = basePath;
+        }
     }
 
     getHTML() {
         return this.doc.documentElement.innerHTML;
     }
 
-    doBuildPostProcessing(html) {
+    ssgPostProcessCallback(config, html, outPath) {
         if (!/^<!doctype html>/i.test(html)) {
             // Ensure all documents start with doctype
             html = '<!DOCTYPE HTML>\n' + html;
@@ -46,11 +54,11 @@ class ModuloNode {
 
         const scriptTagRe = /<script \s*src="\/?m.js">\s*<\/script>/i;
         if (scriptTagRe.test(html)) {
-            const buildOutput = modulo.tmp_buildOutputPath;
-            if (buildOutput) {
-                const newScript = `<script src="${buildOutput}"></script>`;
+            if (outPath) {
+                outPath = outPath.replace(config.output, ''); // remove output dir
+                const newScript = `<script src="${outPath}"></script>`;
                 html = html.replace(scriptTagRe, newScript);
-                console.loG('Adding in script:', newScript);
+                console.log('Adding in script:', newScript);
             }
         }
         return html;
@@ -83,15 +91,43 @@ class ModuloNode {
             src = this.fetchPrefix + '/' + src;
         }
         return new Promise((resolve, reject) => {
+            console.log('its happening');
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {
                     reject(err);
+                    return;
                 }
                 // support either text or json modes
                 const text = () => new Promise(r => r(data));
                 const json = () => new Promise(r => r(JSON.parse(data)))
                 resolve({text, json});
             });
+        });
+    }
+
+    fetchFile2(src) {
+        // TODO: See if fetchFile2 is better for any reason
+        if (this.fetchPrefix) {
+            src = this.fetchPrefix + '/' + src;
+        }
+
+        const readFilePromise = (isJson) => new Promise((resolve, reject) =>
+              fs.readFile(src, 'utf8', (err, data) => {
+                  if (err) {
+                      reject(err);
+                  } else {
+                      if (isJson) {
+                          data = JSON.parse(data);
+                      }
+                      resolve(data);
+                  }
+              }));
+
+        return new Promise((resolve, reject) => {
+            // support either text or json modes
+            const text = () => readFilePromise(false);
+            const json = () => readFilePromise(true);
+            resolve({text, json});
         });
     }
 
@@ -121,18 +157,24 @@ class ModuloNode {
     }
 
     resolveCustomComponents(maxDepth, callback, tries=0) {
+        this.assert(maxDepth, 'ssgRenderDepth/maxDepth is falsy');
         tries++;
         if (tries > maxDepth) {
             // Base case 1:  Prevent infinite recursion:
-            // Could be caused by components being too nested (in which case ssgRenderDepth should be increased)
-            // non-deterministic components (in which case they should become deterministic!)
+            // Could be caused by components being too nested (in which case
+            // ssgRenderDepth should be increased) or by non-deterministic
+            // components (in which case they should be deterministic!)
             console.log(`WARNING: Hit limit: ssgRenderDepth=${maxDepth}`);
             return callback();
         }
+        const {factoryInstances} = this;
+        this.assert(factoryInstances, 'factoryInstances is falsy');
+        this.assert(factoryInstances === baseModulo.factoryInstances,
+              'factoryInstances is not the same as baseModulo');
 
         const findFac = (elem) => {
             const lowerTag = (elem.tagName || '').toLowerCase();
-            for (const factory of Object.values(this.factoryInstances)) {
+            for (const factory of Object.values(factoryInstances)) {
                 if (lowerTag === factory.fullName.toLowerCase()) {
                     return factory;
                 }
@@ -141,11 +183,12 @@ class ModuloNode {
 
         // Loop through every element in the HTML, looking to mount them
         //          (TODO: Remove, when mod-load is removed)----------v
-        const sel = Object.keys(this.factoryInstances).join(',') + ',mod-load';
+        const sel = (Object.keys(factoryInstances).join(',') || 'X') + ',mod-load';
+        console.log('Attempting to resolve these guys:', sel);
         const allModElems = this.doc.querySelectorAll(sel);
         let allMounted = true;
-        // TODO: needs work here, should isolate the mod-load upgrade
-        // somewhere else and simplify the rest of the logic with defineComponent above
+        // TODO: needs work here, should isolate the mod-load upgrade somewhere
+        // else and simplify the rest of the logic with defineComponent above
         for (const el of allModElems) {
             if (el.isMounted) {
                 continue; // all good! TODO: Would it hurt to rerender here?
@@ -163,6 +206,7 @@ class ModuloNode {
             webComponentsUpgrade(el, instance);
         }
 
+
         // Wait for any further files to be fetched
         this.fetchQ.wait(() => {
             if (allMounted) {
@@ -175,8 +219,8 @@ class ModuloNode {
         });
     }
 
-    defineAll() {
-        baseModulo.defineAll(); // do normal behavior
+    defineAll(config) {
+        baseModulo.defineAll(config); // do normal behavior
 
         // ensure both share same fetchQ
         this.fetchQ = baseModulo.fetchQ;

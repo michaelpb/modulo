@@ -151,6 +151,7 @@ function ifDifferent(inputPath, outputPath, callbackSuccess, cbFailure) {
 
 function copyIfDifferent(inputPath, outputPath, callback) {
     ifDifferent(inputPath, outputPath, (inputStats) => {
+        mkdirToContain(outputPath);
         fs.copyFile(inputPath, outputPath, () => {
             // Copy over mtime to new file
             fs.utimes(outputPath, inputStats.atime, inputStats.mtime, (err) => {
@@ -274,15 +275,17 @@ function doGenerate(config, modulo, text, outputFile, callback) {
         // TODO force reload Modulo.js & run main('generate', ...)
         throw new Error('newGlobalsBeforeGenerate: Not implemented yet');
     } else {
-        modulo.fetchQ.data = {}; // always clear fetchQ data to prevent caching
+        //modulo.fetchQ.data = {}; // TODO: Need to figure out best times to clear
         if (clearBeforeGenerate) { // TODO: try with this disabled
+            throw new Error('clearBeforeGenerate: Not implemented yet');
             modulo.clearAll(config);
         }
     }
 
-    modulo.loadText(text);
+    //modulo.fetchQ.data = {}; // Maybe do received callback here?
+    modulo.loadText(text, inputFile);
     modulo.defineAll(config);
-    //console.log('length of fetch q', modulo.fetchQ.queue);
+
     modulo.fetchQ.wait(() => {
 
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
@@ -291,7 +294,7 @@ function doGenerate(config, modulo, text, outputFile, callback) {
                 const s = '' + ssgSubPaths;
                 console.log(`|%|  Document resolved; Subpaths: ${s}`);
             }
-            let html = modulo.doBuildPostProcessing(modulo.getHTML());
+            let html = modulo.getHTML();
             modulo.assert(html, 'Generate results cannot be falsy');
 
             mkdirToContain(outputFile); // todo, make async (?)

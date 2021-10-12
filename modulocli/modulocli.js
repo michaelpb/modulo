@@ -47,7 +47,8 @@ function getConfig(cliConfig, flags) {
     envFlags.host = envFlags.port ? '0.0.0.0' : undefined;
     // Allow -p, -a, and -v as short-flags from CLI (but not conf):
     const shortFlags = {port: flags.p, host: flags.a, verbose: flags.v};
-    console.log('this is envFlags', envFlags);
+
+    const pushKey = {preload: true};
 
     // Finally, generate the config "stack", with items at the end taking
     // precedent over items at the top.
@@ -56,7 +57,14 @@ function getConfig(cliConfig, flags) {
     for (const key of Object.keys(defaultConfig)) {
         for (const conf of runtimeConfig) {
             if (key in conf && conf[key] !== undefined) {
-                config[key] = conf[key];
+                if (key in pushKey) {
+                    if (!Array.isArray(conf[key])) {
+                        conf[key] = [conf[key]]; // ensure in arr
+                    }
+                    config[key].push(...conf[key]); // extend list
+                } else {
+                    config[key] = conf[key];
+                }
             }
         }
     }
@@ -74,21 +82,21 @@ function doCommand(cliConfig, args) {
     let {command, positional, flags} = args;
 
     const config = getConfig(cliConfig, flags);
-    const preloadFiles = (cliConfig.preload || []).concat(positional || []);
+    const preloadFiles = (config.preload || []).concat(positional || []);
     modulo.preloadQueue = new modulo.FetchQueue();
     for (let filePath of preloadFiles) {
         if (filePath === '-') {
             filePath = 0; // load from stdin, which has FD=0
         }
         modulo.preloadQueue.enqueue(filePath, source => {
-            modulo.loadText(source);
+            modulo.loadText(source, filePath);
         });
     }
 
     modulo.preloadQueue.wait(() => {
         //modulo.loadText(require('./lib/testdata').TEST_HTML);
-        modulo.defineAll();
-        modulo.resolveCustomComponents(config.ssgMaxDepth, () => {
+        modulo.defineAll(); // do any more defines
+        modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
             if (!command) {
                 command = 'help';
             }
@@ -107,10 +115,13 @@ function main(argv, shiftFirst=false) {
     const args = cliutils.parseArgs(argv, shiftFirst);
     process.on('SIGINT', () => {
         if (modulo.commands._watcher) {
-            modulo._watcher.close(); // stop node-watch
+            modulo.commands._watcher.close(); // stop node-watch
         }
-        if (modulo.commands._app) {
-            modulo._app.close(); // stop express
+        if (modulo.commands._server) {
+            modulo.commands._server.close(); // stop express #1
+        }
+        if (modulo.commands._serverSrc) {
+            modulo.commands._serverSrc.close(); // stop express #2
         }
         process.exit(0);
     });

@@ -533,11 +533,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.lifecycle(['initialized'])
         this.rerender();
         this.isMounted = true;
-
-        // Finally, check for vanishAfterMount
-        if (this.getAttribute('modulossg-vanish') || this.vanishAfterMount) {
-            this.replaceWith(...this.childNodes); // and remove
-        }
     }
 }
 
@@ -629,12 +624,10 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
 
     updatedCallback(renderObj) {
         if (!this.isMounted) { // First time initialized
-            const {attrs} = this;
-            if (attrs) {
-                const {vanish} = attrs;
-                if (this.element.getAttribute('modulo-vanish') || vanish) {
-                    this.element.replaceWith(...this.element.childNodes); // Delete self
-                }
+            const mode = this.attrs ? this.attrs.mode : 'default';
+            // Other options: shadow, default
+            if (mode === 'vanish') {
+                this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
     }
@@ -1169,6 +1162,7 @@ Modulo.templating.defaultOptions.filters = {
     first: s => s[0],
     last: s => s[s.length - 1],
     length: s => s.length,
+    //trim: s => s.trim(), // TODO: improve interface to be more useful
     safe: s => Object.assign(new String(s), {safe: true}),
     join: (s, arg) => s.join(arg),
     json: (s, arg) => JSON.stringify(s, null, arg || undefined),
@@ -1553,15 +1547,15 @@ Modulo.FetchQueue = class FetchQueue {
         this.waitCallbacks = [];
         this.finallyCallbacks = [];
     }
-    enqueue(queueObj, callback, basePath, opts, responseCb) {
+    enqueue(queueObj, callback, opts, responseCb) {
         opts = opts || this.defaultOpts || {};
         responseCb = responseCb || (response => response.text());
         queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
         for (let [label, src] of Object.entries(queueObj)) {
             // TODO remove! ------------------------------------v
             if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
-                // TODO: should this need to invoke utils.dirname?
-                src = src.replace('.', this.basePath);
+                src = src.replace('.', Modulo.utils.dirname(this.basePath));
+                src = src.replace(/\/\//, '/'); // remove double slashes
             }
             if (src in this.data) {
                 callback(this.data[src], label);
@@ -1611,16 +1605,15 @@ Modulo.assert = function assert(value, ...info) {
     }
 }
 
-Modulo.buildTemplate = new Modulo.templating.MTL(
-`// modulo build {{ hash }}
+Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
 Modulo.fetchQ = {{ fetchQ.data|json:1|safe }};
-{% for path, text in preloadData %}
-//  Preload: {{ path }}
-Modulo.globalLoader.loadString({{ text|escapejs|safe }});
-{% endfor %}
 Modulo.defineAll();
-`);
+{% for path, text in preloadData %}
+//  Preload: {{ path|escapejs|safe }}
+Modulo.fetchQ.basePath = {{ path|escapejs|safe }};
+Modulo.globalLoader.loadString({{ text|escapejs|safe }});
+{% endfor %}`);
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
