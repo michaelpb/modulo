@@ -33,7 +33,9 @@ var Modulo = {
 // "activate" all of Modulo by defining the "mod-load" web component. This
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
-    Modulo.fetchQ = new Modulo.FetchQueue();
+    if (!Modulo.fetchQ) {
+        Modulo.fetchQ = new Modulo.FetchQueue();
+    }
     Modulo.globals.customElements.define('mod-load', Modulo.DOMLoader);
 
     // Then, looks for embedded modulo components, found in <template modulo>
@@ -174,8 +176,10 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         // ### Step 1: Config
         // Get any custom component configuration (e.g. attributes `name=` or
         // `extends=`)
+
+        // TODO: Rewrite this to be just a normal cpart load, with "hasSubParts = true"
         const attrs = Modulo.utils.parseAttrs(elem);
-        const name = attrs.modComponent || attrs.name;
+        attrs.name = attrs.modComponent || attrs.name;
 
         // ### Step 2: Set-up `loadObj`
         // Modulo often uses plain objects to "pass around" during the lifecycle
@@ -193,7 +197,9 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         //     ...etc
         // }
         // ```
-        const loadObj = {component: [{name}]}; // Everything gets implicit Component CPart
+
+        // Everything gets implicit Component CPart -v
+        const loadObj = {component: [{options: attrs}]};
 
         // ### Step 3: define CParts
         // Loop through each CPart DOM definition within the component (e.g.
@@ -218,7 +224,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
                 Modulo.fetchQ.enqueue(data.dependencies, cb, this.src);
             }
         }
-        return [name, array || loadObj];
+        return [attrs.name, array || loadObj];
     }
 
     // ## Loader: defineComponent
@@ -623,7 +629,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     updatedCallback(renderObj) {
-        if (!this.isMounted) { // First time initialized
+        if (!this.element.isMounted) { // First time initialized
             const mode = this.attrs ? this.attrs.mode : 'default';
             // Other options: shadow, default
             if (mode === 'vanish') {
@@ -1607,12 +1613,12 @@ Modulo.assert = function assert(value, ...info) {
 
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
-Modulo.fetchQ = {{ fetchQ.data|json:1|safe }};
 Modulo.defineAll();
+Modulo.fetchQ.data = {{ allData|json:1|safe }};
 {% for path, text in preloadData %}
-//  Preload: {{ path|escapejs|safe }}
+//  Preloading page: {{ path|escapejs|safe }} {# Simulates loading page #}
 Modulo.fetchQ.basePath = {{ path|escapejs|safe }};
-Modulo.globalLoader.loadString({{ text|escapejs|safe }});
+Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);
 {% endfor %}`);
 
 Modulo.CommandMenu = class CommandMenu {

@@ -25,6 +25,20 @@ function logStatusBar(shoutyWord, finishedFiles, generateCount, maxCount=8) {
     lastStatusBar = statusBar;
 }
 
+function _removeKeyPrefix(data, prefix1, prefix2) {
+    // take that, rule of 3!
+    const newObj = {};
+    for (let [key, value] of Object.entries(data)) {
+        if (key.startsWith(prefix1)) {
+            key = key.substr(prefix1.length);
+        } else if (key.startsWith(prefix2)) {
+            key = key.substr(prefix2.length);
+        }
+        newObj[key] = value;
+    }
+    return newObj;
+}
+
 class CommandMenuNode extends baseModulo.CommandMenu {
     _getCmds() {
         // not elegant -v
@@ -142,8 +156,11 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         // NOTE: build is synchronous
         // TODO: Watch out, key order might not be stable, affect hash
         const {preloadQueue, fetchQ} = modulo;
-        const allData = Object.assign({}, preloadQueue.data, fetchQ.data);
+        const preloadData = _removeKeyPrefix(preloadQueue.data, config.input);
+        const fetchData = _removeKeyPrefix(fetchQ.data, config.input);
+        const allData = Object.assign({}, preloadData, fetchData);
         const dataStr = JSON.stringify(allData);
+
         if (!allowEmpty) {
             modulo.assert(dataStr !== '{}', `No components (none loaded?)`);
         }
@@ -163,12 +180,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
 
         // Build the output string
-        const preloadData = {};
-        for (const [absPath, str] of Object.entries(allData)) {
-            preloadData[absPath.replace(config.input, '')] = str;
-        }
         const source = modulo.SOURCE_CODE;
-        const newCtx ={source, dataStr, fetchQ, preloadData}
+        const newCtx = {source, dataStr, fetchData, preloadData, allData};
         const buildCtx = Object.assign(filePathCtx, newCtx);
         const str = modulo.buildTemplate.render(buildCtx);
         if (verbose) {
@@ -358,14 +371,35 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                 next();
             }
             this._app.use(logger);
+
+            // Disable cache headers, etag
+            this._app.use((req, res, next) => {
+              this._app.set('etag', false);
+              this._app.disable('view cache');
+              res.set('Cache-Control', 'no-store')
+              next()
+            });
+
             // TODO: Add in "/$username/" style wildcard matches, auto .html
             //       prefixing, etc before static. Behavior is simple:
             //       $username becomes Modulo.route.username for any generates
             //       within this dir (or something)
             //this._app.use(this.wildcardPatchMiddleware);
         }
-        this._app.use(express.static(config.output))
-        log(`Serving: ${config.output})`);
+
+        let {serverAutoFixSlashes, serverAutoFixExtensions} = config;
+        if (serverAutoFixExtensions === true) {
+            serverAutoFixExtensions = ['html'];
+        }
+        const staticSettings = {
+            maxAge: 0,
+            redirect: serverAutoFixSlashes,
+            extensions: serverAutoFixExtensions,
+        };
+        const staticMiddleware = express.static(config.output, staticSettings);
+        this._app.use(staticMiddleware);
+
+        log(`Serving: ${config.output} (${staticSettings})`);
 
         const _server = this._app.listen(port, host, () => {
             console.log('|%|--------------');

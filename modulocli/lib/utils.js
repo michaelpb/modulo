@@ -289,11 +289,6 @@ function doGenerate(config, modulo, text, outputFile, callback) {
     modulo.fetchQ.wait(() => {
 
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
-            const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this, after <Docs> done
-            if (verbose) {
-                const s = '' + ssgSubPaths;
-                console.log(`|%|  Document resolved; Subpaths: ${s}`);
-            }
             let html = modulo.getHTML();
             modulo.assert(html, 'Generate results cannot be falsy');
 
@@ -307,13 +302,14 @@ function doGenerate(config, modulo, text, outputFile, callback) {
                     console.error('(fail with --fail)');
                 }
                 callback();
-
-                // And now try any ssgSubPaths
-                return; // XXX
+                return;
+                // DEAD CODE
+                const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this, after <Docs> done
+                if (verbose) {
+                    const s = '' + ssgSubPaths;
+                    console.log(`|%|  Document resolved; Subpaths: ${s}`);
+                }
                 if (ssgSubPaths && ssgSubPaths.length > 0) {
-                    // NEXT TODO Eliminate "subpaths" feature, replace with
-                    // <DocsPage>  // all docspage stuff contained
-                    // </DocsPage>
                     console.log(`   '-> Rendering subpaths: ${ssgSubPaths.length}`);
                     for (const subpath of ssgSubPaths) {
                         patchModuloWithSSGFeatures(modulo.baseModulo, inputFile, subpath, outputFile);

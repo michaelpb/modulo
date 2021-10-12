@@ -82,6 +82,8 @@ function doCommand(cliConfig, args) {
     let {command, positional, flags} = args;
 
     const config = getConfig(cliConfig, flags);
+    const {verbose} = config
+    const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
     const preloadFiles = (config.preload || []).concat(positional || []);
     modulo.preloadQueue = new modulo.FetchQueue();
     for (let filePath of preloadFiles) {
@@ -89,13 +91,22 @@ function doCommand(cliConfig, args) {
             filePath = 0; // load from stdin, which has FD=0
         }
         modulo.preloadQueue.enqueue(filePath, source => {
+            log(`Preloading Modulo document ${filePath}`);
             modulo.loadText(source, filePath);
         });
     }
 
     modulo.preloadQueue.wait(() => {
-        //modulo.loadText(require('./lib/testdata').TEST_HTML);
+        modulo.defineAll(); // do any initial defines, get globalLoader
+
+        // Ensure preloadQueue gets loaded as components as well
+        for (const [path, data] of Object.entries(modulo.preloadQueue.data)) {
+            modulo.fetchQ.basePath = path;
+            modulo.globalLoader.loadString(data);
+        }
+
         modulo.defineAll(); // do any more defines
+        // Make sure preloads are
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
             if (!command) {
                 command = 'help';

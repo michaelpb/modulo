@@ -54,12 +54,35 @@ class ModuloNode {
 
         const scriptTagRe = /<script \s*src="\/?m.js">\s*<\/script>/i;
         if (scriptTagRe.test(html)) {
-            if (outPath) {
-                outPath = outPath.replace(config.output, ''); // remove output dir
-                const newScript = `<script src="${outPath}"></script>`;
-                html = html.replace(scriptTagRe, newScript);
-                console.log('Adding in script:', newScript);
+            // Remove the Preload script tag
+            html = html.replace(scriptTagRe, '');
+        }
+
+        const emptyHeadRe = /<head><\/head>/i;
+        if (emptyHeadRe.test(html)) {
+            // TODO: Remove spurious empty head tags
+        }
+
+        if (outPath) {
+            outPath = outPath.replace(config.output, ''); // remove output dir
+            // (NOTE: This relies on JavaScript's replace being singular)
+
+            const newScript = `<script src="${outPath}"></script>`;
+
+            const closingHead = /<\/head>/i;
+            const closingBody = /<\/body>/i;
+            if (closingBody.test(html)) {
+                html = html.replace(closingBody, newScript + '</body>');
+            } else if (closingHead.test(html)) {
+                html = html.replace(closingHead, newScript + '</head>');
+            } else {
+                console.log('WARNING: ModuloNode/ssgPostProcessCallback',
+                            'No </body> or </head> tag found, still',
+                            'carrying out scirpt injection:', newScript);
+                html = html + newScript;
             }
+
+            //console.log('Adding in script:', newScript);
         }
         return html;
     }
@@ -91,7 +114,6 @@ class ModuloNode {
             src = this.fetchPrefix + '/' + src;
         }
         return new Promise((resolve, reject) => {
-            console.log('its happening');
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {
                     reject(err);
@@ -140,12 +162,6 @@ class ModuloNode {
     }
 
     defineCustomElement(name, cls) {
-        /*
-        console.log('defineCustomElement was called');
-        if (name === 'mod-load') {
-            console.log('ready to define mod-laod', name, cls);
-        }
-        */
         const elements = this.doc.querySelectorAll(name);
         for (const el of elements) {
             if (el.hasAttribute('modulo-backend-skip')) {
@@ -224,6 +240,7 @@ class ModuloNode {
 
         // ensure both share same fetchQ
         this.fetchQ = baseModulo.fetchQ;
+        this.globalLoader = baseModulo.globalLoader;
 
         // get rid of cruft after defineAll
         this.globals.m = null; // remove 'm' shortcut
