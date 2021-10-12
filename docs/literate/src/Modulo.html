@@ -1,13 +1,10 @@
-<!DOCTYPE HTML>
-<head>
+<!DOCTYPE HTML><head>
     <meta charset="utf8">
-    <title>Start - Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <title>Source - Modulo.js</title>
+    <link rel="stylesheet" media="all" href="../modified_parallel_docco.css"> <!-- for doccu css -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
     <script src="/js/Modulo.js"></script>
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-
     <style id="mdu-Section_style">
 mdu-Section {
             position: relative;
@@ -129,160 +126,12 @@ mdu-CodeSnippet .m-Btn {
             right: 1px;
             z-index: 10;
         }
-    </style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
-eg-Simple * { text-decoration: underline; }
-</style><style id="eg-SearchBox_style">
-eg-SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-eg-SearchBox input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-eg-SearchBox input::after {
-        content: '\1F50E';
-    }
-eg-SearchBox .results-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-eg-SearchBox .results {
-        position: absolute;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        display: block;
-        border: 2px solid coral;
-        border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
-        background: white;
-    }
-eg-SearchBox .results.visible {
-        height: 200px;
-        width: 200px;
-    }
-eg-SearchBox .result {
-        padding: 10px;
-        width: 80px;
-        position: relative;
-    }
-eg-SearchBox .result label {
-        position: absolute;
-        width: 80px;
-        background: rgba(255, 255, 255, 0.5);
-        font-size: 0.7rem;
-        top: 0;
-        left: 0;
-    }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    color: #ccc;
-    font-weight: bold;
-}
-eg-Prime .grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-eg-Prime div.whole {
-    color: white;
-    background: #B90183;
-}
-eg-Prime div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
-</style><style id="eg-MemoryGame_style">
-eg-MemoryGame h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-eg-MemoryGame .board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-eg-MemoryGame .board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-eg-MemoryGame .board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-eg-MemoryGame .board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-eg-MemoryGame .board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style><style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
-    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
-    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
+    </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
+    <mod-load namespace="mdu" src="/components/pageparts.html"></mod-load>
 
 
 
-
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1125,&quot;checksum&quot;:&quot;8DG4eYIlxGUX5bDMeUUht8OSWAOGY9saqPM+SVAlj4TsxvOLQOH21b4rqD5W/sdW&quot;}">
+  <mdu-navbar selected="source" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1086,&quot;checksum&quot;:&quot;NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;}">
         <nav class="Navbar">
             <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
             <ul>
@@ -290,104 +139,3168 @@ tutorial-DocSidebar li.ginactive > a::before {
                     <a href="/index.html#below">About</a>
                 </li>
                 <li>
-                    <a href="/start.html" class="Navbar--selected">Start</a>
+                    <a href="/start.html">Start</a>
                 </li>
                 <li>
                     <a href="/docs.html">Docs</a>
                 </li>
                 <!--
                 <li>
-                    <a href="/literate/src/Modulo.html" >Source</a>
+                    <a href="/literate/src/Modulo.html" class="Navbar--selected">Source</a>
                 </li>
                 -->
             </ul>
 
             <div class="Navbar-rightInfo">
                 v: 0.0.1<br>
-                SLOC: 1125 lines<br>
+                SLOC: 1086 lines<br>
                 <a href="https://github.com/michaelpb/modulo/">github</a> | 
                 <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
             </div>
         </nav>
     </mdu-navbar>
+  <script>Modulo.defineAll();</script>
 
-<main class="Docs">
-    <h1>Get started with Modulo</h1>
-    <br>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">§</a>
+              </div>
+              <h1 id="introduction">Introduction</h1>
 
-    <div class="Docs-squareInfo">
-        <section class="Tutorial-tryit">
-            <h4>Brand new?</h4>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">§</a>
+              </div>
+              <p>Welcome to the Modulo.js source code.</p>
+<p>Unlike most code files, this one is arranged in a very deliberate way.  It’s
+arranged in a top-down manner, reflecting the “lifecycle” of a Modulo
+component, such that the earlier and more important code is at the top, and
+later and less important code is at the bottom. You can read it like a
+linear “story” of how Modulo works. Modulo employs <a href="https://en.wikipedia.org/wiki/Literate_programming">literate
+programming</a>, or
+interweaving Markdown-formatted comments on to tell this story, and uses a
+tool (docco) to extract all these comments for easy reading.</p>
+<h2 id="code-standards">Code standards</h2>
 
-            <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">§</a>
+              </div>
+              <ul>
+<li>SLOC limit: 1000 lines</li>
+<li>Line limit: 80 chars</li>
+<li>Indentation: 4 spaces</li>
+</ul>
 
-            <p>Modulo is brand new in general, so chances are its brand new to
-            you as well! If you're new, your best bet is to get started with
-            the tutorial.  It walks through the basics of setting up Modulo in
-            a new project, and gives a tour of the "must-know" features.<br>Prerequisite: HTML, CSS.  </p>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> HTMLElement === <span class="hljs-string">'undefined'</span>) {
+    <span class="hljs-keyword">var</span> HTMLElement = <span class="hljs-class"><span class="hljs-keyword">class</span> </span>{}; <span class="hljs-comment">// Node.js compatibilty</span>
+}
+<span class="hljs-keyword">var</span> Modulo = {
+    <span class="hljs-attr">globals</span>: {HTMLElement}, <span class="hljs-comment">// globals is window in Browser, an obj in Node.js</span>
+    <span class="hljs-attr">reconcilers</span>: {}, <span class="hljs-comment">// used later, for custom DOM Reconciler classes</span>
+    <span class="hljs-attr">cparts</span>: {}, <span class="hljs-comment">// used later, for custom CPart classes</span>
+    <span class="hljs-attr">templating</span>: {}, <span class="hljs-comment">// used later, for custom Templating languages</span>
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">§</a>
+              </div>
+              <h2 id="modulodefineall">Modulo.defineAll()</h2>
 
-            <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
-        </section>
-    </div>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">§</a>
+              </div>
+              <p>Our Modulo journey begins with <code>Modulo.defineAll()</code>, the function invoked to
+“activate” all of Modulo by defining the “mod-load” web component. This
+constructs a Loader object for every <code>&lt;mod-load ...&gt;</code> tag it encounters.</p>
 
-    <div class="Docs-squareInfo">
-        <h2>CDN</h2>
-        <p>Want to get started as quickly as possible? Copy &amp; paste one of
-        the following CDN links:</p>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>Modulo.defineAll = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">defineAll</span>(<span class="hljs-params"></span>) </span>{
+    Modulo.fetchQ = <span class="hljs-keyword">new</span> Modulo.FetchQueue();
+    Modulo.globals.customElements.define(<span class="hljs-string">'mod-load'</span>, Modulo.DOMLoader);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">§</a>
+              </div>
+              <p>Then, looks for embedded modulo components, found in <template modulo="">
+tags or <script type="modulo/embed" tags="">. For each of these, it loads
+their contents into a global loader with namespace 'x'.</p>
 
-<mdu-codesnippet text="<!-- Good: Use the latest version, served by GitHub pages -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> opts = {<span class="hljs-attr">options</span>: {<span class="hljs-attr">namespace</span>: <span class="hljs-string">&#x27;x&#x27;</span>}};
+    Modulo.globalLoader = <span class="hljs-keyword">new</span> Modulo.Loader(<span class="hljs-literal">null</span>, opts);
+    Modulo.globalLoader.loadModules(Modulo.globals.document);
+};
 
-<!-- Better: Include integrity checksum: -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;
-    integrity=&quot;sha384-8DG4eYIlxGUX5bDMeUUht8OSWAOGY9saqPM+SVAlj4TsxvOLQOH21b4rqD5W/sdW&quot;
-    crossorigin=&quot;anonymous&quot;></script>
+Modulo.DOMLoader = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DOMLoader</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HTMLElement</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-7">&#x00a7;</a>
+              </div>
+              <p>TODO: Delete DOMLoader
+The Web Components specifies the use of a “connectedCallback” function.
+In this case, this function will be invoked as soon as the DOM is loaded
+with a <code>&lt;mod-load&gt;</code> tag in it.</p>
 
-<!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
-<!-- (Not yet functioning!) -->
-<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>">
-        <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-            <span alt="Clipboard">📋</span>
-        </button>
-        <div modulo-ignore="">
-            <div [script.codemirror]=""></div>
-        </div>
-    </mdu-codesnippet>
-    </div>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">connectedCallback</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">const</span> src = <span class="hljs-built_in">this</span>.getAttribute(<span class="hljs-string">&#x27;src&#x27;</span>);
+        <span class="hljs-keyword">const</span> namespace = <span class="hljs-built_in">this</span>.getAttribute(<span class="hljs-string">&#x27;namespace&#x27;</span>);
+        <span class="hljs-keyword">const</span> opts = {<span class="hljs-attr">options</span>: {namespace, src}};
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;i am connected&#x27;</span>, opts);
+        <span class="hljs-built_in">this</span>.loader = <span class="hljs-keyword">new</span> Modulo.Loader(<span class="hljs-literal">null</span>, opts);
+        <span class="hljs-built_in">this</span>.loader.doFetch();
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;doin fetch&#x27;</span>, <span class="hljs-built_in">this</span>.loader);
+        <span class="hljs-comment">/*
 
-    <div class="Docs-squareInfo">
-        <h2>NPM</h2>
-        <p>Coming soon!</p>
-    </div>
+        this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
+        const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
 
-    <div class="Docs-squareInfo">
-        <h2>Download</h2>
-        <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
-        <span alt="Down arrow">↧</span> Modulo.js
-        <span id="vnum"></span> (Latest)</a>
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
+              </div>
+              <p>TODO: Finish cache feature, maybe fold into hot reload, eg it always
+first loads from cache, then it tries hotreloading from origin.
+This would make “never-cache” less important, but “always-cache”
+would be useful and be the inverse.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> skipCache = <span class="hljs-literal">true</span> || <span class="hljs-built_in">this</span>.hasAttribute(<span class="hljs-string">&#x27;never-cache&#x27;</span>) || Modulo.require;
+        <span class="hljs-keyword">if</span> (!skipCache &amp;&amp; cachedData &amp;&amp; cachedData.length &gt; <span class="hljs-number">2</span>) {
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [name, loadObj] <span class="hljs-keyword">of</span> <span class="hljs-built_in">JSON</span>.parse(cachedData)) {
+                <span class="hljs-built_in">this</span>.defineComponent(name, loadObj);
+            }
+        } <span class="hljs-keyword">else</span> {
+        }
+        */
+    }
+}
+
+Modulo.ComponentPart = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">loadCallback</span>(<span class="hljs-params">node, loader, loadObj</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-9">&#x00a7;</a>
+              </div>
+              <p>TODO rename “options” to “attrs”, refactor this mess</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> options = Modulo.utils.parseAttrs(node);
+        <span class="hljs-keyword">const</span> content = node.tagName === <span class="hljs-string">&#x27;TEMPLATE&#x27;</span> ? node.innerHTML
+                                                    : node.textContent;
+        <span class="hljs-keyword">return</span> {options, content, <span class="hljs-attr">dependencies</span>: options.src || <span class="hljs-literal">null</span>};
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">loadedCallback</span>(<span class="hljs-params">data, content</span>)</span> {
+        data.content = (data.content || <span class="hljs-string">&#x27;&#x27;</span>) + (content || <span class="hljs-string">&#x27;&#x27;</span>);
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">factoryCallback</span>(<span class="hljs-params"></span>)</span> {}
+
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">element, options</span>)</span> {
+        <span class="hljs-built_in">this</span>.component = element; <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> Remove</span>
+        <span class="hljs-built_in">this</span>.element = element;
+        <span class="hljs-built_in">this</span>.content = options.content;
+        <span class="hljs-built_in">this</span>.options = options.options; <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> Remove</span>
+        <span class="hljs-built_in">this</span>.attrs = options.options;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-10">&#x00a7;</a>
+              </div>
+              <h1 id="moduloloader">Modulo.Loader</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-11">&#x00a7;</a>
+              </div>
+              <p>Once registered by <code>defineAll()</code>, the <code>Modulo.Loader</code> will do the rest of
+the heavy lifting of fetching &amp; registering Modulo components.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Modulo.Loader = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Loader</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-12">&#x00a7;</a>
+              </div>
+              <h2 id="loader-connectedcallback">Loader: connectedCallback()</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-13">&#x00a7;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">element=<span class="hljs-literal">null</span>, options={options: {}}</span>)</span> { <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> refactor</span>
+        <span class="hljs-built_in">super</span>(element, options);
+        <span class="hljs-built_in">this</span>.src = <span class="hljs-built_in">this</span>.attrs.src;
+        <span class="hljs-built_in">this</span>.namespace = <span class="hljs-built_in">this</span>.attrs.namespace;
+        <span class="hljs-built_in">this</span>.factoryData = [];
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-14">&#x00a7;</a>
+              </div>
+              <p>factoryCallback() could be the new connectdCallback for <module><load>
+syntax!</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">doFetch</span>(<span class="hljs-params">element, options</span>)</span> {
+        Modulo.assert(<span class="hljs-built_in">this</span>.src, <span class="hljs-string">&#x27;Loader: Invalid src= attribute&#x27;</span>);
+        Modulo.assert(<span class="hljs-built_in">this</span>.namespace, <span class="hljs-string">&#x27;Loader: Invalid namespace= attribute&#x27;</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-15">&#x00a7;</a>
+              </div>
+              <p>After initializing data, send a new request to the URL specified by
+the src attribute. When the response is received, load the text as a
+Modulo component module definition.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        Modulo.fetchQ.enqueue(<span class="hljs-built_in">this</span>.src, <span class="hljs-function"><span class="hljs-params">text</span> =&gt;</span> <span class="hljs-built_in">this</span>.loadString(text));
+    }
+
+    <span class="hljs-function"><span class="hljs-title">loadModules</span>(<span class="hljs-params">elem</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-16">&#x00a7;</a>
+              </div>
+              <p>TODO: Decide whether loadModules goes above or below
+because otherwise what if it accidentally picks up on a &lt;load src=”?
+ACTUALLY, it won’t! Because that only happens AFTER. So, i have
+to figure out if it should drain queue sooner or later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.mod = {};
+        <span class="hljs-keyword">const</span> mod = elem.querySelector(<span class="hljs-string">&#x27;module&#x27;</span>);
+        <span class="hljs-keyword">if</span> (mod) {
+            <span class="hljs-keyword">const</span> [modName, modLoadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(mod);
+            <span class="hljs-built_in">this</span>.mod = modLoadObj;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-17">&#x00a7;</a>
+              </div>
+              <p>need to wait before we defineComponent here
+Modulo.fetchQ.wait(() =&gt; this.defineComponents());</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">this</span>.modFactory = <span class="hljs-built_in">this</span>.defineComponent(<span class="hljs-built_in">this</span>.namespace, modLoadObj);
+        }
+        <span class="hljs-keyword">const</span> query = <span class="hljs-string">&#x27;template[modulo-embed],script[type=&quot;modulo/embed&quot;]&#x27;</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> embeddedModule <span class="hljs-keyword">of</span> elem.querySelectorAll(query)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
+              </div>
+              <p>TODO: Should be elem.content if tag===TEMPLATE</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">this</span>.loadString(embeddedModule.innerHTML);
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-19">&#x00a7;</a>
+              </div>
+              <h2 id="loader-loadstring">Loader: loadString</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-20">&#x00a7;</a>
+              </div>
+              <p>The main loading method. This will take a string with the source code to
+a module as an argument and loop through all <code>&lt;component ...&gt;</code> style
+definitions. Then, it uses <code>Loader.loadFromDOMElement</code> to create a
+<code>ComponentFactory</code> instance for each component definition.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">loadString</span>(<span class="hljs-params">text</span>)</span> {
+        <span class="hljs-comment">/* TODO - Maybe use DOMParser here instead */</span>
+        <span class="hljs-comment">/* TODO - Recurse into other sub-loaders, applying namespace */</span>
+        <span class="hljs-comment">/* <span class="hljs-doctag">TODO:</span> Do &lt;script  / etc preprocessing here:
+          &lt;state -&gt; &lt;script type=&quot;modulo/state&quot;
+          &lt;\s*(state|props|template)([\s&gt;]) -&gt; &lt;script type=&quot;modulo/\1&quot;\2
+          &lt;/(state|props|template)&gt; -&gt; &lt;/script&gt;
+        */</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;getting back data&#x27;</span>, <span class="hljs-built_in">this</span>.src);
+        <span class="hljs-keyword">const</span> frag = <span class="hljs-keyword">new</span> Modulo.globals.DocumentFragment();
+        <span class="hljs-keyword">const</span> div = Modulo.globals.document.createElement(<span class="hljs-string">&#x27;div&#x27;</span>);
+        div.innerHTML = text;
+        frag.append(div);
+
+        <span class="hljs-built_in">this</span>.loadModules(div); <span class="hljs-comment">// In case we are just loading an embedded component</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tag <span class="hljs-keyword">of</span> div.querySelectorAll(<span class="hljs-string">&#x27;[mod-component],component&#x27;</span>)) {
+            <span class="hljs-keyword">const</span> [name, loadObj] = <span class="hljs-built_in">this</span>.loadFromDOMElement(tag);
+            <span class="hljs-built_in">this</span>.factoryData.push([name, loadObj]);
+        }
+        Modulo.fetchQ.wait(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">this</span>.defineComponents());
+    }
+
+    <span class="hljs-function"><span class="hljs-title">defineComponents</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [name, loadObj] <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.factoryData) {
+            <span class="hljs-built_in">this</span>.defineComponent(name, loadObj);
+        }
+
+        <span class="hljs-comment">/*
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-21">&#x00a7;</a>
+              </div>
+              <p>TODO: rewrite / remove -v</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> serialized = <span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-built_in">this</span>.factoryData);
+        Modulo.globals.localStorage.setItem(<span class="hljs-built_in">this</span>.cacheKey, serialized);
+        */
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-22">&#x00a7;</a>
+              </div>
+              <h2 id="loader-loadfromdomelement">Loader: loadFromDOMElement</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-23">&#x00a7;</a>
+              </div>
+              <p>Create a ComponentFactory instance from a given <code>&lt;component&gt;</code> definition.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">loadFromDOMElement</span>(<span class="hljs-params">elem</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-24">&#x00a7;</a>
+              </div>
+              <h3 id="step-1-config">Step 1: Config</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-25">&#x00a7;</a>
+              </div>
+              <p>Get any custom component configuration (e.g. attributes <code>name=</code> or
+<code>extends=</code>)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> attrs = Modulo.utils.parseAttrs(elem);
+        <span class="hljs-keyword">const</span> name = attrs.modComponent || attrs.name;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-26">&#x00a7;</a>
+              </div>
+              <h3 id="step-2-set-up-loadobj">Step 2: Set-up <code>loadObj</code></h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-27">&#x00a7;</a>
+              </div>
+              <p>Modulo often uses plain objects to “pass around” during the lifecycle
+of each component. At this stage, we set up <code>loadObj</code>.</p>
+<p>At the end of this method, the loadObj will be populated with a
+complete, parsed, component definition – enough information to
+instantiate a “factory” for this component – in the following
+structure:</p>
+<pre><code class="language-javascript">loadObj = {
+    <span class="hljs-attr">template</span>: [...], <span class="hljs-comment">// array of parsed objects for &quot;Template&quot; CPart</span>
+    <span class="hljs-attr">state</span>: [...], <span class="hljs-comment">// array of parsed objects for &quot;State&quot; CPart</span>
+    ...etc
+}
+</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> loadObj = {<span class="hljs-attr">component</span>: [{name}]}; <span class="hljs-comment">// Everything gets implicit Component CPart</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-28">&#x00a7;</a>
+              </div>
+              <h3 id="step-3-define-cparts">Step 3: define CParts</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-29">&#x00a7;</a>
+              </div>
+              <p>Loop through each CPart DOM definition within the component (e.g.
+<code>&lt;state&gt;</code>), invoking the <code>loadCallback</code> on each definition (e.g.
+<code>Modulo.cparts.state.loadCallback</code> will get invoked for each
+<code>&lt;state&gt;</code>). This <code>loadCallback</code> in turn will do any pre-processing
+necessary to transform the attributes of the DOM element into the
+data necessary to define this CPart.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> {cPartName, node} <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.getCPartNamesFromDOM(elem)) {
+            <span class="hljs-keyword">if</span> (!(cPartName <span class="hljs-keyword">in</span> loadObj)) {
+                loadObj[cPartName] = [];
+            }
+            <span class="hljs-keyword">const</span> {loadCallback, loadedCallback} = Modulo.cparts[cPartName];
+            <span class="hljs-keyword">const</span> data = loadCallback(node, <span class="hljs-built_in">this</span>, loadObj)
+            loadObj[cPartName].push(data);
+            <span class="hljs-keyword">if</span> (data.dependencies) {
+                <span class="hljs-keyword">const</span> cb = <span class="hljs-function">(<span class="hljs-params">text, label</span>) =&gt;</span>
+                    loadedCallback(data, text, label, <span class="hljs-built_in">this</span>, loadObj);
+                Modulo.fetchQ.enqueue(data.dependencies, cb, <span class="hljs-built_in">this</span>.src);
+            }
+        }
+        <span class="hljs-keyword">return</span> [name, loadObj];
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-30">&#x00a7;</a>
+              </div>
+              <h2 id="loader-definecomponent">Loader: defineComponent</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-31">&#x00a7;</a>
+              </div>
+              <p>Helper function that constructs a new ComponentFactory for a component,
+based on a loadObj data structure.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">defineComponent</span>(<span class="hljs-params">name, loadObj</span>)</span> {
+        <span class="hljs-keyword">const</span> factory = <span class="hljs-keyword">new</span> Modulo.ComponentFactory(<span class="hljs-built_in">this</span>, name, loadObj);
+        factory.register();
+        <span class="hljs-keyword">if</span> (Modulo.globals.defineComponentCallback) {
+            Modulo.globals.defineComponentCallback(factory); <span class="hljs-comment">// TODO rm when possible</span>
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-32">&#x00a7;</a>
+              </div>
+              <h2 id="loadergetnodecpartname">Loader.getNodeCPartName</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-33">&#x00a7;</a>
+              </div>
+              <p>Helper function that determines the CPart name from a DOM node.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">getNodeCPartName</span>(<span class="hljs-params">node</span>)</span> {
+        <span class="hljs-keyword">const</span> {tagName, nodeType, textContent} = node;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-34">&#x00a7;</a>
+              </div>
+              <p>node.nodeType equals 1 if the node is a DOM element (as opposed to
+text, or comment). Ignore comments, tolerate empty text nodes, but
+warn on others (since those are typically syntax mistakes).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (nodeType !== <span class="hljs-number">1</span>) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-35">&#x00a7;</a>
+              </div>
+              <p>Text nodes, comment nodes, etc</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (nodeType === <span class="hljs-number">3</span> &amp;&amp; textContent &amp;&amp; textContent.trim()) {
+                <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;Unexpected text in component def:&#x27;</span>, textContent);
+            }
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-36">&#x00a7;</a>
+              </div>
+              <p>Determine the name: The tag name, or the type attribute in the case
+of the alt script-tag syntax (eg <code>&lt;script type=&quot;modulo/template&quot;&gt;</code>)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">let</span> cPartName = tagName.toLowerCase();
+        <span class="hljs-keyword">const</span> splitType = (node.getAttribute(<span class="hljs-string">&#x27;type&#x27;</span>) || <span class="hljs-string">&#x27;&#x27;</span>).split(<span class="hljs-string">&#x27;/&#x27;</span>);
+        <span class="hljs-keyword">if</span> (splitType[<span class="hljs-number">0</span>] &amp;&amp; splitType[<span class="hljs-number">0</span>].toLowerCase() === <span class="hljs-string">&#x27;modulo&#x27;</span>) {
+            cPartName = splitType[<span class="hljs-number">1</span>];
+        }
+        <span class="hljs-keyword">if</span> (!(cPartName <span class="hljs-keyword">in</span> Modulo.cparts)) {
+            <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;Unknown CPart in component def:&#x27;</span>, tagName);
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        }
+        <span class="hljs-keyword">return</span> cPartName;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-37">&#x00a7;</a>
+              </div>
+              <h2 id="loadergetcpartnamesfromdom">Loader.getCPartNamesFromDOM</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-38">&#x00a7;</a>
+              </div>
+              <p>Helper function that loops through a component definitions children,
+generating an array of objects containing the node and CPart name.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">getCPartNamesFromDOM</span>(<span class="hljs-params">elem</span>)</span> {
+        <span class="hljs-keyword">let</span> children = elem.content ? elem.content.childNodes : elem.children;
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Array</span>.from(children)
+            .map(<span class="hljs-function"><span class="hljs-params">node</span> =&gt;</span> ({node, <span class="hljs-attr">cPartName</span>: <span class="hljs-built_in">this</span>.getNodeCPartName(node)}))
+            .filter(<span class="hljs-function"><span class="hljs-params">obj</span> =&gt;</span> obj.cPartName);
+
+        <span class="hljs-comment">/* <span class="hljs-doctag">TODO:</span> rewrite this */</span>
+        <span class="hljs-keyword">const</span> arr = [];
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> node <span class="hljs-keyword">of</span> elem.content.childNodes) {
+            <span class="hljs-keyword">const</span> cPartName = <span class="hljs-built_in">this</span>.getNodeCPartName(node);
+            <span class="hljs-keyword">if</span> (cPartName) {
+                arr.push({node, cPartName});
+            }
+        }
+        <span class="hljs-keyword">return</span> arr;
+    }
+}
+Modulo.cparts.load = Modulo.Loader;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-39">&#x00a7;</a>
+              </div>
+              <h1 id="modulocomponentfactory">Modulo.ComponentFactory</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-40">&#x00a7;</a>
+              </div>
+              <p>Now that we have traversed the jungle of loading Modulo component
+definitions, what happens next? Well, for each component that is defined, a
+ComponentFactory instance is created. This class handles instantiating and
+setting up Modulo components whenever they are encountered on an HTML page.</p>
+<p>In Modulo, every component definition consists of a collection of CPart
+configurations. Thus, the ComponentFactory stores the configuration of the
+CParts.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Modulo.ComponentFactory = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ComponentFactory</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-41">&#x00a7;</a>
+              </div>
+              <h2 id="componentfactory-constructor">ComponentFactory constructor</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-42">&#x00a7;</a>
+              </div>
+              <p>When a ComponentFactory gets constructed (that is, by the Loader), it in
+turn sets up expected properties, and then invokes its methods
+createClass and runFactoryLifeCycle explained next.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">loader, name, options</span>)</span> {
+        <span class="hljs-built_in">this</span>.loader = loader;
+        <span class="hljs-built_in">this</span>.options = options;
+        <span class="hljs-built_in">this</span>.name = name;
+        <span class="hljs-built_in">this</span>.fullName = <span class="hljs-string">`<span class="hljs-subst">${<span class="hljs-built_in">this</span>.loader.namespace}</span>-<span class="hljs-subst">${name}</span>`</span>;
+        Modulo.ComponentFactory.registerInstance(<span class="hljs-built_in">this</span>);
+        <span class="hljs-built_in">this</span>.componentClass = <span class="hljs-built_in">this</span>.createClass();
+        <span class="hljs-built_in">this</span>.baseRenderObj = <span class="hljs-built_in">this</span>.runFactoryLifecycle(options);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-43">&#x00a7;</a>
+              </div>
+              <h2 id="componentfactory-factory-lifecycle">ComponentFactory: Factory lifecycle</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-44">&#x00a7;</a>
+              </div>
+              <p>This “factory” lifecycle is a special lifecycle for any global or
+one-time setup, after component definitions are loaded, but before
+before any components are constructed. Examples: the Style CPart uses
+this stage to set up global CSS, the Template CPart uses this to compile
+the template, and the Script CPart will actually wrap the script-tag &amp;
+invoke it now.</p>
+<p>Like every other “lifecycle” in Modulo, it passes around a “renderObj”
+called baseRenderObj. After this method, this baseRenderObj is not
+modified, but instead gets copied into every other renderObj to form, as
+the name implies, the “base” of future renderObj.</p>
+<p>In total, this method loops through all the CPart names, finding each
+relevant CPart Classes, and then invoking each CPart static method
+“factoryCallback”, which is what does the necessary preprocessing. If
+there are multiples of the same CPart, then whichever appears last will
+overwrite and/or merge data with the previous ones.  However, that
+particular behavior can be controlled from within each CPart
+factoryCallback itself.</p>
+<p>At the end of this method, baseRenderObj will look like this:</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">this</span>.baseRenderObj = {
+    <span class="hljs-attr">script</span>: {<span class="hljs-attr">text</span>: <span class="hljs-string">&#x27;&quot;use static&quot;\nvar state;\nfunction inpCh(....etc)&#x27;</span>},
+    <span class="hljs-attr">template</span>: {<span class="hljs-attr">compiledTemplate</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ ...etc... }},
+    (...etc...)
+}
+</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">runFactoryLifecycle</span>(<span class="hljs-params">cPartOpts</span>)</span> {
+        <span class="hljs-keyword">const</span> baseRenderObj = {};
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [cPartName, partOptionsArr] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(cPartOpts)) {
+            <span class="hljs-keyword">const</span> cpCls = Modulo.cparts[cPartName];
+            <span class="hljs-keyword">let</span> data = {};
+            <span class="hljs-keyword">for</span> (data <span class="hljs-keyword">of</span> partOptionsArr) {
+                data = cpCls.factoryCallback(data, <span class="hljs-built_in">this</span>, baseRenderObj) || data;
+            }
+            baseRenderObj[cPartName] = data;
+        }
+        <span class="hljs-keyword">return</span> baseRenderObj;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-45">&#x00a7;</a>
+              </div>
+              <h2 id="componentfactory-createclass">ComponentFactory: createClass</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-46">&#x00a7;</a>
+              </div>
+              <p>Finally, we are ready to create the class that the browser will use to
+actually instantiate each Component. At this stage, we set up the
+reconciliation engine, since that’s a component-wide option, create a
+“back reference” to the factory from the component, and then return a
+brand-new class definition.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">createClass</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">const</span> {fullName} = <span class="hljs-built_in">this</span>;
+        <span class="hljs-keyword">const</span> {reconciliationEngine = <span class="hljs-string">&#x27;SetDom&#x27;</span>} = <span class="hljs-built_in">this</span>.options;
+        <span class="hljs-keyword">const</span> engine = <span class="hljs-keyword">new</span> Modulo.reconcilers[reconciliationEngine]();
+        <span class="hljs-keyword">const</span> func = <span class="hljs-function">(<span class="hljs-params">component, html</span>) =&gt;</span> engine.reconcile(component, html);
+        <span class="hljs-keyword">return</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CustomElement</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">Element</span> </span>{
+            <span class="hljs-keyword">get</span> <span class="hljs-title">factory</span>() {
+                <span class="hljs-comment">/* Gets current registered component factory (for hot-reloading) */</span>
+                <span class="hljs-keyword">return</span> Modulo.factoryInstances[fullName];
+            }
+            <span class="hljs-keyword">get</span> <span class="hljs-title">reconcile</span>() { <span class="hljs-keyword">return</span> func; }
+        };
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-47">&#x00a7;</a>
+              </div>
+              <h2 id="componentfactory-buildcparts">ComponentFactory: buildCParts</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-48">&#x00a7;</a>
+              </div>
+              <p>This function does the heavy lifting of actually constructing a
+component, and is invoked when the component is mounted to the page.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">buildCParts</span>(<span class="hljs-params">element</span>)</span> {
+        <span class="hljs-keyword">const</span> oldCParts = element.cparts || {};
+        element.cparts = {element}; <span class="hljs-comment">// Include &quot;element&quot;, for lifecycle methods</span>
+        element.cpartSpares = {}; <span class="hljs-comment">// no need to include, since only 1 element</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-49">&#x00a7;</a>
+              </div>
+              <p>It loops through the parsed array of objects that define the
+Component Parts for this component, checking for errors.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [name, partOptionsArr] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(<span class="hljs-built_in">this</span>.options)) {
+            Modulo.assert(name <span class="hljs-keyword">in</span> Modulo.cparts, <span class="hljs-string">`Unknown cPart: <span class="hljs-subst">${name}</span>`</span>);
+            element.cpartSpares[name] = [];
+
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> partOptions <span class="hljs-keyword">of</span> partOptionsArr) {
+                <span class="hljs-keyword">const</span> instance = <span class="hljs-keyword">new</span> Modulo.cparts[name](element, partOptions);
+                <span class="hljs-keyword">if</span> (name <span class="hljs-keyword">in</span> element.cparts) {
+                    element.cpartSpares[name].push(instance);
+                }
+                element.cparts[name] = instance;
+
+                <span class="hljs-comment">/* // (<span class="hljs-doctag">NOTE:</span> Untested after refactor) 
+                *  // If this component was already mounted and is getting
+                *  // &quot;rebuilt&quot; due to the definition changing, it also triggers
+                *  // any callbacks, to allow for hot-reloading without losing
+                *  // state.
+                if (cparts[name].reloadCallback &amp;&amp; name in oldCParts) {
+                    cparts[name].reloadCallback(oldCParts[name]);
+                }*/</span>
+            }
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-50">&#x00a7;</a>
+              </div>
+              <h2 id="componentfactory-register--registerinstance">ComponentFactory: register &amp; registerInstance</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-51">&#x00a7;</a>
+              </div>
+              <p>These are minor helper functions. The first registers with the browser,
+the second keeps a central location of all component factories defined.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">register</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">const</span> tagName = <span class="hljs-built_in">this</span>.fullName.toLowerCase();
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;registering&#x27;</span>, tagName, <span class="hljs-built_in">this</span>.fullName);
+        Modulo.globals.customElements.define(tagName, <span class="hljs-built_in">this</span>.componentClass);
+    }
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">registerInstance</span>(<span class="hljs-params">instance</span>)</span> {
+        <span class="hljs-keyword">if</span> (!Modulo.factoryInstances) {
+            Modulo.factoryInstances = {};
+        }
+        Modulo.factoryInstances[instance.fullName] = instance;
+    }
+}
+
+Modulo.Element = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ModuloElement</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HTMLElement</span> </span>{
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">super</span>();
+        <span class="hljs-built_in">this</span>.initialize();
+    }
+
+    <span class="hljs-function"><span class="hljs-title">initialize</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">this</span>.cparts = {};
+
+        <span class="hljs-built_in">this</span>.originalHTML = <span class="hljs-built_in">this</span>.innerHTML;
+        <span class="hljs-built_in">this</span>.originalChildren = [];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-52">&#x00a7;</a>
+              </div>
+              <p>console.log(‘originalChildren!’, this.originalChildren);
+console.log(‘originalInnerHTML!’, this.innerHTML);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.hasChildNodes()) {
+            <span class="hljs-keyword">const</span> dupedChildren = <span class="hljs-built_in">Array</span>.from(<span class="hljs-built_in">this</span>.childNodes); <span class="hljs-comment">// necessary</span>
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> child <span class="hljs-keyword">of</span> dupedChildren) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-53">&#x00a7;</a>
+              </div>
+              <p>this.originalChildren.push(this.removeChild(child)); // TODO: should i remove children?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-built_in">this</span>.originalChildren.push(child);
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-54">&#x00a7;</a>
+              </div>
+              <p>console.log(‘originalChildren has child nodes!’, this.originalChildren);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        }
+        <span class="hljs-built_in">this</span>.fullName = <span class="hljs-built_in">this</span>.factory.fullName;
+        <span class="hljs-built_in">this</span>.isMounted = <span class="hljs-literal">false</span>;
+        <span class="hljs-built_in">this</span>.initRenderObj = <span class="hljs-built_in">Object</span>.assign({}, <span class="hljs-built_in">this</span>.factory.baseRenderObj);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">setupCParts</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">this</span>.factory.buildCParts(<span class="hljs-built_in">this</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">applyDirectives</span>(<span class="hljs-params">directives</span>)</span> {
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> args <span class="hljs-keyword">of</span> directives) {
+            <span class="hljs-keyword">const</span> {setUp, tearDown, el, rawName, hasRun, value, dName} = args;
+            <span class="hljs-keyword">if</span> (!setUp) {
+                <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;TMP Skipping:&#x27;</span>, dName, rawName, value);
+                <span class="hljs-keyword">continue</span>;
+            }
+            args.resolutionContext = <span class="hljs-built_in">this</span>; <span class="hljs-comment">// TODO fix this with truly predictable context</span>
+            <span class="hljs-keyword">if</span> (hasRun) {
+                <span class="hljs-keyword">if</span> (!tearDown) {
+                    <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;TMP NO TEAR DOWN ERR:&#x27;</span>, rawName);
+                }
+                tearDown(args);
+            }
+            args.hasRun = <span class="hljs-literal">true</span>;
+            setUp(args);
+            <span class="hljs-comment">/*
+            if (setUp) {
+                el.onload = setUp.bind(thisContext, [args]);
+            }
+            if (tearDown) {
+                el.onunload = tearDown.bind(thisContext, [args]);
+            }
+            */</span>
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-title">swapSpare</span>(<span class="hljs-params">type, name</span>)</span> {
+        <span class="hljs-keyword">const</span> arr = <span class="hljs-built_in">this</span>.cpartSpares[type];
+        <span class="hljs-keyword">const</span> index = arr.findIndex(<span class="hljs-function">(<span class="hljs-params">{attrs}</span>) =&gt;</span> attrs.name === name);
+        <span class="hljs-keyword">const</span> spare = arr[index];
+        arr[index] = <span class="hljs-built_in">this</span>.cparts[type];
+        <span class="hljs-built_in">this</span>.cparts[type] = spare;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">rerender</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">this</span>.lifecycle([<span class="hljs-string">&#x27;prepare&#x27;</span>, <span class="hljs-string">&#x27;render&#x27;</span>, <span class="hljs-string">&#x27;update&#x27;</span>, <span class="hljs-string">&#x27;updated&#x27;</span>]);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">lifecycle</span>(<span class="hljs-params">lifecycleNames, rObj={}</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-55">&#x00a7;</a>
+              </div>
+              <p>NEW CODE: This is a quick re-implementation of lifecycle</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.renderObj = <span class="hljs-built_in">Object</span>.assign({}, rObj, <span class="hljs-built_in">this</span>.getCurrentRenderObj());</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-56">&#x00a7;</a>
+              </div>
+              <p>todo: maybe sort cparts ahead of time based on lifecycles?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> lcName <span class="hljs-keyword">of</span> lifecycleNames) {
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [cPartName, cPart] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(<span class="hljs-built_in">this</span>.cparts)) {
+                <span class="hljs-keyword">const</span> method = cPart[lcName + <span class="hljs-string">&#x27;Callback&#x27;</span>];
+                <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.renderObj) {
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;lolwut - renderobj is falsy&#x27;</span>, <span class="hljs-built_in">this</span>.renderObj);
+                    <span class="hljs-keyword">break</span>;
+                }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-57">&#x00a7;</a>
+              </div>
+              <p>TODO: clean this up, renderObj should never “just”
+be cPart, should be the whole cparts.* being bare
+name OOP, vs cparts.*  being factory-defined</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">if</span> (!(cPartName <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.renderObj)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-58">&#x00a7;</a>
+              </div>
+              <p>this.renderObj[cPartName] = cPart;</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                }
+                <span class="hljs-keyword">if</span> (method) {
+                    <span class="hljs-keyword">const</span> results = method.call(cPart, <span class="hljs-built_in">this</span>.renderObj);
+                    <span class="hljs-keyword">if</span> (results) {
+                        <span class="hljs-built_in">this</span>.renderObj[cPartName] = results;
+                    }
+                }
+            }
+        }
+        <span class="hljs-comment">/* <span class="hljs-doctag">TODO:</span> should probably be nulling this after */</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-59">&#x00a7;</a>
+              </div>
+              <p>this.renderObj = null; // rendering is over, set to null</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+
+    <span class="hljs-function"><span class="hljs-title">getCurrentRenderObj</span>(<span class="hljs-params"></span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-60">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is initRenderObj’, this.initRenderObj);
+console.log(‘this is renderObj’, this.renderObj);
+console.log(‘this is eventRenderObj’, this.eventRenderObj);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> (<span class="hljs-built_in">this</span>.eventRenderObj || <span class="hljs-built_in">this</span>.renderObj || <span class="hljs-built_in">this</span>.initRenderObj);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">resolveValue</span>(<span class="hljs-params">key</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-61">&#x00a7;</a>
+              </div>
+              <p>const hackName = this.factory.name;
+console.log(<code>   ${hackName} -- GET   ${key}</code>, rObj);
+console.log(<code>   ${hackName} -- VALUE ${key} &lt;&lt;${result}&gt;&gt;</code>);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> rObj = <span class="hljs-built_in">this</span>.getCurrentRenderObj();
+        <span class="hljs-keyword">const</span> result = key.split(<span class="hljs-string">&#x27;.&#x27;</span>).reduce(<span class="hljs-function">(<span class="hljs-params">o, name</span>) =&gt;</span> o[name], rObj);
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">resolveAttributeName</span>(<span class="hljs-params">name</span>)</span> {
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.hasAttribute(name)) {
+            <span class="hljs-keyword">return</span> name;
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.hasAttribute(name + <span class="hljs-string">&#x27;:&#x27;</span>)) {
+            <span class="hljs-keyword">return</span> name + <span class="hljs-string">&#x27;:&#x27;</span>;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">connectedCallback</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-comment">/*
+        Note: For testability, setupCParts is invoked on first mount, before
+        initialize.  This is so the hacky &quot;fake-upgrade&quot; for custom components
+        works for the automated tests. Logically, it should probably be invoked
+        in the constructor.
+        */</span>
+        <span class="hljs-built_in">this</span>.setupCParts();
+        <span class="hljs-built_in">this</span>.lifecycle([<span class="hljs-string">&#x27;initialized&#x27;</span>])
+        <span class="hljs-built_in">this</span>.rerender();
+        <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.isMounted &amp;&amp; !(<span class="hljs-string">&#x27;template&#x27;</span> <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.cparts)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-62">&#x00a7;</a>
+              </div>
+              <p>TODO: Make ‘template’ not hardcoded here, as well as
+Component’s updateCallback. OR do attrs?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        }
+        <span class="hljs-built_in">this</span>.isMounted = <span class="hljs-literal">true</span>;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-63">&#x00a7;</a>
+              </div>
+              <p>IDEA (2021-10-05): Call Collect directives during “update” phase, and return
+a trimmed version of its structure in the component CPart data in renderObj.
+Then call applyDirectives in the “updated” phase.  This is what the
+documentation says happens (IRL, right now both happen in “update”)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Modulo.collectDirectives = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">collectDirectives</span>(<span class="hljs-params">component, el, arr</span>) </span>{
+    <span class="hljs-keyword">if</span> (!arr) {
+        arr = []; <span class="hljs-comment">// HACK for testability</span>
+    }
+    <span class="hljs-comment">/* <span class="hljs-doctag">TODO:</span> for &quot;pre-load&quot; directives, possibly just pass in &quot;Loader&quot; as
+       &quot;component&quot; so we can have load-time directives */</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> rawName <span class="hljs-keyword">of</span> el.getAttributeNames()) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-64">&#x00a7;</a>
+              </div>
+              <p>todo: optimize skipping most elements or attributes</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">let</span> name = rawName;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [regexp, dir] <span class="hljs-keyword">of</span> Modulo.directiveShortcuts) {
+            <span class="hljs-keyword">if</span> (rawName.match(regexp)) {
+                name = <span class="hljs-string">`[<span class="hljs-subst">${dir}</span>]`</span> + name.replace(regexp, <span class="hljs-string">&#x27;&#x27;</span>);
+            }
+        }
+        <span class="hljs-keyword">if</span> (!name.startsWith(<span class="hljs-string">&#x27;[&#x27;</span>)) {
+            <span class="hljs-keyword">continue</span>; <span class="hljs-comment">// There are no directives, skip</span>
+        }
+        <span class="hljs-keyword">const</span> value = el.getAttribute(rawName);
+        <span class="hljs-keyword">const</span> attrName = cleanWord((name.match(<span class="hljs-regexp">/\][^\]]+$/</span>) || [<span class="hljs-string">&#x27;&#x27;</span>])[<span class="hljs-number">0</span>]);
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> dName <span class="hljs-keyword">of</span> name.split(<span class="hljs-string">&#x27;]&#x27;</span>).map(cleanWord)) {
+            <span class="hljs-keyword">if</span> (dName === attrName) {
+                <span class="hljs-keyword">continue</span>; <span class="hljs-comment">// Skip bare name</span>
+            }
+            <span class="hljs-keyword">const</span> setUp = component.resolveValue(dName + <span class="hljs-string">&#x27;Mount&#x27;</span>);
+            <span class="hljs-keyword">const</span> tearDown = component.resolveValue(dName + <span class="hljs-string">&#x27;Unmount&#x27;</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-65">&#x00a7;</a>
+              </div>
+              <p>console.log(‘dName’, dName, attrName, component);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            Modulo.assert(setUp || tearDown, <span class="hljs-string">`Unknown directive: &quot;<span class="hljs-subst">${dName}</span>&quot;`</span>);
+            arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
+        }
+    }
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> child <span class="hljs-keyword">of</span> el.children) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-66">&#x00a7;</a>
+              </div>
+              <p>tail recursion into children</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        Modulo.collectDirectives(component, child, arr);
+    }
+    <span class="hljs-keyword">return</span> arr; <span class="hljs-comment">// HACK for testability</span>
+}
+
+Modulo.directiveShortcuts = [[<span class="hljs-regexp">/^@/</span>, <span class="hljs-string">&#x27;component.event&#x27;</span>],
+                             [<span class="hljs-regexp">/:$/</span>, <span class="hljs-string">&#x27;component.resolve&#x27;</span>] ];
+
+Modulo.cparts.component = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Component</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-function"><span class="hljs-title">prepareCallback</span>(<span class="hljs-params"></span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-67">&#x00a7;</a>
+              </div>
+              <p>TODO shouldn’t have to do this —v</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> {
+            <span class="hljs-attr">eventMount</span>: <span class="hljs-built_in">this</span>.eventMount.bind(<span class="hljs-built_in">this</span>),
+            <span class="hljs-attr">eventUnmount</span>: <span class="hljs-built_in">this</span>.eventUnmount.bind(<span class="hljs-built_in">this</span>),
+            <span class="hljs-attr">resolveMount</span>: <span class="hljs-built_in">this</span>.resolveMount.bind(<span class="hljs-built_in">this</span>),
+            <span class="hljs-attr">resolveUnmount</span>: <span class="hljs-built_in">this</span>.resolveUnmount.bind(<span class="hljs-built_in">this</span>),
+            <span class="hljs-attr">childrenMount</span>: <span class="hljs-built_in">this</span>.childrenMount.bind(<span class="hljs-built_in">this</span>),
+            <span class="hljs-attr">childrenUnmount</span>: <span class="hljs-built_in">this</span>.childrenUnmount.bind(<span class="hljs-built_in">this</span>),
+        };
+    }
+
+    <span class="hljs-function"><span class="hljs-title">updateCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
+        <span class="hljs-keyword">const</span> {element} = <span class="hljs-built_in">this</span>;
+        <span class="hljs-keyword">if</span> (renderObj.template) {
+            <span class="hljs-keyword">let</span> newContents = renderObj.template.renderedOutput || <span class="hljs-string">&#x27;&#x27;</span>;
+            element.reconcile(element, newContents);
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-title">handleEvent</span>(<span class="hljs-params">func, ev, payload</span>)</span> {
+        <span class="hljs-built_in">this</span>.element.lifecycle([<span class="hljs-string">&#x27;event&#x27;</span>], {<span class="hljs-attr">_eventFunction</span>: func});
+        func.call(<span class="hljs-literal">null</span>, ev, payload); <span class="hljs-comment">// todo: bind to array.push etc, or get autobinding in resolveValue</span>
+        <span class="hljs-built_in">this</span>.element.lifecycle([<span class="hljs-string">&#x27;eventCleanup&#x27;</span>]); <span class="hljs-comment">// todo: should this go below rerender()?</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-68">&#x00a7;</a>
+              </div>
+              <p>TODO: Add if (!this.component.options.controlledRender)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.element.rerender(); <span class="hljs-comment">// always rerender after events</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-title">childrenMount</span>(<span class="hljs-params">{el}</span>)</span> {
+        el.append(...this.element.originalChildren);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-69">&#x00a7;</a>
+              </div>
+              <p>this.element.originalChildren = [];</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+
+    <span class="hljs-function"><span class="hljs-title">childrenUnmount</span>(<span class="hljs-params"></span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-70">&#x00a7;</a>
+              </div>
+              <p>this.element.innerHTML = ‘’;</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+
+    <span class="hljs-function"><span class="hljs-title">eventMount</span>(<span class="hljs-params">info</span>)</span> {
+        <span class="hljs-keyword">const</span> {el, value, attrName, rawName} = info;
+        <span class="hljs-keyword">const</span> getAttr = getGetAttr(el);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-71">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is eventMount’, info);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> listener = <span class="hljs-function">(<span class="hljs-params">ev</span>) =&gt;</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-72">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-72">&#x00a7;</a>
+              </div>
+              <p>window.C = this;
+console.log(‘this is rawName’, rawName, value);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">const</span> func = getAttr(attrName, getAttr(rawName));
+            Modulo.assert(func, <span class="hljs-string">`Bad <span class="hljs-subst">${attrName}</span>, <span class="hljs-subst">${value}</span> is <span class="hljs-subst">${func}</span>`</span>);
+            <span class="hljs-keyword">const</span> payload = getAttr(<span class="hljs-string">`<span class="hljs-subst">${attrName}</span>.payload`</span>,
+                                      getAttr(<span class="hljs-string">&#x27;payload&#x27;</span>, el.value));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-73">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is payload’, <code>${attrName}.payload</code>, payload);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">this</span>.handleEvent(func, ev, payload);
+        };
+        info.listener = listener;
+        el.addEventListener(attrName, listener);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">eventUnmount</span>(<span class="hljs-params">{attrName, listener}</span>)</span> {
+        el.removeEventListener(attrName, listener);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">resolveMount</span>(<span class="hljs-params">{el, value, attrName, resolutionContext}</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-74">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is it’, resolutionContext);
+console.log(‘this is resolve mount’, attrName, value);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> resolvedValue = resolutionContext.resolveValue(value);
+        el.attrs = <span class="hljs-built_in">Object</span>.assign(el.attrs || {}, {[attrName]: resolvedValue});
+        el.getAttr = <span class="hljs-function">(<span class="hljs-params">n, def</span>) =&gt;</span> {
+            <span class="hljs-keyword">let</span> val;
+            <span class="hljs-keyword">if</span> (n <span class="hljs-keyword">in</span> el.attrs) {
+                val = el.attrs[n];
+            } <span class="hljs-keyword">else</span> {
+                val = el.getAttribute(n) || def;
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-75">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-75">&#x00a7;</a>
+              </div>
+              <p>console.log(‘——————-‘, n, val);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">return</span> val;
+        };
+    }
+    <span class="hljs-function"><span class="hljs-title">resolveUnmount</span>(<span class="hljs-params">{el, attrName}</span>)</span> {
+        <span class="hljs-keyword">delete</span> el.attrs[attrName];
+    }
+}
+
+Modulo.cparts.props = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Props</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">factoryCallback</span>(<span class="hljs-params">{options}, {componentClass}, renderObj</span>)</span> {
+        <span class="hljs-comment">/* untested / daedcode ---v */</span>
+        componentClass.observedAttributes = <span class="hljs-built_in">Object</span>.keys(options);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">copyMount</span>(<span class="hljs-params">{el}</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-76">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-76">&#x00a7;</a>
+              </div>
+              <p>dead code?
+change to “this.element”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> attr <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.element.getAttributeNames()) {
+            el.setAttribute(attr, <span class="hljs-built_in">this</span>.element.getAttribute(attr));
+        }
+        <span class="hljs-comment">/*
+        const props = {};
+        for (let propName of Object.keys(this.options)) {
+            propName = propName.replace(/:$/, &#x27;&#x27;); // normalize
+            let attrName = this.element.resolveAttributeName(propName);
+            if (!attrName) {
+                console.error(&#x27;Prop&#x27;, propName, &#x27;is required for&#x27;, this.element.tagName);
+                continue;
+            }
+            let value = this.element.getAttribute(attrName);
+            if (attrName.endsWith(&#x27;:&#x27;)) {
+                attrName = attrName.slice(0, -1); // trim &#x27;:&#x27;
+                value = this.element.moduloRenderContext.resolveValue(value);
+            }
+            props[propName] = value;
+        }
+        */</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-title">initializedCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
+        <span class="hljs-keyword">const</span> props = {};
+        <span class="hljs-keyword">const</span> getAttr = getGetAttr(<span class="hljs-built_in">this</span>.element);
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> propName <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.keys(<span class="hljs-built_in">this</span>.options)) {
+            propName = propName.replace(<span class="hljs-regexp">/:$/</span>, <span class="hljs-string">&#x27;&#x27;</span>); <span class="hljs-comment">// TODO, make func to normalize directives</span>
+            props[propName] = getAttr(propName);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-77">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-77">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is props’, props);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> props;
+    }
+}
+
+<span class="hljs-comment">/*
+Modulo.cparts.attributes = class Attributes extends Modulo.ComponentPart {
+    initializedCallback() {
+        for (let [name, value] of Object.entries(this.options)) {
+            if (name.includes(&#x27;.&#x27;)) {
+                name = &#x27;[&#x27; + nae
+            }
+            this.element.setAttribute(name, value);
+        }
+    }
+}
+*/</span>
+
+Modulo.cparts.style = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Style</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">factoryCallback</span>(<span class="hljs-params">{content}, factory, renderObj</span>)</span> {
+        <span class="hljs-keyword">const</span> {fullName} = factory;
+        <span class="hljs-keyword">const</span> id = <span class="hljs-string">`<span class="hljs-subst">${fullName}</span>_style`</span>;
+        <span class="hljs-keyword">let</span> elem = Modulo.globals.document.getElementById(id);
+        <span class="hljs-keyword">if</span> (!elem) {
+            elem = Modulo.globals.document.createElement(<span class="hljs-string">&#x27;style&#x27;</span>);
+            elem.id = id;
+            Modulo.globals.document.head.append(elem)
+        }
+        elem.textContent = content;
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">prefixAllSelectors</span>(<span class="hljs-params">namespace, name, text=<span class="hljs-string">&#x27;&#x27;</span></span>)</span> {
+        <span class="hljs-keyword">const</span> fullName = <span class="hljs-string">`<span class="hljs-subst">${namespace}</span>-<span class="hljs-subst">${name}</span>`</span>;
+        <span class="hljs-keyword">let</span> content = text.replace(<span class="hljs-regexp">/\*\/.*?\*\//ig</span>, <span class="hljs-string">&#x27;&#x27;</span>); <span class="hljs-comment">// strip comments</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-78">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-78">&#x00a7;</a>
+              </div>
+              <p>To prefix the selectors, we loop through them, with this RegExp that
+looks for { chars</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        content = content.replace(<span class="hljs-regexp">/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi</span>, <span class="hljs-function"><span class="hljs-params">selector</span> =&gt;</span> {
+            selector = selector.trim();
+            <span class="hljs-keyword">if</span> (selector.startsWith(<span class="hljs-string">&#x27;@&#x27;</span>) || selector.startsWith(fullName)
+                  || selector.startsWith(<span class="hljs-string">&#x27;from&#x27;</span>) || selector.startsWith(<span class="hljs-string">&#x27;to&#x27;</span>)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-79">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-79">&#x00a7;</a>
+              </div>
+              <p>TODO: Make a regexp to check if matches other keyframe
+stuff, 90% etc
+Skip, is @media or @keyframes, or already prefixed</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">return</span> selector;
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-80">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-80">&#x00a7;</a>
+              </div>
+              <p>Upgrade the “bare” component name to be the full name</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            selector = selector.replace(<span class="hljs-keyword">new</span> <span class="hljs-built_in">RegExp</span>(name, <span class="hljs-string">&#x27;ig&#x27;</span>), fullName);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-81">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-81">&#x00a7;</a>
+              </div>
+              <p>If it is not prefixed at this point, then be sure to prefix</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (!selector.startsWith(fullName)) {
+                selector = <span class="hljs-string">`<span class="hljs-subst">${fullName}</span> <span class="hljs-subst">${selector}</span>`</span>;
+            }
+            <span class="hljs-keyword">return</span> selector;
+        });
+        <span class="hljs-keyword">return</span> content;
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">loadCallback</span>(<span class="hljs-params">node, loader, loadObj</span>)</span> {
+        <span class="hljs-keyword">let</span> data = <span class="hljs-built_in">super</span>.loadCallback(node, loader, loadObj);
+        <span class="hljs-keyword">const</span> {name} = loadObj.component[<span class="hljs-number">0</span>];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-82">&#x00a7;</a>
+              </div>
+              <p>TODO: Move prefixing to factoryCallback (?)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        data.content = Modulo.cparts.style.prefixAllSelectors(
+                          loader.namespace, name, data.content);
+        <span class="hljs-keyword">return</span> data;
+    }
+}
 
 
-        <p style="margin-top: 20px">Or run the following command:</p>
+Modulo.cparts.template = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Template</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">factoryCallback</span>(<span class="hljs-params">opts, factory, loadObj</span>)</span> {
+        <span class="hljs-keyword">const</span> {loader} = factory;
+        <span class="hljs-keyword">const</span> tagPref = <span class="hljs-string">&#x27;$1&#x27;</span> + loader.namespace + <span class="hljs-string">&#x27;-&#x27;</span>;
 
-        <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
-    </div>
-</main>
+        <span class="hljs-keyword">const</span> getAltTemplate = <span class="hljs-function">(<span class="hljs-params">name</span>) =&gt;</span>
+            loadObj.template.find(<span class="hljs-function">(<span class="hljs-params">{opts}</span>) =&gt;</span> opts.name === name).instance;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-83">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-83">&#x00a7;</a>
+              </div>
+              <p>Should be X, and maybe be a customizable preproccesor?
+const content = (opts.content || ‘’).replace(/(&lt;/?)x-/ig, tagPref);</p>
 
-<script>
-    (function () {
-        const {version} = JSON.parse(document.querySelector('mdu-Navbar')
-                                        .getAttribute('script-exports'));
-        document.querySelector('#vnum').textContent = 'v' + version;
-    })();
-</script>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> content = (opts.content || <span class="hljs-string">&#x27;&#x27;</span>).replace(<span class="hljs-regexp">/(&lt;\/?)my-/ig</span>, tagPref);
+        <span class="hljs-keyword">const</span> engineClass = Modulo.templating[opts.engine || <span class="hljs-string">&#x27;MTL&#x27;</span>];
+        <span class="hljs-keyword">return</span> {<span class="hljs-attr">instance</span>: <span class="hljs-keyword">new</span> engineClass(content, opts, getAltTemplate)};
+    }
+    <span class="hljs-comment">/*
+    initializedCallback(renderObj) {
+        this.compiledTemplate = renderObj.template.compiledTemplate;
+        renderObj.template.swap = (ev, name) =&gt;
+            this.element.switchToSpareByName(&#x27;template&#x27;, name);
+        renderObj.template.route = (ev, name) =&gt; {
+            this.element.switchToSpareByName(&#x27;template&#x27;, name);
+        }
+    }
+    */</span>
+    <span class="hljs-function"><span class="hljs-title">renderCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
+        <span class="hljs-keyword">const</span> result = renderObj.template.instance.render(renderObj)
+        renderObj.template.renderedOutput = result;
+        <span class="hljs-comment">/*
+        if (result.includes(&#x27;undefined&#x27;)) {
+            console.log(&#x27;ModuloTemplate: &quot;undefined&quot; in template&#x27;);
+        }
+        */</span>
+    }
+}
 
 
-<script>Modulo.defineAll();</script>
+Modulo.cparts.script = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Script</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">getSymbolsAsObjectAssignment</span>(<span class="hljs-params">contents</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-84">&#x00a7;</a>
+              </div>
+              <p>TODO: Need to check for reserved words in capture group:
+filter away things like “// function for games”
+(which generates a syntax error with “typeof for”)</p>
 
-<footer>
-    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-</footer>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> regexpG = <span class="hljs-regexp">/function\s+(\w+)/g</span>;
+        <span class="hljs-keyword">const</span> regexp2 = <span class="hljs-regexp">/function\s+(\w+)/</span>; <span class="hljs-comment">// hack, refactor</span>
+        <span class="hljs-keyword">const</span> matches = contents.match(regexpG) || [];
+        <span class="hljs-keyword">return</span> matches.map(<span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s.match(regexp2)[<span class="hljs-number">1</span>])
+            .map(<span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> <span class="hljs-string">`&quot;<span class="hljs-subst">${s}</span>&quot;: typeof <span class="hljs-subst">${s}</span> !== &quot;undefined&quot; ? <span class="hljs-subst">${s}</span> : undefined,\n`</span>)
+            .join(<span class="hljs-string">&#x27;&#x27;</span>);
+    }
 
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">wrapJavaScriptContext</span>(<span class="hljs-params">contents, localVars</span>)</span> {
+        <span class="hljs-keyword">const</span> symbolsString = <span class="hljs-built_in">this</span>.getSymbolsAsObjectAssignment(contents);
+        <span class="hljs-keyword">const</span> localVarsLet = localVars.join(<span class="hljs-string">&#x27;,&#x27;</span>) || <span class="hljs-string">&#x27;noLocalVars=true&#x27;</span>;
+        <span class="hljs-keyword">const</span> localVarsIfs = localVars
+          .map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> <span class="hljs-string">`if (name === &#x27;<span class="hljs-subst">${n}</span>&#x27;) <span class="hljs-subst">${n}</span> = value;`</span>).join(<span class="hljs-string">&#x27;\n&#x27;</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-85">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-85">&#x00a7;</a>
+              </div>
+              <p>TODO: Rename script to script to be consistent with event-time lifecycle</p>
 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> <span class="hljs-string">`
+            &#x27;use strict&#x27;;
+            var <span class="hljs-subst">${localVarsLet}</span>;
+            var script = {exports: {}};
+            function __set(name, value) { <span class="hljs-subst">${localVarsIfs}</span> }
+            <span class="hljs-subst">${contents}</span>
+            return { <span class="hljs-subst">${symbolsString}</span> setLocalVariable: __set, exports: script.exports};
+        `</span>;
+    }
 
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">factoryCallback</span>(<span class="hljs-params">partOptions, factory, renderObj</span>)</span> {
+        <span class="hljs-keyword">const</span> code = partOptions.content || <span class="hljs-string">&#x27;&#x27;</span>;
+        <span class="hljs-keyword">const</span> localVars = <span class="hljs-built_in">Object</span>.keys(renderObj);
+        localVars.push(<span class="hljs-string">&#x27;element&#x27;</span>); <span class="hljs-comment">// add in element as a local var</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-86">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-86">&#x00a7;</a>
+              </div>
+              <p>localVars.push(‘parent’); // add in access to previous versions of renderObj (DEAD CODE)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        localVars.push(<span class="hljs-string">&#x27;cparts&#x27;</span>);
+        <span class="hljs-keyword">const</span> wrappedJS = <span class="hljs-built_in">this</span>.wrapJavaScriptContext(code, localVars);
+        <span class="hljs-keyword">const</span> results = (<span class="hljs-keyword">new</span> <span class="hljs-built_in">Function</span>(<span class="hljs-string">&#x27;Modulo,factory&#x27;</span>, wrappedJS)).call(<span class="hljs-literal">null</span>, Modulo, factory);
+        results.localVars = localVars;
+        <span class="hljs-keyword">return</span> results;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">element, options</span>)</span> {
+        <span class="hljs-built_in">super</span>(element, options);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-87">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-87">&#x00a7;</a>
+              </div>
+              <p>Attach callbacks from script to this, to hook into lifecycle.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> {script} = element.initRenderObj;
+        <span class="hljs-keyword">const</span> cbs = <span class="hljs-built_in">Object</span>.keys(script)
+            .filter(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> key.endsWith(<span class="hljs-string">&#x27;Callback&#x27;</span>) || key.endsWith(<span class="hljs-string">&#x27;Mount&#x27;</span>));
+        cbs.push(<span class="hljs-string">&#x27;initializedCallback&#x27;</span>, <span class="hljs-string">&#x27;eventCallback&#x27;</span>); <span class="hljs-comment">// always CBs for these</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> cbName <span class="hljs-keyword">of</span> cbs) {
+            <span class="hljs-built_in">this</span>[cbName] = <span class="hljs-function"><span class="hljs-params">renderObj</span> =&gt;</span> {
+                <span class="hljs-built_in">this</span>.prepLocalVars(renderObj);
+                <span class="hljs-keyword">if</span> (cbName <span class="hljs-keyword">in</span> script) {
+                    script[cbName](renderObj);
+                }
+            };
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-88">&#x00a7;</a>
+              </div>
+              <h2 id="cpartsscript-preplocalvars">cparts.Script: prepLocalVars</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-89">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-89">&#x00a7;</a>
+              </div>
+              <p>To allow for local variables access to APIs provided by other CParts,
+sets local variables equal to the data returned by their callbacks.
+This is important: It’s what enables us to avoid using the “this”
+context, since the current element is set before any custom code is run.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">prepLocalVars</span>(<span class="hljs-params">renderObj</span>)</span> {
+        <span class="hljs-keyword">const</span> {setLocalVariable, localVars} = renderObj.script;
+        setLocalVariable(<span class="hljs-string">&#x27;element&#x27;</span>, <span class="hljs-built_in">this</span>.element);
+        setLocalVariable(<span class="hljs-string">&#x27;cparts&#x27;</span>, <span class="hljs-built_in">this</span>.element.cparts);
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> localVar <span class="hljs-keyword">of</span> localVars) {
+            <span class="hljs-keyword">if</span> (localVar <span class="hljs-keyword">in</span> renderObj) {
+                setLocalVariable(localVar, renderObj[localVar]);
+            }
+        }
+    }
+}
+
+Modulo.cparts.state = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">State</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Modulo</span>.<span class="hljs-title">ComponentPart</span> </span>{
+    <span class="hljs-keyword">static</span> debugGhost = <span class="hljs-literal">true</span>;
+    <span class="hljs-keyword">get</span> <span class="hljs-title">debugGhost</span>() { <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>; }
+    <span class="hljs-function"><span class="hljs-title">initializedCallback</span>(<span class="hljs-params">renderObj</span>)</span> {
+        <span class="hljs-built_in">this</span>.rawDefaults = renderObj.state.options || {};
+        <span class="hljs-built_in">this</span>.boundElements = {};
+        <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.data) {
+            <span class="hljs-built_in">this</span>.data = Modulo.utils.simplifyResolvedLiterals(<span class="hljs-built_in">this</span>.rawDefaults);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-90">&#x00a7;</a>
+              </div>
+              <p>TODO —v delete these</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.data.bindMount = <span class="hljs-built_in">this</span>.bindMount.bind(<span class="hljs-built_in">this</span>);<span class="hljs-comment">// Ugh hack</span>
+        <span class="hljs-built_in">this</span>.data.bindUnmount = <span class="hljs-built_in">this</span>.bindUnmount.bind(<span class="hljs-built_in">this</span>);<span class="hljs-comment">// Ugh hack</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.data;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">bindMount</span>(<span class="hljs-params">{el}</span>)</span> {
+        el.getAttr = el.getAttr || el.getAttribute;
+        <span class="hljs-keyword">const</span> name = el.getAttr(<span class="hljs-string">&#x27;name&#x27;</span>);
+        Modulo.assert(name <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.data, <span class="hljs-string">`[state.bind]: no &quot;<span class="hljs-subst">${name}</span>&quot; in state`</span>);
+        <span class="hljs-keyword">const</span> func = <span class="hljs-function">() =&gt;</span> {
+            <span class="hljs-keyword">let</span> {value, type, checked} = el;
+            <span class="hljs-keyword">if</span> (type &amp;&amp; type === <span class="hljs-string">&#x27;checkbox&#x27;</span>) {
+                value === !!checked;
+            }
+            <span class="hljs-built_in">this</span>.set(name, value);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-91">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-91">&#x00a7;</a>
+              </div>
+              <p>eventually customizable, eg [state.bind]mouseover=mouseY (event
+name, el property name, and/or state propery name etc)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> isText = el.tagName === <span class="hljs-string">&#x27;TEXTAREA&#x27;</span> || el.type === <span class="hljs-string">&#x27;text&#x27;</span>;
+        <span class="hljs-keyword">const</span> evName = isText ? <span class="hljs-string">&#x27;keyup&#x27;</span> : <span class="hljs-string">&#x27;change&#x27;</span>;
+        <span class="hljs-built_in">this</span>.boundElements[name] = [el, evName, func];
+        el.value = <span class="hljs-built_in">this</span>.data[name];
+        el.addEventListener(evName, func);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">bindUnmount</span>(<span class="hljs-params">{elem}</span>)</span> {
+        <span class="hljs-keyword">const</span> name = elem.getAttr(<span class="hljs-string">&#x27;name&#x27;</span>);
+        <span class="hljs-keyword">const</span> [el, func, evName] = <span class="hljs-built_in">this</span>.boundElements[name];
+        <span class="hljs-keyword">delete</span> <span class="hljs-built_in">this</span>.boundElements[name];
+        el.removeEventListener(evName, func);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">reloadCallback</span>(<span class="hljs-params">oldPart</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-92">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-92">&#x00a7;</a>
+              </div>
+              <p>Used for hot-reloading: Merge data with oldPart’s data</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">this</span>.data = <span class="hljs-built_in">Object</span>.assign({}, oldPart.data, <span class="hljs-built_in">this</span>.data, oldPart.data);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">set</span>(<span class="hljs-params">name, value</span>)</span> {
+        <span class="hljs-built_in">this</span>.data[name] = value;
+        <span class="hljs-built_in">this</span>.element.rerender();
+    }
+
+    <span class="hljs-function"><span class="hljs-title">eventCallback</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">this</span>._oldData = <span class="hljs-built_in">Object</span>.assign({}, <span class="hljs-built_in">this</span>.data);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">eventCleanupCallback</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> name <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.keys(<span class="hljs-built_in">this</span>.data)) {
+            <span class="hljs-keyword">const</span> msg = <span class="hljs-string">`Tried to assign to &quot;state.<span class="hljs-subst">${name}</span>&quot;`</span>;
+            Modulo.assert(name <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>._oldData, msg);
+            <span class="hljs-keyword">if</span> (name <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.boundElements) {
+                <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.data[name] !== <span class="hljs-built_in">this</span>._oldData[name]) {
+                    <span class="hljs-keyword">const</span> [el, func, evName] = <span class="hljs-built_in">this</span>.boundElements[name];
+                    <span class="hljs-keyword">if</span> (el.type === <span class="hljs-string">&#x27;checkbox&#x27;</span>) {
+                        el.checked = !!<span class="hljs-built_in">this</span>.data[name];
+                    } <span class="hljs-keyword">else</span> {
+                        el.value = <span class="hljs-built_in">this</span>.data[name];
+                    }
+                }
+            }
+        }
+        <span class="hljs-built_in">this</span>._oldData = <span class="hljs-literal">null</span>;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-93">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-93">&#x00a7;</a>
+              </div>
+              <p>ModuloTemplate</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Modulo.templating.MTL = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ModuloTemplateLanguage</span> </span>{
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">text, options, getAltTemplate</span>)</span> {
+        <span class="hljs-built_in">Object</span>.assign(<span class="hljs-built_in">this</span>, Modulo.templating.defaultOptions, options);
+        <span class="hljs-built_in">this</span>.opAliases[<span class="hljs-string">&#x27;not in&#x27;</span>] = <span class="hljs-string">`!(<span class="hljs-subst">${<span class="hljs-built_in">this</span>.opAliases[<span class="hljs-string">&#x27;in&#x27;</span>]}</span>)`</span>;
+        <span class="hljs-built_in">this</span>.renderFunc = <span class="hljs-built_in">this</span>.compile(text);
+        <span class="hljs-built_in">this</span>.getAltTemplate = getAltTemplate || (<span class="hljs-function">() =&gt;</span> {});
+    }
+
+    <span class="hljs-function"><span class="hljs-title">tokenizeText</span>(<span class="hljs-params">text</span>)</span> {
+        <span class="hljs-keyword">const</span> re = <span class="hljs-string">&#x27;(&#x27;</span> + <span class="hljs-built_in">this</span>.modeTokens.join(<span class="hljs-string">&#x27;|(&#x27;</span>).replace(<span class="hljs-regexp">/ +/g</span>, <span class="hljs-string">&#x27;)(.+?)&#x27;</span>);
+        <span class="hljs-keyword">return</span> text.split(<span class="hljs-built_in">RegExp</span>(re)).filter(<span class="hljs-function"><span class="hljs-params">token</span> =&gt;</span> token !== <span class="hljs-literal">undefined</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">compile</span>(<span class="hljs-params">text</span>)</span> {
+        <span class="hljs-built_in">this</span>.stack = []; <span class="hljs-comment">// Template tag stack</span>
+        <span class="hljs-keyword">let</span> output = <span class="hljs-string">&#x27;var OUT=[];&#x27;</span>;
+        <span class="hljs-keyword">let</span> mode = <span class="hljs-string">&#x27;text&#x27;</span>; <span class="hljs-comment">// Start in text mode</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> token <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.tokenizeText(text)) {
+            <span class="hljs-keyword">if</span> (mode) { <span class="hljs-comment">// if in a &quot;mode&quot;, then apply mode func</span>
+                <span class="hljs-keyword">const</span> result = <span class="hljs-built_in">this</span>.modes[mode](token, <span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.stack);
+                output += result || <span class="hljs-string">&#x27;&#x27;</span>;
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-94">&#x00a7;</a>
+              </div>
+              <p>FSM for mode: (‘text’ -&gt; null) (null -&gt; token) (* -&gt; ‘text’)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            mode = (mode === <span class="hljs-string">&#x27;text&#x27;</span>) ? <span class="hljs-literal">null</span> : (mode ? <span class="hljs-string">&#x27;text&#x27;</span> : token);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-95">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-95">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is the rsulting template code’, output.replace(/([;}{])/g, ‘$1\n’));</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Function</span>(<span class="hljs-string">&#x27;CTX,G&#x27;</span>, output + <span class="hljs-string">&#x27;;return OUT.join(&quot;&quot;);&#x27;</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">render</span>(<span class="hljs-params">renderContext</span>)</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.renderFunc(<span class="hljs-built_in">Object</span>.assign({}, renderContext), <span class="hljs-built_in">this</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-title">parseExpr</span>(<span class="hljs-params">text</span>)</span> {
+        <span class="hljs-keyword">const</span> filters = text.split(<span class="hljs-string">&#x27;|&#x27;</span>);
+        <span class="hljs-keyword">let</span> results = <span class="hljs-built_in">this</span>.parseVal(filters.shift());
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [fName, arg] <span class="hljs-keyword">of</span> filters.map(<span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s.trim().split(<span class="hljs-string">&#x27;:&#x27;</span>))) {
+            <span class="hljs-keyword">const</span> argList = arg ? <span class="hljs-string">&#x27;,&#x27;</span> + <span class="hljs-built_in">this</span>.parseVal(arg) : <span class="hljs-string">&#x27;&#x27;</span>;
+            results = <span class="hljs-string">`G.filters[&quot;<span class="hljs-subst">${fName}</span>&quot;](<span class="hljs-subst">${results}</span><span class="hljs-subst">${argList}</span>)`</span>;
+        }
+        <span class="hljs-keyword">return</span> results;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">parseCondExpr</span>(<span class="hljs-params">text</span>)</span> {
+        <span class="hljs-keyword">const</span> reText = <span class="hljs-string">` (<span class="hljs-subst">${<span class="hljs-built_in">this</span>.opTokens.split(<span class="hljs-string">&#x27;,&#x27;</span>).join(<span class="hljs-string">&#x27;|&#x27;</span>)}</span>) `</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-96">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-96">&#x00a7;</a>
+              </div>
+              <p>console.log(text.split(RegExp(reText)));</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> text.split(<span class="hljs-built_in">RegExp</span>(reText));
+    }
+
+    <span class="hljs-function"><span class="hljs-title">parseVal</span>(<span class="hljs-params">s</span>)</span> {
+        s = s.trim();
+        <span class="hljs-keyword">if</span> (s.match(<span class="hljs-regexp">/^(&#x27;.*&#x27;|&quot;.*&quot;)$/</span>)) { <span class="hljs-comment">// String literal</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.stringify(s.substr(<span class="hljs-number">1</span>, s.length - <span class="hljs-number">2</span>));
+        }
+        <span class="hljs-keyword">return</span> s.match(<span class="hljs-regexp">/^\d+$/</span>) ? s : <span class="hljs-string">`CTX.<span class="hljs-subst">${cleanWord(s)}</span>`</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-title">escapeHTML</span>(<span class="hljs-params">text</span>)</span> {
+        <span class="hljs-keyword">if</span> (text &amp;&amp; text.safe) {
+            <span class="hljs-keyword">return</span> text;
+        }
+        <span class="hljs-keyword">return</span> (text + <span class="hljs-string">&#x27;&#x27;</span>).replace(<span class="hljs-regexp">/&amp;/g</span>, <span class="hljs-string">&#x27;&amp;amp;&#x27;</span>)
+            .replace(<span class="hljs-regexp">/&lt;/g</span>, <span class="hljs-string">&#x27;&amp;lt;&#x27;</span>).replace(<span class="hljs-regexp">/&gt;/g</span>, <span class="hljs-string">&#x27;&amp;gt;&#x27;</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-97">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-97">&#x00a7;</a>
+              </div>
+              <p>TODO: add this
+‘ (single quote) is converted to &#x27;
+“ (double quote) is converted to &quot;</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+}
+Modulo.Template = Modulo.templating.MTL; <span class="hljs-comment">// Alias</span>
+
+Modulo.templating.defaultOptions = {
+    <span class="hljs-attr">modeTokens</span>: [<span class="hljs-string">&#x27;{% %}&#x27;</span>, <span class="hljs-string">&#x27;{{ }}&#x27;</span>, <span class="hljs-string">&#x27;{# #}&#x27;</span>],</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-98">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-98">&#x00a7;</a>
+              </div>
+              <p>opTokens: ‘==,&gt;,&lt;,&gt;=,&lt;=,!=,not in,is not,is,in,not,and,or’,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    opTokens: <span class="hljs-string">&#x27;==,&gt;,&lt;,&gt;=,&lt;=,!=,not in,is not,is,in,not,gt,lt&#x27;</span>,
+    <span class="hljs-attr">opAliases</span>: {
+        <span class="hljs-string">&#x27;==&#x27;</span>: <span class="hljs-string">&#x27;X === Y&#x27;</span>,
+        <span class="hljs-string">&#x27;is&#x27;</span>: <span class="hljs-string">&#x27;X === Y&#x27;</span>,
+        <span class="hljs-string">&#x27;gt&#x27;</span>: <span class="hljs-string">&#x27;X &gt; Y&#x27;</span>,
+        <span class="hljs-string">&#x27;lt&#x27;</span>: <span class="hljs-string">&#x27;X &lt; Y&#x27;</span>,
+        <span class="hljs-string">&#x27;is not&#x27;</span>: <span class="hljs-string">&#x27;X !== Y&#x27;</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-99">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-99">&#x00a7;</a>
+              </div>
+              <p>‘and’: ‘X &amp;&amp; Y’,
+‘or’: ‘X || Y’,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-string">&#x27;not&#x27;</span>: <span class="hljs-string">&#x27;!(Y)&#x27;</span>,
+        <span class="hljs-string">&#x27;in&#x27;</span>: <span class="hljs-string">&#x27;typeof Y[X] !== &quot;undefined&quot; || Y.indexOf &amp;&amp; Y.indexOf(X) != -1&#x27;</span>,
+    },
+};
+
+Modulo.templating.defaultOptions.modes = {
+    <span class="hljs-string">&#x27;{%&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt, stack</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> tTag = text.trim().split(<span class="hljs-string">&#x27; &#x27;</span>)[<span class="hljs-number">0</span>];
+        <span class="hljs-keyword">const</span> tagFunc = tmplt.tags[tTag];
+        <span class="hljs-keyword">if</span> (stack.length &amp;&amp; tTag === stack[stack.length - <span class="hljs-number">1</span>].close) {
+            <span class="hljs-keyword">return</span> stack.pop().end; <span class="hljs-comment">// Closing tag, return it&#x27;s end code</span>
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!tagFunc) { <span class="hljs-comment">// Undefined template tag</span>
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`Unknown template tag &quot;<span class="hljs-subst">${tTag}</span>&quot;: <span class="hljs-subst">${text}</span>`</span>);
+        } <span class="hljs-comment">// Normal opening tag</span>
+        <span class="hljs-keyword">const</span> result = tagFunc(text.slice(tTag.length + <span class="hljs-number">1</span>), tmplt);
+        <span class="hljs-keyword">if</span> (result.end) { <span class="hljs-comment">// Not self-closing, push to stack</span>
+            stack.push({<span class="hljs-attr">close</span>: <span class="hljs-string">`end<span class="hljs-subst">${tTag}</span>`</span>, ...result});
+        }
+        <span class="hljs-keyword">return</span> result.start || result;
+    },
+    <span class="hljs-string">&#x27;{#&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt</span>) =&gt;</span> {},
+    <span class="hljs-string">&#x27;{{&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt</span>) =&gt;</span> <span class="hljs-string">`OUT.push(G.escapeHTML(<span class="hljs-subst">${tmplt.parseExpr(text)}</span>));`</span>,
+    <span class="hljs-attr">text</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt</span>) =&gt;</span> text &amp;&amp; <span class="hljs-string">`OUT.push(<span class="hljs-subst">${<span class="hljs-built_in">JSON</span>.stringify(text)}</span>);`</span>,
+};
+
+Modulo.templating.defaultOptions.filters = {
+    <span class="hljs-attr">upper</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s.toUpperCase(),
+    <span class="hljs-attr">lower</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s.toLowerCase(),
+    <span class="hljs-attr">escapejs</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> <span class="hljs-built_in">JSON</span>.stringify(s),
+    <span class="hljs-attr">first</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s[<span class="hljs-number">0</span>],
+    <span class="hljs-attr">last</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s[s.length - <span class="hljs-number">1</span>],
+    <span class="hljs-attr">length</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s.length,
+    <span class="hljs-attr">safe</span>: <span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">new</span> <span class="hljs-built_in">String</span>(s), {<span class="hljs-attr">safe</span>: <span class="hljs-literal">true</span>}),
+    <span class="hljs-attr">join</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s.join(arg),
+    <span class="hljs-attr">pluralize</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> arg.split(<span class="hljs-string">&#x27;,&#x27;</span>)[(s === <span class="hljs-number">1</span>) * <span class="hljs-number">1</span>],
+    <span class="hljs-attr">add</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s + arg,
+    <span class="hljs-attr">subtract</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s - arg,
+    <span class="hljs-attr">default</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s || arg,
+    <span class="hljs-attr">number</span>: <span class="hljs-function">(<span class="hljs-params">s</span>) =&gt;</span> <span class="hljs-built_in">Number</span>(s),</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-100">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-100">&#x00a7;</a>
+              </div>
+              <p>invoke: (s, arg) =&gt; s(arg),
+getAttribute: (s, arg) =&gt; s.getAttribute(arg),</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    get: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s[arg],
+    <span class="hljs-attr">includes</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> s.includes(arg),
+    <span class="hljs-attr">truncate</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> ((s.length &gt; arg*<span class="hljs-number">1</span>) ?
+                            (s.substr(<span class="hljs-number">0</span>, arg-<span class="hljs-number">1</span>) + <span class="hljs-string">&#x27;…&#x27;</span>) : s),
+    <span class="hljs-attr">divisibleby</span>: <span class="hljs-function">(<span class="hljs-params">s, arg</span>) =&gt;</span> ((s * <span class="hljs-number">1</span>) % (arg * <span class="hljs-number">1</span>)) === <span class="hljs-number">0</span>,
+};
+
+Modulo.templating.defaultOptions.tags = {
+    <span class="hljs-string">&#x27;if&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> [lHand, op, rHand] = tmplt.parseCondExpr(text);
+        <span class="hljs-keyword">const</span> condStructure = !op ? <span class="hljs-string">&#x27;X&#x27;</span> : tmplt.opAliases[op] || <span class="hljs-string">`X <span class="hljs-subst">${op}</span> Y`</span>;
+        <span class="hljs-keyword">const</span> condition = condStructure.replace(<span class="hljs-regexp">/([XY])/g</span>,
+            <span class="hljs-function">(<span class="hljs-params">k, m</span>) =&gt;</span> tmplt.parseExpr(m === <span class="hljs-string">&#x27;X&#x27;</span> ? lHand : rHand));
+        <span class="hljs-keyword">const</span> start = <span class="hljs-string">`if (<span class="hljs-subst">${condition}</span>) {`</span>;
+        <span class="hljs-keyword">return</span> {start, <span class="hljs-attr">end</span>: <span class="hljs-string">&#x27;}&#x27;</span>};
+    },
+    <span class="hljs-string">&#x27;else&#x27;</span>: <span class="hljs-function">() =&gt;</span> <span class="hljs-string">&#x27;} else {&#x27;</span>,
+    <span class="hljs-string">&#x27;elif&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">s, tmplt</span>) =&gt;</span> <span class="hljs-string">&#x27;} else &#x27;</span> + tmplt.tags[<span class="hljs-string">&#x27;if&#x27;</span>](s, tmplt).start,
+    <span class="hljs-string">&#x27;comment&#x27;</span>: <span class="hljs-function">() =&gt;</span> ({ <span class="hljs-attr">start</span>: <span class="hljs-string">&quot;/*&quot;</span>, <span class="hljs-attr">end</span>: <span class="hljs-string">&quot;*/&quot;</span>}),
+    <span class="hljs-string">&#x27;for&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt</span>) =&gt;</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-101">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-101">&#x00a7;</a>
+              </div>
+              <p>Make variable name be based on nested-ness of tag stack</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> arrName = <span class="hljs-string">&#x27;ARR&#x27;</span> + tmplt.stack.length;
+        <span class="hljs-keyword">const</span> [varExp, arrExp] = text.split(<span class="hljs-string">&#x27; in &#x27;</span>);
+        <span class="hljs-keyword">let</span> start = <span class="hljs-string">`var <span class="hljs-subst">${arrName}</span>=<span class="hljs-subst">${tmplt.parseExpr(arrExp)}</span>;`</span>;
+        start += <span class="hljs-string">`for (var KEY in <span class="hljs-subst">${arrName}</span>) {`</span>;
+        <span class="hljs-keyword">const</span> [keyVar, valVar] = varExp.split(<span class="hljs-string">&#x27;,&#x27;</span>).map(cleanWord);
+        <span class="hljs-keyword">if</span> (valVar) {
+            start += <span class="hljs-string">`CTX.<span class="hljs-subst">${keyVar}</span>=KEY;`</span>;
+        }
+        start += <span class="hljs-string">`CTX.<span class="hljs-subst">${valVar ? valVar : varExp}</span>=<span class="hljs-subst">${arrName}</span>[KEY];`</span>;
+        <span class="hljs-keyword">return</span> {start, <span class="hljs-attr">end</span>: <span class="hljs-string">&#x27;}&#x27;</span>};
+    },
+    <span class="hljs-string">&#x27;empty&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, {stack}</span>) =&gt;</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-102">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-102">&#x00a7;</a>
+              </div>
+              <p>Make variable name be based on nested-ness of tag stack</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">const</span> varName = <span class="hljs-string">&#x27;G.FORLOOP_NOT_EMPTY&#x27;</span> + stack.length;
+        <span class="hljs-keyword">const</span> oldEndCode = stack.pop().end; <span class="hljs-comment">// get rid of dangling for</span>
+        <span class="hljs-keyword">const</span> start = <span class="hljs-string">`<span class="hljs-subst">${varName}</span>=true; <span class="hljs-subst">${oldEndCode}</span> if (!<span class="hljs-subst">${varName}</span>) {`</span>;
+        <span class="hljs-keyword">const</span> end = <span class="hljs-string">`}<span class="hljs-subst">${varName}</span> = false;`</span>;
+        <span class="hljs-keyword">return</span> {start, end, <span class="hljs-attr">close</span>: <span class="hljs-string">&#x27;endfor&#x27;</span>};
+    },
+    <span class="hljs-string">&#x27;include&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">text, tmplt</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> template = <span class="hljs-string">`G.getAltTemplate(<span class="hljs-subst">${tmplt.parseExpr(text)}</span>)`</span>;
+        <span class="hljs-keyword">return</span> {<span class="hljs-attr">start</span>: <span class="hljs-string">`G.OUT.push(<span class="hljs-subst">${template}</span>.render(CTX));`</span>};
+    },
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-103">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-103">&#x00a7;</a>
+              </div>
+              <p>SetDomReconciler ——————</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Modulo.reconcilers.InnerHtml = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InnerHtmlReconciler</span> </span>{
+    <span class="hljs-function"><span class="hljs-title">reconcile</span>(<span class="hljs-params">element, newHTML</span>)</span> {
+        element.innerHTML = newHTML;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-104">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-104">&#x00a7;</a>
+              </div>
+              <p>TODO, add in directives stuff, or move elsewhere</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+}
+Modulo.reconcilers.SetDom = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SetDomReconciler</span> </span>{
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">this</span>.KEY = <span class="hljs-string">&#x27;key&#x27;</span>
+        <span class="hljs-built_in">this</span>.IGNORE = <span class="hljs-string">&#x27;modulo-ignore&#x27;</span>
+        <span class="hljs-built_in">this</span>.CHECKSUM = <span class="hljs-string">&#x27;modulo-checksum&#x27;</span>
+        <span class="hljs-built_in">this</span>.KEY_PREFIX = <span class="hljs-string">&#x27;_set-dom-&#x27;</span>
+        <span class="hljs-built_in">this</span>.mockBody = Modulo.globals.document.implementation
+                        .createHTMLDocument(<span class="hljs-string">&#x27;&#x27;</span>).body;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">reconcile</span>(<span class="hljs-params">element, newHTML</span>)</span> {
+        <span class="hljs-built_in">this</span>.elemCtx = element;
+        <span class="hljs-keyword">if</span> (!element.isMounted) {
+            element.innerHTML = newHTML;
+            <span class="hljs-built_in">this</span>.findAndApplyDirectives(element);
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-built_in">this</span>.mockBody.innerHTML = <span class="hljs-string">`&lt;div&gt;<span class="hljs-subst">${newHTML}</span>&lt;/div&gt;`</span>;
+            <span class="hljs-built_in">this</span>.setChildNodes(element, <span class="hljs-built_in">this</span>.mockBody.firstChild);
+        }
+        <span class="hljs-built_in">this</span>.elemCtx = <span class="hljs-literal">null</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-title">findAndApplyDirectives</span>(<span class="hljs-params">element</span>)</span> {
+        <span class="hljs-keyword">const</span> directives = [];
+        <span class="hljs-keyword">if</span> (!element.children) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-105">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-105">&#x00a7;</a>
+              </div>
+              <p>console.log(‘this is element’, element); // NOT sure why text nodes get here</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> child <span class="hljs-keyword">of</span> element.children) {
+            Modulo.collectDirectives(<span class="hljs-built_in">this</span>.elemCtx, child, directives);
+        }
+        <span class="hljs-built_in">this</span>.elemCtx.applyDirectives(directives);
+    }
+
+    <span class="hljs-comment">/**
+    * <span class="hljs-doctag">@private</span>
+    * <span class="hljs-doctag">@description</span>
+    * Updates a specific htmlNode and does whatever it takes to convert it to
+      another one.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">oldNode</span></span> - The previous HTMLNode.
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">newNode</span></span> - The updated HTMLNode.
+    */</span>
+    <span class="hljs-function"><span class="hljs-title">setNode</span>(<span class="hljs-params">oldNode, newNode</span>)</span> {
+        <span class="hljs-keyword">if</span> (oldNode.nodeType !== newNode.nodeType ||
+                oldNode.nodeName !== newNode.nodeName) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-106">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-106">&#x00a7;</a>
+              </div>
+              <p>We have to fully replace the node — the tag/type doesn’t match
+this.dismount(oldNode);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            oldNode.parentNode.replaceChild(newNode, oldNode)
+            <span class="hljs-built_in">this</span>.mount(newNode);
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (oldNode.nodeType !== <span class="hljs-number">1</span>) { <span class="hljs-comment">// 1 === ELEMENT_TYPE</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-107">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-107">&#x00a7;</a>
+              </div>
+              <p>Handle other types of node updates (text/comments/etc).
+TODO: Is this if statement even a useful optimization..?
+if (oldNode.nodeValue !== newNode.nodeValue) {
+}</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            oldNode.nodeValue = newNode.nodeValue;
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.isEqualNode(oldNode, newNode)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-108">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-108">&#x00a7;</a>
+              </div>
+              <p>Update children &amp; attributes</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">this</span>.setChildNodes(oldNode, newNode);
+            <span class="hljs-built_in">this</span>.setAttributes(oldNode.attributes, newNode.attributes);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-109">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-109">&#x00a7;</a>
+              </div>
+              <p>TODO: do dismounts as necessary</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        }
+    }
+
+    <span class="hljs-comment">/**
+    * <span class="hljs-doctag">@private</span>
+    * <span class="hljs-doctag">@description</span>
+    * Utility that will update one list of attributes to match another.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{NamedNodeMap}</span> <span class="hljs-variable">oldAttributes</span></span> - The previous attributes.
+    * <span class="hljs-doctag">@param <span class="hljs-type">{NamedNodeMap}</span> <span class="hljs-variable">newAttributes</span></span> - The updated attributes.
+    */</span>
+    setAttributes (oldAttributes, newAttributes) {
+      <span class="hljs-keyword">let</span> i, a, b, ns, name</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-110">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-110">&#x00a7;</a>
+              </div>
+              <p>Remove old attributes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">for</span> (i = oldAttributes.length; i--;) {
+        a = oldAttributes[i]
+        ns = a.namespaceURI
+        name = a.localName
+        b = newAttributes.getNamedItemNS(ns, name)
+        <span class="hljs-keyword">if</span> (!b) oldAttributes.removeNamedItemNS(ns, name)
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-111">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-111">&#x00a7;</a>
+              </div>
+              <p>Set new attributes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">for</span> (i = newAttributes.length; i--;) {
+        a = newAttributes[i]
+        ns = a.namespaceURI
+        name = a.localName
+        b = oldAttributes.getNamedItemNS(ns, name)
+        <span class="hljs-keyword">if</span> (!b) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-112">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-112">&#x00a7;</a>
+              </div>
+              <p>Add a new attribute.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          newAttributes.removeNamedItemNS(ns, name)
+          oldAttributes.setNamedItemNS(a)
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (b.value !== a.value) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-113">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-113">&#x00a7;</a>
+              </div>
+              <p>Update existing attribute.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          b.value = a.value
+        }
+      }
+    }
+
+    <span class="hljs-comment">/**
+    * <span class="hljs-doctag">@private</span>
+    * <span class="hljs-doctag">@description</span>
+    * Utility that will nodes childern to match another nodes children.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">oldParent</span></span> - The existing parent node.
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">newParent</span></span> - The new parent node.
+    */</span>
+    setChildNodes (oldParent, newParent) {
+      <span class="hljs-keyword">const</span> keyedNodes = {};
+      <span class="hljs-keyword">let</span> checkOld, oldKey, checkNew, newKey, foundNode
+      <span class="hljs-keyword">let</span> oldNode = oldParent.firstChild
+      <span class="hljs-keyword">let</span> newNode = newParent.firstChild
+      <span class="hljs-keyword">let</span> extra = <span class="hljs-number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-114">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-114">&#x00a7;</a>
+              </div>
+              <p>Extract keyed nodes from previous children and keep track of total
+count.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">while</span> (oldNode) {
+          extra++
+          checkOld = oldNode
+          oldKey = <span class="hljs-built_in">this</span>.getKey(checkOld)
+          oldNode = oldNode.nextSibling
+          <span class="hljs-keyword">if</span> (oldKey) {
+              keyedNodes[oldKey] = checkOld
+          }
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-115">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-115">&#x00a7;</a>
+              </div>
+              <p>Loop over new nodes and perform updates.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      oldNode = oldParent.firstChild
+      <span class="hljs-keyword">while</span> (newNode) {
+          extra--
+          checkNew = newNode
+          newNode = newNode.nextSibling
+
+          <span class="hljs-keyword">const</span> newKey = <span class="hljs-built_in">this</span>.getKey(checkNew);
+          <span class="hljs-keyword">const</span> foundNode = newKey ? keyedNodes[newKey] : <span class="hljs-literal">null</span>;
+          <span class="hljs-keyword">if</span> (foundNode) {
+              <span class="hljs-keyword">delete</span> keyedNodes[newKey]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-116">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-116">&#x00a7;</a>
+              </div>
+              <p>If we have a key and it existed before we move the previous
+node to the new position if needed and diff it.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              <span class="hljs-keyword">if</span> (foundNode !== oldNode) {
+                  oldParent.insertBefore(foundNode, oldNode)
+              } <span class="hljs-keyword">else</span> {
+                  oldNode = oldNode.nextSibling
+              }
+
+              <span class="hljs-built_in">this</span>.setNode(foundNode, checkNew)
+          } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (oldNode) {
+              checkOld = oldNode
+              oldNode = oldNode.nextSibling
+              <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.getKey(checkOld)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-117">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-117">&#x00a7;</a>
+              </div>
+              <p>If the old child had a key we skip over it until the end.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                  oldParent.insertBefore(checkNew, checkOld)
+                  <span class="hljs-built_in">this</span>.mount(checkNew)
+              } <span class="hljs-keyword">else</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-118">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-118">&#x00a7;</a>
+              </div>
+              <p>Otherwise we diff the two non-keyed nodes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                  <span class="hljs-built_in">this</span>.setNode(checkOld, checkNew)
+              }
+          } <span class="hljs-keyword">else</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-119">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-119">&#x00a7;</a>
+              </div>
+              <p>Finally if there was no old node we add the new node.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              oldParent.appendChild(checkNew)
+              <span class="hljs-keyword">if</span> (checkNew.nodeType === <span class="hljs-number">1</span>) { <span class="hljs-comment">// 1 === ELEMENT_TYPE</span>
+                  <span class="hljs-built_in">this</span>.mount(checkNew)
+              }
+          }
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-120">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-120">&#x00a7;</a>
+              </div>
+              <p>Remove old keyed nodes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">for</span> (oldKey <span class="hljs-keyword">in</span> keyedNodes) {
+        extra--
+        oldParent.removeChild(<span class="hljs-built_in">this</span>.dismount(keyedNodes[oldKey]))
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-121">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-121">&#x00a7;</a>
+              </div>
+              <p>If we have any remaining unkeyed nodes remove them from the end.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">while</span> (--extra &gt;= <span class="hljs-number">0</span>) {
+        oldParent.removeChild(<span class="hljs-built_in">this</span>.dismount(oldParent.lastChild))
+      }
+    }
+
+    <span class="hljs-comment">/**
+    * <span class="hljs-doctag">@private</span>
+    * <span class="hljs-doctag">@description</span>
+    * Utility to try to pull a key out of an element.
+    * Uses &#x27;data-key&#x27; if possible and falls back to &#x27;id&#x27;.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">node</span></span> - The node to get the key for.
+    * <span class="hljs-doctag">@return <span class="hljs-type">{string|void}</span></span>
+    */</span>
+    getKey (node) {
+      <span class="hljs-keyword">if</span> (node.nodeType !== <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> <span class="hljs-comment">// 1 === ELEMENT_TYPE</span>
+      <span class="hljs-keyword">let</span> key = node.getAttribute(<span class="hljs-built_in">this</span>.KEY) || node.id
+      <span class="hljs-keyword">if</span> (key) <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.KEY_PREFIX + key
+    }
+
+    <span class="hljs-comment">/**
+    * Checks if nodes are equal using the following by checking if
+    * they are both ignored, have the same checksum, or have the
+    * same contents.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">a</span></span> - One of the nodes to compare.
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">b</span></span> - Another node to compare.
+    */</span>
+    isEqualNode (a, b) {
+      <span class="hljs-keyword">return</span> (</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-122">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-122">&#x00a7;</a>
+              </div>
+              <p>Check if both nodes are ignored.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        (<span class="hljs-built_in">this</span>.isIgnored(a) &amp;&amp; <span class="hljs-built_in">this</span>.isIgnored(b)) ||</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-123">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-123">&#x00a7;</a>
+              </div>
+              <p>Check if both nodes have the same checksum.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        (<span class="hljs-built_in">this</span>.getCheckSum(a) === <span class="hljs-built_in">this</span>.getCheckSum(b)) ||</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-124">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-124">&#x00a7;</a>
+              </div>
+              <p>Fall back to native isEqualNode check.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        a.isEqualNode(b)
+      )
+    }
+
+    <span class="hljs-comment">/**
+    * <span class="hljs-doctag">@private</span>
+    * <span class="hljs-doctag">@description</span>
+    * Utility to try to pull a checksum attribute from an element.
+    * Uses &#x27;data-checksum&#x27; or user specified checksum property.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">node</span></span> - The node to get the checksum for.
+    * <span class="hljs-doctag">@return <span class="hljs-type">{string|NaN}</span></span>
+    */</span>
+    getCheckSum (node) {
+      <span class="hljs-keyword">return</span> node.getAttribute(<span class="hljs-built_in">this</span>.CHECKSUM) || <span class="hljs-literal">NaN</span>
+    }
+
+    <span class="hljs-comment">/**
+    * <span class="hljs-doctag">@private</span>
+    * <span class="hljs-doctag">@description</span>
+    * Utility to try to check if an element should be ignored by the algorithm.
+    * Uses &#x27;data-ignore&#x27; or user specified ignore property.
+    *
+    * <span class="hljs-doctag">@param <span class="hljs-type">{Node}</span> <span class="hljs-variable">node</span></span> - The node to check if it should be ignored.
+    * <span class="hljs-doctag">@return <span class="hljs-type">{boolean}</span></span>
+    */</span>
+    isIgnored (node) {
+      <span class="hljs-keyword">return</span> node.getAttribute(<span class="hljs-built_in">this</span>.IGNORE) != <span class="hljs-literal">null</span>
+    }
+
+    mount (node) {
+        <span class="hljs-built_in">this</span>.findAndApplyDirectives(node);
+        <span class="hljs-keyword">return</span> node;
+    }
+    <span class="hljs-function"><span class="hljs-title">dismount</span>(<span class="hljs-params">node</span>)</span> {
+        <span class="hljs-keyword">return</span> node;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-125">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-125">&#x00a7;</a>
+              </div>
+              <p>/setDOM ——————</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Modulo.utils = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">utils</span> </span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">simplifyResolvedLiterals</span>(<span class="hljs-params">attrs</span>)</span> {
+        <span class="hljs-keyword">const</span> obj = {};
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> [name, value] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(attrs)) {
+            name = name.replace(<span class="hljs-regexp">/-([a-z])/g</span>, <span class="hljs-function"><span class="hljs-params">g</span> =&gt;</span> g[<span class="hljs-number">1</span>].toUpperCase());
+            <span class="hljs-keyword">if</span> (name.endsWith(<span class="hljs-string">&#x27;:&#x27;</span>)) {
+                name = name.slice(<span class="hljs-number">0</span>, -<span class="hljs-number">1</span>); <span class="hljs-comment">// slice out colon</span>
+                Modulo.assert(value.trim(), <span class="hljs-string">`Invalid literal: <span class="hljs-subst">${name}</span>=&quot;<span class="hljs-subst">${value}</span>&quot;`</span>);
+                value = <span class="hljs-built_in">JSON</span>.parse(value.trim());
+            }
+            obj[name] = value;
+        }
+        <span class="hljs-keyword">return</span> obj;
+    }
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">parseAttrs</span>(<span class="hljs-params">elem</span>)</span> {
+        <span class="hljs-keyword">const</span> obj = {};
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> name <span class="hljs-keyword">of</span> elem.getAttributeNames()) {
+            <span class="hljs-keyword">const</span> value = elem.getAttribute(name);
+            name = name.replace(<span class="hljs-regexp">/-([a-z])/g</span>, <span class="hljs-function"><span class="hljs-params">g</span> =&gt;</span> g[<span class="hljs-number">1</span>].toUpperCase());
+            obj[name] = value;
+        }
+        <span class="hljs-keyword">return</span> obj;
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">get</span>(<span class="hljs-params">obj, key</span>)</span> {
+        <span class="hljs-keyword">return</span> key.split(<span class="hljs-string">&#x27;.&#x27;</span>).reduce(<span class="hljs-function">(<span class="hljs-params">o, name</span>) =&gt;</span> o[name], obj);
+    }
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">dirname</span>(<span class="hljs-params">path</span>)</span> {
+        <span class="hljs-keyword">return</span> (path || <span class="hljs-string">&#x27;&#x27;</span>).match(<span class="hljs-regexp">/.*\//</span>);
+    }
+    <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">hash</span>(<span class="hljs-params">str</span>)</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-126">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-126">&#x00a7;</a>
+              </div>
+              <p>Simple, insecure, hashing function, returns hex hash</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>, h = <span class="hljs-number">0</span>; i &lt; str.length; i++) {
+            h = <span class="hljs-built_in">Math</span>.imul(<span class="hljs-number">31</span>, h) + str.charCodeAt(i) | <span class="hljs-number">0</span>;
+        }
+        <span class="hljs-keyword">return</span> (h || <span class="hljs-number">0xabc123</span>).toString(<span class="hljs-number">16</span>); <span class="hljs-comment">// empty string is abc123</span>
+    }
+}
+
+Modulo.FetchQueue = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FetchQueue</span> </span>{
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-built_in">this</span>.queue = {};
+        <span class="hljs-built_in">this</span>.data = {};
+    }
+    <span class="hljs-function"><span class="hljs-title">enqueue</span>(<span class="hljs-params">queueObj, callback, basePath, opts, responseCb</span>)</span> {
+        opts = opts || <span class="hljs-built_in">this</span>.defaultOpts || {};
+        responseCb = responseCb || (<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> response.text());
+        queueObj = <span class="hljs-keyword">typeof</span> queueObj === <span class="hljs-string">&#x27;string&#x27;</span> ? {<span class="hljs-string">&#x27;:)&#x27;</span>: queueObj} : queueObj;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> [label, src] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(queueObj)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-127">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-127">&#x00a7;</a>
+              </div>
+              <p>TODO remove! ————————————v</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (src.startsWith(<span class="hljs-string">&#x27;.&#x27;</span>) &amp;&amp; <span class="hljs-built_in">this</span>.basePath &amp;&amp; <span class="hljs-built_in">this</span>.basePath !== <span class="hljs-string">&#x27;null&#x27;</span>) {
+                src = src.replace(<span class="hljs-string">&#x27;.&#x27;</span>, <span class="hljs-built_in">this</span>.basePath);
+            }
+            <span class="hljs-keyword">if</span> (src <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.data) {
+                callback(<span class="hljs-built_in">this</span>.data[src], label);
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!(src <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.queue)) {
+                <span class="hljs-built_in">this</span>.queue[src] = [callback];
+                Modulo.globals.fetch(src, opts).then(responseCb)
+                    .then(<span class="hljs-function"><span class="hljs-params">text</span> =&gt;</span> <span class="hljs-built_in">this</span>.receiveData(text, label, src));
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-built_in">this</span>.queue[src].push(callback);
+            }
+        }
+    }
+    <span class="hljs-function"><span class="hljs-title">receiveData</span>(<span class="hljs-params">text, label, src</span>)</span> {
+        <span class="hljs-built_in">this</span>.data[src] = text;
+        <span class="hljs-built_in">this</span>.queue[src].forEach(<span class="hljs-function"><span class="hljs-params">func</span> =&gt;</span> func(text, label, src));
+        <span class="hljs-keyword">delete</span> <span class="hljs-built_in">this</span>.queue[src];
+        <span class="hljs-built_in">this</span>.checkWait();
+    }
+    <span class="hljs-function"><span class="hljs-title">wait</span>(<span class="hljs-params">callback</span>)</span> {
+        <span class="hljs-built_in">this</span>.waitCb = callback;
+        <span class="hljs-built_in">this</span>.checkWait();
+    }
+    <span class="hljs-function"><span class="hljs-title">checkWait</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.waitCb &amp;&amp; <span class="hljs-built_in">Object</span>.keys(<span class="hljs-built_in">this</span>.queue).length === <span class="hljs-number">0</span>) {
+            <span class="hljs-built_in">this</span>.waitCb();
+            <span class="hljs-built_in">this</span>.waitCb = <span class="hljs-literal">null</span>;
+        }
+    }
+}
+
+Modulo.assert = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">assert</span>(<span class="hljs-params">value, ...info</span>) </span>{
+    <span class="hljs-keyword">if</span> (!value) {
+        <span class="hljs-built_in">console</span>.error(...info);
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`Modulo Error: &quot;<span class="hljs-subst">${<span class="hljs-built_in">Array</span>.<span class="hljs-keyword">from</span>(info).join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&quot;`</span>)
+    }
+}
+<span class="hljs-comment">/*
+# HACKY FUNCTIONS
+Pls ignore all
+*/</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getGetAttr</span>(<span class="hljs-params">element</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-128">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-128">&#x00a7;</a>
+              </div>
+              <p>HACK</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (element.getAttr) {
+        <span class="hljs-keyword">return</span> element.getAttr;
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">...args</span>) =&gt;</span> element.getAttribute(...args);
+    }
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cleanWord</span>(<span class="hljs-params">text</span>) </span>{
+    <span class="hljs-keyword">return</span> (text + <span class="hljs-string">&#x27;&#x27;</span>).replace(<span class="hljs-regexp">/[^a-zA-Z0-9$_\.]/g</span>, <span class="hljs-string">&#x27;&#x27;</span>) || <span class="hljs-string">&#x27;&#x27;</span>;
+}
+
+<span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-built_in">module</span> !== <span class="hljs-string">&#x27;undefined&#x27;</span>) { <span class="hljs-comment">// Node</span>
+    <span class="hljs-built_in">module</span>.exports = Modulo;
+}
+<span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> customElements !== <span class="hljs-string">&#x27;undefined&#x27;</span>) { <span class="hljs-comment">// Browser</span>
+    Modulo.globals = <span class="hljs-built_in">window</span>;
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
 </body>
+</html>
+</script></template></p></div></li></ul></div></body>
