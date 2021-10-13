@@ -78,13 +78,14 @@ function getConfig(cliConfig, flags) {
 
 
 function doCommand(cliConfig, args) {
-    modulo = new Modulo();
     let {command, positional, flags} = args;
 
     const config = getConfig(cliConfig, flags);
     const {verbose} = config
     const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
     const preloadFiles = (config.preload || []).concat(positional || []);
+
+    modulo = Modulo.getOrCreate(config, 'preload');
     modulo.preloadQueue = new modulo.FetchQueue();
     for (let filePath of preloadFiles) {
         if (filePath === '-') {

@@ -13,6 +13,8 @@ const defaultConfig = {
     serverFramework: 'express',
     serverAutoFixSlashes: false,
     serverAutoFixExtensions: true,
+    watchAllowPartialBuilds: false,
+    watchAllowDeletions: false,
     ssgRenderDepth: 10,
     ssgBuildOutput: '{{output}}/js/modulo-build-{{versiondate}}-{{hash}}.js',
     isSkip: '^(\\.|_)', // starts with a dot or underscore

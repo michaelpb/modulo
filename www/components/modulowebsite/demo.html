@@ -1,0 +1,25 @@
+
+{% if state.tabs.length gt 1 %}
+    <nav class="TabNav">
+        <ul>
+            {% for tab in state.tabs %}
+                <li class="TabNav-title
+                    {% if tab.title == state.selected %}
+                        TabNav-title--selected
+                    {% endif %}
+                "><a @click:=script.selectTab
+                        payload="{{ tab.title }}"
+                    >{{ tab.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endif %}
+
+<button class="m-Btn m-Btn--sm m-Btn--faded"
+        title="Copy this code" @click:=script.doCopy>
+    <span alt="Clipboard">&#128203;</span>
+</button>
+<div modulo-ignore>
+    <div [script.codemirror]></div>
+</div>
+

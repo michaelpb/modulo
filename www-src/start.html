@@ -1,0 +1,76 @@
+
+<script src="/js/Modulo.js"></script>
+<script>Modulo.defineAll()</script>
+<mod-load namespace="x" src="/components/layouts.html"></mod-load>
+<!--Just for testing purposes:-->
+<!--
+<script src="/m.js"></script>
+-->
+
+<x-Page
+    pagetitle="Start"
+    navbar="start">
+
+<h1>Get started with Modulo</h1>
+<br />
+
+<div class="Docs-squareInfo">
+    <section class="Tutorial-tryit">
+        <h4>Brand new?</h4>
+
+        <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
+
+        <p>Modulo is brand new in general, so chances are its brand new to
+        you as well! If you're new, your best bet is to get started with
+        the tutorial.  It walks through the basics of setting up Modulo in
+        a new project, and gives a tour of the "must-know" features.<br
+        />Prerequisite: HTML, CSS.  </p>
+
+        <a class="m-Btn" style="margin-top: 30px"
+            href="/docs/tutorial.html">Start the Modulo Tutorial &#187;</a>
+    </section>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>CDN</h2>
+    <p>Want to get started as quickly as possible? Copy &amp; paste one of
+    the following CDN links:</p>
+
+<mws-Demo
+text='
+<!-- Good: Use the latest version, served by GitHub pages -->
+<script src="https://modulojs.org/js/Modulo.js"></script>
+
+<!-- Better: Include integrity checksum: -->
+<script src="https://modulojs.org/js/Modulo.js"
+integrity="sha384-$modulojs_sha384_checksum$"
+crossorigin="anonymous"></script>
+
+<!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
+<!-- (Not yet functioning!) -->
+<script src="https://cdn.skypack.dev/modulo?min"></script>
+'></mws-Demo>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>NPM</h2>
+    <p>Coming soon!</p>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>Download</h2>
+    <a style="text-transform: none"
+        class="m-Btn"
+        href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
+    <span alt="Down arrow">↧</span> Modulo.js
+    <span id="vnum"></span> (Latest)</a>
+
+
+    <p style="margin-top: 20px">Or run the following command:</p>
+
+    <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
+</div>
+
+
+
+</x-Page>

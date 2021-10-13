@@ -85,16 +85,6 @@ img {
 }
 
 
-.Docs-squareInfo {
-    padding: 5px;
-    padding-top: 10px;
-}
-.Docs-squareInfo > h2 {
-    padding: 0;
-    margin: 0;
-    margin-bottom: 10px;
-}
-
 nav.Navbar {
     padding-top: 10px;
     background: white;
@@ -161,7 +151,7 @@ nav.Navbar .Navbar-rightInfo {
     padding: 5px;
 }
 
-main {
+main.Main {
     max-width: 800px;
     margin: auto;
     clear: both;
@@ -172,28 +162,28 @@ main.Main--fluid {
     padding-right: 20px;
 }
 
-section {
+section.SideBySide {
     display: flex;
 }
 
-aside strong {
+section.SideBySide aside strong {
     color: #B90183;
 }
 
-aside h3 {
+section.SideBySide aside h3 {
     font-size: 30px;
 }
 
-aside h3 span {
+section.SideBySide aside h3 span {
     font-size: 80px;
     font-weight: bold;
     color: #B90183;
 }
 
-aside.TitleAside {
+section.SideBySide aside.TitleAside {
     text-align: right;
 }
-aside.TitleAside a {
+section.SideBySide aside.TitleAside a {
     font-size: 18px;
 }
 
@@ -237,10 +227,6 @@ a:visited {
 }
 
 @media (max-width: 992px) {
-    .Hero img:last-child {
-        margin-left: -20x;
-        max-height: 128px;
-    }
     nav.Navbar li {
         font-size: 24px;
         margin-left: 20px;
@@ -249,50 +235,6 @@ a:visited {
         flex-wrap: wrap;
         justify-content: flex-start;
     }
-
-}
-
-
-
-
-.Hero {
-    /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
-    /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-    /*background-size: 600% 600%;*/
-    background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
-        url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
-    animation: BGAnimTwo 10s linear infinite;
-    text-align: center;
-    box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-    height: 50vh;
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.Hero .dsiabled {
-    background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
-    /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-    background-size: 600% 600%;
-    animation: BGAnimation 20s ease infinite;
-    text-align: center;
-    box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-}
-
-
-@keyframes BGAnimTwo {
-    0%{background-position:0% 0%}
-    100%{background-position: 0% 100%}
-}
-
-@keyframes BGAnimation {
-    0%{background-position:0% 0%}
-    30%{background-position: 0% 100%}
-    60%{background-position: 100% 0%}
-    80%{background-position: 100% 100%}
-    100%{background-position:0% 0%}
 }
 
 
@@ -420,21 +362,21 @@ a:visited {
     color: #666;
 }
 
-.Docs p {
+.Main p {
     margin-top: 5px;
     margin-bottom: 20px;
 }
 
-.Docs p:last-of-type {
+.Main p:last-of-type {
     margin-bottom: 0;
 }
 
-.Docs ul li {
+.Main ul li {
     list-style: disc;
     margin-left: 40px;
 }
 
-.Docs .InfoBox {
+.Main .InfoBox {
     border: 1px solid var(--highlight-color);
     padding: 20px;
     display: block;
@@ -443,12 +385,12 @@ a:visited {
     font-size: 0.95rem;
 }
 
-.Docs hr {
+.Main hr {
     border: 1px solid #888;
     width: 80%;
 }
 
-.Docs .InfoBox > h2 {
+.Main .InfoBox > h2 {
     color: var(--highlight-color);
     font-weight: bold;
     text-transform: uppercase;
@@ -457,9 +399,9 @@ a:visited {
     letter-spacing: 1px;
 }
 
-.Docs > h2,
-.Docs > * > h2,
-.Docs > * > * > h2 {
+.Main > h2,
+.Main > * > h2,
+.Main > * > * > h2 {
     /*border-top: 1px solid #888;*/
     /*padding-top: 10px;*/
     width: 80%;
@@ -468,18 +410,18 @@ a:visited {
     font-size: 1.6rem;
 }
 
-.Docs h3 {
+.Main h3 {
     font-weight: bold;
     font-size: 1.3rem;
     margin-top: 10px;
 }
-.Docs h4 {
+.Main h4 {
     font-weight: bold;
     font-size: 1.1rem;
     margin-top: 5px;
 }
 
-.Docs blockquote {
+.Main blockquote {
     max-width: 30%;
     float: right;
     border: 1px solid black;
@@ -490,27 +432,27 @@ a:visited {
     font-size: 0.98rem;
 }
 @media (max-width: 992px) {
-    .Docs blockquote {
+    .Main blockquote {
         max-width: none;
         float: none;
         clear: both;
     }
 }
 
-.Docs blockquote > p {
+.Main blockquote > p {
     margin-top: 5px;
     margin-bottom: 0;
 }
-.Docs blockquote > p:first-child {
+.Main blockquote > p:first-child {
     margin-top: 0;
 }
 
-.Docs blockquote strong {
+.Main blockquote strong {
     color: var(--highlight-color);
     font-size: 1.1rem;
 }
 
-.Docs blockquote strong:first-child::before {
+.Main blockquote strong:first-child::before {
     content: '%   ';
 }
 
@@ -535,40 +477,20 @@ a:visited {
     letter-spacing: 1px;
 }
 
-.Docs ol > li {
+.Main ol > li {
     list-style: decimal;
     margin-left: 40px;
 }
 
-.Docs > h2 {
-    counter-increment: h2counter;
-    counter-reset: h3counter;
-}
-.Docs > h2:before {
-    content: counter(h2counter) ".\0000a0\0000a0";
-}
-.Docs > h3 {
-    counter-increment: h3counter;
-}
-.Docs > h3:before {
-    content: counter(h2counter) "." counter(h3counter) ".\0000a0\0000a0";
-}
-
-.Docs {
+.Main--withSidebar {
     display: grid;
     grid-template-columns: 350px 1fr;
 }
 @media (max-width: 992px) {
-    .Docs { display: block; }
+    .Main { display: block; }
 }
 
 @media (max-width: 992px) {
-
-    .Hero img:last-child {
-        margin-left: -20x;
-        max-height: 128px;
-        margin-bottom: -50px;
-    }
     nav.Navbar li {
         font-size: 24px;
         margin-left: 20px;
@@ -593,4 +515,48 @@ footer {
     padding: 20px;
     margin-top: 50px;
     text-align: center;
+}
+
+
+.TabNav-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /*border: 1px dotted var(--highlight-color);*/
+    /*border-top: 1px dotted black;*/
+}
+.TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+.TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+.TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    border-bottom-width: 0;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+}
+
+.TabNav-title a,
+.TabNav-title a:visited,
+.TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.TabNav-title--selected {
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 5px var(--highlight-color);
+    padding-top: 3px;
+    border-top-width: 1px;
+    border-radius: 1px;
 }

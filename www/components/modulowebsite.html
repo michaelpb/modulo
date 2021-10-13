@@ -1,0 +1,462 @@
+<component name="Section">
+    <props
+        name
+    ></props>
+    <template>
+        <a class="secanchor"
+          title="Click to focus on this section."
+          id="{{ props.name }}"
+          name="{{ props.name }}"
+          href="#{{ props.name }}">#</a>
+        <h2 [component.children]></h2>
+    </template>
+    <style>
+        Section {
+            position: relative;
+        }
+        h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+        a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+        Section:hover .Section-helper {
+            opacity: 1.0;
+        }
+    </style>
+</component>
+
+
+
+<component name="DocSidebar">
+
+<props
+    path
+    showall
+></props>
+
+<template>
+<ul>
+    {% for linkGroup in script.exports.menu %}
+        <li class="
+            {% if linkGroup.children %}
+                {% if linkGroup.active %}gactive{% else %}ginactive{% endif %}
+            {% endif %}
+            "><a href="{{ linkGroup.filename }}">{{ linkGroup.label }}</a>
+            {% if linkGroup.active %}
+                {% if linkGroup.children %}
+                    <ul>
+                    {% for childLink in linkGroup.children %}
+                        <li><a
+                          href="{{ linkGroup.filename }}#{{ childLink.hash }}"
+                            >{{ childLink.label }}</a>
+                        {% if props.showall %}
+                            {% if childLink.keywords.length gt 0 %}
+                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: {{ childLink.keywords|join:', ' }}</em>)</span>
+                            {% endif %}
+                        {% endif %}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endif %}
+        </li>
+    {% endfor %}
+
+
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+                Literate Source*<br /><em>* Coming soon!</em>
+            </li>
+        </ul>
+
+    </li>
+</ul>
+</template>
+
+<script>
+    function _child(label, hash, keywords=[]) {
+        if (!hash) {
+            hash = label.toLowerCase()
+        }
+        return {label, hash, keywords};
+    }
+    let componentTexts;
+    try {
+        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    } catch {
+        console.log('couldnt get componentTexts');
+        componentTexts = {};
+    }
+    script.exports.menu = [
+        {
+            label: 'Table of Contents',
+            filename: '/docs/',
+        },
+
+        {
+            label: 'Tutorial',
+            filename: '/docs/tutorial.html',
+            children: [
+                _child('Part 1: Components, CParts, Loaders', 'part1', ['cdn', 'module-embed']),
+                _child('Part 2: Props and Templating', 'part2', ['cparts', 'props', 'basic templating']),
+                _child('Part 3: State and Script', 'part3', ['state', 'basic scripting']),
+            ],
+        },
+
+        {
+            label: 'CParts',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Component'),
+                _child('Props'),
+                _child('Template'),
+                _child('State'),
+                _child('Script'),
+                _child('Style'),
+                _child('Custom CParts API', 'custom'),
+            ],
+        },
+
+        {
+            label: 'Templating',
+            filename: '/docs/templating.html',
+            children: [
+                _child('Templates', null, ['templating philosophy', 'templating overview']),
+                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
+                _child('Filters', null, ['filter syntax', 'example filters']),
+                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
+                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
+                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
+            ],
+        },
+
+        {
+            label: 'Testing & Debugging',
+            filename: '/docs/testing.html',
+            children: [
+                _child('Debugger'),
+                _child('Test Suites'),
+                _child('Test Setup'),
+                _child('Assertions'),
+            ],
+        },
+        {
+            label: 'Lifecycle & Directives',
+            filename: '/docs/directives.html',
+            children: [
+                _child('Lifecycle', 'lifecycle',
+                    ['lifestyle phases', 'lifestyle phase groups',
+                     'load', 'factory', 'prepare', 'initialized',
+                     'render', 'update', 'updated',
+                     'event', 'eventCleanup', 'hooking into lifecycle',
+                     'lifecycle callbacks', 'script tag callbacks']),
+                _child('renderObj', 'renderobj',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+                _child('Directives', 'directives',
+                    ['built-in directives', 'directive shortcuts',
+                     'custom directives', 'refs', 'accessing dom',
+                     'escape hatch', 'mount callback', 'unmount callback']),
+                //_child('Built-in directives', 'builtin'),
+            ],
+        },
+
+        {
+            label: 'Template Reference',
+            filename: '/docs/templating-reference.html',
+            children: [
+                _child('Built-in Filters', 'filters'),
+                _child('Built-in Template Tags', 'tags'),
+                _child('Custom Filters', 'customfilters'),
+                _child('Custom Template Tags', 'customtags'),
+            ],
+        },
+
+        {
+            label: 'Example Library',
+            filename: '/docs/example-library.html',
+            children: Object.keys(componentTexts).map(name => _child(name)),
+        },
+    ];
+
+    function initializedCallback() {
+        const {isBackend, ssgCurrentOutputPath} = Modulo;
+        let path = props.path;
+        for (const groupObj of script.exports.menu) {
+            if (props.showall) {
+                groupObj.active = true;
+            }
+            if (groupObj.filename && path && path.endsWith(groupObj.filename)) {
+                groupObj.active = true;
+            }
+        }
+    }
+</script>
+
+<style>
+  li {
+      margin-left: 20px;
+  }
+  /*
+  li.ginactive > ul::before,
+  li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+  li.ginactive > a::before {
+      content: '+ ';
+  }
+</style>
+
+</component>
+
+
+
+<component name="CodeExample">
+    <template>
+        <div class="split">
+            <div
+            style="height: {{ props.vsize|number|default:170|add:2 }}px;"
+            modulo-ignore>
+                <textarea [script.codemirror]>
+                </textarea>
+            </div>
+
+            <div>
+                <div class="toolbar">
+                    <h2>Preview</h2>
+                    <button @click:=script.run>Run &#10227;</button>
+                </div>
+                <div [script.previewspot] class="preview-wrapper">
+                    <div modulo-ignore></div>
+                </div>
+                {% if props.showtag %}
+                    {% if props.preview %}
+                        <div class="toolbar">
+                            <h2>Tag</h2>
+                            <code>{{ props.preview }}</code>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </template>
+
+    <style>
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+        .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+        .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+        .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+        .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+        .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+        .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+        .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+        .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+        @media (max-width: 992px) {
+            .split { display: block; }
+        }
+    </style>
+
+    <props
+        text
+        extraprops
+        vsize
+        textsrc
+        cname
+    ></props>
+
+    <state 
+        nscounter:=1
+        preview=''
+    ></state>
+    <script>
+        let egTexts = null;
+        try {
+            if ('eg-eg' in Modulo.factoryInstances) {
+                egTexts = Modulo.factoryInstances['eg-eg']
+                    .baseRenderObj.script.exports.componentTexts;
+            }
+        } catch {
+            console.log('couldnt get egTexts');
+        }
+
+        let exCounter = 0; // global variable
+        //console.log('gettin script tagged');
+        /* Configure loader: */
+        function initializedCallback() {
+            //console.log('hey i am getting initialized wow');
+            //console.log('initialized callback', element.innerHTML);
+            if (Modulo.isBackend) {
+                let html;
+                if (egTexts && props.cname) {
+                    Modulo.assert(props.cname in egTexts, `${props.cname} not found`);
+                    html = egTexts[props.cname];
+                } else {
+                    html = (element.innerHTML || '').trim();
+                    html = html.replace(/([\w\[\]\._-]+):="(\w+)"/, '$1:=$2'); // clean up due to DOM
+                }
+
+                if (props.textsrc) {
+                    const html = Modulo.require('fs')
+                        .readFileSync('./docs-src/' + props.textsrc, 'utf8');
+                    element.setAttribute('text', html);
+                } else if (html && !element.getAttribute('text')) {
+                    element.setAttribute('text', html);
+                }
+            }
+        }
+
+        function previewspotMount({el}) {
+            element.previewSpot = el.firstElementChild;
+            run(); // mount after first render
+        }
+
+        function codemirrorMount({el}) {
+            if (Modulo.globals.CodeMirror) {
+                //console.log('this is props', props);
+                // TODO: Debug this, should not use textarea, should not need
+                // extra refreshes or anything
+                const cm = CodeMirror.fromTextArea(el, {
+                    lineNumbers: true,
+                    mode: 'django',
+                    theme: 'eclipse',
+                    indentUnit: 4,
+                });
+                element.codeMirrorEditor = cm;
+                window.cm = cm;
+
+                const height = props.vsize ? Number(props.vsize) : 170;
+                cm.setValue('');
+                cm.setSize(null, height);
+                cm.refresh();
+
+                let text = props.text.trim();
+                text = text.replace(/&#39;/g, "'"); // correct double escape
+                cm.setValue(text);
+                setTimeout(() => {
+                    cm.setValue(text);
+                    cm.setSize(null, height);
+                    cm.refresh();
+                }, 1);
+                el.setAttribute('modulo-ignore', 'y');
+            } else {
+                //console.log('Code mirror not found'); // probably SSG
+            }
+        }
+
+        function run() {
+            if (!Modulo.globals.CodeMirror) {
+                return;
+            }
+            exCounter++;
+            //console.log('There are ', exCounter, ' examples on this page. Gee!')
+            const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
+            state.nscounter++;
+            const loadOpts = {src: '', namespace};
+            const loader = new Modulo.Loader(null, {options: loadOpts});
+            const tagName = 'Example';
+            let text = element.codeMirrorEditor.getValue();
+            text = `<template mod-component="${tagName}">${text}</template>`;
+            //console.log('Creating component from text:', text)
+            loader.loadString(text);
+            const tag = `${namespace}-${tagName}`;
+            let extraPropsStr = '';
+            /*
+            const extraProps =  props.extraprops ? JSON.parse(props.extraprops) : {};
+            for (const [key, value] of Object.entries(extraProps)) {
+                const escValue = value.replace(/"/g, , '&quot;');
+                extraPropsStr += ` ${key}="${escValue}"`;
+            }
+            */
+
+            const preview = `<${tag}${extraPropsStr}></${tag}>`;
+            element.previewSpot.innerHTML = preview;
+            //state.preview = preview;
+            //document.querySelector('#previewSpot').innerHTML = preview;
+            //console.log('adding preview', preview);
+        }
+    </script>
+</component>
+
+<component name="Demo">
+    <props
+        text
+        demotype
+        fromlibrary
+    ></props>
+    <template src="./modulowebsite/demo.html"></template>
+
+    <state
+        tabs:='[]'
+        selected:=null
+    ></state>
+    <script src="./modulowebsite/demo.js"></script>
+
+    <style>
+        CodeSnippet {
+            position: relative;
+            display: block;
+        }
+        .m-Btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            z-index: 10;
+        }
+    </style>
+
+</component>
+
+
+

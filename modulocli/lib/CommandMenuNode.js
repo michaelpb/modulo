@@ -13,6 +13,21 @@ const COPY = 'COPY';
 
 let lastStatusBar = '';
 
+/*
+// TODO: Generalize /improve global lock to prevent simultaneous SSG
+// builds
+const filesToDelete = [outputFile];
+
+// TODO #2: Set files to "readonly" after writing to prevent
+// accidentally opening  outpput instead of input
+// TODO: Generalize a "dependency" backwards to allow generate and
+// delete to do partial builds
+if (outputFile in (this.fileDependencies || {})) {
+    filesToDelete.extend(this.fileDependencies[outputFile]);
+}
+for (const depPath of filesToDelete) {
+}
+*/
 function logStatusBar(shoutyWord, finishedFiles, generateCount, maxCount=8) {
     const charCent = Math.round((finishedFiles / generateCount) * maxCount);
     const perCent = Math.round((finishedFiles / generateCount) * 100);
@@ -26,7 +41,7 @@ function logStatusBar(shoutyWord, finishedFiles, generateCount, maxCount=8) {
 }
 
 function _removeKeyPrefix(data, prefix1, prefix2) {
-    // take that, rule of 3!
+    // take that, rule of 3! this is only 2, so iz gud code
     const newObj = {};
     for (let [key, value] of Object.entries(data)) {
         if (key.startsWith(prefix1)) {
@@ -38,6 +53,40 @@ function _removeKeyPrefix(data, prefix1, prefix2) {
     }
     return newObj;
 }
+
+function _getModuloMiddleware(config, express) {
+    let {
+        serverAutoFixSlashes,
+        serverAutoFixExtensions,
+        serverSetNoCache,
+        verbose,
+    } = config;
+    const log = msg => verbose ? console.log(`|%| - - SERVER: ${msg}`) : null;
+    if (serverAutoFixExtensions === true) {
+        serverAutoFixExtensions = ['html'];
+    }
+    const staticSettings = {
+        maxAge: 0,
+        redirect: serverAutoFixSlashes,
+        extensions: serverAutoFixExtensions,
+    };
+    const staticMiddleware = express.static(config.output, staticSettings);
+    log(`Express Static middleware options: ${staticSettings}`);
+    return (req, res, next) => {
+        if (serverSetNoCache) {
+            res.set('Cache-Control', 'no-store');
+        }
+        log(`${req.method} ${req.url}`);
+        staticMiddleware(req, res, next);
+
+        // TODO: Add in "/$username/" style wildcard matches, auto .html
+        //       prefixing, etc before static. Behavior is simple:
+        //       $username becomes Modulo.route.username for any generates
+        //       within this dir (or something similar)
+        //this._app.use(this.wildcardPatchMiddleware);
+    };
+}
+
 
 class CommandMenuNode extends baseModulo.CommandMenu {
     _getCmds() {
@@ -92,10 +141,16 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         Object.defineProperty(this.repl.context, 'm', _ro(this));
     }
 
-    _matchGenerateAction(config, inputFile) {
+    _matchGenerateAction(config, modulo, inputFile) {
         const {isGenerate, isSkip, isCopyOnly, isCustomFilter} = config;
         if (isCustomFilter && isCustomFilter(inputFile)) {
             return CUSTOM;  // isCustomFilter is a function checked against entire path
+        }
+
+        // Skip the preload artifact, since that gets post-processed
+        // away anyway
+        if (this._isPreloadBuild(modulo, config, inputFile)) {
+            return SKIP;
         }
 
         const check = (re, part) => (new RegExp(re, 'i').test(part));
@@ -106,13 +161,15 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         if (contains(isCopyOnly)) { // isCopyOnly is also applied to every path part
             return COPY;
         }
+
+
         if (check(isGenerate, inputFile)) { // isGenerate is applied to entire path
             return GENERATE;
         }
         return COPY; // default (i.e. copy every file from input -> output)
     }
 
-    generate(config, modulo, finalCallback) {
+    generate(config, preloadModulo, finalCallback) {
         const callback = () => {
             if (finalCallback) {
                 finalCallback(action);
@@ -121,8 +178,11 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         const {inputFile, outputFile, verbose, isCustomFunc} = config;
         const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
 
+        const ModuloNode = require('./ModuloNode'); // TODO HACK, fix after refactor
+        const modulo = ModuloNode.getOrCreate(config, inputFile);
+
         // Generate a single file
-        let action = this._matchGenerateAction(config, inputFile);
+        let action = this._matchGenerateAction(config, modulo, inputFile);
         if (action === CUSTOM) {
             if (verbose) {
                 console.log(`|%| - - Custom ${inputFile}`);
@@ -192,12 +252,13 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         mkdirToContain(targetPath);
         fs.writeFileSync(targetPath, str, {encoding: 'utf8'});
         console.log(`|%| - - Successful build: ${targetPath}`);
+        return targetPath;
     }
 
     buildpreload(config, modulo) {
         const buildOutput = config.buildPreload;
         const preloadBuildConf = Object.assign({}, config, {buildOutput});
-        this.build(preloadBuildConf, modulo);
+        this._preloadBuildPath = this.build(preloadBuildConf, modulo);
     }
 
     _ssgPostProcess(outPath, config, modulo, callback) {
@@ -228,11 +289,22 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             });
     }
 
-    ssg(config, modulo, callback) {
+    ssg(config, modulo, finalCallback) {
+        const callback = () => {
+            this._ssgBuildInProgress = false;
+            log('Releasing SSG build lock.');
+            if (finalCallback) {
+                finalCallback();
+            }
+        }
         // Does a full generate across a directory
         const {verbose, input, output} = config;
-        callback = callback || (() => null); // default NOOP
         const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
+        if (this._ssgBuildInProgress) {
+            log('SSG Build already in progress, not doing another.');
+            return;
+        }
+        this._ssgBuildInProgress = true;
 
         // Build preload first
         const _buildConf = val => Object.assign({}, config, {buildOutput: val})
@@ -291,42 +363,67 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
     }
 
+    _isPreloadBuild(modulo, config, inputFile) {
+        if (!this._preloadBuildPath) {
+            const conf = Object.assign({}, config, {buildOutput: config.buildPreload});
+            this._preloadBuildPath = this.build(conf, modulo, true, true); // justPath=true
+        }
+        return inputFile === this._preloadBuildPath;
+    }
+
     watch(config, modulo, callback) {
         // Start each watch with an SSG
         this.ssg(config, modulo, () => this._watch(config, modulo, callback));
     }
     _watch(config, modulo, callback) {
+        callback = callback || (() => null); // default NOOP
+        const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
+
         const nodeWatch = require('node-watch');
         const {isSkip, isCopyOnly, isGenerate, verbose, input, output} = config;
-        const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
         const shouldSkip = new RegExp(isSkip, 'i');
         log(`Skipping all that match: ${shouldSkip}`);
 
         const filter = (f, skip) => (shouldSkip.test(f) ? skip : true);
         const watchConf = {recursive: true, filter};
+
         this._watcher = nodeWatch(input, watchConf, (evt, inputFile) => {
             log(`CHANGE DETECTED IN ${inputFile}`);
             //const outputFile = inputFile.replace(config.input, config.output);
             const outputFile = output + inputFile.slice(input.length); // better
 
+            if (this._ssgBuildInProgress) {
+                log(`Build lock detected, ignoring change`);
+            }
+
+
             modulo.fetchQ.data = {}; // always clear fetchQ data to prevent caching
             if (evt == 'update') {
                 // on create or modify
                 const conf = Object.assign({}, config, {inputFile, outputFile});
-                this.generate(conf, modulo);
+                modulo.assert(!config.watchAllowPartialBuilds, 'watchAllowPartialBuilds not implemented yet');
+                if (config.watchAllowPartialBuilds) {
+                    log(`Doing partial build ${inputFile} (config.watchAllowPartialBuilds=true)`);
+                    this.generate(conf, modulo);
+                } else {
+                    const action = this._matchGenerateAction(config, modulo, inputFile);
+                    if (action === SKIP) {
+                        log(`Skipping full build (${inputFile} is skippable)`);
+                    } else {
+                        log(`Doing full build  (config.watchAllowPartialBuilds=false)`);
+                        this.ssg(config, modulo);
+                    }
+
+                }
             } else if (evt == 'remove') {
                 // on delete
-                const filesToDelete = [outputFile];
-                /*
-                // TODO: Generalize this "dependency" backwards to generate as well
-                if (outputFile in (this.fileDependencies || {})) {
-                    filesToDelete.extend(this.fileDependencies[outputFile]);
-                }
-                */
-                for (const depPath of filesToDelete) {
-                    modulo.assert(depPath.startsWith(output)); // prevent mistakes
-                    log(`Deleting ${depPath}`);
-                    //fs.unlink(depPath);
+                modulo.assert(inputFile.startsWith(output)); // prevent mistakes
+                modulo.assert(!config.watchAllowDeletions, 'watchPerformDeletions not implemented yet');
+                if (config.watchPerformDeletions) {
+                    log(`Deleting ${inputFile} (config.watchAllowDeletions=true)`);
+                    fs.unlink(inputFile);
+                } else {
+                    log(`Not deleting ${inputFile} (config.watchAllowDeletions=false)`);
                 }
             }
         });
@@ -360,46 +457,18 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             this._app = null;
         }
 
-        log(`Loading server framework ${serverFramework}`);
+        log(`Loading server framework: ${serverFramework}`);
         const express = require(serverFramework);
         if (!this._app) {
             log(`Instantiating new ${serverFramework} app (as Modulo.commands._app)`);
             this._app = express();
             this._app.use(express.json());
-            function logger(req, res, next) {
-                log(`${req.method} ${req.url}`);
-                next();
-            }
-            this._app.use(logger);
-
             // Disable cache headers, etag
-            this._app.use((req, res, next) => {
-              this._app.set('etag', false);
-              this._app.disable('view cache');
-              res.set('Cache-Control', 'no-store')
-              next()
-            });
-
-            // TODO: Add in "/$username/" style wildcard matches, auto .html
-            //       prefixing, etc before static. Behavior is simple:
-            //       $username becomes Modulo.route.username for any generates
-            //       within this dir (or something)
-            //this._app.use(this.wildcardPatchMiddleware);
+            this._app.set('etag', false);
+            this._app.disable('view cache');
         }
 
-        let {serverAutoFixSlashes, serverAutoFixExtensions} = config;
-        if (serverAutoFixExtensions === true) {
-            serverAutoFixExtensions = ['html'];
-        }
-        const staticSettings = {
-            maxAge: 0,
-            redirect: serverAutoFixSlashes,
-            extensions: serverAutoFixExtensions,
-        };
-        const staticMiddleware = express.static(config.output, staticSettings);
-        this._app.use(staticMiddleware);
-
-        log(`Serving: ${config.output} (${staticSettings})`);
+        this._app.use(_getModuloMiddleware(config, express));
 
         const _server = this._app.listen(port, host, () => {
             console.log('|%|--------------');
@@ -417,7 +486,6 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         } else {
             this._server = _server;
         }
-
     }
 
 }

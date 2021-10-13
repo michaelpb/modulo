@@ -179,50 +179,6 @@
         <div [component.children] modulo-ignore>
         </div>
     </template>
-    <style>
-        TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-        .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-        .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-        .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
-
-        .tab-nav_title a,
-        .tab-nav_title a:visited,
-        .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style>
     <state
         selected=''
         tabs:='[]'

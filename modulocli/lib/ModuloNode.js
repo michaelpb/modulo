@@ -4,11 +4,53 @@ const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
 const utils = require('./utils');
+const {webComponentsUpgrade, patchWindow} = require('./jsdomUtils');
+
+const allModuloInstances = {};
 
 class ModuloNode {
     constructor() {
         this.clearAll();
         this.loadText('');
+    }
+
+    static getOrCreate(config, instanceKey) {
+        // XXX super hacky
+        let modulo;
+        let data = null;
+        let facs = null;
+        let preloadQueue = null;
+        for (const moddy of Object.values(allModuloInstances)) {
+            if (!data && moddy.fetchQ && moddy.fetchQ.data) {
+                data = moddy.fetchQ.data;
+            }
+            if (!facs && moddy.factoryInstances) {
+                facs = moddy.factoryInstances;
+            }
+            if (!preloadQueue && moddy.preloadQueue) {
+                preloadQueue = moddy.preloadQueue;
+            }
+        }
+
+        if (instanceKey in allModuloInstances) {
+            modulo = allModuloInstances[instanceKey];
+        } else {
+            modulo = new ModuloNode()
+            allModuloInstances[instanceKey] = modulo;
+        }
+
+        if (baseModulo.fetchQ && data) {
+            baseModulo.fetchQ.data = data; // XXX HACK
+        }
+        if (facs) {
+            baseModulo.factoryInstances = facs; // XXX HACK
+            modulo.factoryInstances = facs; // XXX HACK
+        }
+        if (preloadQueue) {
+            modulo.preloadQueue = preloadQueue; // XXX HACK
+        }
+        modulo.patchModulo(baseModulo, config);
+        return modulo;
     }
 
     clearAll(config) {
@@ -29,6 +71,8 @@ class ModuloNode {
     loadText(text, basePath=null) {
         this.jsdom = new JSDOM(text);
         this.allDoms.push(this.jsdom);
+        patchWindow(this.jsdom.window);
+
         this.globals.document = this.jsdom.window.document;
         this.globals.DocumentFragment =  this.jsdom.window.DocumentFragment;
         this.doc = this.globals.document; // easier property
@@ -200,7 +244,6 @@ class ModuloNode {
         // Loop through every element in the HTML, looking to mount them
         //          (TODO: Remove, when mod-load is removed)----------v
         const sel = (Object.keys(factoryInstances).join(',') || 'X') + ',mod-load';
-        console.log('Attempting to resolve these guys:', sel);
         const allModElems = this.doc.querySelectorAll(sel);
         let allMounted = true;
         // TODO: needs work here, should isolate the mod-load upgrade somewhere
@@ -261,48 +304,6 @@ class ComponentFactoryNode extends baseModulo.ComponentFactory {
         delete el.cparts.testsuite; // for testing, never include testsuite
         el.connectedCallback(); // ensure this is called, as its now connected
         return el; // Finally, return the upgraded element
-    }
-}
-
-// Very simple hacky way to do mocked web-components define
-function webComponentsUpgrade(el, instance) {
-
-    // Both MOD-LOADER and ModuloElement have
-    // "initialize" property, so anything we
-    // upgrade will have that.
-    const secondTime = Boolean(el.initialize);
-
-    // Manually "upgrading" the JSDOM element with the webcomponent
-    const protos = [instance, Reflect.getPrototypeOf(instance)];
-    if (!el.tagName.startsWith('MOD-')) { // TODO: verify that this is deletable after mod-load is deleted
-        // Only add in prototype of ModuloElement if necessary
-        protos.push(Reflect.getPrototypeOf(protos[1]));
-    }
-    protos.reverse(); // apply in reverse order so last "wins"
-
-    // Get every prototype key
-    const allKeys = [];
-    for (const proto of protos) {
-        allKeys.push(...Reflect.ownKeys(proto));
-    }
-
-    // Loop through binding functions to element
-    for (const key of allKeys) {
-        if (instance[key] instanceof Function) {
-            el[key] = instance[key].bind(el);
-        } else {
-            el[key] = instance[key];
-        }
-    }
-
-    if (!secondTime) {
-        // "Re-initialize" so we get innerHTML etc
-        if (el.initialize) { // Is a modulo Element
-            el.initialize();
-        }
-        if (el.connectedCallback) {
-            el.connectedCallback();
-        }
     }
 }
 

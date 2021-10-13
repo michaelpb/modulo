@@ -1,4 +1,35 @@
-    <!--<script src="/components/layouts/globalUtils.js"></script>-->
+<component name="Page" mode="vanish-allow-script">
+    <props
+        navbar
+        showsplash
+        docbarselected 
+        pagetitle
+    ></props>
+
+    <template src="./layouts/base.html"></template>
+
+    <script>
+        function initializedCallback() {
+            if (Modulo.isBackend) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                console.log('Warning: Couldnt get global info');
+            }
+        }
+    </script>
+</component>
+
+
+<!--<script src="/components/layouts/globalUtils.js"></script>-->
 <module>
     <script>
         let txt;
@@ -24,7 +55,8 @@
             //return hash;
         }
 
-        function getVersionInfo() {
+        function getGlobalInfo() {
+            /*
             // Only do once to speed up SSG
             //console.log('this is Modulo', Object.keys(Modulo));
             if (!Modulo.ssgStore.versionInfo) {
@@ -37,6 +69,8 @@
                 };
             }
             return Modulo.ssgStore.versionInfo;
+            */
+            return {};
         }
 
         // https://stackoverflow.com/questions/400212/
@@ -57,9 +91,9 @@
             try {
                 var successful = document.execCommand('copy');
                 var msg = successful ? 'successful' : 'unsuccessful';
-                console.log('Fallback: Copying text command was ' + msg);
+                //console.log('Fallback: Copying text command was ' + msg);
             } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
+                //console.error('Fallback: Oops, unable to copy', err);
             }
 
             document.body.removeChild(textArea);
@@ -71,7 +105,7 @@
                 return;
             }
             navigator.clipboard.writeText(text).then(function() {
-                console.log('Async: Copying to clipboard was successful!');
+                //console.log('Async: Copying to clipboard was successful!');
             }, function(err) {
                 console.error('Async: Could not copy text: ', err);
             });
@@ -79,12 +113,4 @@
     </script>
 
 </module>
-
-<component name="Page" mode="vanish">
-    <template src="./layouts/base.html"></template>
-</component>
-
-<component name="DocPage" mode="vanish">
-    <template src="./templates/Page.html"></template>
-</component>
 

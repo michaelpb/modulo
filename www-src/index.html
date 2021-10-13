@@ -1,9 +1,4 @@
 <script src="/m.js"></script>
-<x-Page showdocbar:=true selected="about" title="Modulo">
-  <h1>Hello Modulo SSG World!</h1>
-  <x-SimpleTestComponent></x-SimpleTestComponent>
-
-
 
 <div class="IndexWrapper">
     <div class="Tagline">
@@ -14,7 +9,7 @@
         <h1 class="Tagline-title">modulo</h1>
         <h2>A tiny JavaScript Web Component framework</h2>
         <ul>
-            <li>Fewer than 1000 lines of highly-documented code</li>
+            <li>Fewer than 2000 total lines of simple, commented code</li>
             <li>Component system inspired by React, Svelte, and Polymer</li>
             <!--<li>Modular with opinionated defaults and few assumptions</li>-->
             <li>A dependency-free, "no fuss" drop-in for existing web apps</li>
@@ -22,456 +17,131 @@
     </div>
 
     <main>
-        <mdu-TabSet modulo-ssg-skip>
-
-            <div name="Hello">
-
-<mdu-CodeExample
-text='
-<template>
-    <button @click:=script.countUp>Hello {{ state.num }}</button>
-</template>
-<state num:=42
-></state>
-<script>
-    function countUp() {
-        state.num++;
-    }
-</script>
-'>
-</mdu-CodeExample>
-
-            </div>
-
-            <div name="Simple">
-
-<mdu-CodeExample
-text='
-<template>
-    Components can use <strong>any</strong> number
-    of <em title="Component Parts">CParts</em>.
-</template>
-<style>
-    em { color: darkblue; }
-    * { text-decoration: underline; }
-</style>
-'>
-</mdu-CodeExample>
-
-            </div>
-
-
-            <div name="ToDo">
-
-<mdu-CodeExample
-text='
-<template>
-<ol>
-    {% for item in state.list %}
-        <li>{{ item }}</li>
-    {% endfor %}
-    <li>
-        <input [state.bind] name="text" />
-        <button @click:=script.addItem>Add</button>
-    </li>
-</ol>
-</template>
-
-<state
-    list:=&#39;["Milk", "Bread", "Candy"]&#39;
-    text="Beer"
-></state>
-
-<script>
-    function addItem() {
-        state.list.push(state.text); // add to list
-        state.text = ""; // clear input
-    }
-</script>
-'>
-</mdu-CodeExample>
-
-
-            </div>
-
-            <div name="API">
-
-<mdu-CodeExample
-text='
-<template>
-<p>{{ state.name }} | {{ state.location }}</p>
-<p>{{ state.bio }}</p>
-<a href="https://github.com/{{ state.search }}/" target="_blank">
-    {% if state.search %}github.com/{{ state.search }}/{% endif %}
-</a>
-<input [state.bind] name="search"
-    placeholder="Type GitHub username" />
-<button @click:=script.fetchGitHub>Get Info</button>
-</template>
-
-<state
-    search=""
-    name=""
-    location=""
-    bio=""
-></state>
-
-<script>
-    function fetchGitHub() {
-        fetch(`https://api.github.com/users/${state.search}`)
-            .then(response => response.json())
-            .then(githubCallback);
-    }
-    function githubCallback(apiData) {
-        state.name = apiData.name;
-        state.location = apiData.location;
-        state.bio = apiData.bio;
-        element.rerender();
-    }
-</script>
-'>
-</mdu-CodeExample>
-
-
-            </div>
-
-            <div name="Prime">
-<mdu-CodeExample
-text='
-<template>
-  <div class="grid">
-    {% for i in script.exports.range %}
-      <div @mouseover:=script.setNum
-        class="
-            {# If-statements to check divisibility in template: #}
-            {% if state.number == i %}number{% endif %}
-            {% if state.number lt i %}hidden{% else %}
-              {% if state.number|divisibleby:i %}whole{% endif %}
-            {% endif %}
-        ">{{ i }}</div>
-    {% endfor %}
-  </div>
-</template>
-
-<state
-    number:=76
-></state>
-
-<script>
-    // Getting big a range of numbers in JS. Use "script.exports"
-    // to export this as a one-time global constant.
-    // (Hint: Curious how it calculates prime? See CSS!)
-    script.exports.range = 
-        Array.from({length: 75}, (x, i) => i + 2);
-    function setNum(ev) {
-        state.number = Number(ev.target.textContent);
-    }
-</script>
-
-<style>
-.grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    color: #ccc;
-    font-weight: bold;
-}
-.grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-div.whole {
-    color: white;
-    background: #B90183;
-}
-div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-div.number { background: green; }
-div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-   If found, then hide asterisk and green. */
-div.whole ~ div.number { background: #B90183; }
-div.whole ~ div.number::after { opacity: 0; }
-</style>
-'></mdu-CodeExample>
-
-            </div>
-
-
-
-            <div name="MemoryGame">
-
-<mdu-CodeExample
-text='
-<!-- A much more complicated example application -->
-<template>
-{% if not state.cards.length %}
-    <h3>The Symbolic Memory Game</h3>
-    <p>Choose your difficulty:</p>
-    <button @click:=script.setup click.payload=8>2x4</button>
-    <button @click:=script.setup click.payload=16>4x4</button>
-    <button @click:=script.setup click.payload=36>6x6</button>
-{% else %}
-    <div class="board
-        {% if state.cards.length > 16 %}hard{% endif %}">
-    {# Loop through each card in the "deck" (state.cards) #}
-    {% for card in state.cards %}
-        {# Using "key=" to speed up DOM reconciler #}
-        <div key="c{{ card.id }}"
-            class="card
-            {% if state.revealed|includes:card.id %}
-                flipped
-            {% endif %}
-            "
-            style="
-            {% if state.win %}
-                animation: flipping 0.5s infinite alternate;
-                animation-delay: {{ card.id }}.{{ card.id }}s;
-            {% endif %}
-            "
-            @click:=script.flip
-            click.payload="{{ card.id }}">
-            {% if state.revealed|includes:card.id %}
-                {{ card.symbol }}
-            {% endif %}
-        </div>
-    {% endfor %}
-    </div>
-    <p style="{% if state.failedflip %}
-                color: red{% endif %}">
-        {{ state.message }}</p>
-{% endif %}
-</template>
-
-<state
-    message="Good luck!"
-    win:=false
-    cards:=[]
-    revealed:=[]
-    lastflipped:=null
-    failedflip:=null
-></state>
-
-<script>
-const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
-function setup(ev, payload) {
-    const count = Number(payload);
-    let symbols = symbolsStr.substr(0, count/2).split("");
-    symbols = symbols.concat(symbols); // duplicate cards
-    let id = 0;
-    while (id < count) {
-        const index = Math.floor(Math.random()
-                                    * symbols.length);
-        const symbol = symbols.splice(index, 1)[0];
-        state.cards.push({symbol, id});
-        id++;
-    }
-}
-
-function failedFlipCallback(ev) {
-    // Remove both from revealed array & set to null
-    state.revealed = state.revealed.filter(
-            id => id !== state.failedflip
-                    && id !== state.lastflipped);
-    state.failedflip = null;
-    state.lastflipped = null;
-    state.message = "";
-    element.rerender();
-}
-
-function flip(ev, id) {
-    if (state.failedflip !== null) {
-        return;
-    }
-    id = Number(id);
-    if (state.revealed.includes(id)) {
-        return; // double click
-    } else if (state.lastflipped === null) {
-        state.lastflipped = id;
-        state.revealed.push(id);
-    } else {
-        state.revealed.push(id);
-        const {symbol} = state.cards[id];
-        const lastCard = state.cards[state.lastflipped];
-        if (symbol === lastCard.symbol) {
-            // Successful match! Check for win.
-            const {revealed, cards} = state;
-            if (revealed.length === cards.length) {
-                state.message = "You win!";
-                state.win = true;
-            } else {
-                state.message = "Nice match!";
-            }
-            state.lastflipped = null;
-        } else {
-            state.message = "No match.";
-            state.failedflip = id;
-            setTimeout(failedFlipCallback, 1000);
-        }
-    }
-}
-</script>
-
-<style>
-h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-.board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-.board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-.board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-.board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-.board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-    from { transform: scaleX(-1.1); background: #B90183; }
-    to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style>
-'>
-</mdu-CodeExample>
-
-            </div>
-
-
-            </div>
-        </mdu-TabSet>
+        <mws-Demo
+            fromlibrary="Hello,Simple,ToDo,API,Prime,MemoryGame"
+            demotype="minipreview"
+        ></mws-Demo>
     </main>
 </div>
+<span id="about"></span>
 
 
+<x-Page
+    pagetitle="Modulo"
+    navbar="about">
 
-<span id="below"></span>
-<mdu-Navbar selected="about"></mdu-Navbar>
+<section class="SideBySide">
+    <aside class="TitleAside">
+        <h3><span alt="Null set">∅</span></h3>
+        <h3>Fewer</h3>
+        <h3>assumptions</h3>
+        <p><a href="start.html">Get started now &#187;</a></p>
+    </aside>
+    <aside>
+        <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
+        just drop it into any HTML file.  Unlike jQuery, that 1 file packs
+        in the all creature-comforts of a modern component framework.</p>
+        <!--
+        a modern component system, a swappable templating language based
+        on Liquid-syntax, DOM resolution, and more.
+        , a tiny
+        build system to pack your CSS and JS for production, and even debug
+        tools.</p>-->
 
-<main id="About">
-    <section>
-        <aside class="TitleAside">
-            <h3><span alt="Null set">∅</span></h3>
-            <h3>Fewer</h3>
-            <h3>assumptions</h3>
-            <p><a href="start.html">Get started now &#187;</a></p>
-        </aside>
-        <aside>
-            <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
-            just drop it into any HTML file.  Unlike jQuery, that 1 file packs
-            in the all creature-comforts of a modern component framework.</p>
-            <!--
-            a modern component system, a swappable templating language based
-            on Liquid-syntax, DOM resolution, and more.
-            , a tiny
-            build system to pack your CSS and JS for production, and even debug
-            tools.</p>-->
+        <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
+        wheels. Like Polymer (LitElement) or Skate.js, Modulo is built as a
+        thin-layer over web standards that are now well-supported. In fact,
+        if used purely for stateless components, it's just HTML templating
+        and CSS!</p>
 
-            <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
-            wheels. Like Polymer (LitElement) or Skate.js, Modulo is built as a
-            thin-layer over web standards that are now well-supported. In fact,
-            if used purely for stateless components, it's just HTML templating
-            and CSS!</p>
+        <p><strong>Progressive enhancement</strong> - JAMStack is fine and
+        all, but what about all our existing server-side apps in Ruby on
+        Rails, Python and Django, or that one home-grown PHP monster that
+        will never go away? Modulo was made to give structure and
+        convenience to that extra sprinkle of JavaScript that will make
+        your "traditional" web apps <em>shine</em>.</p>
+    </aside>
+</section>
 
-            <p><strong>Progressive enhancement</strong> - JAMStack is fine and
-            all, but what about all our existing server-side apps in Ruby on
-            Rails, Python and Django, or that one home-grown PHP monster that
-            will never go away? Modulo was made to give structure and
-            convenience to that extra sprinkle of JavaScript that will make
-            your "traditional" web apps <em>shine</em>.</p>
-        </aside>
-    </section>
+<section>
+    <aside>
+        <p><strong>CParts</strong> - Create components by putting together
+        one or more Component Parts or <em>CParts</em>. Mix Script, Style,
+        State, Props, and Templates to make components that have one or
+        all, or multiples, of these features. Combine CParts between
+        components for a powerful system of "composition-based" inheritance
+        that's more familiar to web developers.</p>
+        <p><strong>Everything is swappable</strong> - Components configure
+        themselves, meaning you can "mix and match" templating languages,
+        or try out DOM-resolution on or off per-component basis.</p>
+        <p><strong>Lifecycle hooks and directives</strong> - Hook your
+        own code into the component rendering lifecycle, either through
+        callbacks, or by defining custom attribute-based directives.</p>
+    </aside>
+    <aside>
+        <h3><span alt="Sigma">Σ</span></h3>
+        <h3>More<br />modular</h3>
+        <p><a href="docs.html">Read the docs</a></p>
+    </aside>
+</section>
 
-    <section>
-        <aside>
-            <p><strong>CParts</strong> - Create components by putting together
-            one or more Component Parts or <em>CParts</em>. Mix Script, Style,
-            State, Props, and Templates to make components that have one or
-            all, or multiples, of these features. Combine CParts between
-            components for a powerful system of "composition-based" inheritance
-            that's more familiar to web developers.</p>
-            <p><strong>Everything is swappable</strong> - Components configure
-            themselves, meaning you can "mix and match" templating languages,
-            or try out DOM-resolution on or off per-component basis.</p>
-            <p><strong>Lifecycle hooks and directives</strong> - Hook your
-            own code into the component rendering lifecycle, either through
-            callbacks, or by defining custom attribute-based directives.</p>
-        </aside>
-        <aside>
-            <h3><span alt="Sigma">Σ</span></h3>
-            <h3>More<br />modular</h3>
-            <p><a href="docs.html">Read the docs</a></p>
-        </aside>
-    </section>
+<section>
+    <aside class="TitleAside">
+        <h3><span alt="Modulo operator">%</span></h3>
+        <h3>Similar<br />(but&nbsp;simpler)</h3>
+        <p><a href="/literate/src/Modulo.html">Read the source</a></p>
+    </aside>
 
+    <aside>
+        <p><strong>"It's like React"</strong> - Modulo is
+        batteries-included to be like React.js or Vue.js, except without
+        the complications of dependencies or build systems. You get props,
+        state, lifecycle methods, smart DOM resolution, encapsulated
+        components, and a simple namespace and library loading system.</p>
 
+        <p><strong>Clean & concise</strong> - The code-base is intentionally kept
+        short &amp; sweet: Under 1000
+        <abbr title="Source Lines of Code - This counts 'physical lines' and thus does not include comments, documentation, blanks, etc">SLOC</abbr>,
+        80 char lines, 4 spaces of
+        indent, and a <abbr title="Functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
+        imperative style. When something goes wrong,
+        <tt>git blame</tt> Modulo.</p>
 
-    <section>
-        <aside class="TitleAside">
-            <h3><span alt="Modulo operator">%</span></h3>
-            <h3>Similar<br />(but&nbsp;simpler)</h3>
-            <p><a href="/literate/src/Modulo.html">Read the source</a></p>
-        </aside>
+        <p><strong>A basis for whatever comes next</strong> - Want to write
+        your own component framework, but don't want to start from scratch?
+        Read the "literate" code for a starting spot, and fork away!</p>
+    </aside>
+</section>
 
-        <aside>
-            <p><strong>"It's like React"</strong> - Modulo is
-            batteries-included to be like React.js or Vue.js, except without
-            the complications of dependencies or build systems. You get props,
-            state, lifecycle methods, smart DOM resolution, encapsulated
-            components, and a simple namespace and library loading system.</p>
+<section class="Tutorial-tryit">
+    <h4>Project Status</h4>
 
-            <p><strong>Clean & concise</strong> - The code-base is intentionally kept
-            short &amp; sweet: Under 1000
-            <abbr title="Source Lines of Code - This counts 'physical lines' and thus does not include comments, documentation, blanks, etc">SLOC</abbr>,
-            80 char lines, 4 spaces of
-            indent, and a <abbr title="Functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
-            imperative style. When something goes wrong,
-            <tt>git blame</tt> Modulo.</p>
+    <p><strong>Current status:</strong> <code>prealpha</code></p>
 
-            <p><strong>A basis for whatever comes next</strong> - Want to write
-            your own component framework, but don't want to start from scratch?
-            Read the "literate" code for a starting spot, and fork away!</p>
-        </aside>
-    </section>
+    <br />
+    <h3>Roadmap:</h3>
 
-</main>
+    <p><code>alpha</code></p>
+    <p><strong>Completed:</strong> core functionality, under 2000 SLOC, ssg to
+    generate website via JSDOM, partial documentation</p>
+    <p><strong>Incomplete:</strong> directive unmount, new DOM resolver,
+    tutorial part 2 and 3, documentation (template tags, CParts, SSG, and core
+    API), unit tests for examples, unit tests for core CParts, CSS bundling</p>
+    <br/>
 
-    </section>
-</main>
+    <p><code>beta</code></p>
+    <p><strong>Incomplete:</strong> Nested namespaces, hot-reloading server,
+    under 1000 SLOC, fully literate source code, swappable DOM for node.js
+    (linkedom and/or headless browser support), SSG refactor, full interactive
+    "cookbook" of recipes, React &amp; jQuery examples, deterministic SSG
+    builds</p>
+    <br/>
 
+    <p><code>v1.0</code></p>
+    <p><strong>Incomplete:</strong> Fully stabilized API, Browser testing
+    matrix, generate .map files, minified and shimmed versions, example rollup
+    and webpack configs, split-off SSG and MDU</p>
+</section>
 
 
 </x-Page>

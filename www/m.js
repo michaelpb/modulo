@@ -1,4 +1,4 @@
-// modulo build -6ge32t
+// modulo build -gdorh5
 'use strict';
 
 // # Introduction
@@ -1730,8 +1730,38 @@ if (typeof customElements !== 'undefined') { // Browser
 
 Modulo.defineAll();
 Modulo.fetchQ.data = {
-  "/components/layouts.html": // (91 lines)
-`    <!--<script src="/components/layouts/globalUtils.js"></script>-->
+  "/components/layouts.html": // (116 lines)
+`<component name="Page" mode="vanish">
+    <props
+        navbar
+        showsplash
+        showdocbar
+        pagetitle
+    ></props>
+    <template src="./layouts/base.html"></template>
+
+    <script>
+        function initializedCallback() {
+            if (Modulo.isBackend) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                console.log('Warning: Couldnt get global info');
+            }
+        }
+    </script>
+</component>
+
+
+<!--<script src="/components/layouts/globalUtils.js"></script>-->
 <module>
     <script>
         let txt;
@@ -1757,7 +1787,8 @@ Modulo.fetchQ.data = {
             //return hash;
         }
 
-        function getVersionInfo() {
+        function getGlobalInfo() {
+            /*
             // Only do once to speed up SSG
             //console.log('this is Modulo', Object.keys(Modulo));
             if (!Modulo.ssgStore.versionInfo) {
@@ -1770,6 +1801,8 @@ Modulo.fetchQ.data = {
                 };
             }
             return Modulo.ssgStore.versionInfo;
+            */
+            return {};
         }
 
         // https://stackoverflow.com/questions/400212/
@@ -1813,75 +1846,7 @@ Modulo.fetchQ.data = {
 
 </module>
 
-<component name="Page" mode="vanish">
-    <template src="./layouts/base.html"></template>
-</component>
-
-<component name="DocPage" mode="vanish">
-    <template src="./templates/Page.html"></template>
-</component>
-
 `,// (ends: /components/layouts.html) 
-
-  "/components/layouts/base.html": // (28 lines)
-`<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf8" />
-    <title>Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-</head>
-
-<body>
-
-{# TODO Add navbar here #}
-
-<main class="Docs" [component.children]>
-</main>
-
-
-<footer>
-    <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-    </main>
-</footer>
-
-</body>
-</html>
-`,// (ends: /components/layouts/base.html) 
-
-  "/components/templates/Page.html": // (28 lines)
-`<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf8" />
-    <title>Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css" />
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-</head>
-
-<body>
-
-{# TODO Add navbar here #}
-
-<main class="Docs" [component.children]>
-</main>
-
-
-<footer>
-    <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-    </main>
-</footer>
-
-</body>
-</html>
-`,// (ends: /components/templates/Page.html) 
 
 };
 

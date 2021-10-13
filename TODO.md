@@ -17,7 +17,7 @@
       between renders, if a new element is introduced above it. Need to debug
       SET DOM implementation how it uses key.
     - Linting Rules!!
-    - component.innerHTML = ... is what does reconcile! ({component: {innerHTML: ..})
+    - (DONE) component.innerHTML = ... is what does reconcile! ({component: {innerHTML: ..})
     - ShadowDOM + scoped style as an option (style could respect compnent)
         - shadow - will attach component.innerHTML to shadow DOM
         - shadow=only - will clear innerHTML, and then attach 
@@ -26,7 +26,14 @@
         - 1) x- for local, or imported without namespace
         - 2) x328f- get rewritten for imported ones
     - How to get better stack traces when everything is in an eval? Anyway to
-      catch & throw?
+      catch & throw? (defineComponent is the big try/catch)
+    - Fix resolution issue with [component.children]... (causing x-Page to not show content)
+    - CSS bundling
+    - Possibly change directive syntax,
+        - Current has bad w3c compliance, not sure if better:
+        -  __component.children__
+        - ##component.children##
+        - _%component.children%_
 
 - Look into replacing JSDom with linkedom: https://github.com/WebReflection/linkedom#readme
 
@@ -38,6 +45,8 @@
         // 2. CParts classes self-configure:
         //         - parentCPart = true;
 
+        // Re 1, maybe those could be "modulo-containers", eg customElements,
+        // so m-loader, m-component and m-module. These self-enable.
 --------------
 
 
@@ -74,8 +83,6 @@
 
 
 
-
-
 # More notes: 2021
 
 - Replace all mention of 'options' with 'attrs' or something equally consistent
@@ -86,63 +93,3 @@
     - mutation-hash: 1a3a4f9
     - mutation-hash: 0000000 # for immutable, or initial state
     - mutation-hash is only implemented for State CPart
-
-- Skypack "ecosystem" for example deployment:
-    - https://www.skypack.dev/
-
-- SSG: (DONE)
-    - Possibly make (undocumented) SSG based on jsdom and existing domUtils.
-    - Use that to template the site.
-    - Usage example:
-        modulo-ssg ./docs-src output=docs/ --markdown=lib-Markdown
-    - Will copy everything, templating HTML files, and handle anything of
-      --xyz= type with the given component
-    - Ex:
-
-      <component name="Markdown">
-        <template>
-            {{ text|markdown }}
-        </template>
-        <props
-            text:=String
-        ></props>
-        <script>
-        </script>
-      </component>
-
-
-
----
-
-(DONE) Ideas for unifying renderObj etc:
-
-- Template render context and script context has 2 things:
-    - cparts.XYZ --- the OOP version with bound methods
-    - XYZ --- the plain object version
-    - What that means for each:
-        - state
-            - cparts.state -- has "set" "get" "bindMount" etc
-            - state -- simple object with state, in callbakc will check this
-              for mutations after each event
-        - script
-            - cparts.script -- used to set or modify private values
-            - script -- object with all exported values
-        - props
-            - cparts.props -- no real use
-            - props -- simple object with resolved props
-        - style
-            - cparts.style -- no use
-            - style -- no use
-        - template
-            - cparts.template -- can be used to render, select which is active
-            - template -- holds last rendered
-
-- CParts then could return values if they want to be replace the bare symbol in
-  the renderObj, or NOT if they don't want to, in which case the default is the
-  resolved attrs of the CPart definition
-    - If anything other than undefined is returned by any lifecycle method,
-      then that's used for the renderObj
-    - Otherwise, the post-factory, automatically resolved attributes are
-      available (automatically squashed)
-
-

@@ -1,0 +1,86 @@
+<script src="/m.js"></script>
+<x-Page
+    docbarselected="/testing.html"
+    pagetitle="Testing"
+    navbar="docs">
+
+<h1>Testing</h1>
+
+<p>Modulo comes with a unit testing framework, specifically for testing
+components. Note that without any extra add-ons or modifications, Modulo's
+testing framework is focused on components unit tests only, and thus is
+strictly synchronous. This means its incapable of integration testing with HTTP
+API's, or asynchronous code. That said, through proper mocking, state, and
+props manipulation, you should be more than equipped to test component behavior
+in most scenarios, without actually issuing the request itself.</p>
+
+
+<mdu-Section name="testsuites">Test suites</mdu-Section>
+
+<p>A test suite is a collection of tests. Test suites can be embedded in
+Component definitions. In this case, the test suite will be applied to the
+component definition that it exists inside.</p>
+
+<p>For an overview of what the Modulo test suite framework is capable of, see
+the below example:</p>
+
+<mdu-CodeExample
+text='
+<testsuite>
+    <test name="ensure cool">
+        <!-- SETUP -->
+        <!-- Setup with props-->
+        <props text="Hi"></props>
+        <state msg="how are you?"></state>
+
+        <!-- run arbitrary scripts, if ends in 
+             "assert: " it will then be a test -->
+        <script name="component has name">
+            const {component} = cparts;
+            assert: component.name == "Example"
+        </script>
+
+        <!-- Ensure li is blue -->
+        <style name="blue is cool">
+            li { color: blue; }
+        </style>
+
+        <!-- Most powerful of all, the template: -->
+        <!-- Exact DOM match of entire DOM -->
+        <template snapshot>
+            <p>Hello 3 world!</p>
+            <h1>I have 5 bananas</h1>
+        </template>
+        <!-- Fuzzy DOM match, default (eg, can actual DOM be
+              transformed into this DOM, by only doing "delete"?) -->
+        <template subdom>
+            <p>Hello 3 world!</p>
+        </template>
+        <!-- Check if ANYWHERE in template this string EXACTLY
+        occurs -->
+        <template includes>
+            <p>Hello 3 world!</p>
+        </template>
+
+        <!-- Or do more complicated assertions with script tags -->
+        <script message="Ensure HTML contains 3">
+            assert: element.innerHTML.includes("3");
+        </script>
+    </test>
+</testsuite>
+
+<!-- The template might look something like this... -->
+<template>
+    <nav>
+      <ol>
+        <li style="color: red">{{ props.text }}</li>
+      </ol>
+    </nav>
+</template>
+
+
+'></mdu-CodeExample>
+
+
+
+</x-Page>
