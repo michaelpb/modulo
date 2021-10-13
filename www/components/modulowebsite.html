@@ -49,53 +49,10 @@
         nscounter:=1
         showpreview:=false
         showclipboard:=false
+        fullscreen:=false
     ></state>
     <script src="./modulowebsite/demo.js"></script>
-
-    <style>
-        Demo {
-            position: relative;
-            display: block;
-            width: 100%;
-        }
-
-        .editor-toolbar {
-            position: absolute;
-            z-index: 10;
-            display: flex;
-            width: 200px;
-            right: -70px;
-            top: -7px;
-        }
-
-        @media (min-width: 700px) {
-            .editor-wrapper {
-                width: 630px;
-            }
-        }
-        .editor-wrapper {
-            /*
-            border: 5px solid black;
-            border-radius: 1px 8px 1px 8px;
-            border-bottom-width: 1px;
-            border-right-width: 1px;
-            */
-            border: 1px solid black;
-        }
-
-        .editor-minipreview {
-            border: 1px solid black;
-            border-radius: 1px;
-            background: #eee;
-            width: 100%;
-            padding: 20px;
-            border-left: none;
-        }
-
-        .side-by-side-panes {
-            display: flex;
-        }
-    </style>
+    <style src="./modulowebsite/demo.css"> </style>
 
 </component>
 

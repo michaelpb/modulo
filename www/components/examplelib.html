@@ -1,18 +1,7 @@
 <module>
     <script>
-        script.exports.frontpage = [
-            "Hello",
-            "Simple",
-            "ToDo",
-            "API",
-            "Prime",
-            "MemoryGame",
-        ];
-        //console.log('this is factory', factory.loader.src);
-        //console.log('this is DATA', Modulo.fetchQ.data);
-        //console.log('this is mah text', myText);
+        // Splits up own source-code to get source for each example
         const myText = Modulo.fetchQ.data[factory.loader.src];
-        //const componentNames = [];
         const componentTexts = {};
         if (myText) {
             let name = '';
@@ -24,13 +13,11 @@
                     name = null;
                 } else if (line.startsWith('<component')) {
                     name = line.split(' name="')[1].split('"')[0];
-                    //componentNames.push(name);
                 } else if (name) {
                     currentComponent += line + '\n';
                 }
             }
         }
-        //script.exports.componentNames = componentNames;
         script.exports.componentTexts = componentTexts;
     </script>
 </module>
@@ -51,6 +38,9 @@
 </script>
 </component>
 
+
+
+
 <component name="Simple">
 
 <template>
@@ -62,6 +52,8 @@
     * { text-decoration: underline; }
 </style>
 </component>
+
+
 
 
 <component name="ToDo">
@@ -123,6 +115,9 @@
     }
 </script>
 </component>
+
+
+
 
 
 <component name="SearchBox">

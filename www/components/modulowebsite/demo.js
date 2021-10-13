@@ -15,9 +15,12 @@ const CODE_EDITOR_TABS = [
 ]
 
 function codemirrorMount({el}) {
+    console.log('attempting to moutn cm');
     const demoType = props.demotype || 'snippet';
-    const myElement = element;
-    const myState = state;
+    _setupCodemirror(el, demoType, element, state);
+}
+
+function _setupCodemirror(el, demoType, myElement, myState) {
     let expBackoff = 10;
     const mountCM = () => {
         // TODO: hack, allow JS deps or figure out loader or something
@@ -27,7 +30,6 @@ function codemirrorMount({el}) {
             return;
         }
 
-
         let readOnly = false;
         let lineNumbers = true;
         if (demoType === 'snippet') {
@@ -36,7 +38,7 @@ function codemirrorMount({el}) {
         }
 
         const conf = {
-            value: state.text,
+            value: myState.text,
             mode: 'django',
             theme: 'eclipse',
             indentUnit: 4,
@@ -54,13 +56,16 @@ function codemirrorMount({el}) {
 
         const cm = Modulo.globals.CodeMirror(el, conf);
         myElement.codeMirrorEditor = cm;
-        myElement.rerender();
+        //myElement.rerender();
     };
     // TODO: Ugly hack, need better tools for working with legacy
     setTimeout(mountCM, expBackoff);
 }
 
 function selectTab(ev, newTitle) {
+    if (!element.codeMirrorEditor) {
+        return; // not ready yet
+    }
     const currentTitle = state.selected;
     state.selected = newTitle;
     for (const tab of state.tabs) {
@@ -101,7 +106,7 @@ function initializedCallback({el}) {
                 throw new Error('invalid fromlibrary:', title)
             }
         }
-    } else if (props.text) {
+    } else if (props && props.text) {
         text = props.text.trim();
     }
 
@@ -120,6 +125,14 @@ function initializedCallback({el}) {
 
     state.selected = state.tabs[0].title; // set first as tab title
     setupShaChecksum();
+    doRun();
+
+    const myElem = element;
+    const myState = state;
+    setTimeout(() => {
+        const div = myElem.querySelector('.editor-wrapper > div');
+        _setupCodemirror(div, demoType, myElem, myState);
+    }, 0); // put on queue
 }
 
 function setupShaChecksum() {
@@ -143,14 +156,31 @@ function doRun() {
     state.nscounter++;
     const loadOpts = {src: '', namespace};
     const tagName = 'Example';
-    let {text} = state;
-    text = `<component name="${tagName}">${text}</template>`;
+
+    let componentDef = state.text;
+    componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
     const loader = new Modulo.Loader(null, {options: loadOpts});
-    loader.loadString(text);
+    loader.loadString(componentDef);
     const fullname = `${namespace}-${tagName}`;
-    //const factory = Modulo.factoryInstances[fullname];
-    const preview = `<${fullname}></${fullname}>`;
-    state.preview = preview;
+    const factory = Modulo.factoryInstances[fullname];
+    state.preview = `<${fullname} modulo-ignore></${fullname}>`;
+    //element.rerender();
+}
+
+function countUp() {
+    // TODO: Remove this when resolution context bug is fixed so that children
+    // no longer can reference parents
+    console.log('Noooooo, demo is totally broken');
+}
+
+function doFullscreen() {
+    if (state.fullscreen) {
+        state.fullscreen = false;
+        document.body.style.overflow = "auto";
+    } else {
+        state.fullscreen = true;
+        document.body.style.overflow = "hidden";
+    }
 }
 
 /*

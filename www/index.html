@@ -18,64 +18,71 @@
     </ul></ul></div>
 
     <main>
-        <mws-demo fromlibrary="Hello,Simple,ToDo,API,Prime,MemoryGame" demotype="minipreview">
-
-    <nav class="TabNav">
-        <ul>
-            
-                <li class="TabNav-title
-                    
-                        TabNav-title--selected
-                    
-                "><a @click:="script.selectTab" payload="Hello">Hello</a></li>
-            
-                <li class="TabNav-title
-                    
-                "><a @click:="script.selectTab" payload="Simple">Simple</a></li>
-            
-                <li class="TabNav-title
-                    
-                "><a @click:="script.selectTab" payload="ToDo">ToDo</a></li>
-            
-                <li class="TabNav-title
-                    
-                "><a @click:="script.selectTab" payload="API">API</a></li>
-            
-                <li class="TabNav-title
-                    
-                "><a @click:="script.selectTab" payload="Prime">Prime</a></li>
-            
-                <li class="TabNav-title
-                    
-                "><a @click:="script.selectTab" payload="MemoryGame">MemoryGame</a></li>
-            
-        </ul>
-    </nav>
-
-
-<div class="editor-toolbar">
+        <mws-demo fromlibrary="Hello,Simple,ToDo,API,Prime,MemoryGame" demotype="minipreview"><div class="demo-wrapper
+        
+    ">
     
+        <nav class="TabNav">
+            <ul>
+                
+                    <li class="TabNav-title
+                        
+                            TabNav-title--selected
+                        
+                    "><a @click:="script.selectTab" payload="Hello">Hello</a></li>
+                
+                    <li class="TabNav-title
+                        
+                    "><a @click:="script.selectTab" payload="Simple">Simple</a></li>
+                
+                    <li class="TabNav-title
+                        
+                    "><a @click:="script.selectTab" payload="ToDo">ToDo</a></li>
+                
+                    <li class="TabNav-title
+                        
+                    "><a @click:="script.selectTab" payload="API">API</a></li>
+                
+                    <li class="TabNav-title
+                        
+                    "><a @click:="script.selectTab" payload="Prime">Prime</a></li>
+                
+                    <li class="TabNav-title
+                        
+                    "><a @click:="script.selectTab" payload="MemoryGame">MemoryGame</a></li>
+                
+            </ul>
+        </nav>
     
-        <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
-            <span alt="Run refresh button">Run ⟳</span>
-        </button>
-    
-</div>
 
-<div class="side-by-side-panes">
-    <div class="editor-wrapper">
-        <div modulo-ignore="">
-            <div [script.codemirror]=""></div>
-        </div>
+    <div class="editor-toolbar">
+        
+        
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+            <button class="m-Btn" title="Switch to full screen view of code" @click:="script.doFullscreen">
+                <span alt="Full Screen"><span>⛶</span>
+            </span></button>
+        
     </div>
 
-    
-        <div class="editor-minipreview">
-            <div class="preview-wrapper">
-                
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
             </div>
         </div>
-    
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e1g1-example modulo-ignore="">
+    <button @click:="script.countUp">Hello 42</button>
+</e1g1-example>
+                </div>
+            </div>
+        
+    </div>
 </div>
 </mws-demo>
     </main>
@@ -252,4 +259,4 @@
 
 
 
-<script src="/js/modulo-build-121.10-18slfr4.js"></script></body>
+<script src="/js/modulo-build-121.10--1o4g7gg.js"></script></body>

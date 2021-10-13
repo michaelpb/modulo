@@ -1,47 +1,53 @@
-
-{% if state.tabs.length gt 1 %}
-    <nav class="TabNav">
-        <ul>
-            {% for tab in state.tabs %}
-                <li class="TabNav-title
-                    {% if tab.title == state.selected %}
-                        TabNav-title--selected
-                    {% endif %}
-                "><a @click:=script.selectTab
-                        payload="{{ tab.title }}"
-                    >{{ tab.title }}</a></li>
-            {% endfor %}
-        </ul>
-    </nav>
-{% endif %}
-
-<div class="editor-toolbar">
-    {% if state.showclipboard %}
-        <button class="m-Btn m-Btn--sm m-Btn--faded"
-                title="Copy this code" @click:=script.doCopy>
-            <span alt="Clipboard">Copy &#128203;</span>
-        </button>
+<div class="demo-wrapper
+        {% if state.fullscreen %}demo-wrapper__fullscreen {% endif %}
+    ">
+    {% if state.tabs.length gt 1 %}
+        <nav class="TabNav">
+            <ul>
+                {% for tab in state.tabs %}
+                    <li class="TabNav-title
+                        {% if tab.title == state.selected %}
+                            TabNav-title--selected
+                        {% endif %}
+                    "><a @click:=script.selectTab
+                            payload="{{ tab.title }}"
+                        >{{ tab.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
     {% endif %}
-    {% if state.showpreview %}
-        <button class="m-Btn"
-                title="Run a preview of this code" @click:=script.doRun>
-            <span alt="Run refresh button">Run &#10227;</span>
-        </button>
-    {% endif %}
-</div>
 
-<div class="side-by-side-panes">
-    <div class="editor-wrapper">
-        <div modulo-ignore>
-            <div [script.codemirror]></div>
-        </div>
+    <div class="editor-toolbar">
+        {% if state.showclipboard %}
+            <button class="m-Btn m-Btn--sm m-Btn--faded"
+                    title="Copy this code" @click:=script.doCopy>
+                Copy <span alt="Clipboard">&#128203;</span>
+            </button>
+        {% endif %}
+        {% if state.showpreview %}
+            <button class="m-Btn"
+                    title="Run a preview of this code" @click:=script.doRun>
+                Run <span alt="Refresh">&#10227;</span>
+            </button>
+            <button class="m-Btn"
+                    title="Switch to full screen view of code" @click:=script.doFullscreen>
+                <span alt="Full Screen"><span>&#x26F6;</span>
+            </button>
+        {% endif %}
     </div>
 
-    {% if state.showpreview %}
-        <div class="editor-minipreview">
-            <div class="preview-wrapper">
-                {{ state.preview|safe }}
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore>
             </div>
         </div>
-    {% endif %}
+
+        {% if state.showpreview %}
+            <div class="editor-minipreview">
+                <div modulo-ignore>
+                    {{ state.preview|safe }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
 </div>

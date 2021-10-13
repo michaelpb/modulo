@@ -577,11 +577,18 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     if (!arr) {
         arr = []; // HACK for testability
     }
-    /* TODO: for "pre-load" directives, possibly just pass in "Loader" as
-       "component" so we can have load-time directives */
+
     for (const rawName of el.getAttributeNames()) {
-        // todo: optimize skipping most elements or attributes
+        // todo: optimize skipping most elements or attributes, e.g. "if
+        // alpha and dashes, skip"
         let name = rawName;
+
+        // Skip: This element and descendants should be ignored
+        if (rawName === 'modulo-ignore') {
+            //console.log('skipping over', el);
+            return;
+        }
+
         for (const [regexp, dir] of Modulo.directiveShortcuts) {
             if (rawName.match(regexp)) {
                 name = `[${dir}]` + name.replace(regexp, '');
@@ -590,6 +597,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
         if (!name.startsWith('[')) {
             continue; // There are no directives, skip
         }
+
         const value = el.getAttribute(rawName);
         const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
         for (const dName of name.split(']').map(cleanWord)) {

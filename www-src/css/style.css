@@ -2,12 +2,6 @@
     --highlight-color: #B90183;
 }
 
-.CodeMirror *,
-textarea {
-  font-family: monospace;
-  font-size: 14px;
-}
-
 code {
   font-family: monospace;
   border-bottom: 1px dotted var(--highlight-color);
@@ -518,52 +512,3 @@ footer {
 }
 
 
-.TabNav-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    /*border: 1px dotted var(--highlight-color);*/
-    /*border-top: 1px dotted black;*/
-}
-.TabNav {
-    /*border-bottom: 1px dotted var(--highlight-color);*/
-    width: 100%;
-}
-.TabNav > ul {
-    width: 100%;
-    display: flex;
-}
-.TabNav-title {
-    border: 2px solid black;
-    border-top-width: 4px;
-    border-bottom-width: 0;
-    border-radius: 8px 8px 0 0;
-    background: white;
-    min-width: 10%;
-    box-shadow: 0 0 0 0 var(--highlight-color);
-    transition: box-shadow 0.3s,
-                border-color 0.2s;
-}
-
-.TabNav-title a,
-.TabNav-title a:visited,
-.TabNav-title a:active {
-    text-decoration: none;
-    color: black;
-    display: block;
-    padding: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1.1rem;
-}
-
-.TabNav-title:hover {
-    border-color: var(--highlight-color);
-}
-
-.TabNav-title--selected {
-    border-color: var(--highlight-color);
-    background: var(--highlight-color);
-    box-shadow: 0 0 0 8px var(--highlight-color);
-    border-radius: 8px 8px 8px 8px;
-}

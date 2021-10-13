@@ -567,3 +567,6 @@ footer {
     box-shadow: 0 0 0 8px var(--highlight-color);
     border-radius: 8px 8px 8px 8px;
 }
+.TabNav-title--selected a {
+    color: white !important;
+}
