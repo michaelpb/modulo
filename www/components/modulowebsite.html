@@ -33,6 +33,75 @@
 
 
 
+<component name="Demo">
+    <props
+        text
+        demotype
+        fromlibrary
+    ></props>
+    <template src="./modulowebsite/demo.html"></template>
+
+    <state
+        tabs:='[]'
+        selected:=null
+        preview=""
+        text=""
+        nscounter:=1
+        showpreview:=false
+        showclipboard:=false
+    ></state>
+    <script src="./modulowebsite/demo.js"></script>
+
+    <style>
+        Demo {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+
+        .editor-toolbar {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            width: 200px;
+            right: -70px;
+            top: -7px;
+        }
+
+        @media (min-width: 700px) {
+            .editor-wrapper {
+                width: 630px;
+            }
+        }
+        .editor-wrapper {
+            /*
+            border: 5px solid black;
+            border-radius: 1px 8px 1px 8px;
+            border-bottom-width: 1px;
+            border-right-width: 1px;
+            */
+            border: 1px solid black;
+        }
+
+        .editor-minipreview {
+            border: 1px solid black;
+            border-radius: 1px;
+            background: #eee;
+            width: 100%;
+            padding: 20px;
+            border-left: none;
+        }
+
+        .side-by-side-panes {
+            display: flex;
+        }
+    </style>
+
+</component>
+
+
+
+
 <component name="DocSidebar">
 
 <props
@@ -428,35 +497,5 @@
         }
     </script>
 </component>
-
-<component name="Demo">
-    <props
-        text
-        demotype
-        fromlibrary
-    ></props>
-    <template src="./modulowebsite/demo.html"></template>
-
-    <state
-        tabs:='[]'
-        selected:=null
-    ></state>
-    <script src="./modulowebsite/demo.js"></script>
-
-    <style>
-        CodeSnippet {
-            position: relative;
-            display: block;
-        }
-        .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style>
-
-</component>
-
 
 

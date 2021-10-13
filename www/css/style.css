@@ -262,12 +262,12 @@ div.IndexWrapper {
     min-height: calc(100vh - 100px);
 }
 
-div.IndexWrapper mdu-TabSet {
+div.IndexWrapper mws-Demo {
   margin-top: 10px;
 }
 
 @media (min-height: 768px) {
-    div.IndexWrapper mdu-TabSet {
+    div.IndexWrapper mws-Demo {
         margin-top: 100px;
     }
 }
@@ -540,6 +540,9 @@ footer {
     border-radius: 8px 8px 0 0;
     background: white;
     min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
 }
 
 .TabNav-title a,
@@ -551,12 +554,16 @@ footer {
     padding: 5px;
     font-weight: bold;
     cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.TabNav-title:hover {
+    border-color: var(--highlight-color);
 }
 
 .TabNav-title--selected {
+    border-color: var(--highlight-color);
     background: var(--highlight-color);
-    box-shadow: 0 0 0 5px var(--highlight-color);
-    padding-top: 3px;
-    border-top-width: 1px;
-    border-radius: 1px;
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
 }

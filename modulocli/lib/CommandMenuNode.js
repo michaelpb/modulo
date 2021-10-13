@@ -101,23 +101,60 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         return list;
     }
 
-    help() {
+    help(config, modulo, skipFlags=false) {
         let prefix = 'm.';
-        if (!this.repl) {
+        if (!this._repl) {
             prefix = '';
-            console.log('Usage: modulocli CMD [preload(s)] [--flag(s)]');
-            console.log('Example: modulocli serve\n');
+            console.log('Usage:   modulocli CMD [preload(s)] [--flag(s)]\n');
+            console.log('Example: modulocli ssg --input ./src/ --output ./public/\n');
         }
-        console.log('Available commands: (CMD)');
+        console.log('Available commands:');
         for (const key of this._getCmds()) {
-            console.log(`    ${prefix}${key}`);
+            console.log(TERM.BRIGHT, `    ${prefix}${key}`, TERM.RESET);
         }
-        console.log('\nFor full documentation, visit:    https://modulojs.org', "\n")
+
+        if (this._repl || skipFlags) {
+            if (skipFlags) {
+                console.log('\nHint: Try "modulocli help" for help on flags\n');
+            }
+            return; // do not show flag help during repl
+        }
+
+        console.log('\n\nAvailable flags & their defaults:');
+        const defaultConfigSrc = fs.readFileSync(__dirname + '/defaultConfig.js', 'utf8');
+        let inHelp = false;
+        for (let line of defaultConfigSrc.split('\n')) {
+            if (line.includes('(STARTHELP)')) {
+                inHelp = true;
+            } else if (line.includes('(ENDHELP)')) {
+                inHelp = false;
+            } else if (inHelp) {
+                if (line.trim().startsWith('/')) {
+                    const indent = '        ';
+                    line = line.replace(/^\s*\/\//, indent);
+                } else if (line.includes(':')) {
+                    const indent = '    --';
+                    line = line.replace(/^\s*/, indent);
+                    line = line.replace(/:\s*['"]?/, '=');
+                    line = line.replace(/['"]?,\s*$/, '');
+                    line = `${TERM.BRIGHT}${line}${TERM.RESET}`;
+                }
+                console.log(line);
+            }
+        }
+
+        console.log('\n\nAll above settings can be specified in one of 3 places:')
+        console.log('    1) ./modulo.json    (path can be changed with MODULO_CONF env var)')
+        console.log('    2) ./package.json   (will look under a "modulo" key)')
+        console.log('    3) As a CLI flag    (using above "--ouput=/docs" style syntax)')
+        console.log('For the greatest control, specify a JSON file (1 or 2)')
+
+        console.log('\nFull documentation is on the World Wide Web:    https://modulojs.org', "\n")
     }
 
     [inspect]() {
         let cmdList = this._getCmds().join(', ');
-        if (this.repl) {
+        if (this._repl) {
             if (cmdList.length > 70) {
                 cmdList = cmdList.slice(0, 70) + '...';
             }
@@ -129,16 +166,17 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
     shell(config, modulo) {
         const repl = require('repl');
-        console.log(TERM.LOGO, 'Node REPL activated. Type m to see commands.');
-        this.repl = repl.start('[%] ', process.stdin);
+        console.log(TERM.LOGO, 'Modulo Node.js REPL activated. Type m to see commands.');
+        this._repl = repl.start('[%] ', process.stdin);
 
-        // TODO: Loop through "m." and replace with wrapped getters, that give
-        // modulo context
+        // TODO: Loop through "m." and replace with wrapped getters, that
+        // auto-include config and modulo args
 
         // REPL requires you to make globals read-only, as such:
         const _ro = value => ({value, configurable: false, enmerable: true});
-        Object.defineProperty(this.repl.context, 'modulo', _ro(modulo));
-        Object.defineProperty(this.repl.context, 'm', _ro(this));
+        Object.defineProperty(this._repl.context, 'modulo', _ro(modulo));
+        Object.defineProperty(this._repl.context, 'config', _ro(config));
+        Object.defineProperty(this._repl.context, 'm', _ro(this));
     }
 
     _matchGenerateAction(config, modulo, inputFile) {

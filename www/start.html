@@ -19,6 +19,49 @@ mws-Section a.secanchor {
 mws-Section:hover .mws-Section-helper {
             opacity: 1.0;
         }
+    </style><style id="mws-Demo_style">
+mws-Demo {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+
+mws-Demo .editor-toolbar {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            width: 200px;
+            right: -70px;
+            top: -7px;
+        }
+
+@media (min-width: 700px) {
+mws-Demo .editor-wrapper {
+                width: 630px;
+            }
+        }
+mws-Demo .editor-wrapper {
+            /*
+            border: 5px solid black;
+            border-radius: 1px 8px 1px 8px;
+            border-bottom-width: 1px;
+            border-right-width: 1px;
+            */
+            border: 1px solid black;
+        }
+
+mws-Demo .editor-minipreview {
+            border: 1px solid black;
+            border-radius: 1px;
+            background: #eee;
+            width: 100%;
+            padding: 20px;
+            border-left: none;
+        }
+
+mws-Demo .side-by-side-panes {
+            display: flex;
+        }
     </style><style id="mws-DocSidebar_style">
 mws-DocSidebar li {
       margin-left: 20px;
@@ -83,17 +126,6 @@ mws-CodeExample .split {
         }
 @media (max-width: 992px) {
 mws-CodeExample .split { display: block; }
-        }
-    </style><style id="mws-Demo_style">
-mws-Demo CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mws-Demo .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
         }
     </style><style id="eg-Simple_style">
 eg-Simple em { color: darkblue; }
@@ -342,4 +374,4 @@ crossorigin=&quot;anonymous&quot;></script>
 
 
 
-<script src="/js/modulo-build-121.10--q3n89c.js"></script></body>
+<script src="/js/modulo-build-121.10-18slfr4.js"></script></body>

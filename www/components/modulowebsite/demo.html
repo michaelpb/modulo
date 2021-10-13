@@ -15,11 +15,33 @@
     </nav>
 {% endif %}
 
-<button class="m-Btn m-Btn--sm m-Btn--faded"
-        title="Copy this code" @click:=script.doCopy>
-    <span alt="Clipboard">&#128203;</span>
-</button>
-<div modulo-ignore>
-    <div [script.codemirror]></div>
+<div class="editor-toolbar">
+    {% if state.showclipboard %}
+        <button class="m-Btn m-Btn--sm m-Btn--faded"
+                title="Copy this code" @click:=script.doCopy>
+            <span alt="Clipboard">Copy &#128203;</span>
+        </button>
+    {% endif %}
+    {% if state.showpreview %}
+        <button class="m-Btn"
+                title="Run a preview of this code" @click:=script.doRun>
+            <span alt="Run refresh button">Run &#10227;</span>
+        </button>
+    {% endif %}
 </div>
 
+<div class="side-by-side-panes">
+    <div class="editor-wrapper">
+        <div modulo-ignore>
+            <div [script.codemirror]></div>
+        </div>
+    </div>
+
+    {% if state.showpreview %}
+        <div class="editor-minipreview">
+            <div class="preview-wrapper">
+                {{ state.preview|safe }}
+            </div>
+        </div>
+    {% endif %}
+</div>

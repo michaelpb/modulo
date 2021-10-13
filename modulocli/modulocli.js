@@ -109,15 +109,17 @@ function doCommand(cliConfig, args) {
         modulo.defineAll(); // do any more defines
         // Make sure preloads are
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
+            let skipFlags = undefined;
             if (!command) {
                 command = 'help';
+                skipFlags = true;
             }
             if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
                 command = 'help';
             }
             console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
             modulo.fetchQ.wait(() => {
-                modulo.commands[command](config, modulo);
+                modulo.commands[command](config, modulo, skipFlags);
             });
         });
     })

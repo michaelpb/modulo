@@ -18,12 +18,14 @@
     </ul></ul></div>
 
     <main>
-        <mws-demo fromlibrary="Hello,Simple,ToDo,API,Prime,MemoryGame">
+        <mws-demo fromlibrary="Hello,Simple,ToDo,API,Prime,MemoryGame" demotype="minipreview">
 
     <nav class="TabNav">
         <ul>
             
                 <li class="TabNav-title
+                    
+                        TabNav-title--selected
                     
                 "><a @click:="script.selectTab" payload="Hello">Hello</a></li>
             
@@ -51,13 +53,30 @@
     </nav>
 
 
-<button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-    <span alt="Clipboard">📋</span>
-</button>
-<div modulo-ignore="">
-    <div [script.codemirror]=""></div>
+<div class="editor-toolbar">
+    
+    
+        <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+            <span alt="Run refresh button">Run ⟳</span>
+        </button>
+    
 </div>
 
+<div class="side-by-side-panes">
+    <div class="editor-wrapper">
+        <div modulo-ignore="">
+            <div [script.codemirror]=""></div>
+        </div>
+    </div>
+
+    
+        <div class="editor-minipreview">
+            <div class="preview-wrapper">
+                
+            </div>
+        </div>
+    
+</div>
 </mws-demo>
     </main>
 </div>
@@ -233,4 +252,4 @@
 
 
 
-<script src="/js/modulo-build-121.10--q3n89c.js"></script></body>
+<script src="/js/modulo-build-121.10-18slfr4.js"></script></body>

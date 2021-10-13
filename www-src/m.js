@@ -1,4 +1,4 @@
-// modulo build vuaivn
+// modulo build so0tlv
 'use strict';
 
 // # Introduction
@@ -1908,6 +1908,79 @@ Modulo.fetchQ.data = {
 </module>
 
 `,// (ends: /components/layouts.html) 
+
+  "/components/layouts/base.html": // (71 lines)
+`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf8" />
+    <title>{{ props.pagetitle }} - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
+    <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+
+    <!-- TODO: Switch to <module><load> style syntax -->
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+</head>
+<body>
+
+{% comment %}
+{% if props.showsplash != undefined %}
+    {# TODO split into separate template, and include with props|renderas:template.splash #}
+    <span id="about"></span>
+{% endif %}
+{% endcomment %}
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
+    <ul>
+        <li>
+            <a href="/index.html#about" {% if props.navbar == "about" %}class="Navbar--selected"{% endif %}>About</a>
+        </li>
+        <li>
+            <a href="/start.html" {% if props.navbar == "start" %}class="Navbar--selected"{% endif %}>Start</a>
+        </li>
+        <li>
+            <a href="/docs/" {% if props.navbar == "docs" %}class="Navbar--selected"{% endif %}>Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        v: {{ script.exports.version }}<br />
+        SLOC: {{ script.exports.sloc }} lines<br />
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
+
+{% if props.docbarselected %}
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar" >
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
+            </nav>
+        </aside>
+        <aside style="border: none" [component.children]>
+        </aside>
+    </main>
+{% else %}
+    <main [component.children] class="Main">
+    </main>
+{% endif %}
+
+<footer>
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
+</body>
+</html>
+`,// (ends: /components/layouts/base.html) 
 
 };
 
