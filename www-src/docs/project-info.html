@@ -1,12 +1,13 @@
 <script src="/m.js"></script>
 <x-Page
-    docbarselected="faq.html"
-    pagetitle="FAQ"
+    docbarselected="project-info.html"
+    pagetitle="Modulo Project Information"
     navbar="docs">
 
-<h3><span alt="Question mark">?</span></h3>
 
-<h3>FAQ</h3>
+<mws-Section>FAQ</mws-Section>
+
+<h3><span alt="Question mark">?</span></h3>
 
 <p>This FAQ, like every FAQ, is an imaginary conversation between the creator
 (myself) of Modulo and imaginary people who apparently are invested in Modulo
@@ -145,15 +146,15 @@ favorite (but often deficient) computer language.</p>
 
 <hr />
 
-<mws-Section name="philosophy">Thought experiment on framework philosophy</mws-Section>
+<mws-Section name="philosophy">Framework design philosophy</mws-Section>
 
 <p>In this section, I'll give some of my design philosophy and opinions on what
 makes a good framework.</p>
 
-<p>Let's do a thought experiment. Imagine the most minimalist framework. Let's
-call it "Zen" (probably already a thing, but bare with me), by Tux the
-Penguin (because hey, why not?). Here is the complete code for the "Zen"
-framework:</p>
+<p>Let's do a thought experiment. Imagine the most minimalist framework
+possible. Let's call it "Zen" (probably already a thing, but bare with me), by
+Tux the Penguin (because hey, why not?). Here is the complete code for the
+"Zen" framework:</p>
 
 <mws-Demo
 text='
@@ -271,13 +272,14 @@ these best practices and pattern recipes can have a much bigger impact on the
 resulting product than internal implementations. If the documentation shows
 many slow performing examples, or if it doesn't suggest anything at all and
 developers tend to go for slow implementations, I think it's perfectly fair to
-say that the framework is "slow", regardless of the internal operations.</p>
+say that the framework is "slow", regardless of the internal operations. (An
+adjective that probably applies to Modulo as well!)</p>
+
 
 <p>Modulo's goal is short code and long docs. It's basically "Zen", but
 multiplied times 250. It's as though Tux continued hacking away, bringing it
 from 5 lines to about 1000 lines, and then kept on hacking away at docs,
-examples, and best-practices, keeping them still proportionally much
-longer.</p>
+examples, and use-patterns, keeping them still proportionally much longer.</p>
 
 <p>Coincidentally, this is actually somewhat how various parts of Modulo
 originally were developed.  Modulo itself had an earlier incarnation called
@@ -299,13 +301,13 @@ doing things. The code is important, but less important than the other
 aspects.</p>
 
 <p>Also, for clarity's sake: The "Zen" code above is untested, incomplete, and
-probably has some bugs, but possibly could work in principle with a tweak or
-two and proper supporting CSS. It doesn't matter either way for our purposes.
-Also, I'm very far from the first person to approach framework development this
-way &mdash; in fact, the increasingly popular Alpine.js follows a similar
-principle! It also happens to resemble my silly "Zen" example, but is actually
-real, so if you want a neat-o real-life version of this,
-<a href="https://alpinejs.dev/">check it out</a>.</p>
+almost certainly has deal-breaking bugs, but possibly could work in principle
+with a tweak or two and the right context. This doesn't matter either way for
+our purposes.  Also, I'm very far from the first person to approach framework
+development this way &mdash; in fact, the increasingly popular Alpine.js
+follows a similar principle! It also happens to resemble my silly "Zen"
+example, but is actually real, so if you want a neat-o real-life version of
+this, <a href="https://alpinejs.dev/">check it out</a>.</p>
 
 
 

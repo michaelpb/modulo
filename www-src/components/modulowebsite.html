@@ -95,6 +95,7 @@
     {% endfor %}
 
 
+    <!--
     <li>
         Other resources:
 
@@ -102,12 +103,13 @@
             <li>
                 <a href="/docs/faq.html">FAQ</a>
             <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
                 Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
 </template>
 
@@ -215,16 +217,26 @@
             filename: '/docs/example-library.html',
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
+
+        {
+            label: 'Project Info',
+            filename: '/docs/project-info.html',
+            children: [
+                _child('FAQ', 'faq'),
+                _child('Framework Design Philosophy', 'philosophy'),
+            ],
+        },
     ];
 
     function initializedCallback() {
         const {isBackend, ssgCurrentOutputPath} = Modulo;
         let path = props.path;
+        console.log('this is path', path);
         for (const groupObj of script.exports.menu) {
             if (props.showall) {
                 groupObj.active = true;
             }
-            if (groupObj.filename && path && path.endsWith(groupObj.filename)) {
+            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
                 groupObj.active = true;
             }
         }

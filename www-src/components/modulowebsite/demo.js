@@ -85,7 +85,6 @@ function doCopy() {
 function initializedCallback({el}) {
     let text;
     state.tabs = [];
-    console.log('this is state', state, 'this is props', props);
     if (props.fromlibrary) {
         if (!componentTexts) {
             throw new Error('Couldnt load:', props.fromlibrary)

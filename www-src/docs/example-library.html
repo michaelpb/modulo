@@ -1,26 +1,75 @@
+<!-- Note: Putting /m.js at the bottom, thinking if it should be
+     window.onload = () => Modulo.defineAll() -->
+
+<!--
+<script src="/js/Modulo.js"></script>
+<script>Modulo.defineAll()</script>
+<mod-load namespace="x" src="/components/layouts.html"></mod-load>
+
+Just for testing purposes:
 <script src="/m.js"></script>
+-->
+
 <x-Page
     docbarselected="example-library.html"
     pagetitle="Example Library"
     navbar="docs">
 
+<template modulo-embed>
+    <component name="AllExamples">
+        <template>
+            {% for example in script.exports.examples %}
+                <mws-Section name="{{ example.name|lower }}">
+                    {{ example.name }}
+                </mws-Section>
+                <mws-Demo
+                    demotype="minipreview"
+                    fromlibrary='{{ example.name }}'
+                ></mws-Demo>
+            {% endfor %}
+        </template>
+
+        <script>
+            script.exports.examples = [];
+            function initializedCallback() {
+                // TODO: make initialized only get called once
+                // TODO: Encapsolate this into a dependency pattern, if proves
+                // useful
+                Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => {
+                    Modulo.fetchQ.wait(() => _setup(text));
+                });
+            }
+            function _setup(text) {
+                console.log('this is the example library');
+                let componentTexts;
+                try {
+                    componentTexts = Modulo.factoryInstances['eg-eg']
+                            .baseRenderObj.script.exports.componentTexts;
+                } catch {
+                    console.log('couldnt get componentTexts (2)', Modulo.factoryInstances);
+                    componentTexts = null;
+                }
+                if (!componentTexts) {
+                    return;
+                }
+
+                script.exports.examples = [];
+                for (const [name, content] of Object.entries(componentTexts)) {
+                    //console.log("dis is conent", content);
+                    script.exports.examples.push({name, content});
+                }
+                element.rerender();
+            }
+        </script>
+    </component>
+</template>
+
+
 <h1>Example Library</h1>
 
-<tutorial-DocExampleLib></tutorial-DocExampleLib>
-
-
-
-
-
-
-
-
-
-
-
-
-
+<x-AllExamples></x-AllExamples>
 
 </x-Page>
 
 
+<script src="/m.js"></script>

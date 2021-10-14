@@ -15,7 +15,7 @@ definitions. In fact, the <em>Component</em> CPart
 
 
 
-<mdu-Section name="spares">CPart Spares</mdu-Section>
+<mws-Section name="spares">CPart Spares</mws-Section>
 
 <p>If you have extra car parts lying around, you call them <em>spare
 parts</em>, or just "spares". In Modulo, extra or inactive CParts are also
@@ -43,7 +43,8 @@ in <code>element.cpartSpares</code>. Simply by assigning a property of
 
 <p>For a concrete example, examine how the following behaves:</p>
 
-<mdu-CodeExample
+<mws-Demo
+demotype="minipreview"
 text='
 <template name="shop">
     <nav>Shop|<a @click:=script.swap payload="home">Home</a></nav>
@@ -77,7 +78,7 @@ a {
     cursor: pointer;
 }
 </style>
-'></mdu-CodeExample>
+'></mws-Demo>
 
 
 <p><strong>Note:</strong> Swapping templates should <em>not</em> be a suitable

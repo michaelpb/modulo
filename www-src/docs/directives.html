@@ -7,7 +7,7 @@
 <h1>Lifecycle & Directives</h1>
 
 
-<mdu-Section name="lifecycle">Lifecycle</mdu-Section>
+<mws-Section name="lifecycle">Lifecycle</mws-Section>
 
 <p>Every Modulo Component goes through a certain "lifecycle". Here's an
 analogy: If CParts are the stage-hands and actors who put on a play, then the
@@ -125,7 +125,7 @@ in a later section</a>.</p>
 
 <p><strong>Try it out below:</strong></p>
 
-<mdu-CodeExample
+<mws-Demo demotype="minipreview"
 text='
 <template>
 Hello <strong>Modulo</strong> World!
@@ -166,14 +166,14 @@ Open your browser dev console to see messages...
         console.log("(the button got clicked)");
     }
 </script>
-'></mdu-CodeExample>
+'></mws-Demo>
 
 
 </section>
 
 
 
-<mdu-Section name="renderobj">renderObj</mdu-Section>
+<mws-Section name="renderobj">renderObj</mws-Section>
 
 <blockquote>
 <p><strong>renderObj is like "req" </strong> -
@@ -245,7 +245,7 @@ following example to see what information is available or modified at each
 step:</p>
 
 
-<mdu-CodeExample
+<mws-Demo demotype="minipreview"
 text='
 <template>
 <label>
@@ -282,10 +282,10 @@ Show messages in console</label>
         _logInfo("updatedCallback:", renderObj);
     }
 </script>
-'></mdu-CodeExample>
+'></mws-Demo>
 
 
-<mdu-Section name="directives">Directives</mdu-Section>
+<mws-Section name="directives">Directives</mws-Section>
 
 <blockquote><p><strong>Directives are like "refs"</strong> - Directives have
 the same uses as Refs in <a
@@ -330,7 +330,7 @@ run into the limits of what Modulo is capable of doing.</p>
 
 <p><strong>Example custom directives:</strong></p>
 
-<mdu-CodeExample
+<mws-Demo demotype="minipreview"
 text='
 <template>
 {# [script.myinput] is a custom directive, defined below #}
@@ -353,9 +353,9 @@ text='
         element.inputRef.focus();
     }
 </script>
-'></mdu-CodeExample>
+'></mws-Demo>
 
-<!--<mdu-Section name="builtin">Built-in directives</mdu-Section>-->
+<!--<mws-Section name="builtin">Built-in directives</mws-Section>-->
 
 <h3>Built-in directives</h3>
 
@@ -401,21 +401,28 @@ stricter structure.</p>
     applied after the template is fully rendered and all template variables are
     already forgotten.  As an example, consider the following code:</p>
 
-<mdu-CodeSnippet
+<mws-Demo
 text='
 <template>
     {% for athlete in state.team %}
-        {# Broken, will not work: #}   <a href:=athlete.url>{{ athlete.name }}</a>
-        {# Correct, will work: #}      <a href="{{ athlete.url }}">{{ athlete.name }}</a>
+        {# (HTML Attributes) #}
+        {# Broken, will not work: #}
+        <a href:=athlete.url>{{ athlete.name }}</a>
 
-
-        {# Also broken, will not work: #}
-        <button @click:=athlete.myClickCallback>{{ athlete.name }}</button>
         {# Correct, will work: #}
-        <button @click:=script.selectOne click.payload="{{ athlete.id }}">{{ athlete.name }}</button>
+        <a href="{{ athlete.url }}">{{ athlete.name }}</a>
+
+        {# (Events) #}
+        {# Also broken, will not work: #}
+        <button @click:=athlete.myClickCallback>
+            {{ athlete.name }}</button>
+
+        {# Correct, will work: #}
+        <button @click:=script.selectOne payload="{{ athlete.id }}">
+            {{ athlete.name }}</button>
     {% endfor %}
 </template>
-'></mdu-CodeSnippet>
+'></mws-Demo>
 
     <p>The first attempt uses a directive (<code>[component.resolve]</code>, in
     this case using the colon <code>:</code> shortcut), in an attempt to "directly"
@@ -460,7 +467,7 @@ custom directives used (which should be avoided to begin with).</p>
 
 <p>See below for an example:</p>
 
-<mdu-CodeExample
+<mws-Demo demotype="minipreview"
 text='
 <template>
     Game Shop: 31 moneys<br />
@@ -500,7 +507,7 @@ text='
         state.show = !state.show;
     }
 </script>
-'></mdu-CodeExample>
+'></mws-Demo>
 
 <p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
 example simple, we are demonstrating it's use within a script tag in a

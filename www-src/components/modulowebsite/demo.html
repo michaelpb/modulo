@@ -1,7 +1,8 @@
 <div class="demo-wrapper
-        {% if state.showpreview  %}demo-wrapper__minipreview{% endif %}
-        {% if state.showclipboard  %}demo-wrapper__clipboard{% endif %}
-        {% if state.fullscreen %}demo-wrapper__fullscreen {% endif %}
+        {% if state.showpreview %}     demo-wrapper__minipreview{% endif %}
+        {% if state.showclipboard %}   demo-wrapper__clipboard  {% endif %}
+        {% if state.fullscreen %}      demo-wrapper__fullscreen {% endif %}
+        {% if state.tabs.length == 1 %}demo-wrapper__notabs     {% endif %}
     ">
     {% if state.tabs.length gt 1 %}
         <nav class="TabNav">
@@ -22,7 +23,7 @@
     <div class="editor-toolbar">
         <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
                     {% if not state.fullscreen %} display: none; {% endif %}">
-            <em>Note: This is just for exploring features. Your work will not be saved.</em>
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
         </p>
 
         {% if state.showclipboard %}

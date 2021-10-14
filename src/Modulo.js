@@ -1711,6 +1711,8 @@ Modulo.assert = function assert(value, ...info) {
     }
 }
 
+// TODO: Probably should do this on an onload event or similar
+//Modulo.globals.onload = () => Modulo.defineAll();
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
 Modulo.defineAll();
