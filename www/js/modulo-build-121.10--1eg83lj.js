@@ -1,4 +1,4 @@
-// modulo build -16nsdg1
+// modulo build -1eg83lj
 'use strict';
 
 // # Introduction
@@ -119,8 +119,8 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
     // factoryCallback() could be the new connectdCallback for <module><load>
     // syntax!
     doFetch(element, options) {
-        Modulo.assert(this.src, 'Loader: Invalid src= attribute');
-        Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute');
+        Modulo.assert(this.src, 'Loader: Invalid src= attribute:', this.src);
+        Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute:', this.namespace);
 
         // After initializing data, send a new request to the URL specified by
         // the src attribute. When the response is received, load the text as a
@@ -232,7 +232,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
             if (data.dependencies) {
                 const cb = (text, label) =>
                     loadedCallback(data, text, label, this, loadObj);
-                Modulo.fetchQ.enqueue(data.dependencies, cb, this.src);
+                Modulo.fetchQ.enqueue(data.dependencies, cb);
             }
         }
         return [attrs.name, array || loadObj];
@@ -462,6 +462,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.cparts = {};
         this.isMounted = false;
 
+
         this.originalHTML = this.innerHTML;
         this.originalChildren = [];
         //console.log('originalChildren!', this.originalChildren);
@@ -555,6 +556,13 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         works for the automated tests. Logically, it should probably be invoked
         in the constructor.
         */
+
+        // HACK delete
+        if (!this.originalHTML && this.innerHTML) {
+            console.log('original HTML check 2', this.originalHTML, this.innerHTML);
+            this.originalHTML = this.innerHTML;
+        }
+        // HACK delete
         this.setupCParts();
         this.lifecycle(['initialized'])
         this.rerender();
@@ -570,11 +578,18 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     if (!arr) {
         arr = []; // HACK for testability
     }
-    /* TODO: for "pre-load" directives, possibly just pass in "Loader" as
-       "component" so we can have load-time directives */
+
     for (const rawName of el.getAttributeNames()) {
-        // todo: optimize skipping most elements or attributes
+        // todo: optimize skipping most elements or attributes, e.g. "if
+        // alpha and dashes, skip"
         let name = rawName;
+
+        // Skip: This element and descendants should be ignored
+        if (rawName === 'modulo-ignore') {
+            //console.log('skipping over', el);
+            return;
+        }
+
         for (const [regexp, dir] of Modulo.directiveShortcuts) {
             if (rawName.match(regexp)) {
                 name = `[${dir}]` + name.replace(regexp, '');
@@ -583,6 +598,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
         if (!name.startsWith('[')) {
             continue; // There are no directives, skip
         }
+
         const value = el.getAttribute(rawName);
         const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
         for (const dName of name.split(']').map(cleanWord)) {
@@ -623,6 +639,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     updateCallback(renderObj) {
+        // TODO: Add code here to check for reattach children
         if (renderObj.component.innerHTML !== null) {
             let newContents = renderObj.component.innerHTML || '';
             // TODO: move reconcile to this class
@@ -664,7 +681,26 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
                         Modulo.globals.document.head.appendChild(newScript);
                     }
                 }
-                console.log('this is mode', mode, this.element.childNodes);
+
+                // TODO: finish this hack
+                // Hack to prevent nondeterministic bug with exact ordering,
+                // remove after finishing correct mounting / dom resolution
+                // ordering
+                const nodes = Array.from(this.element.querySelectorAll('*'));
+                if (nodes.length > 0) {
+                    for (const elem of nodes) {
+                        if (typeof elem === 'string') {
+                            continue;
+                        }
+                        const attrs = Modulo.utils.parseAttrs(elem);
+                        for (const name of elem.getAttributeNames()) {
+                            if (name === '[component.children]') {
+                                elem.innerHTML = this.element.originalHTML;
+                            }
+                        }
+                    }
+                }
+
                 this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
@@ -679,7 +715,8 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     childrenMount({el}) {
-        console.log('getting childrenMount', this.element);
+        // IDEA: Have value be querySelector, eg [component.children]="div"
+        //console.log('getting childrenMount', this.element);
         el.append(...this.element.originalChildren);
         //this.element.originalChildren = [];
     }
@@ -750,7 +787,7 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static loadCallback(node, loader, loadObj) {
-        const cName = loadObj.component[0].name;
+        const cName = loadObj.component[0].options.name;
         const tests = [];
         for (const testNode of node.children) {
             tests.push(loader.loadFromDOMElement(testNode, []));
@@ -868,10 +905,10 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
     static loadCallback(node, loader, loadObj) {
         let data = super.loadCallback(node, loader, loadObj);
-        const {name} = loadObj.component[0];
+        const cName = loadObj.component[0].options.name;
         // TODO: Move prefixing to factoryCallback (?)
         data.content = Modulo.cparts.style.prefixAllSelectors(
-                          loader.namespace, name, data.content);
+                          loader.namespace, cName, data.content);
         return data;
     }
 }
@@ -1607,9 +1644,7 @@ Modulo.FetchQueue = class FetchQueue {
         this.waitCallbacks = [];
         this.finallyCallbacks = [];
     }
-    enqueue(queueObj, callback, opts, responseCb) {
-        opts = opts || this.defaultOpts || {};
-        responseCb = responseCb || (response => response.text());
+    enqueue(queueObj, callback) {
         queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
         for (let [label, src] of Object.entries(queueObj)) {
             // TODO remove! ------------------------------------v
@@ -1621,7 +1656,8 @@ Modulo.FetchQueue = class FetchQueue {
                 callback(this.data[src], label);
             } else if (!(src in this.queue)) {
                 this.queue[src] = [callback];
-                Modulo.globals.fetch(src, opts).then(responseCb)
+                Modulo.globals.fetch(src)
+                    .then(response => response.text())
                     .then(text => this.receiveData(text, label, src))
                     // v- uncomment after switch to new BE
                     //.catch(err => console.error('Modulo Load ERR', src, err));
@@ -1640,6 +1676,7 @@ Modulo.FetchQueue = class FetchQueue {
         this.waitCallbacks.push(callback); // add to end of queue
         this.checkWait(); // attempt to consume wait queue
     }
+        // v--dead code?
     waitFinally(callback) {
         this.wait(() => this.finallyCallbacks.push(callback));
         this.checkWait(); // attempt to consume wait queue
@@ -1650,6 +1687,8 @@ Modulo.FetchQueue = class FetchQueue {
                 this.waitCallbacks.shift()(); // clear while invoking
             }
         }
+
+        // v--dead code?
         if (Object.keys(this.queue).length === 0) {
             while (this.finallyCallbacks.length > 0) {
                 this.finallyCallbacks.shift()(); // clear while invoking
@@ -1853,9 +1892,9 @@ Modulo.fetchQ.data = {
             try {
                 var successful = document.execCommand('copy');
                 var msg = successful ? 'successful' : 'unsuccessful';
-                console.log('Fallback: Copying text command was ' + msg);
+                //console.log('Fallback: Copying text command was ' + msg);
             } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
+                //console.error('Fallback: Oops, unable to copy', err);
             }
 
             document.body.removeChild(textArea);
@@ -1867,7 +1906,7 @@ Modulo.fetchQ.data = {
                 return;
             }
             navigator.clipboard.writeText(text).then(function() {
-                console.log('Async: Copying to clipboard was successful!');
+                //console.log('Async: Copying to clipboard was successful!');
             }, function(err) {
                 console.error('Async: Could not copy text: ', err);
             });
@@ -1878,7 +1917,7 @@ Modulo.fetchQ.data = {
 
 `,// (ends: /components/layouts.html) 
 
-  "/components/layouts/base.html": // (89 lines)
+  "/components/layouts/base.html": // (71 lines)
 `<!DOCTYPE html>
 <html>
 <head>
@@ -1895,30 +1934,12 @@ Modulo.fetchQ.data = {
 </head>
 <body>
 
+{% comment %}
 {% if props.showsplash != undefined %}
     {# TODO split into separate template, and include with props|renderas:template.splash #}
-    <div class="IndexWrapper">
-        <div class="Tagline">
-            <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
-            <div class="Tagline-logo">
-                <img src="/img/mono_logo_percent_only.png" class="Tagline-logoimg" />
-            </div>
-            <h1 class="Tagline-title">modulo</h1>
-            <h2>A tiny JavaScript Web Component framework</h2>
-            <ul>
-                <li>Fewer than 2000 total lines of simple, commented code</li>
-                <li>Component system inspired by React, Svelte, and Polymer</li>
-                <!--<li>Modular with opinionated defaults and few assumptions</li>-->
-                <li>A dependency-free, "no fuss" drop-in for existing web apps</li>
-            <ul>
-        </div>
-
-        <main>
-            TODO add in examples here again!
-        </main>
-    </div>
     <span id="about"></span>
 {% endif %}
+{% endcomment %}
 
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
@@ -1944,7 +1965,7 @@ Modulo.fetchQ.data = {
 
 {% if props.docbarselected %}
     <main class="Main Main--fluid Main--withSidebar">
-        <aside class="TitleAside TitleAside--navBar">
+        <aside class="TitleAside TitleAside--navBar" >
             <h3><span alt="Lower-case delta">%</span></h3>
             <nav class="TitleAside-navigation">
                 <h3>Documentation</h3>
@@ -1969,7 +1990,7 @@ Modulo.fetchQ.data = {
 </html>
 `,// (ends: /components/layouts/base.html) 
 
-  "/components/modulowebsite.html": // (530 lines)
+  "/components/modulowebsite.html": // (459 lines)
 `<component name="Section">
     <props
         name
@@ -2002,6 +2023,32 @@ Modulo.fetchQ.data = {
         }
     </style>
 </component>
+
+
+
+<component name="Demo">
+    <props
+        text
+        demotype
+        fromlibrary
+    ></props>
+    <template src="./modulowebsite/demo.html"></template>
+
+    <state
+        tabs:='[]'
+        selected:=null
+        preview=""
+        text=""
+        nscounter:=1
+        showpreview:=false
+        showclipboard:=false
+        fullscreen:=false
+    ></state>
+    <script src="./modulowebsite/demo.js"></script>
+    <style src="./modulowebsite/demo.css"> </style>
+
+</component>
+
 
 
 
@@ -2401,122 +2448,14 @@ Modulo.fetchQ.data = {
     </script>
 </component>
 
-<component name="Demo">
-    <template>
-        <button class="m-Btn m-Btn--sm m-Btn--faded"
-                title="Copy this code" @click:=script.doCopy>
-            <span alt="Clipboard">&#128203;</span>
-        </button>
-        <div modulo-ignore>
-            <div [script.codemirror]></div>
-        </div>
-    </template>
-    <props
-        text
-        demotype
-        fromlibrary
-    ></props>
-    <style>
-        CodeSnippet {
-            position: relative;
-            display: block;
-        }
-        .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style>
-    <script>
-        let componentTexts = null;
-        try {
-            componentTexts = Modulo.factoryInstances['eg-eg']
-                    .baseRenderObj.script.exports.componentTexts;
-        } catch {
-            console.log('couldnt get componentTexts');
-            componentTexts = null;
-        }
-
-        function doCopy() {
-            let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
-            if (!mod || !mod.script || !mod.script.copyTextToClipboard) {
-                console.log('no mod!');
-            } else {
-                mod.script.copyTextToClipboard(props.text);
-            }
-        }
-
-        function codemirrorMount({el}) {
-            let text;
-
-            const demoType = props.demotype || 'snippet';
-            if (props.fromlibrary) {
-                if (!componentTexts) {
-                    throw new Error('Couldnt load:', props.fromlibrary)
-                }
-                if (props.fromlibrary in componentTexts) {
-                    text = componentTexts[props.fromlibrary]
-                } else {
-                    throw new Error('invalid fromlibrary:', props.fromlibrary)
-                }
-            } else if (props.text) {
-                text = props.text.trim();
-            }
-
-            let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
-            if (Modulo.isBackend && text.includes('\$modulojs_sha384_checksum\$')) {
-                if (!mod || !mod.script || !mod.script.getVersionInfo) {
-                    console.log('no mod!');
-                } else {
-                    const info = mod.script.getVersionInfo();
-                    const checksum = info.checksum || '';
-                    text = text.replace('\$modulojs_sha384_checksum\$', checksum)
-                    element.setAttribute('text', text);
-                }
-            }
-
-            const myElement = element;
-            let expBackoff = 10;
-            const mountCM = () => {
-                if (!Modulo.globals.CodeMirror) {
-                    expBackoff *= 2;
-                    setTimeout(mountCM, expBackoff); // poll again
-                    return;
-                }
-
-                const readOnly = demoType === 'snippet';
-                const conf = {value: text, mode: 'django', theme: 'eclipse', indentUnit: 4, readOnly}
-
-                const cm = Modulo.globals.CodeMirror(el, conf);
-                myElement.codeMirrorEditor = cm;
-            };
-            // TODO: Ugly hack, need better tools for working with legacy
-            setTimeout(mountCM, expBackoff);
-        }
-    </script>
-</component>
-
-
 
 `,// (ends: /components/modulowebsite.html) 
 
-  "/components/examplelib.html": // (561 lines)
+  "/components/examplelib.html": // (562 lines)
 `<module>
     <script>
-        script.exports.frontpage = [
-            "Hello",
-            "Simple",
-            "ToDo",
-            "API",
-            "Prime",
-            "MemoryGame",
-        ];
-        //console.log('this is factory', factory.loader.src);
-        //console.log('this is DATA', Modulo.fetchQ.data);
-        //console.log('this is mah text', myText);
+        // Splits up own source-code to get source for each example
         const myText = Modulo.fetchQ.data[factory.loader.src];
-        //const componentNames = [];
         const componentTexts = {};
         if (myText) {
             let name = '';
@@ -2528,13 +2467,11 @@ Modulo.fetchQ.data = {
                     name = null;
                 } else if (line.startsWith('<component')) {
                     name = line.split(' name="')[1].split('"')[0];
-                    //componentNames.push(name);
                 } else if (name) {
                     currentComponent += line + '\\n';
                 }
             }
         }
-        //script.exports.componentNames = componentNames;
         script.exports.componentTexts = componentTexts;
     </script>
 </module>
@@ -2555,6 +2492,9 @@ Modulo.fetchQ.data = {
 </script>
 </component>
 
+
+
+
 <component name="Simple">
 
 <template>
@@ -2566,6 +2506,8 @@ Modulo.fetchQ.data = {
     * { text-decoration: underline; }
 </style>
 </component>
+
+
 
 
 <component name="ToDo">
@@ -2627,6 +2569,9 @@ Modulo.fetchQ.data = {
     }
 </script>
 </component>
+
+
+
 
 
 <component name="SearchBox">
@@ -2759,7 +2704,9 @@ lord of the rings&rdquo;)</p>
 
 
 
-<component name="Prime">
+<component name="PrimeSieve">
+<!-- Prime number checker, demoing mouseover, static
+     script exports, and more advanced templating  -->
 <template>
   <div class="grid">
     {% for i in script.exports.range %}
@@ -2776,7 +2723,7 @@ lord of the rings&rdquo;)</p>
 </template>
 
 <state
-    number:=76
+    number:=64
 ></state>
 
 <script>
@@ -2784,7 +2731,7 @@ lord of the rings&rdquo;)</p>
     // to export this as a one-time global constant.
     // (Hint: Curious how it calculates prime? See CSS!)
     script.exports.range = 
-        Array.from({length: 75}, (x, i) => i + 2);
+        Array.from({length: 63}, (x, i) => i + 2);
     function setNum(ev) {
         state.number = Number(ev.target.textContent);
     }
@@ -2793,9 +2740,10 @@ lord of the rings&rdquo;)</p>
 <style>
 .grid {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     color: #ccc;
     font-weight: bold;
+    width: 100%;
 }
 .grid > div {
     border: 1px solid #ccc;
@@ -2820,6 +2768,9 @@ div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
 </style>
 </component>
+
+
+
 
 
 <component name="MemoryGame">
@@ -3063,6 +3014,435 @@ h3 {
 <!-- idea: Conways game of life? -->
 
 `,// (ends: /components/examplelib.html) 
+
+  "/components/modulowebsite/demo.html": // (60 lines)
+`<div class="demo-wrapper
+        {% if state.showpreview  %}demo-wrapper__minipreview{% endif %}
+        {% if state.fullscreen %}demo-wrapper__fullscreen {% endif %}
+    ">
+    {% if state.tabs.length gt 1 %}
+        <nav class="TabNav">
+            <ul>
+                {% for tab in state.tabs %}
+                    <li class="TabNav-title
+                        {% if tab.title == state.selected %}
+                            TabNav-title--selected
+                        {% endif %}
+                    "><a @click:=script.selectTab
+                            payload="{{ tab.title }}"
+                        >{{ tab.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <div class="editor-toolbar">
+        {% if state.showclipboard %}
+            <button class="m-Btn m-Btn--sm m-Btn--faded"
+                    title="Copy this code" @click:=script.doCopy>
+                Copy <span alt="Clipboard">&#128203;</span>
+            </button>
+        {% endif %}
+        {% if state.showpreview %}
+            <button class="m-Btn"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
+                {% if state.fullscreen %}
+                    <span alt="Full Screen">↙</span>
+                {% else %}
+                    <span alt="Full Screen">⤧</span>
+                {% endif %}
+            </button>
+            &nbsp;
+            <button class="m-Btn"
+                    title="Run a preview of this code" @click:=script.doRun>
+                Run <span alt="Refresh">&#10227;</span>
+            </button>
+        {% endif %}
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore>
+            </div>
+        </div>
+
+        {% if state.showpreview %}
+            <div class="editor-minipreview">
+                <div modulo-ignore>
+                    {{ state.preview|safe }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+`,// (ends: /components/modulowebsite/demo.html) 
+
+  "/components/modulowebsite/demo.js": // (209 lines)
+`let componentTexts = null;
+let exCounter = 0; // global variable
+
+try {
+    componentTexts = Modulo.factoryInstances['eg-eg']
+            .baseRenderObj.script.exports.componentTexts;
+} catch {
+    console.log('couldnt get componentTexts');
+    componentTexts = null;
+}
+
+function codemirrorMount({el}) {
+    console.log('attempting to moutn cm');
+    const demoType = props.demotype || 'snippet';
+    _setupCodemirror(el, demoType, element, state);
+}
+
+function _setupCodemirror(el, demoType, myElement, myState) {
+    let expBackoff = 10;
+    const mountCM = () => {
+        // TODO: hack, allow JS deps or figure out loader or something
+        if (!Modulo.globals.CodeMirror) {
+            expBackoff *= 2;
+            setTimeout(mountCM, expBackoff); // poll again
+            return;
+        }
+
+        let readOnly = false;
+        let lineNumbers = true;
+        if (demoType === 'snippet') {
+            readOnly = true;
+            lineNumbers = false;
+        }
+
+        const conf = {
+            value: myState.text,
+            mode: 'django',
+            theme: 'eclipse',
+            indentUnit: 4,
+            readOnly,
+            lineNumbers,
+        };
+
+        if (demoType === 'snippet') {
+            myState.showclipboard = true;
+        } else if (demoType === 'minipreview') {
+            myState.showpreview = true;
+        }
+
+        const cm = Modulo.globals.CodeMirror(el, conf);
+        myElement.codeMirrorEditor = cm;
+        cm.refresh()
+        //myElement.rerender();
+    };
+    // TODO: Ugly hack, need better tools for working with legacy
+    setTimeout(mountCM, expBackoff);
+}
+
+function selectTab(ev, newTitle) {
+    if (!element.codeMirrorEditor) {
+        return; // not ready yet
+    }
+    const currentTitle = state.selected;
+    state.selected = newTitle;
+    for (const tab of state.tabs) {
+        if (tab.title === currentTitle) { // save text back to state
+            tab.text = element.codeMirrorEditor.getValue();
+        } else if (tab.title === newTitle) {
+            state.text = tab.text;
+        }
+    }
+    element.codeMirrorEditor.setValue(state.text);
+    doRun();
+}
+
+function doCopy() {
+    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
+    if (!mod || !mod.script || !mod.script.copyTextToClipboard) {
+        console.log('no mod!');
+    } else {
+        mod.script.copyTextToClipboard(props.text);
+    }
+}
+
+function initializedCallback({el}) {
+    let text;
+    state.tabs = [];
+    if (props.fromlibrary) {
+        if (!componentTexts) {
+            throw new Error('Couldnt load:', props.fromlibrary)
+        }
+
+        const componentNames = props.fromlibrary.split(',');
+        for (const title of componentNames) {
+            if (title in componentTexts) {
+                text = componentTexts[title].trim();
+                text = text.replace(/&#39;/g, "'"); // correct double escape
+                state.tabs.push({text, title});
+            } else {
+                throw new Error('invalid fromlibrary:', title)
+            }
+        }
+    } else if (props && props.text) {
+        text = props.text.trim();
+    }
+
+    const demoType = props.demotype || 'snippet';
+    if (demoType === 'snippet') {
+        state.showclipboard = true;
+    } else if (demoType === 'minipreview') {
+        state.showpreview = true;
+    }
+
+    state.text = state.tabs[0].text; // load first
+
+    state.selected = state.tabs[0].title; // set first as tab title
+    setupShaChecksum();
+    if (demoType === 'minipreview') {
+        doRun();
+    }
+
+    const myElem = element;
+    const myState = state;
+    setTimeout(() => {
+        const div = myElem.querySelector('.editor-wrapper > div');
+        _setupCodemirror(div, demoType, myElem, myState);
+    }, 0); // put on queue
+}
+
+function setupShaChecksum() {
+    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
+    if (Modulo.isBackend && state.text.includes('\$modulojs_sha384_checksum\$')) {
+        if (!mod || !mod.script || !mod.script.getVersionInfo) {
+            console.log('no mod!');
+        } else {
+            const info = mod.script.getVersionInfo();
+            const checksum = info.checksum || '';
+            state.text = state.text.replace('\$modulojs_sha384_checksum\$', checksum)
+            element.setAttribute('text', state.text);
+        }
+    }
+}
+
+function doRun() {
+    exCounter++;
+    //console.log('There are ', exCounter, ' examples on this page. Gee!')
+    const namespace = \`e\${exCounter}g\${state.nscounter}\`; // TODO: later do hot reloading using same loader
+    state.nscounter++;
+    const loadOpts = {src: '', namespace};
+    const tagName = 'Example';
+
+    if (element.codeMirrorEditor) {
+        state.text = element.codeMirrorEditor.getValue(); // make sure most up-to-date
+    }
+    let componentDef = state.text;
+    componentDef = \`<component name="\${tagName}">\\n\${componentDef}\\n</component>\`;
+    const loader = new Modulo.Loader(null, {options: loadOpts});
+    loader.loadString(componentDef);
+    const fullname = \`\${namespace}-\${tagName}\`;
+    const factory = Modulo.factoryInstances[fullname];
+    state.preview = \`<\${fullname}></\${fullname}>\`;
+
+    // Hacky way to mount, required due to buggy dom resolver
+    setTimeout(() => {
+        const div = element.querySelector('.editor-minipreview > div');
+        div.innerHTML = state.preview;
+    }, 0);
+}
+
+function countUp() {
+    // TODO: Remove this when resolution context bug is fixed so that children
+    // no longer can reference parents
+    console.log('PROBLEM: Child event bubbling to parent!');
+}
+
+function doFullscreen() {
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
+    if (state.fullscreen) {
+        state.fullscreen = false;
+        document.querySelector('html').style.overflow = "auto";
+        console.log(document.body.style.overflow);
+    } else {
+        state.fullscreen = true;
+        document.querySelector('html').style.overflow = "hidden";
+        console.log(document.body.style.overflow);
+    }
+    if (element.codeMirrorEditor) {
+        element.codeMirrorEditor.refresh()
+    }
+}
+
+/*
+function previewspotMount({el}) {
+    element.previewSpot = el;
+    if (!element.isMounted) {
+        doRun(); // mount after first render
+    }
+}
+*/
+
+/*
+const component = factory.createTestElement();
+component.remove()
+console.log(component);
+element.previewSpot.innerHTML = '';
+element.previewSpot.appendChild(component);
+*/
+
+`,// (ends: /components/modulowebsite/demo.js) 
+
+  "/components/modulowebsite/demo.css": // (154 lines)
+`.demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    height: 200px;
+}
+
+.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
+    height: 87vh;
+}
+.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+.demo-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.demo-wrapper.demo-wrapper__fullscreen {
+    position: absolute;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 20px;
+    background: white;
+}
+
+.editor-toolbar {
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    width: auto;
+    /*right: -70px;*/
+    right: 30px;
+    top: 0;
+    height: 35px;
+    padding: 2px;
+    border: #ddd 1px solid;
+}
+
+.demo-wrapper__fullscreen .editor-toolbar {
+    height: 60px;
+    padding: 10px;
+}
+
+@media (min-width: 700px) {
+    .editor-wrapper {
+        width: 630px;
+    }
+}
+
+.editor-wrapper {
+    border: 1px solid black;
+}
+
+.demo-wrapper__fullscreen .editor-wrapper {
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+    height: auto;
+    min-height: 87vh;
+    width: 70vw;
+}
+
+.editor-minipreview {
+    border: 1px solid black;
+    border-radius: 1px;
+    background: #eee;
+    padding: 5px;
+    border-left: none;
+    width: 200px;
+}
+
+.demo-wrapper__fullscreen .editor-minipreview {
+    width: 30vw;
+    height: auto;
+    border: 1px solid black;
+    margin: 20px;
+    padding: 30px;
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+.side-by-side-panes {
+    display: flex;
+    justify-content: space-between;
+}
+
+.TabNav-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /*border: 1px dotted var(--highlight-color);*/
+    /*border-top: 1px dotted black;*/
+}
+.TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+.TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+.TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    /*border-bottom-width: 0;*/
+    margin-bottom: -2px;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
+}
+
+.TabNav-title a,
+.TabNav-title a:visited,
+.TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.TabNav-title:hover {
+    border-color: var(--highlight-color);
+}
+
+.TabNav-title--selected {
+    border-color: var(--highlight-color);
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
+}
+.TabNav-title--selected a {
+    color: white !important;
+}
+`,// (ends: /components/modulowebsite/demo.css) 
 
 };
 

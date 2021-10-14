@@ -250,7 +250,8 @@ lord of the rings&rdquo;)</p>
 
 
 
-<component name="Prime">
+<component name="PrimeSieve">
+<!-- Demos  mouseover, static script exports, and templating  -->
 <template>
   <div class="grid">
     {% for i in script.exports.range %}
@@ -267,7 +268,7 @@ lord of the rings&rdquo;)</p>
 </template>
 
 <state
-    number:=76
+    number:=64
 ></state>
 
 <script>
@@ -275,7 +276,7 @@ lord of the rings&rdquo;)</p>
     // to export this as a one-time global constant.
     // (Hint: Curious how it calculates prime? See CSS!)
     script.exports.range = 
-        Array.from({length: 75}, (x, i) => i + 2);
+        Array.from({length: 63}, (x, i) => i + 2);
     function setNum(ev) {
         state.number = Number(ev.target.textContent);
     }
@@ -284,9 +285,10 @@ lord of the rings&rdquo;)</p>
 <style>
 .grid {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     color: #ccc;
     font-weight: bold;
+    width: 100%;
 }
 .grid > div {
     border: 1px solid #ccc;
@@ -311,6 +313,9 @@ div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
 </style>
 </component>
+
+
+
 
 
 <component name="MemoryGame">

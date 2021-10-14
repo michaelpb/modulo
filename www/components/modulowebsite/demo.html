@@ -1,4 +1,5 @@
 <div class="demo-wrapper
+        {% if state.showpreview  %}demo-wrapper__minipreview{% endif %}
         {% if state.fullscreen %}demo-wrapper__fullscreen {% endif %}
     ">
     {% if state.tabs.length gt 1 %}
@@ -26,12 +27,17 @@
         {% endif %}
         {% if state.showpreview %}
             <button class="m-Btn"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
+                {% if state.fullscreen %}
+                    <span alt="Full Screen">↙</span>
+                {% else %}
+                    <span alt="Full Screen">⤧</span>
+                {% endif %}
+            </button>
+            &nbsp;
+            <button class="m-Btn"
                     title="Run a preview of this code" @click:=script.doRun>
                 Run <span alt="Refresh">&#10227;</span>
-            </button>
-            <button class="m-Btn"
-                    title="Switch to full screen view of code" @click:=script.doFullscreen>
-                <span alt="Full Screen"><span>&#x26F6;</span>
             </button>
         {% endif %}
     </div>

@@ -178,14 +178,24 @@ function doFullscreen() {
     if (state.fullscreen) {
         state.fullscreen = false;
         document.querySelector('html').style.overflow = "auto";
-        console.log(document.body.style.overflow);
+        if (element.codeMirrorEditor) {
+            element.codeMirrorEditor.refresh()
+        }
     } else {
         state.fullscreen = true;
-        document.querySelector('html').style.overflow = "hidden";
-        console.log(document.body.style.overflow);
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+
+        // TODO: way to share variables in CSS
+        if (vw > 768) {
+              document.querySelector('html').style.overflow = "hidden";
+              if (element.codeMirrorEditor) {
+                  element.codeMirrorEditor.refresh()
+              }
+        }
     }
     if (element.codeMirrorEditor) {
-        element.codeMirrorEditor.refresh()
+        //element.codeMirrorEditor.refresh()
     }
 }
 

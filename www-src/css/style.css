@@ -78,7 +78,6 @@ img {
     box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
 }
 
-
 nav.Navbar {
     padding-top: 10px;
     background: white;
@@ -510,5 +509,4 @@ footer {
     margin-top: 50px;
     text-align: center;
 }
-
 

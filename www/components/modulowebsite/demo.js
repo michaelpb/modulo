@@ -9,11 +9,6 @@ try {
     componentTexts = null;
 }
 
-const CODE_EDITOR_TABS = [
-    {title: 'Code'},
-    {title: 'Editor'},
-]
-
 function codemirrorMount({el}) {
     console.log('attempting to moutn cm');
     const demoType = props.demotype || 'snippet';
@@ -50,12 +45,11 @@ function _setupCodemirror(el, demoType, myElement, myState) {
             myState.showclipboard = true;
         } else if (demoType === 'minipreview') {
             myState.showpreview = true;
-        } else if (demoType === 'tabpreview') {
-            myState.tabs = CODE_EDITOR_TABS;
         }
 
         const cm = Modulo.globals.CodeMirror(el, conf);
         myElement.codeMirrorEditor = cm;
+        cm.refresh()
         //myElement.rerender();
     };
     // TODO: Ugly hack, need better tools for working with legacy
@@ -73,10 +67,10 @@ function selectTab(ev, newTitle) {
             tab.text = element.codeMirrorEditor.getValue();
         } else if (tab.title === newTitle) {
             state.text = tab.text;
-            console.log('setting value!');
         }
     }
     element.codeMirrorEditor.setValue(state.text);
+    doRun();
 }
 
 function doCopy() {
@@ -119,13 +113,11 @@ function initializedCallback({el}) {
 
     state.text = state.tabs[0].text; // load first
 
-    if (demoType === 'tabpreview') {
-        state.tabs = CODE_EDITOR_TABS;
-    }
-
     state.selected = state.tabs[0].title; // set first as tab title
     setupShaChecksum();
-    doRun();
+    if (demoType === 'minipreview') {
+        doRun();
+    }
 
     const myElem = element;
     const myState = state;
@@ -157,29 +149,43 @@ function doRun() {
     const loadOpts = {src: '', namespace};
     const tagName = 'Example';
 
+    if (element.codeMirrorEditor) {
+        state.text = element.codeMirrorEditor.getValue(); // make sure most up-to-date
+    }
     let componentDef = state.text;
     componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
     const loader = new Modulo.Loader(null, {options: loadOpts});
     loader.loadString(componentDef);
     const fullname = `${namespace}-${tagName}`;
     const factory = Modulo.factoryInstances[fullname];
-    state.preview = `<${fullname} modulo-ignore></${fullname}>`;
-    //element.rerender();
+    state.preview = `<${fullname}></${fullname}>`;
+
+    // Hacky way to mount, required due to buggy dom resolver
+    setTimeout(() => {
+        const div = element.querySelector('.editor-minipreview > div');
+        div.innerHTML = state.preview;
+    }, 0);
 }
 
 function countUp() {
     // TODO: Remove this when resolution context bug is fixed so that children
     // no longer can reference parents
-    console.log('Noooooo, demo is totally broken');
+    console.log('PROBLEM: Child event bubbling to parent!');
 }
 
 function doFullscreen() {
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
     if (state.fullscreen) {
         state.fullscreen = false;
-        document.body.style.overflow = "auto";
+        document.querySelector('html').style.overflow = "auto";
+        console.log(document.body.style.overflow);
     } else {
         state.fullscreen = true;
-        document.body.style.overflow = "hidden";
+        document.querySelector('html').style.overflow = "hidden";
+        console.log(document.body.style.overflow);
+    }
+    if (element.codeMirrorEditor) {
+        element.codeMirrorEditor.refresh()
     }
 }
 

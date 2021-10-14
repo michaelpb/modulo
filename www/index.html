@@ -18,7 +18,8 @@
     </ul></ul></div>
 
     <main>
-        <mws-demo fromlibrary="Hello,Simple,ToDo,API,Prime,MemoryGame" demotype="minipreview"><div class="demo-wrapper
+        <mws-demo fromlibrary="Hello,Simple,ToDo,API,PrimeSieve,MemoryGame" demotype="minipreview"><div class="demo-wrapper
+        demo-wrapper__minipreview
         
     ">
     
@@ -45,7 +46,7 @@
                 
                     <li class="TabNav-title
                         
-                    "><a @click:="script.selectTab" payload="Prime">Prime</a></li>
+                    "><a @click:="script.selectTab" payload="PrimeSieve">PrimeSieve</a></li>
                 
                     <li class="TabNav-title
                         
@@ -58,12 +59,15 @@
     <div class="editor-toolbar">
         
         
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
-            <button class="m-Btn" title="Switch to full screen view of code" @click:="script.doFullscreen">
-                <span alt="Full Screen"><span>⛶</span>
-            </span></button>
         
     </div>
 
@@ -76,7 +80,7 @@
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e1g1-example modulo-ignore="">
+                    <e1g1-example>
     <button @click:="script.countUp">Hello 42</button>
 </e1g1-example>
                 </div>
@@ -259,4 +263,4 @@
 
 
 
-<script src="/js/modulo-build-121.10--1o4g7gg.js"></script></body>
+<script src="/js/modulo-build-121.10--1eg83lj.js"></script></body>

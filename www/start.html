@@ -19,7 +19,24 @@ mws-Section a.secanchor {
 mws-Section:hover .mws-Section-helper {
             opacity: 1.0;
         }
-    </style><style id="mws-Demo_style"> .demo-wrapper {
+    </style><style id="mws-Demo_style"> .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    height: 200px;
+}
+
+.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
+    height: 87vh;
+}
+.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+.demo-wrapper {
     position: relative;
     display: block;
     width: 100%;
@@ -61,29 +78,100 @@ mws-Section:hover .mws-Section-helper {
         width: 630px;
     }
 }
+
 .editor-wrapper {
-    /*
+    border: 1px solid black;
+}
+
+.demo-wrapper__fullscreen .editor-wrapper {
     border: 5px solid black;
     border-radius: 1px 8px 1px 8px;
     border-bottom-width: 1px;
     border-right-width: 1px;
-    */
-    border: 1px solid black;
+    height: auto;
+    min-height: 87vh;
+    width: 70vw;
 }
 
 .editor-minipreview {
     border: 1px solid black;
     border-radius: 1px;
     background: #eee;
-    width: 100%;
-    padding: 20px;
+    padding: 5px;
     border-left: none;
+    width: 200px;
+}
+
+.demo-wrapper__fullscreen .editor-minipreview {
+    width: 30vw;
+    height: auto;
+    border: 1px solid black;
+    margin: 20px;
+    padding: 30px;
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
 }
 
 .side-by-side-panes {
     display: flex;
+    justify-content: space-between;
 }
 
+.TabNav-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /*border: 1px dotted var(--highlight-color);*/
+    /*border-top: 1px dotted black;*/
+}
+.TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+.TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+.TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    /*border-bottom-width: 0;*/
+    margin-bottom: -2px;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
+}
+
+.TabNav-title a,
+.TabNav-title a:visited,
+.TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.TabNav-title:hover {
+    border-color: var(--highlight-color);
+}
+
+.TabNav-title--selected {
+    border-color: var(--highlight-color);
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
+}
+.TabNav-title--selected a {
+    color: white !important;
+}
 </style><style id="mws-DocSidebar_style">
 mws-DocSidebar li {
       margin-left: 20px;
@@ -202,34 +290,35 @@ eg-SearchBox .result label {
         top: 0;
         left: 0;
     }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
+</style><style id="eg-PrimeSieve_style">
+eg-PrimeSieve .grid {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     color: #ccc;
     font-weight: bold;
+    width: 100%;
 }
-eg-Prime .grid > div {
+eg-PrimeSieve .grid > div {
     border: 1px solid #ccc;
     cursor: crosshair;
     transition: 0.2s;
 }
-eg-Prime div.whole {
+eg-PrimeSieve div.whole {
     color: white;
     background: #B90183;
 }
-eg-Prime div.hidden {
+eg-PrimeSieve div.hidden {
     background: #ccc;
     color: #ccc;
 }
 
 /* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
+eg-PrimeSieve div.number { background: green; }
+eg-PrimeSieve div.number::after { content: "*"; }
 /* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
+eg-PrimeSieve If found, then hide asterisk and green. */
+eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
+eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
 </style><style id="eg-MemoryGame_style">
 eg-MemoryGame h3 {
     background: #B90183;
@@ -396,4 +485,4 @@ crossorigin=&quot;anonymous&quot;></script>
 
 
 
-<script src="/js/modulo-build-121.10--1o4g7gg.js"></script></body>
+<script src="/js/modulo-build-121.10--1eg83lj.js"></script></body>
