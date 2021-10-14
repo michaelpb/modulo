@@ -78,7 +78,7 @@ function doCopy() {
     if (!mod || !mod.script || !mod.script.copyTextToClipboard) {
         console.log('no mod!');
     } else {
-        mod.script.copyTextToClipboard(props.text);
+        mod.script.copyTextToClipboard(state.text);
     }
 }
 
@@ -100,7 +100,7 @@ function initializedCallback({el}) {
                 throw new Error('invalid fromlibrary:', title)
             }
         }
-    } else if (props && props.text) {
+    } else if (props.text) {
         text = props.text.trim();
     }
 
@@ -129,7 +129,7 @@ function initializedCallback({el}) {
 
 function setupShaChecksum() {
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
-    if (Modulo.isBackend && state.text.includes('$modulojs_sha384_checksum$')) {
+    if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
         if (!mod || !mod.script || !mod.script.getVersionInfo) {
             console.log('no mod!');
         } else {
@@ -178,14 +178,24 @@ function doFullscreen() {
     if (state.fullscreen) {
         state.fullscreen = false;
         document.querySelector('html').style.overflow = "auto";
-        console.log(document.body.style.overflow);
+        if (element.codeMirrorEditor) {
+            element.codeMirrorEditor.refresh()
+        }
     } else {
         state.fullscreen = true;
-        document.querySelector('html').style.overflow = "hidden";
-        console.log(document.body.style.overflow);
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+
+        // TODO: way to share variables in CSS
+        if (vw > 768) {
+              document.querySelector('html').style.overflow = "hidden";
+              if (element.codeMirrorEditor) {
+                  element.codeMirrorEditor.refresh()
+              }
+        }
     }
     if (element.codeMirrorEditor) {
-        element.codeMirrorEditor.refresh()
+        //element.codeMirrorEditor.refresh()
     }
 }
 

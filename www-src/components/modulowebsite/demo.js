@@ -78,7 +78,7 @@ function doCopy() {
     if (!mod || !mod.script || !mod.script.copyTextToClipboard) {
         console.log('no mod!');
     } else {
-        mod.script.copyTextToClipboard(props.text);
+        mod.script.copyTextToClipboard(state.text);
     }
 }
 
@@ -100,7 +100,7 @@ function initializedCallback({el}) {
                 throw new Error('invalid fromlibrary:', title)
             }
         }
-    } else if (props && props.text) {
+    } else if (props.text) {
         text = props.text.trim();
     }
 
@@ -129,7 +129,7 @@ function initializedCallback({el}) {
 
 function setupShaChecksum() {
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
-    if (Modulo.isBackend && state.text.includes('$modulojs_sha384_checksum$')) {
+    if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
         if (!mod || !mod.script || !mod.script.getVersionInfo) {
             console.log('no mod!');
         } else {

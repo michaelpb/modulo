@@ -34,6 +34,17 @@
     background: white;
 }
 
+@media (max-width: 768px) {
+    .demo-wrapper.demo-wrapper__fullscreen {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: auto;
+        z-index: 1;
+    }
+}
+
+
 .editor-toolbar {
     position: absolute;
     z-index: 10;
@@ -47,18 +58,34 @@
     border: #ddd 1px solid;
 }
 
+
+
 .demo-wrapper__fullscreen .editor-toolbar {
     height: 60px;
     padding: 10px;
 }
 
-@media (min-width: 700px) {
-    .editor-wrapper {
-        width: 630px;
+
+@media (max-width: 768px) {
+    .editor-toolbar {
+        position: static;
+        padding: 10px;
+        margin: 20px;
+        height: 60px;
+        font-size: 1.1rem;
+    }
+    .demo-wrapper__fullscreen .editor-toolbar {
+        margin: 5px;
+        height: 60px;
+        padding: 5px;
+        display: flex;
+        justify-content: flex-end;
     }
 }
 
+
 .editor-wrapper {
+    width: 630px;
     border: 1px solid black;
 }
 
@@ -67,9 +94,25 @@
     border-radius: 1px 8px 1px 8px;
     border-bottom-width: 1px;
     border-right-width: 1px;
-    height: auto;
-    min-height: 87vh;
-    width: 70vw;
+}
+
+@media (min-width: 768px) {
+    .demo-wrapper__fullscreen .editor-wrapper {
+        height: auto;
+        width: 70vw;
+        min-height: 87vh;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .editor-wrapper {
+        width: 100%;
+        border: 1px solid black;
+    }
+    .demo-wrapper__fullscreen .editor-wrapper {
+        width: 100%;
+    }
 }
 
 .editor-minipreview {
@@ -93,26 +136,38 @@
     border-right-width: 1px;
 }
 
+@media (max-width: 768px) {
+    .editor-minipreview {
+        width: 100%;
+    }
+    .demo-wrapper__fullscreen .editor-minipreview {
+        width: 90%;
+    }
+}
+
 .side-by-side-panes {
     display: flex;
     justify-content: space-between;
 }
 
-.TabNav-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    /*border: 1px dotted var(--highlight-color);*/
-    /*border-top: 1px dotted black;*/
+@media (max-width: 768px) {
+    .side-by-side-panes {
+        display: block;
+    }
 }
+
+
 .TabNav {
     /*border-bottom: 1px dotted var(--highlight-color);*/
     width: 100%;
 }
+
+
 .TabNav > ul {
     width: 100%;
     display: flex;
 }
+
 .TabNav-title {
     border: 2px solid black;
     border-top-width: 4px;
@@ -151,3 +206,18 @@
 .TabNav-title--selected a {
     color: white !important;
 }
+
+
+@media (max-width: 992px) {
+    .TabNav > ul {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+@media (max-width: 768px) {
+    .TabNav-title {
+        padding: 7px;
+    }
+}
+
+

@@ -17,7 +17,7 @@
         <ul>
     </ul></ul></div>
 
-    <main>
+    <main style="margin-top: 30px">
         <mws-demo fromlibrary="Hello,Simple,ToDo,API,PrimeSieve,MemoryGame" demotype="minipreview"><div class="demo-wrapper
         demo-wrapper__minipreview
         
@@ -57,8 +57,13 @@
     
 
     <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align:right;
+                     display: none; ">
+            <em>Note: This is just for exploring features. Your work will not be saved.</em>
+        </p>
         
         
+
             <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Full Screen">⤧</span>
@@ -147,7 +152,7 @@
     <aside>
         <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
         just drop it into any HTML file.  Unlike jQuery, that 1 file packs
-        in the all creature-comforts of a modern component framework.</p>
+        in all the creature-comforts of a modern component framework.</p>
         <!--
         a modern component system, a swappable templating language based
         on Liquid-syntax, DOM resolution, and more.
@@ -156,10 +161,12 @@
         tools.</p>-->
 
         <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
-        wheels. Like Polymer (LitElement) or Skate.js, Modulo is built as a
-        thin-layer over web standards that are now well-supported. In fact,
-        if used purely for stateless components, it's just HTML templating
-        and CSS!</p>
+        wheels. Like Polymer (litElement) or Skate.js, Modulo is built as a
+        thin-layer over the custom element web standard that is now
+        well-supported. Modulo's templates use a common syntax,
+        which means your editor can probably
+        <abbr title="Modulo templating language uses a 'Djangolike' or Liquid-style syntax templating language, e.g. {{ like|this }}">
+        already syntax highlight Modulo template code</abbr>!</p>
 
         <p><strong>Progressive enhancement</strong> - JAMStack is fine and
         all, but what about all our existing server-side apps in Ruby on
@@ -263,4 +270,4 @@
 
 
 
-<script src="/js/modulo-build-121.10--1eg83lj.js"></script></body>
+<script src="/js/modulo-build-121.10-v5g14b.js"></script></body>
