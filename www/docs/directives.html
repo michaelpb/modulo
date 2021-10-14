@@ -16,8 +16,6 @@
 
 
 
-
-
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -299,21 +297,45 @@
             
         </li>
     
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/project-info.html#faq">FAQ</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/project-info.html#philosophy">Framework Design Philosophy</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-                Literate Source*<br><em>* Coming soon!</em>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
 </mws-docsidebar>
             </nav>
@@ -323,7 +345,10 @@
 <h1>Lifecycle &amp; Directives</h1>
 
 
-<mdu-section name="lifecycle">Lifecycle</mdu-section>
+<mws-section name="lifecycle">
+        <a class="secanchor" title="Click to focus on this section." id="lifecycle" name="lifecycle" href="#lifecycle">#</a>
+        <h2 [component.children]="">Lifecycle</h2>
+    </mws-section>
 
 <p>Every Modulo Component goes through a certain "lifecycle". Here's an
 analogy: If CParts are the stage-hands and actors who put on a play, then the
@@ -440,7 +465,7 @@ in a later section</a>.</p>
 
 <p><strong>Try it out below:</strong></p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 Hello <strong>Modulo</strong> World!
 Open your browser dev console to see messages...
@@ -480,14 +505,68 @@ Open your browser dev console to see messages...
         console.log(&quot;(the button got clicked)&quot;);
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e4g1-example>
+Hello <strong>Modulo</strong> World!
+Open your browser dev console to see messages...
+<button @click:="script.gotClicked">Click me to generate an event</button>
+</e4g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
 
 
 
-<mdu-section name="renderobj">renderObj</mdu-section>
+<mws-section name="renderobj">
+        <a class="secanchor" title="Click to focus on this section." id="renderobj" name="renderobj" href="#renderobj">#</a>
+        <h2 [component.children]="">renderObj</h2>
+    </mws-section>
 
 <blockquote>
 <p><strong>renderObj is like "req" </strong> -
@@ -558,7 +637,7 @@ following example to see what information is available or modified at each
 step:</p>
 
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 <label>
 <input [state.bind] name=&quot;enabled&quot; type=&quot;checkbox&quot; />
@@ -594,10 +673,64 @@ Show messages in console</label>
         _logInfo(&quot;updatedCallback:&quot;, renderObj);
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e5g1-example>
+<label>
+<input [state.bind]="" name="enabled" type="checkbox" value="false">
+Show messages in console</label>
+</e5g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
-<mdu-section name="directives">Directives</mdu-section>
+<mws-section name="directives">
+        <a class="secanchor" title="Click to focus on this section." id="directives" name="directives" href="#directives">#</a>
+        <h2 [component.children]="">Directives</h2>
+    </mws-section>
 
 <blockquote><p><strong>Directives are like "refs"</strong> - Directives have
 the same uses as Refs in <a href="https://reactjs.org/docs/refs-and-the-dom.html" target="_blank">React</a>: “Managing focus, text selection, or media
@@ -640,7 +773,7 @@ run into the limits of what Modulo is capable of doing.</p>
 
 <p><strong>Example custom directives:</strong></p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 {# [script.myinput] is a custom directive, defined below #}
 <input [script.myinput] />
@@ -662,9 +795,64 @@ run into the limits of what Modulo is capable of doing.</p>
         element.inputRef.focus();
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
 
-<!--<mdu-Section name="builtin">Built-in directives</mdu-Section>-->
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e6g1-example>
+
+<input [script.myinput]="">
+
+
+<button [component.event]click:="script.showInfo">
+    Click me
+</button>
+</e6g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<!--<mws-Section name="builtin">Built-in directives</mws-Section>-->
 
 <h3>Built-in directives</h3>
 
@@ -709,20 +897,62 @@ stricter structure.</p>
     applied after the template is fully rendered and all template variables are
     already forgotten.  As an example, consider the following code:</p>
 
-<mdu-codesnippet text="
+<mws-demo text="
 <template>
     {% for athlete in state.team %}
-        {# Broken, will not work: #}   <a href:=athlete.url>{{ athlete.name }}</a>
-        {# Correct, will work: #}      <a href=&quot;{{ athlete.url }}&quot;>{{ athlete.name }}</a>
+        {# (HTML Attributes) #}
+        {# Broken, will not work: #}
+        <a href:=athlete.url>{{ athlete.name }}</a>
 
-
-        {# Also broken, will not work: #}
-        <button @click:=athlete.myClickCallback>{{ athlete.name }}</button>
         {# Correct, will work: #}
-        <button @click:=script.selectOne click.payload=&quot;{{ athlete.id }}&quot;>{{ athlete.name }}</button>
+        <a href=&quot;{{ athlete.url }}&quot;>{{ athlete.name }}</a>
+
+        {# (Events) #}
+        {# Also broken, will not work: #}
+        <button @click:=athlete.myClickCallback>
+            {{ athlete.name }}</button>
+
+        {# Correct, will work: #}
+        <button @click:=script.selectOne payload=&quot;{{ athlete.id }}&quot;>
+            {{ athlete.name }}</button>
     {% endfor %}
 </template>
-"></mdu-codesnippet>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
     <p>The first attempt uses a directive (<code>[component.resolve]</code>, in
     this case using the colon <code>:</code> shortcut), in an attempt to "directly"
@@ -767,7 +997,7 @@ custom directives used (which should be avoided to begin with).</p>
 
 <p>See below for an example:</p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
     Game Shop: 31 moneys<br />
     Avg Movie Creeps: 10 moneys<br />
@@ -806,7 +1036,63 @@ custom directives used (which should be avoided to begin with).</p>
         state.show = !state.show;
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e7g1-example>
+    Game Shop: 31 moneys<br>
+    Avg Movie Creeps: 10 moneys<br>
+    <button @click:="script.toggle">
+        
+        Hide controls (and trigger unmount callbacks)
+        
+    </button> <br>
+    
+</e7g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
 example simple, we are demonstrating it's use within a script tag in a
@@ -827,4 +1113,4 @@ custom script tag directives.</p>
 
 
 
-<script src="/js/modulo-build-121.10-v5g14b.js"></script></body>
+<script src="/js/modulo-build-121.10-1s3poih.js"></script></body>

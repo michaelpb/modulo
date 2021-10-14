@@ -16,8 +16,6 @@
 
 
 
-
-
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -57,9 +55,27 @@
     
         <li class="
             
-                ginactive
+                gactive
             
             "><a href="/docs/tutorial.html">Tutorial</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
             
         </li>
     
@@ -73,17 +89,69 @@
     
         <li class="
             
-                ginactive
+                gactive
             
             "><a href="/docs/templating.html">Templating</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/templating.html#templates">Templates</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/templating.html#variables">Variables</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/templating.html#filters">Filters</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/templating.html#tags">Tags</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/templating.html#comments">Comments</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/templating.html#escaping">Escaping</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
             
         </li>
     
         <li class="
             
-                ginactive
+                gactive
             
             "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/testing.html#debugger">Debugger</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#test suites">Test Suites</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#test setup">Test Setup</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#assertions">Assertions</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
             
         </li>
     
@@ -111,21 +179,31 @@
             
         </li>
     
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-                Literate Source*<br><em>* Coming soon!</em>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
 </mws-docsidebar>
             </nav>
@@ -194,7 +272,7 @@ template is evaluated, and tags, which control the logic of the template.</p>
 be explained later in this document.</p>
 
 
-<mdu-codeexample vsize="255" text="
+<mws-demo demotype="minipreview" text="
 <template>
 <p>There are <em>{{ state.count }}
   {{ state.count|pluralize:&quot;articles,article&quot; }}</em>
@@ -225,7 +303,74 @@ be explained later in this document.</p>
 <script>
     script.exports.title = &quot;ModuloNews&quot;;
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e1g1-example>
+<p>There are <em>42
+  articles</em>
+  on ModuloNews.</p>
+
+
+
+    <h4 style="color: blue">MODULO RELEASED!</h4>
+    
+      <p>The most exciting news of the…</p>
+    
+
+    <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+    
+
+    <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+    
+      <p>Why constructing JS is risky …</p>
+    
+
+</e1g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
@@ -477,7 +622,7 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
 
 <p>Examples of both are below:</p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
     <h1>hello {# greeting #}</h1>
     {% comment %}
@@ -486,7 +631,58 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
     {% endcomment %}
     <p>Below the greeting...</p>
 </template>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e2g1-example>
+    <h1>hello </h1>
+    
+    <p>Below the greeting...</p>
+</e2g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <mws-section name="escaping">
         <a class="secanchor" title="Click to focus on this section." id="escaping" name="escaping" href="#escaping">#</a>
@@ -553,7 +749,7 @@ This will not be escaped: &lt;b&gt;
 You don't want anyone trying to slip in malicious JS behavior!  Examine the
 code below for a concrete example of how this escaping behaves:</p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 <p>User &quot;<em>{{ state.username }}</em>&quot; sent a message:</p>
 <div class=&quot;msgcontent&quot;>
@@ -576,7 +772,62 @@ code below for a concrete example of how this escaping behaves:</p>
         margin: 10px;
     }
 </style>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">⤧</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e3g1-example>
+<p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt; &amp;tables</em>" sent a message:</p>
+<div class="msgcontent">
+    
+        I <i>love</i> the classic <a target="_blank" href="https://xkcd.com/327/">xkcd #327</a> on
+        the risk of trusting <b>user inputed data</b>
+    
+</div>
+</e3g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 </aside>
     </main>
@@ -591,4 +842,4 @@ code below for a concrete example of how this escaping behaves:</p>
 
 
 
-<script src="/js/modulo-build-121.10-v5g14b.js"></script></body>
+<script src="/js/modulo-build-121.10-1s3poih.js"></script></body>

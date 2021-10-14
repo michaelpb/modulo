@@ -16,8 +16,6 @@
 
 
 
-
-
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -57,9 +55,27 @@
     
         <li class="
             
-                ginactive
+                gactive
             
             "><a href="/docs/tutorial.html">Tutorial</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
             
         </li>
     
@@ -111,21 +127,31 @@
             
         </li>
     
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-                Literate Source*<br><em>* Coming soon!</em>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
 </mws-docsidebar>
             </nav>
@@ -146,7 +172,10 @@ learn how to use Modulo in your own projects.</p>
 Modulo?</strong></p>
 
 
-<mdu-section name="part1">Part 1: Components, CParts, Loaders</mdu-section>
+<mws-section name="part1">
+        <a class="secanchor" title="Click to focus on this section." id="part1" name="part1" href="#part1">#</a>
+        <h2 [component.children]="">Part 1: Components, CParts, Loaders</h2>
+    </mws-section>
 
 <h3>Including Modulo</h3>
 <p>The first step is to include the Modulo.js file. You can do this one of
@@ -223,7 +252,7 @@ can be embedded in an HTML page within a tag like
         to start from scratch, or use an existing project.</li>
         <li>Copy &amp; paste in the following code:
 
-<mdu-codesnippet text="
+<mws-demo text="
 <!-- Define a custom component -->
 <template is=&quot;modulo-embed&quot;>
     <component name=&quot;HelloWorld&quot;>
@@ -238,7 +267,42 @@ can be embedded in an HTML page within a tag like
 <!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) -->
 <script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
 <script>Modulo.defineAll();</script>
-"></mdu-codesnippet>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 </li>
 <!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
         <li>Ensure that the HTML file is opened in your preferred, modern web
@@ -322,7 +386,7 @@ sample code editors only focus on the CPart definitions within.</p>
     </li></ol>
 
 
-<mdu-codeexample text="
+<mws-demo text="
 <template>
 Hello <strong>Modulo</strong> World!
 <p class=&quot;neat&quot;>Any HTML can be here!</p>
@@ -336,8 +400,42 @@ strong {
     font-variant: small-caps;
 }
 </style>
-">
-</mdu-codeexample>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 </section>
 
 
@@ -494,7 +592,10 @@ forms and interactive, changing components with the State CPart.</p>
 
 
 
-<mdu-section name="part2">Part 2: Props and Templating</mdu-section>
+<mws-section name="part2">
+        <a class="secanchor" title="Click to focus on this section." id="part2" name="part2" href="#part2">#</a>
+        <h2 [component.children]="">Part 2: Props and Templating</h2>
+    </mws-section>
 
 <blockquote> <p><strong>Why use Props?</strong>
 Components are "write once, use everywhere". That is to say, you only need to
@@ -529,7 +630,7 @@ specify its text, or which shape variation.</p>
     </ol>
 
 
-<mdu-codeexample text="
+<mws-demo text="
 <template>
 Hello <strong>Modulo</strong> World!
 <p class=&quot;neat&quot;>Any HTML can be here!</p>
@@ -543,12 +644,46 @@ strong {
     font-variant: small-caps;
 }
 </style>
-">
-</mdu-codeexample>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 </section>
 
 
-<mdu-codeexample text="
+<mws-demo text="
 <template>
     <p>Trying out the button...</p>
     <tutorial-Button
@@ -562,12 +697,46 @@ strong {
         shape=&quot;rounded&quot;
     ></tutorial-Button>
 </template>
-">
-</mdu-codeexample>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
-<mdu-codesnippet text="
+<mws-demo text="
 <component name=&quot;Button&quot;>
     <props
         label
@@ -579,19 +748,57 @@ strong {
         </button>
     </template>
 </component>
-"></mdu-codesnippet>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
 
 
-<mdu-section name="part3">Part 3: State and Script
+<mws-section name="part3">
+        <a class="secanchor" title="Click to focus on this section." id="part3" name="part3" href="#part3">#</a>
+        <h2 [component.children]="">Part 3: State and Script</h2>
+    </mws-section>
 
 coming soon!
 
 
 
-</mdu-section></aside>
+</aside>
     </main>
 
 
@@ -604,4 +811,4 @@ coming soon!
 
 
 
-<script src="/js/modulo-build-121.10-v5g14b.js"></script></body>
+<script src="/js/modulo-build-121.10-1s3poih.js"></script></body>

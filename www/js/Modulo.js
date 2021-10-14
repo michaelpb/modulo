@@ -558,7 +558,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
         // HACK delete
         if (!this.originalHTML && this.innerHTML) {
-            console.log('original HTML check 2', this.originalHTML, this.innerHTML);
             this.originalHTML = this.innerHTML;
         }
         // HACK delete
@@ -863,6 +862,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
+        // Idea: Use Template interface for Style transformers (so that MTL
+        // could be used in a pinch well). Eg if ('transform' in options) { Transfomer().render(renderObj) }
         const {fullName} = factory;
         const id = `${fullName}_style`;
         let elem = Modulo.globals.document.getElementById(id);
@@ -952,9 +953,6 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static getSymbolsAsObjectAssignment(contents) {
-        // TODO: Need to check for reserved words in capture group:
-        // filter away things like "// function for games"
-        // (which generates a syntax error with "typeof for")
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
         const matches = contents.match(regexpG) || [];
@@ -964,6 +962,13 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     }
 
     static wrapJavaScriptContext(contents, localVars) {
+        // TODO: Generalized wrapping idea:
+        //   - Split by word, get ALL symbols, filter out invalid ones, and
+        //   then do a "typeof ? :" loop in the return value. Then, assign all
+        //   functions to script, and all other values to script.exports.
+        // (Also: Need to check for reserved words in capture group:
+        // filter away things like "// function for games")
+        // (which generates a syntax error with "typeof for")
         const symbolsString = this.getSymbolsAsObjectAssignment(contents);
         const localVarsLet = localVars.join(',') || 'noLocalVars=true';
         const localVarsIfs = localVars
@@ -1041,6 +1046,8 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         setLocalVariable('cparts', this.element.cparts);
         for (const localVar of localVars) {
             if (localVar in renderObj) {
+                //console.log("this is localVars", localVars);
+                //console.log("this is localVars", localVar, renderObj[localVar]);
                 setLocalVariable(localVar, renderObj[localVar]);
             }
         }
@@ -1655,7 +1662,8 @@ Modulo.FetchQueue = class FetchQueue {
                 callback(this.data[src], label);
             } else if (!(src in this.queue)) {
                 this.queue[src] = [callback];
-                Modulo.globals.fetch(src)
+                // TODO: Think about if cache:no-store
+                Modulo.globals.fetch(src, {cache: 'no-store'})
                     .then(response => response.text())
                     .then(text => this.receiveData(text, label, src))
                     // v- uncomment after switch to new BE
@@ -1703,6 +1711,8 @@ Modulo.assert = function assert(value, ...info) {
     }
 }
 
+// TODO: Probably should do this on an onload event or similar
+//Modulo.globals.onload = () => Modulo.defineAll();
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
 Modulo.defineAll();

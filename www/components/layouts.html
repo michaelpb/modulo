@@ -1,7 +1,6 @@
 <component name="Page" mode="vanish-allow-script">
     <props
         navbar
-        showsplash
         docbarselected 
         pagetitle
     ></props>
@@ -76,6 +75,7 @@
         // https://stackoverflow.com/questions/400212/
         const {document, navigator} = Modulo.globals;
         function fallbackCopyTextToClipboard(text) {
+            console.count('fallbackCopyTextToClipboard');
             var textArea = document.createElement("textarea");
             textArea.value = text;
 

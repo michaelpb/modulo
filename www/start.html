@@ -1,13 +1,7 @@
 <!DOCTYPE HTML>
-<head>
-<!--Just for testing purposes:-->
-<!--
-<script src="/js/Modulo.js"></script>
+<head><script src="/js/Modulo.js"></script>
 <script>Modulo.defineAll()</script>
-<mod-load namespace="x" src="/components/layouts.html"></mod-load>
--->
-
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><style id="mws-Section_style">
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><style id="mws-Section_style">
 mws-Section {
             position: relative;
         }
@@ -29,6 +23,15 @@ mws-Section:hover .mws-Section-helper {
     height: 200px;
 }
 
+.demo-wrapper.demo-wrapper__clipboard .CodeMirror {
+    height: auto;
+}
+
+.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
 .demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
     font-family: monospace;
     font-size: 14px;
@@ -48,6 +51,11 @@ mws-Section:hover .mws-Section-helper {
     width: 100%;
 }
 
+.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
+    /* Make look better in Docs */
+    max-width: 900px;
+}
+
 .demo-wrapper.demo-wrapper__fullscreen {
     position: absolute;
     display: block;
@@ -61,20 +69,21 @@ mws-Section:hover .mws-Section-helper {
     background: white;
 }
 
-@media (max-width: 768px) {
-    .demo-wrapper.demo-wrapper__fullscreen {
-        position: relative;
-        display: block;
-        width: 100vw;
-        height: auto;
-        z-index: 1;
-    }
+/* No tabs sitch: */
+.demo-wrapper__notabs .editor-minipreview {
+    margin-top: 40px;
+    margin-left: 5px;
+    border: 1px solid #999;
+    height: 160px;
 }
 
+.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {
+    margin-top: 65px;
+}
 
 .editor-toolbar {
     position: absolute;
-    z-index: 10;
+    z-index: 3;
     display: flex;
     width: auto;
     /*right: -70px;*/
@@ -93,53 +102,23 @@ mws-Section:hover .mws-Section-helper {
 }
 
 
-@media (max-width: 768px) {
-    .editor-toolbar {
-        position: static;
-        padding: 10px;
-        margin: 20px;
-        height: 60px;
-        font-size: 1.1rem;
-    }
-    .demo-wrapper__fullscreen .editor-toolbar {
-        margin: 5px;
-        height: 60px;
-        padding: 5px;
-        display: flex;
-        justify-content: flex-end;
-    }
-}
-
-
-.editor-wrapper {
-    width: 630px;
+.demo-wrapper__minipreview  .editor-wrapper {
+    width: 78%;
     border: 1px solid black;
 }
+.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {
+}
 
-.demo-wrapper__fullscreen .editor-wrapper {
+.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
+    border: 1px dotted #ddd;
+    width: 100%;
+}
+
+.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
     border: 5px solid black;
     border-radius: 1px 8px 1px 8px;
     border-bottom-width: 1px;
     border-right-width: 1px;
-}
-
-@media (min-width: 768px) {
-    .demo-wrapper__fullscreen .editor-wrapper {
-        height: auto;
-        width: 70vw;
-        min-height: 87vh;
-    }
-}
-
-
-@media (max-width: 768px) {
-    .editor-wrapper {
-        width: 100%;
-        border: 1px solid black;
-    }
-    .demo-wrapper__fullscreen .editor-wrapper {
-        width: 100%;
-    }
 }
 
 .editor-minipreview {
@@ -149,6 +128,8 @@ mws-Section:hover .mws-Section-helper {
     padding: 5px;
     border-left: none;
     width: 200px;
+    height: 200px;
+    overflow-y: auto;
 }
 
 .demo-wrapper__fullscreen .editor-minipreview {
@@ -163,26 +144,10 @@ mws-Section:hover .mws-Section-helper {
     border-right-width: 1px;
 }
 
-@media (max-width: 768px) {
-    .editor-minipreview {
-        width: 100%;
-    }
-    .demo-wrapper__fullscreen .editor-minipreview {
-        width: 90%;
-    }
-}
-
 .side-by-side-panes {
     display: flex;
     justify-content: space-between;
 }
-
-@media (max-width: 768px) {
-    .side-by-side-panes {
-        display: block;
-    }
-}
-
 
 .TabNav {
     /*border-bottom: 1px dotted var(--highlight-color);*/
@@ -247,6 +212,71 @@ mws-Section:hover .mws-Section-helper {
     }
 }
 
+
+
+@media (max-width: 768px) {
+    .demo-wrapper.demo-wrapper__fullscreen {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: auto;
+        z-index: 1;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .editor-toolbar {
+        position: static;
+        padding: 10px;
+        margin: 20px;
+        height: 60px;
+        font-size: 1.1rem;
+    }
+    .demo-wrapper__fullscreen .editor-toolbar {
+        margin: 5px;
+        height: 60px;
+        padding: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .side-by-side-panes {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .editor-minipreview {
+        width: 100%;
+    }
+    .demo-wrapper__fullscreen .editor-minipreview {
+        width: 90%;
+    }
+}
+
+
+@media (min-width: 768px) {
+    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+        height: auto;
+        width: 70vw;
+        min-height: 87vh;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .editor-wrapper {
+        width: 100%;
+        border: 1px solid black;
+    }
+    .demo-wrapper__fullscreen .editor-wrapper {
+        width: 100%;
+    }
+}
 
 </style><style id="mws-DocSidebar_style">
 mws-DocSidebar li {
@@ -373,6 +403,7 @@ eg-PrimeSieve .grid {
     color: #ccc;
     font-weight: bold;
     width: 100%;
+    margin: -5px;
 }
 eg-PrimeSieve .grid > div {
     border: 1px solid #ccc;
@@ -443,7 +474,14 @@ eg-MemoryGame .board > .card.flipped {
 from { transform: scaleX(-1.1); background: #B90183; }
 to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
-</style></head><body>
+</style></head><body><mod-load namespace="x" src="/components/layouts.html"></mod-load>
+
+<!--Just for testing purposes:-->
+<!--
+
+-->
+
+
 
 
     <meta charset="utf8">
@@ -456,8 +494,6 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
     <!-- TODO: Switch to <module><load> style syntax -->
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
-
-
 
 
 
@@ -495,10 +531,11 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
 
         <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
 
-        <p>Modulo is brand new in general, so chances are its brand new to
-        you as well! If you're new, your best bet is to get started with
-        the tutorial.  It walks through the basics of setting up Modulo in
-        a new project, and gives a tour of the "must-know" features.<br>Prerequisite: HTML, CSS.  </p>
+        <p>Modulo is brand new in general, so chances are its brand new to you
+        as well!  The Modulo tutorial walks through the basics of setting up
+        Modulo in a project and creating components.<br>
+        <em>Prerequisites: HTML, CSS (for part 1 and 2), and
+        JavaScript (for part 3)</em></p>
 
         <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
     </section>
@@ -510,18 +547,60 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
     the following CDN links:</p>
 
 <mws-demo text="
-<!-- Good: Use the latest version, served by GitHub pages -->
+<!-- Use the latest version, served by GitHub pages -->
 <script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
 
-<!-- Better: Include integrity checksum: -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;
-integrity=&quot;sha384-$modulojs_sha384_checksum$&quot;
-crossorigin=&quot;anonymous&quot;></script>
 
-<!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
+<!-- COMING SOON: Use a proper CDN, such as Skypack -->
+<!-- Add ?min to the URL to get minified version. -->
 <!-- (Not yet functioning!) -->
-<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>
-"></mws-demo>
+<script src=&quot;https://cdn.skypack.dev/modulo&quot;></script>
+
+<!-- Once included, use defineAll() to activate -->
+<script>Modulo.defineAll()</script>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<!-- Better: Include integrity checksum:
+<script src="https://modulojs.org/js/Modulo.js"
+integrity="sha384-$modulojs_sha384_checksum$"
+crossorigin="anonymous"></script>
+ -->
+
 </div>
 
 <div class="Docs-squareInfo">
@@ -532,7 +611,7 @@ crossorigin=&quot;anonymous&quot;></script>
 <div class="Docs-squareInfo">
     <h2>Download</h2>
     <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
-    <span alt="Down arrow">↧</span> Modulo.js
+    <span alt="Down arrow">⌄</span> Modulo.js
     <span id="vnum"></span> (Latest)</a>
 
 
@@ -555,4 +634,4 @@ crossorigin=&quot;anonymous&quot;></script>
 
 
 
-<script src="/js/modulo-build-121.10-v5g14b.js"></script></body>
+<script src="/js/modulo-build-121.10-1s3poih.js"></script></body>

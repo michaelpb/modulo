@@ -52,8 +52,11 @@ function _setupCodemirror(el, demoType, myElement, myState) {
         cm.refresh()
         //myElement.rerender();
     };
-    // TODO: Ugly hack, need better tools for working with legacy
-    setTimeout(mountCM, expBackoff);
+    const {isBackend} = Modulo;
+    if (!isBackend) {
+        // TODO: Ugly hack, need better tools for working with legacy
+        setTimeout(mountCM, expBackoff);
+    }
 }
 
 function selectTab(ev, newTitle) {
@@ -122,10 +125,13 @@ function initializedCallback({el}) {
 
     const myElem = element;
     const myState = state;
-    setTimeout(() => {
-        const div = myElem.querySelector('.editor-wrapper > div');
-        _setupCodemirror(div, demoType, myElem, myState);
-    }, 0); // put on queue
+    const {isBackend} = Modulo;
+    if (!isBackend) {
+        setTimeout(() => {
+            const div = myElem.querySelector('.editor-wrapper > div');
+            _setupCodemirror(div, demoType, myElem, myState);
+        }, 0); // put on queue
+    }
 }
 
 function setupShaChecksum() {
@@ -162,10 +168,13 @@ function doRun() {
     state.preview = `<${fullname}></${fullname}>`;
 
     // Hacky way to mount, required due to buggy dom resolver
-    setTimeout(() => {
-        const div = element.querySelector('.editor-minipreview > div');
-        div.innerHTML = state.preview;
-    }, 0);
+    const {isBackend} = Modulo;
+    if (!isBackend) {
+        setTimeout(() => {
+            const div = element.querySelector('.editor-minipreview > div');
+            div.innerHTML = state.preview;
+        }, 0);
+    }
 }
 
 function countUp() {

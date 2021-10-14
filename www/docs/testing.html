@@ -16,8 +16,6 @@
 
 
 
-
-
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -57,9 +55,27 @@
     
         <li class="
             
-                ginactive
+                gactive
             
             "><a href="/docs/tutorial.html">Tutorial</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
             
         </li>
     
@@ -81,9 +97,31 @@
     
         <li class="
             
-                ginactive
+                gactive
             
             "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/testing.html#debugger">Debugger</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#test suites">Test Suites</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#test setup">Test Setup</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/testing.html#assertions">Assertions</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
             
         </li>
     
@@ -111,21 +149,31 @@
             
         </li>
     
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-                Literate Source*<br><em>* Coming soon!</em>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
 </mws-docsidebar>
             </nav>
@@ -143,7 +191,10 @@ props manipulation, you should be more than equipped to test component behavior
 in most scenarios, without actually issuing the request itself.</p>
 
 
-<mdu-section name="testsuites">Test suites</mdu-section>
+<mws-section name="testsuites">
+        <a class="secanchor" title="Click to focus on this section." id="testsuites" name="testsuites" href="#testsuites">#</a>
+        <h2 [component.children]="">Test suites</h2>
+    </mws-section>
 
 <p>A test suite is a collection of tests. Test suites can be embedded in
 Component definitions. In this case, the test suite will be applied to the
@@ -152,7 +203,7 @@ component definition that it exists inside.</p>
 <p>For an overview of what the Modulo test suite framework is capable of, see
 the below example:</p>
 
-<mdu-codeexample text="
+<mws-demo text="
 <testsuite>
     <test name=&quot;ensure cool&quot;>
         <!-- SETUP -->
@@ -206,7 +257,42 @@ the below example:</p>
 </template>
 
 
-"></mdu-codeexample>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
@@ -223,4 +309,4 @@ the below example:</p>
 
 
 
-<script src="/js/modulo-build-121.10-v5g14b.js"></script></body>
+<script src="/js/modulo-build-121.10-1s3poih.js"></script></body>
