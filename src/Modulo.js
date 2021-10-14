@@ -562,9 +562,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
         // HACK delete
         this.setupCParts();
-        console.log('this is  it', this.factory.fullName);
         this.lifecycle(['initialized'])
-        console.log('end of it');
         this.rerender();
         this.isMounted = true;
     }
