@@ -82,7 +82,10 @@ function doCopy() {
     }
 }
 
+asfdklakldsjf();
+
 function initializedCallback({el}) {
+    console.log("HELLO!");
     let text;
     state.tabs = [];
     if (props.fromlibrary) {
@@ -128,6 +131,7 @@ function initializedCallback({el}) {
 }
 
 function setupShaChecksum() {
+    /*
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
     if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
         if (!mod || !mod.script || !mod.script.getVersionInfo) {
@@ -139,6 +143,7 @@ function setupShaChecksum() {
             element.setAttribute('text', state.text);
         }
     }
+    */
 }
 
 function doRun() {

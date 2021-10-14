@@ -152,7 +152,7 @@ class ModuloNode {
         }
     }
 
-    fetchFile(src) {
+    fetchFile(src, opts) {
         // Similar interface to window.fetch, except using fs.readFile
         if (this.fetchPrefix) {
             src = this.fetchPrefix + '/' + src;

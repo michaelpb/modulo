@@ -19,24 +19,25 @@
     {% endif %}
 
     <div class="editor-toolbar">
-        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align:right;
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
                     {% if not state.fullscreen %} display: none; {% endif %}">
             <em>Note: This is just for exploring features. Your work will not be saved.</em>
         </p>
+
         {% if state.showclipboard %}
             <button class="m-Btn m-Btn--sm m-Btn--faded"
                     title="Copy this code" @click:=script.doCopy>
                 Copy <span alt="Clipboard">&#128203;</span>
             </button>
         {% endif %}
-        {% if state.showpreview %}
 
+        {% if state.showpreview %}
             <button class="m-Btn"
                     title="Toggle full screen view of code" @click:=script.doFullscreen>
                 {% if state.fullscreen %}
-                    <span alt="Full Screen">↙</span>
+                    <span alt="Shrink">↙</span>
                 {% else %}
-                    <span alt="Full Screen">⤧</span>
+                    <span alt="Go Full Screen">⤧</span>
                 {% endif %}
             </button>
             &nbsp;
@@ -45,6 +46,7 @@
                 Run <span alt="Refresh">&#10227;</span>
             </button>
         {% endif %}
+
     </div>
 
     <div class="side-by-side-panes">
@@ -60,5 +62,7 @@
                 </div>
             </div>
         {% endif %}
+
     </div>
 </div>
+
