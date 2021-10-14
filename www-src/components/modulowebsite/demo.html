@@ -1,5 +1,6 @@
 <div class="demo-wrapper
         {% if state.showpreview  %}demo-wrapper__minipreview{% endif %}
+        {% if state.showclipboard  %}demo-wrapper__clipboard{% endif %}
         {% if state.fullscreen %}demo-wrapper__fullscreen {% endif %}
     ">
     {% if state.tabs.length gt 1 %}

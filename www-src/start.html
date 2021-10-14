@@ -38,18 +38,25 @@
 
 <mws-Demo
 text='
-<!-- Good: Use the latest version, served by GitHub pages -->
+<!-- Use the latest version, served by GitHub pages -->
 <script src="https://modulojs.org/js/Modulo.js"></script>
 
-<!-- Better: Include integrity checksum: -->
+
+<!-- COMING SOON: Use a proper CDN, such as Skypack -->
+<!-- Add ?min to the URL to get minified version. -->
+<!-- (Not yet functioning!) -->
+<script src="https://cdn.skypack.dev/modulo"></script>
+
+<!-- Once included, use defineAll() to activate -->
+<script>Modulo.defineAll()</script>
+'></mws-Demo>
+
+<!-- Better: Include integrity checksum:
 <script src="https://modulojs.org/js/Modulo.js"
 integrity="sha384-$modulojs_sha384_checksum$"
 crossorigin="anonymous"></script>
+ -->
 
-<!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
-<!-- (Not yet functioning!) -->
-<script src="https://cdn.skypack.dev/modulo?min"></script>
-'></mws-Demo>
 </div>
 
 <div class="Docs-squareInfo">

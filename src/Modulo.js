@@ -862,6 +862,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
+        // Idea: Use Template interface for Style transformers (so that MTL
+        // could be used in a pinch well). Eg if ('transform' in options) { Transfomer().render(renderObj) }
         const {fullName} = factory;
         const id = `${fullName}_style`;
         let elem = Modulo.globals.document.getElementById(id);

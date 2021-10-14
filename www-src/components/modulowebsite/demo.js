@@ -82,12 +82,10 @@ function doCopy() {
     }
 }
 
-asfdklakldsjf();
-
 function initializedCallback({el}) {
-    console.log("HELLO!");
     let text;
     state.tabs = [];
+    console.log('this is state', state, 'this is props', props);
     if (props.fromlibrary) {
         if (!componentTexts) {
             throw new Error('Couldnt load:', props.fromlibrary)
@@ -105,6 +103,7 @@ function initializedCallback({el}) {
         }
     } else if (props.text) {
         text = props.text.trim();
+        state.tabs.push({title: 'Example', text});
     }
 
     const demoType = props.demotype || 'snippet';
@@ -131,7 +130,6 @@ function initializedCallback({el}) {
 }
 
 function setupShaChecksum() {
-    /*
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
     if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
         if (!mod || !mod.script || !mod.script.getVersionInfo) {
@@ -143,7 +141,6 @@ function setupShaChecksum() {
             element.setAttribute('text', state.text);
         }
     }
-    */
 }
 
 function doRun() {

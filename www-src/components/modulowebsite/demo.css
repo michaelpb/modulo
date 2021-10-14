@@ -2,6 +2,15 @@
     height: 200px;
 }
 
+.demo-wrapper.demo-wrapper__clipboard .CodeMirror {
+    height: auto;
+}
+
+.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
 .demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
     font-family: monospace;
     font-size: 14px;
@@ -47,7 +56,7 @@
 
 .editor-toolbar {
     position: absolute;
-    z-index: 10;
+    z-index: 2;
     display: flex;
     width: auto;
     /*right: -70px;*/
@@ -84,20 +93,26 @@
 }
 
 
-.editor-wrapper {
+.demo-wrapper__minipreview  .editor-wrapper {
     width: 630px;
     border: 1px solid black;
 }
 
-.demo-wrapper__fullscreen .editor-wrapper {
+.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
+    border: 1px dotted #ddd;
+    width: 100%;
+}
+
+.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
     border: 5px solid black;
     border-radius: 1px 8px 1px 8px;
     border-bottom-width: 1px;
     border-right-width: 1px;
 }
 
+
 @media (min-width: 768px) {
-    .demo-wrapper__fullscreen .editor-wrapper {
+    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
         height: auto;
         width: 70vw;
         min-height: 87vh;

@@ -86,7 +86,7 @@ nav.Navbar {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 5;
     height: 100px;
 }
 
@@ -239,7 +239,7 @@ nav.Navbar {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 5;
     /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/
     border-bottom: 1px solid black;
 }
