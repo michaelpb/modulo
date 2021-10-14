@@ -110,6 +110,9 @@
     height: 200px;
     overflow-y: auto;
 }
+.editor-minipreview > div > * > input {
+  max-width: 175px;
+}
 
 .demo-wrapper__fullscreen .editor-minipreview {
     width: 30vw;

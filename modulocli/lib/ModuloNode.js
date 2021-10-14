@@ -111,7 +111,10 @@ class ModuloNode {
             outPath = outPath.replace(config.output, ''); // remove output dir
             // (NOTE: This relies on JavaScript's replace being singular)
 
-            const newScript = `<script src="${outPath}"></script>`;
+            let newScript = `<script src="${outPath}"></script>`;
+
+            // XXX HACK XXX
+            newScript = '<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>' + newScript;
 
             const closingHead = /<\/head>/i;
             const closingBody = /<\/body>/i;
@@ -125,6 +128,7 @@ class ModuloNode {
                             'carrying out scirpt injection:', newScript);
                 html = html + newScript;
             }
+
 
             //console.log('Adding in script:', newScript);
         }

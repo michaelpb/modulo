@@ -55,9 +55,11 @@
         }
 
         function getGlobalInfo() {
-            /*
             // Only do once to speed up SSG
             //console.log('this is Modulo', Object.keys(Modulo));
+            if (!Modulo.isBackend) {
+                return;
+            }
             if (!Modulo.ssgStore.versionInfo) {
                 const bytes = Modulo.require('fs').readFileSync('./package.json');
                 const data = JSON.parse(bytes);
@@ -68,8 +70,6 @@
                 };
             }
             return Modulo.ssgStore.versionInfo;
-            */
-            return {};
         }
 
         // https://stackoverflow.com/questions/400212/
