@@ -81,10 +81,11 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
 
 Modulo.ComponentPart = class ComponentPart {
     static loadCallback(node, loader, loadObj) {
-        // TODO rename "options" to "attrs", refactor this mess
+        // TODO rename "options" to "attrs", refactor TEMPLATe etc to be
+        // less hardcoded, more configured on a cpart basis
         const options = Modulo.utils.parseAttrs(node);
-        const content = node.tagName === 'TEMPLATE' ? node.innerHTML
-                                                    : node.textContent;
+        const content = node.tagName.startsWith('TE') ? node.innerHTML
+                                                      : node.textContent;
         return {options, content, dependencies: options.src || null};
     }
 
@@ -783,15 +784,19 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
-    static loadCallback(node, loader, loadObj) {
-        const cName = loadObj.component[0].options.name;
-        const tests = [];
-        for (const testNode of node.children) {
-            tests.push(loader.loadFromDOMElement(testNode, []));
-        }
-        return {name: loader.namespace + '-' + cName + '-testsuite', tests};
+    static stateInit(cpart, element, initData) {
+        element.cparts.state.eventCallback();
+        Object.assign(element.cparts.state.data, initData);
+        element.cparts.state.eventCleanupCallback();
     }
-    static runTests(testsuiteData, factory) {
+
+    static propsInit(cpart, element, initData) {
+        element.initRenderObj.props = initData;
+    }
+
+    static runTests({content}, factory) {
+        const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
+        const {testsuite} = Modulo.cparts;
         const element = factory.createTestElement();
 
         let total = 0;
@@ -800,34 +805,18 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         // could be implied first test?
         Modulo.assert(element.isMounted, 'Successfully mounted element');
 
-        for (const [testName, stepArray] of testsuiteData.tests) {
+        for (const testNode of makeDiv(content).children) {
+            const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
             for (let [sName, data] of stepArray) {
                 const options = {content: data.content, options: data};
                 const stepConf = data.options;
-                if (sName === 'state') { // assign state data
+                if ((sName + 'Init') in testsuite) {
                     const cpart = new Modulo.cparts[sName](element, options);
                     const initData = cpart.initializedCallback({[sName]: data});
-                    element.cparts.state.eventCallback();
-                    Object.assign(element.cparts.state.data, initData);
-                    element.cparts.state.eventCleanupCallback();
-                } else if (sName === 'props') { // assign props data
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    const initData = cpart.initializedCallback({[sName]: data});
-                    element.initRenderObj.props = initData;
-                /*} else if (sName === 'style') {
-                    console.log('this is content', data.content);
-                    const content = data.content.replace(/\*\/.*?\*\//ig, '');
-                    // To prefix the selectors, we loop through them,
-                    // with this RegExp that looks for { chars
-                    content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, (selector, data) => {
-                        console.log('selector', selector);
-                        console.log('data', data);
-                    });*/
+                    testsuite[sName + 'Init'](cpart, element, initData);
                 } else if (sName === 'template') {
                     const cpart = new Modulo.cparts[sName](element, options);
                     element.rerender(); // ensure re-rendered before checking 
-
-                    const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
 
                     const _process = 'testWhitespace' in stepConf ? s => s : normalize;
                     const text1 = _process(cpart.instance.render(stepConf));
