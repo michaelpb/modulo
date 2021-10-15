@@ -1,0 +1,72 @@
+<module>
+    <script>
+        // Splits up own source-code to get source for each example
+        const myText = Modulo.fetchQ.data[factory.loader.src];
+        const componentTexts = {};
+        if (myText) {
+            let name = '';
+            let currentComponent = '';
+            let inTestSuite = false;
+            for (const line of myText.split('\n')) {
+                if (line.startsWith('</component>')) {
+                    componentTexts[name] = currentComponent;
+                    currentComponent = '';
+                    name = null;
+                } else if (line.startsWith('<component')) {
+                    name = line.split(' name="')[1].split('"')[0];
+                } else if (line.startsWith('<testsuite')) {
+                    inTestSuite = true;
+                } else if (line.includes('</testsuite>')) {
+                    inTestSuite = false;
+                } else if (name && !inTestSuite) {
+                    currentComponent += line + '\n';
+                }
+            }
+        }
+        script.exports.componentTexts = componentTexts;
+    </script>
+</module>
+
+<!-- NOTE / TODO: These are duplicated, present in docs as well. (Should
+dedupe and use fromlibrary in docs, and allow fromlibrary to get from here
+as well) -->
+
+<component name="Templating_1">
+<template>
+<p>There are <em>{{ state.count }}
+  {{ state.count|pluralize:"articles,article" }}</em>
+  on {{ script.exports.title }}.</p>
+
+{# Show the articles #}
+{% for article in state.articles %}
+    <h4 style="color: blue">{{ article.headline|upper }}</h4>
+    {% if article.tease %}
+      <p>{{ article.tease|truncate:30 }}</p>
+    {% endif %}
+{% endfor %}
+</template>
+
+<!-- The data below was used to render the template above -->
+<state
+    count:=42
+    articles:='[
+      {"headline": "Modulo released!",
+       "tease": "The most exciting news of the century."},
+      {"headline": "Can JS be fun again?"},
+      {"headline": "MTL considered harmful",
+       "tease": "Why constructing JS is risky business."}
+    ]'
+></state>
+<script>
+    script.exports.title = "ModuloNews";
+</script>
+
+<testsuite
+    src="./examplelib-tests/Templating_1-tests.html"
+></testsuite>
+
+</component>
+
+
+
+

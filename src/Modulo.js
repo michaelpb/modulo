@@ -797,15 +797,15 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static runTests({content}, factory) {
         const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
         const {testsuite} = Modulo.cparts;
-        const element = factory.createTestElement();
 
         let total = 0;
         let failure = 0;
 
-        // could be implied first test?
-        Modulo.assert(element.isMounted, 'Successfully mounted element');
-
         for (const testNode of makeDiv(content).children) {
+            const element = factory.createTestElement();
+            // could be implied first test?
+            Modulo.assert(element.isMounted, 'Successfully mounted element');
+
             const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
             for (let [sName, data] of stepArray) {
                 const options = {content: data.content, options: data};
@@ -848,29 +848,35 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                     }
                 }
                 else if (sName === 'script') {
-                    // TODO: need to make wrapScript it's own thing, and do that instead
-                    //const r = cpCls.wrapJavaScriptContext(data, localVars);
                     const cpCls = Modulo.cparts.script;
                     element.rerender(); // ensure re-rendered before checking 
                     const re = /^\s*assert:\s*(.+)\s*$/m;
                     let content = data.content.replace(re, 'return $1');
                     const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
                     content = content.replace(eventRe, `
-                        var target = element.querySelector('$2');
-                        if (!target) {
-                            return false;
+                        if (!element.querySelector('$2')) {
+                            throw new Error('Event target not found: $2');
                         }
-                        target.dispatchEvent(new Modulo.globals.Event('$1'));
+                        element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
                     `);
-                    const vars = Object.assign(element.getCurrentRenderObj(), {element, Modulo});
+                    // TODO: Consider adding "utils" here
+                    const extra = {element, Modulo, document: Modulo.document}
+                    const vars = Object.assign(element.getCurrentRenderObj(), extra);
                     const paramList = Object.keys(vars).join(',');
                     const test = new Function(paramList, content);
-                    const result = test.apply(null, Object.values(vars));
-                    if (result === true || result === false) {
+                    let result = false;
+                    try {
+                      result = test.apply(null, Object.values(vars));
+                    } catch (err) {
+                      result = err;
+                    }
+                    if (result !== undefined) {
                         total++;
-                        if (!result) {
+                        if (!result || result instanceof Error) {
                             failure++;
-                            console.log('<script>', false, data.content.match(re)[1]);
+                            const defaultArr = ['', 'ERROR'];
+                            const info = (data.content.match(re) || defaultArr)[1]
+                            console.log('<script>:', info, '--->', result);
                         }
                     }
                 }
@@ -1655,6 +1661,7 @@ Modulo.utils = class utils {
     }
 
     static isHTMLEqual(html1, html2) {
+        // DEAD CODE
         const {makeDiv} = Modulo.utils;
         return makeDiv(html1).isEqualNode(makeDiv(html2))
     }

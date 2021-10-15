@@ -81,10 +81,11 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
 
 Modulo.ComponentPart = class ComponentPart {
     static loadCallback(node, loader, loadObj) {
-        // TODO rename "options" to "attrs", refactor this mess
+        // TODO rename "options" to "attrs", refactor TEMPLATe etc to be
+        // less hardcoded, more configured on a cpart basis
         const options = Modulo.utils.parseAttrs(node);
-        const content = node.tagName === 'TEMPLATE' ? node.innerHTML
-                                                    : node.textContent;
+        const content = node.tagName.startsWith('TE') ? node.innerHTML
+                                                      : node.textContent;
         return {options, content, dependencies: options.src || null};
     }
 
@@ -420,7 +421,6 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 
     createTestElement() {
-        console.log('REAL createTestElement');
         const element = new this.componentClass();
         delete element.cparts.testsuite; // for testing, never include testsuite
         element.connectedCallback(); // ensure this is called
@@ -784,78 +784,105 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
-    static loadCallback(node, loader, loadObj) {
-        const cName = loadObj.component[0].options.name;
-        const tests = [];
-        for (const testNode of node.children) {
-            tests.push(loader.loadFromDOMElement(testNode, []));
-        }
-        return {name: loader.namespace + '-' + cName + '-testsuite', tests};
+    static stateInit(cpart, element, initData) {
+        element.cparts.state.eventCallback();
+        Object.assign(element.cparts.state.data, initData);
+        element.cparts.state.eventCleanupCallback();
     }
-    static runTests(testsuiteData, factory) {
-        const element = factory.createTestElement();
 
-        // could be implied first test?
-        Modulo.assert(element.isMounted, 'Successfully mounted element');
+    static propsInit(cpart, element, initData) {
+        element.initRenderObj.props = initData;
+    }
 
-        console.log('TESTSUITE', testsuiteData.name);
-        for (const [testName, stepArray] of testsuiteData.tests) {
-            console.log('BEGINNING TEST', testName);
-            //console.log('results', cf.baseRenderObj);
-            const testObj = {};
-            //console.log('this is element', element);
-            const results = [];
+    static runTests({content}, factory) {
+        const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
+        const {testsuite} = Modulo.cparts;
+
+        let total = 0;
+        let failure = 0;
+
+        for (const testNode of makeDiv(content).children) {
+            const element = factory.createTestElement();
+            // could be implied first test?
+            Modulo.assert(element.isMounted, 'Successfully mounted element');
+
+            const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
             for (let [sName, data] of stepArray) {
                 const options = {content: data.content, options: data};
-                if (sName === 'state') { // assign state data
+                const stepConf = data.options;
+                if ((sName + 'Init') in testsuite) {
                     const cpart = new Modulo.cparts[sName](element, options);
                     const initData = cpart.initializedCallback({[sName]: data});
-                    Object.assign(element.cparts.state.data, initData);
-                } else if (sName === 'props') { // assign props data
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    const initData = cpart.initializedCallback({[sName]: data});
-                    element.initRenderObj.props = initData;
-                /*} else if (sName === 'style') {
-                    console.log('this is content', data.content);
-                    const content = data.content.replace(/\*\/.*?\*\//ig, '');
-                    // To prefix the selectors, we loop through them,
-                    // with this RegExp that looks for { chars
-                    content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, (selector, data) => {
-                        console.log('selector', selector);
-                        console.log('data', data);
-                    });*/
+                    testsuite[sName + 'Init'](cpart, element, initData);
                 } else if (sName === 'template') {
                     const cpart = new Modulo.cparts[sName](element, options);
                     element.rerender(); // ensure re-rendered before checking 
-                    const text = cpart.instance.render(options);
-                    //console.log('this is element status', element.innerHTML);
-                    // TODO: Write subtree algo, possibly based on reconciler
-                    const result = String(element.innerHTML).includes(text);
-                    if ('snapshot' in options) {
-                        result = String(element.innerHTML).trim() === text.trim();
+
+                    const _process = 'testWhitespace' in stepConf ? s => s : normalize;
+                    const text1 = _process(cpart.instance.render(stepConf));
+                    if ('testValues' in stepConf) {
+                        for (const input of element.querySelectorAll('input')) {
+                            input.setAttribute('value', input.value);
+                        }
                     }
-                    results.push([data.name || sName, result]);
+
+                    const text2 = _process(element.innerHTML);
+                    let verb = '===IS NOT===';
+                    let result = true;
+                    if ('stringCount' in stepConf) {
+                        const count = Number(stepConf.stringCount);
+                        // Splitting is a fast way to check count
+                        const realCount = text2.split(text1).length - 1;
+                        if (count !== realCount) {
+                            verb = `=== FOUND BELOW ${realCount} ` +
+                                   `TIMES (${count} expected) ===`;
+                            result = false;
+                        }
+                    } else {
+                        result = makeDiv(text1).isEqualNode(makeDiv(text2));
+                    }
+                    total++;
+                    if (!result) {
+                        failure++;
+                        console.log(['<template>:', text1, verb, text2].join('\n'));
+                    }
                 }
-                /*
                 else if (sName === 'script') {
                     const cpCls = Modulo.cparts.script;
                     element.rerender(); // ensure re-rendered before checking 
-                    data.content = data.content.replace('assert:', 'script.exports =');
-                    const renderObj = element.getCurrentRenderObj();
-                    // TODO: need to make wrapScript it's own thing, and do that instead
-                    const r = cpCls.factoryCallback(data, testFac, element.initRenderObj);
-                    console.log('result of r', r.exports);
-                    results.push([data.name || sName, r.exports]);
-                }*/
-            }
-            for (const [name, result] of results) {
-                if (!result) {
-                    console.log('Failed:', name, result);
-                } else {
-                    console.log('Success:', name, result);
+                    const re = /^\s*assert:\s*(.+)\s*$/m;
+                    let content = data.content.replace(re, 'return $1');
+                    const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
+                    content = content.replace(eventRe, `
+                        if (!element.querySelector('$2')) {
+                            throw new Error('Event target not found: $2');
+                        }
+                        element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
+                    `);
+                    // TODO: Consider adding "utils" here
+                    const extra = {element, Modulo, document: Modulo.document}
+                    const vars = Object.assign(element.getCurrentRenderObj(), extra);
+                    const paramList = Object.keys(vars).join(',');
+                    const test = new Function(paramList, content);
+                    let result = false;
+                    try {
+                      result = test.apply(null, Object.values(vars));
+                    } catch (err) {
+                      result = err;
+                    }
+                    if (result !== undefined) {
+                        total++;
+                        if (!result || result instanceof Error) {
+                            failure++;
+                            const defaultArr = ['', 'ERROR'];
+                            const info = (data.content.match(re) || defaultArr)[1]
+                            console.log('<script>:', info, '--->', result);
+                        }
+                    }
                 }
             }
         }
+        return [total - failure, failure];
     }
 }
 
@@ -1627,6 +1654,23 @@ Modulo.utils = class utils {
         // etc
     }
 
+    static makeDiv(html) {
+        const div = Modulo.globals.document.createElement('div');
+        div.innerHTML = html;
+        return div;
+    }
+
+    static isHTMLEqual(html1, html2) {
+        // DEAD CODE
+        const {makeDiv} = Modulo.utils;
+        return makeDiv(html1).isEqualNode(makeDiv(html2))
+    }
+
+    static normalize(html) {
+        // Normalize space to ' ' & trim around tags
+        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2');
+    }
+
     static get(obj, key) {
         return key.split('.').reduce((o, name) => o[name], obj);
     }
@@ -1725,37 +1769,50 @@ Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
-        /*
-        const propObj = {};
-        Object.entries(Modulo.CommandMenu).forEach(([key, value]) => {
-            if (key.startsWith('cmd_') {
-                propObj[key.slice(4)] = { get: value };
-            }
-        });
-        Modulo.cmd = Object.create(Modulo.CommandMenu, propObj);
-        */
         Modulo.cmd = new Modulo.CommandMenu();
         Modulo.globals.m = Modulo.cmd;
     }
-    constructor() {
-        this.clear;
-    }
-    clear() {
-        this.targeted = [];
-    }
     target(elem) {
+        if (!this.targeted) {
+            this.targeted = [];
+        }
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
     test() {
-        console.table(this.targeted);
-        const {runTests} = Modulo.cparts.testsuite;
-        for (const [name, factory] of Object.entries(Modulo.factoryInstances)) {
-            const {testsuite} = factory.baseRenderObj;
-            if (testsuite) {
-                const info = ' ' + (testsuite.name || '');
-                console.group(['%'], 'TestSuite: ' + name + info);
-                runTests(testsuite, factory);
+        //console.table(this.targeted);
+        const discovered = [];
+        for (const factory of Object.values(Modulo.factoryInstances)) {
+            if (factory.baseRenderObj.testsuite) {
+                discovered.push([factory, factory.baseRenderObj.testsuite]);
             }
+        }
+        if (discovered.length === 0) {
+            console.warn('WARNING: No test suites discovered')
+        }
+        console.log(['%'], discovered.length + ' test suites found');
+        const {runTests} = Modulo.cparts.testsuite;
+        let success = 0;
+        let failure = 0;
+        const failedComponents = [];
+        for (const [factory, testsuite] of discovered) {
+            const info = ' ' + (testsuite.name || '');
+            console.group('[%]', 'TestSuite: ' + factory.fullName + info);
+            const [successes, failures] = runTests(testsuite, factory)
+            console.groupEnd();
+            if (failures) {
+                failedComponents.push(factory.fullName);
+            }
+            success += successes;
+            failure += failures;
+            if (!successes) {
+                console.log('FAILURE: No assertations.');
+                failure++;
+            }
+        }
+        if (!failure) {
+            console.log('OK', success, 'tests passed');
+        } else {
+            console.log('FAILURE', failure, 'tests failed:', failedComponents);
         }
     }
     build() {

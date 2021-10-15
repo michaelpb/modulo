@@ -16,7 +16,7 @@
                     name = line.split(' name="')[1].split('"')[0];
                 } else if (line.startsWith('<testsuite')) {
                     inTestSuite = true;
-                } else if (line.startsWith('</testsuite>')) {
+                } else if (line.includes('</testsuite>')) {
                     inTestSuite = false;
                 } else if (name && !inTestSuite) {
                     currentComponent += line + '\n';
@@ -99,7 +99,7 @@
 </template>
 
 <state
-    list:=&#39;["Milk", "Bread", "Candy"]&#39;
+    list:='["Milk", "Bread", "Candy"]'
     text="Beer"
 ></state>
 
@@ -109,8 +109,14 @@
         state.text = ""; // clear input
     }
 </script>
+
+<testsuite
+    src="./examplelib-tests/ToDo-tests.html"
+></testsuite>
+
 </component>
 
+<!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
 
 
 <component name="API">
@@ -193,7 +199,7 @@ lord of the rings&rdquo;)</p>
     // static variable global to all instances of this class (though,
     // thankfully, not global in general -- it's still in an "IFFE")
     // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state)
+    // needed to attach it to state in the initializedCallback)
     let _globalDebounceTimeout = null;
     function _globalDebounce(func) {
         if (_globalDebounceTimeout) {
@@ -278,6 +284,9 @@ lord of the rings&rdquo;)</p>
     }
 </style>
 
+<testsuite
+    src="./examplelib-tests/SearchBox-tests.html"
+></testsuite>
 
 </component>
 
@@ -375,7 +384,7 @@ div.whole ~ div.number::after { opacity: 0; }
         {% if state.cards.length > 16 %}hard{% endif %}">
     {# Loop through each card in the "deck" (state.cards) #}
     {% for card in state.cards %}
-        {# Using "key=" to speed up DOM reconciler #}
+        {# Use "key=" to speed up DOM reconciler #}
         <div key="c{{ card.id }}"
             class="card
             {% if state.revealed|includes:card.id %}
@@ -520,6 +529,11 @@ h3 {
     to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
 </style>
+
+<testsuite
+    src="./examplelib-tests/MemoryGame-tests.html"
+></testsuite>
+
 </component>
 
 
