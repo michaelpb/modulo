@@ -43,9 +43,37 @@
 </script>
 
 <testsuite>
-    <test>
-        <template snapshot>
+    <test name="Renders with different numbers">
+        <script name="Ensure state is initialized">
+            assert: state.num === 42
+        </script>
+        <template name="Ensure initial render is correct">
             <button @click:="script.countUp">Hello 42</button>
+        </template>
+        <state num:=100></state>
+        <template name="Ensure modifying state shows new contnet">
+            <button @click:="script.countUp">Hello 100</button>
+        </template>
+        <script name="Ensure count up function increments">
+            script.countUp();
+            assert: state.num === 101
+        </script>
+        <template name="Ensure re-render">
+            <button @click:="script.countUp">Hello 101</button>
+        </template>
+
+        <script name="Ensure click calls count up">
+            element.querySelector('button').click()
+            assert: state.num === 102
+        </script>
+        <template name="Ensure re-render 2">
+            <button @click:="script.countUp">Hello 102</button>
+        </template>
+        <script>
+            event: click button
+        </script>
+        <template name="Ensure re-render 2">
+            <button @click:="script.countUp">Hello 103</button>
         </template>
     </test>
 </testsuite>
@@ -67,8 +95,8 @@
 </style>
 
 <testsuite>
-    <test>
-        <template snapshot>
+    <test name="Initially renders">
+        <template>
             Components can use <strong>any</strong> number
             of <em title="Component Parts">CParts</em>.
         </template>
@@ -138,6 +166,52 @@
         element.rerender();
     }
 </script>
+
+<testsuite>
+    <!-- TODO: testsuite does not support src= -->
+    <test name="renders with search data">
+
+        <template name="Ensure initial render is correct">
+            <p> | </p>
+            <p></p>
+            <a href="https://github.com//" target="_blank"></a>
+            <input [state.bind] name="search"
+                placeholder="Type GitHub username" />
+            <button @click:="script.fetchGitHub">Get Info</button>
+        </template>
+
+        <state search="michaelpb"></state>
+        <template name="Ensure state from search box renders" test-values>
+            <p> | </p>
+            <p></p>
+            <a href="https://github.com/michaelpb/" target="_blank">
+              github.com/michaelpb/
+            </a>
+            <input [state.bind] name="search" value="michaelpb"
+                placeholder="Type GitHub username" />
+            <button @click:=script.fetchGitHub>Get Info</button>
+        </template>
+
+        <script>
+            const name = 'a b c'
+            const location = 'd e f'
+            const bio = 'h i j'
+            script.githubCallback({name, location, bio});
+        </script>
+        <template name="Ensure callback shows data in expected spots" test-values>
+            <p>a b c | d e f</p>
+            <p>h i j</p>
+            <a href="https://github.com/michaelpb/" target="_blank">
+              github.com/michaelpb/
+            </a>
+            <input [state.bind] name="search" value="michaelpb"
+                placeholder="Type GitHub username" />
+            <button @click:=script.fetchGitHub>Get Info</button>
+        </template>
+
+    </test>
+</testsuite>
+
 </component>
 
 
@@ -338,6 +412,51 @@ div.number::after { content: "*"; }
 div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
 </style>
+
+
+
+<testsuite>
+    <!-- TODO: testsuite does not support src= -->
+    <test name="renders with search data">
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" whole ">2</div>
+        </template>
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" number whole ">64</div>
+        </template>
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" ">3</div>
+        </template>
+
+        <script>
+            // 20 is effectively 21 (since starts at 2)
+            event: mouseover div:nth-child(20)
+        </script>
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" whole ">3</div>
+        </template>
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" whole ">7</div>
+        </template>
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" number whole ">21</div>
+        </template>
+
+        <script>
+            // 46 is effectively 47 (since starts at 2)
+            event: mouseover div:nth-child(46)
+        </script>
+        <template name="Ensure substrings of render" string-count=1>
+            <div @mouseover:="script.setNum" class=" number whole ">47</div>
+        </template>
+
+        <template name="Ensure only one whole number"
+            string-count=1>whole</template>
+    </test>
+</testsuite>
+
+
+
 </component>
 
 

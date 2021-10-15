@@ -420,7 +420,6 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 
     createTestElement() {
-        console.log('REAL createTestElement');
         const element = new this.componentClass();
         delete element.cparts.testsuite; // for testing, never include testsuite
         element.connectedCallback(); // ensure this is called
@@ -794,25 +793,23 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
     static runTests(testsuiteData, factory) {
         const element = factory.createTestElement();
-        let success = 0;
+
+        let total = 0;
         let failure = 0;
 
         // could be implied first test?
         Modulo.assert(element.isMounted, 'Successfully mounted element');
 
-        console.log('TESTSUITE', testsuiteData.name);
         for (const [testName, stepArray] of testsuiteData.tests) {
-            console.log('BEGINNING TEST', testName);
-            //console.log('results', cf.baseRenderObj);
-            const testObj = {};
-            //console.log('this is element', element);
-            const results = [];
             for (let [sName, data] of stepArray) {
                 const options = {content: data.content, options: data};
+                const stepConf = data.options;
                 if (sName === 'state') { // assign state data
                     const cpart = new Modulo.cparts[sName](element, options);
                     const initData = cpart.initializedCallback({[sName]: data});
+                    element.cparts.state.eventCallback();
                     Object.assign(element.cparts.state.data, initData);
+                    element.cparts.state.eventCleanupCallback();
                 } else if (sName === 'props') { // assign props data
                     const cpart = new Modulo.cparts[sName](element, options);
                     const initData = cpart.initializedCallback({[sName]: data});
@@ -829,38 +826,68 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                 } else if (sName === 'template') {
                     const cpart = new Modulo.cparts[sName](element, options);
                     element.rerender(); // ensure re-rendered before checking 
-                    const text = cpart.instance.render(options);
-                    //console.log('this is element status', element.innerHTML);
-                    // TODO: Write subtree algo, possibly based on reconciler
-                    const result = String(element.innerHTML).includes(text);
-                    if ('snapshot' in options) {
-                        result = String(element.innerHTML).trim() === text.trim();
+
+                    const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
+
+                    const _process = 'testWhitespace' in stepConf ? s => s : normalize;
+                    const text1 = _process(cpart.instance.render(stepConf));
+                    if ('testValues' in stepConf) {
+                        for (const input of element.querySelectorAll('input')) {
+                            input.setAttribute('value', input.value);
+                        }
                     }
-                    results.push([data.name || sName, result]);
+
+                    const text2 = _process(element.innerHTML);
+                    let verb = '===IS NOT===';
+                    let result = true;
+                    if ('stringCount' in stepConf) {
+                        const count = Number(stepConf.stringCount);
+                        // Splitting is a fast way to check count
+                        const realCount = text2.split(text1).length - 1;
+                        if (count !== realCount) {
+                            verb = `=== FOUND BELOW ${realCount} ` +
+                                   `TIMES (${count} expected) ===`;
+                            result = false;
+                        }
+                    } else {
+                        result = makeDiv(text1).isEqualNode(makeDiv(text2));
+                    }
+                    total++;
+                    if (!result) {
+                        failure++;
+                        console.log(['<template>:', text1, verb, text2].join('\n'));
+                    }
                 }
-                /*
                 else if (sName === 'script') {
+                    // TODO: need to make wrapScript it's own thing, and do that instead
+                    //const r = cpCls.wrapJavaScriptContext(data, localVars);
                     const cpCls = Modulo.cparts.script;
                     element.rerender(); // ensure re-rendered before checking 
-                    data.content = data.content.replace('assert:', 'script.exports =');
-                    const renderObj = element.getCurrentRenderObj();
-                    // TODO: need to make wrapScript it's own thing, and do that instead
-                    const r = cpCls.factoryCallback(data, testFac, element.initRenderObj);
-                    console.log('result of r', r.exports);
-                    results.push([data.name || sName, r.exports]);
-                }*/
-            }
-            for (const [name, result] of results) {
-                if (!result) {
-                    failure++;
-                    console.log('Failed:', name, result);
-                } else {
-                    success++;
-                    console.log('Success:', name, result);
+                    const re = /^\s*assert:\s*(.+)\s*$/m;
+                    let content = data.content.replace(re, 'return $1');
+                    const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
+                    content = content.replace(eventRe, `
+                        var target = element.querySelector('$2');
+                        if (!target) {
+                            return false;
+                        }
+                        target.dispatchEvent(new Modulo.globals.Event('$1'));
+                    `);
+                    const vars = Object.assign(element.getCurrentRenderObj(), {element, Modulo});
+                    const paramList = Object.keys(vars).join(',');
+                    const test = new Function(paramList, content);
+                    const result = test.apply(null, Object.values(vars));
+                    if (result === true || result === false) {
+                        total++;
+                        if (!result) {
+                            failure++;
+                            console.log('<script>', false, data.content.match(re)[1]);
+                        }
+                    }
                 }
             }
         }
-        return [success, failure];
+        return [total - failure, failure];
     }
 }
 
@@ -1632,6 +1659,22 @@ Modulo.utils = class utils {
         // etc
     }
 
+    static makeDiv(html) {
+        const div = Modulo.globals.document.createElement('div');
+        div.innerHTML = html;
+        return div;
+    }
+
+    static isHTMLEqual(html1, html2) {
+        const {makeDiv} = Modulo.utils;
+        return makeDiv(html1).isEqualNode(makeDiv(html2))
+    }
+
+    static normalize(html) {
+        // Normalize space to ' ' & trim around tags
+        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2');
+    }
+
     static get(obj, key) {
         return key.split('.').reduce((o, name) => o[name], obj);
     }
@@ -1754,16 +1797,27 @@ Modulo.CommandMenu = class CommandMenu {
         const {runTests} = Modulo.cparts.testsuite;
         let success = 0;
         let failure = 0;
+        const failedComponents = [];
         for (const [factory, testsuite] of discovered) {
             const info = ' ' + (testsuite.name || '');
             console.group('[%]', 'TestSuite: ' + factory.fullName + info);
             const [successes, failures] = runTests(testsuite, factory)
             console.groupEnd();
+            if (failures) {
+                failedComponents.push(factory.fullName);
+            }
             success += successes;
             failure += failures;
+            if (!successes) {
+                console.log('FAILURE: No assertations.');
+                failure++;
+            }
         }
-        console.log('SUCCESS', success, '/', success + failure);
-        console.log('FAILURE', failure, '/', success + failure);
+        if (!failure) {
+            console.log('OK', success, 'tests passed');
+        } else {
+            console.log('FAILURE', failure, 'tests failed:', failedComponents);
+        }
     }
     build() {
         const {document, console} = Modulo.globals;

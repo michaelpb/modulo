@@ -74,6 +74,7 @@ class ModuloNode {
         patchWindow(this.jsdom.window);
 
         this.globals.document = this.jsdom.window.document;
+        this.globals.Event = this.jsdom.window.Event;
         this.globals.DocumentFragment =  this.jsdom.window.DocumentFragment;
         this.doc = this.globals.document; // easier property
         if (this.fetchQ) {
@@ -306,7 +307,7 @@ class ComponentFactoryNode extends baseModulo.ComponentFactory {
         const el = this.testDoc.querySelector(this.fullName);
         webComponentsUpgrade(el, instance); // ensure has minimum webcomponent API
         delete el.cparts.testsuite; // for testing, never include testsuite
-        el.connectedCallback(); // ensure this is called, as its now connected
+        //el.connectedCallback(); // ensure this is called, as its now connected
         return el; // Finally, return the upgraded element
     }
 }
