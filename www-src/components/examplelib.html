@@ -6,6 +6,7 @@
         if (myText) {
             let name = '';
             let currentComponent = '';
+            let inTestSuite = false;
             for (const line of myText.split('\n')) {
                 if (line.startsWith('</component>')) {
                     componentTexts[name] = currentComponent;
@@ -13,7 +14,11 @@
                     name = null;
                 } else if (line.startsWith('<component')) {
                     name = line.split(' name="')[1].split('"')[0];
-                } else if (name) {
+                } else if (line.startsWith('<testsuite')) {
+                    inTestSuite = true;
+                } else if (line.startsWith('</testsuite>')) {
+                    inTestSuite = false;
+                } else if (name && !inTestSuite) {
                     currentComponent += line + '\n';
                 }
             }
@@ -36,6 +41,15 @@
         state.num++;
     }
 </script>
+
+<testsuite>
+    <test>
+        <template snapshot>
+            <button @click:="script.countUp">Hello 42</button>
+        </template>
+    </test>
+</testsuite>
+
 </component>
 
 
@@ -51,6 +65,16 @@
     em { color: darkblue; }
     * { text-decoration: underline; }
 </style>
+
+<testsuite>
+    <test>
+        <template snapshot>
+            Components can use <strong>any</strong> number
+            of <em title="Component Parts">CParts</em>.
+        </template>
+    </test>
+</testsuite>
+
 </component>
 
 

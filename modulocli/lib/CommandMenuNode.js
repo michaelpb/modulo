@@ -164,6 +164,11 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
     }
 
+    test(config, modulo) {
+        const {verbose, watch} = config;
+        super()
+    }
+
     shell(config, modulo) {
         const repl = require('repl');
         console.log(TERM.LOGO, 'Modulo Node.js REPL activated. Type m to see commands.');

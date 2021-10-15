@@ -794,6 +794,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
     static runTests(testsuiteData, factory) {
         const element = factory.createTestElement();
+        let success = 0;
+        let failure = 0;
 
         // could be implied first test?
         Modulo.assert(element.isMounted, 'Successfully mounted element');
@@ -850,12 +852,15 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             }
             for (const [name, result] of results) {
                 if (!result) {
+                    failure++;
                     console.log('Failed:', name, result);
                 } else {
+                    success++;
                     console.log('Success:', name, result);
                 }
             }
         }
+        return [success, failure];
     }
 }
 
@@ -1725,38 +1730,40 @@ Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
-        /*
-        const propObj = {};
-        Object.entries(Modulo.CommandMenu).forEach(([key, value]) => {
-            if (key.startsWith('cmd_') {
-                propObj[key.slice(4)] = { get: value };
-            }
-        });
-        Modulo.cmd = Object.create(Modulo.CommandMenu, propObj);
-        */
         Modulo.cmd = new Modulo.CommandMenu();
         Modulo.globals.m = Modulo.cmd;
     }
-    constructor() {
-        this.clear;
-    }
-    clear() {
-        this.targeted = [];
-    }
     target(elem) {
+        if (!this.targeted) {
+            this.targeted = [];
+        }
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
     test() {
-        console.table(this.targeted);
-        const {runTests} = Modulo.cparts.testsuite;
-        for (const [name, factory] of Object.entries(Modulo.factoryInstances)) {
-            const {testsuite} = factory.baseRenderObj;
-            if (testsuite) {
-                const info = ' ' + (testsuite.name || '');
-                console.group(['%'], 'TestSuite: ' + name + info);
-                runTests(testsuite, factory);
+        //console.table(this.targeted);
+        const discovered = [];
+        for (const factory of Object.values(Modulo.factoryInstances)) {
+            if (factory.baseRenderObj.testsuite) {
+                discovered.push([factory, factory.baseRenderObj.testsuite]);
             }
         }
+        if (discovered.length === 0) {
+            console.warn('WARNING: No test suites discovered')
+        }
+        console.log(['%'], discovered.length + ' test suites found');
+        const {runTests} = Modulo.cparts.testsuite;
+        let success = 0;
+        let failure = 0;
+        for (const [factory, testsuite] of discovered) {
+            const info = ' ' + (testsuite.name || '');
+            console.group('[%]', 'TestSuite: ' + factory.fullName + info);
+            const [successes, failures] = runTests(testsuite, factory)
+            console.groupEnd();
+            success += successes;
+            failure += failures;
+        }
+        console.log('SUCCESS', success, '/', success + failure);
+        console.log('FAILURE', failure, '/', success + failure);
     }
     build() {
         const {document, console} = Modulo.globals;
