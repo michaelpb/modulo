@@ -34,6 +34,10 @@
     /* Make look better in Docs */
     max-width: 900px;
 }
+.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {
+    /* ...except if full screen */
+    max-width: 100vw;
+}
 
 .demo-wrapper.demo-wrapper__fullscreen {
     position: absolute;

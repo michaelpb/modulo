@@ -427,10 +427,6 @@ Modulo.ComponentFactory = class ComponentFactory {
         return element;
     }
 
-    doTestRerender(elem, testInfo) {
-        elem.rerender(); // presently no other steps
-    }
-
     // ## ComponentFactory: register & registerInstance
     // These are minor helper functions. The first registers with the browser,
     // the second keeps a central location of all component factories defined.
@@ -798,75 +794,16 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         element.initRenderObj.props = initData;
     }
 
-    static templateAssertion(cpart, element, stepConf) {
-        const {makeDiv, normalize} = Modulo.utils;
-        const _process = 'testWhitespace' in stepConf ? s => s : normalize;
-        const text1 = _process(cpart.instance.render(stepConf));
-        if ('testValues' in stepConf) {
-            for (const input of element.querySelectorAll('input')) {
-                input.setAttribute('value', input.value);
-            }
-        }
-
-        const text2 = _process(element.innerHTML);
-        let verb = '===IS NOT===';
-        let result = true;
-        if ('stringCount' in stepConf) {
-            const count = Number(stepConf.stringCount);
-            // Splitting is a fast way to check count
-            const realCount = text2.split(text1).length - 1;
-            if (count !== realCount) {
-                verb = `=== FOUND BELOW ${realCount} ` +
-                        `TIMES (${count} expected) ===`;
-                result = false;
-            }
-        } else {
-            result = makeDiv(text1).isEqualNode(makeDiv(text2));
-        }
-        return [result, `${text1}\n${verb}\n${text2}`];
-    }
-
-    static scriptAssertion(cpart, element, stepConf, data) {
-        // Apply assert and event macros:
-        let assertionText, result;
-        const assertRe = /^\s*assert:\s*(.+)\s*$/m;
-        const isAssertion = assertRe.test(data.content);
-        let content = data.content;
-        if (isAssertion) {
-            assertionText = content.match(assertRe)[1];
-            content = content.replace(assertRe, 'return $1');
-        }
-        const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
-        content = content.replace(eventRe, `
-            if (!element.querySelector('$2')) {
-                throw new Error('Event target not found: $2');
-            }
-            element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
-        `);
-        const extra = {element, Modulo, document: Modulo.document}
-        const vars = Object.assign(element.getCurrentRenderObj(), extra);
-        const func = new Function(Object.keys(vars).join(','), content);
-        try {
-            result = func.apply(null, Object.values(vars));
-        } catch (err) {
-            return [false, `Error occured: ${err}`]
-        }
-        if (!isAssertion) {
-            return [undefined, undefined];
-        }
-        return [result, `${assertionText} --(YIELDED)--> ${result}`];
-    }
-
-    static runTests(options, factory) {
-        const {content} = options;
+    static runTests({content}, factory) {
+        const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
         const {testsuite} = Modulo.cparts;
 
         let total = 0;
         let failure = 0;
 
-        for (const testNode of Modulo.utils.makeDiv(content).children) {
+        for (const testNode of makeDiv(content).children) {
             const element = factory.createTestElement();
-            // Could be implied first test?
+            // could be implied first test?
             Modulo.assert(element.isMounted, 'Successfully mounted element');
 
             const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
@@ -877,18 +814,69 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                     const cpart = new Modulo.cparts[sName](element, options);
                     const initData = cpart.initializedCallback({[sName]: data});
                     testsuite[sName + 'Init'](cpart, element, initData);
-                } else if ((sName + 'Assertion') in testsuite) {
+                } else if (sName === 'template') {
                     const cpart = new Modulo.cparts[sName](element, options);
-                    if (!('skipRerender' in stepConf)) {
-                        // ensure re-rendered before running script
-                        element.factory.doTestRerender(element);
+                    element.rerender(); // ensure re-rendered before checking 
+
+                    const _process = 'testWhitespace' in stepConf ? s => s : normalize;
+                    const text1 = _process(cpart.instance.render(stepConf));
+                    if ('testValues' in stepConf) {
+                        for (const input of element.querySelectorAll('input')) {
+                            input.setAttribute('value', input.value);
+                        }
                     }
-                    const [result, message] = testsuite[sName + 'Assertion'](cpart, element, stepConf, data);
+
+                    const text2 = _process(element.innerHTML);
+                    let verb = '===IS NOT===';
+                    let result = true;
+                    if ('stringCount' in stepConf) {
+                        const count = Number(stepConf.stringCount);
+                        // Splitting is a fast way to check count
+                        const realCount = text2.split(text1).length - 1;
+                        if (count !== realCount) {
+                            verb = `=== FOUND BELOW ${realCount} ` +
+                                   `TIMES (${count} expected) ===`;
+                            result = false;
+                        }
+                    } else {
+                        result = makeDiv(text1).isEqualNode(makeDiv(text2));
+                    }
+                    total++;
+                    if (!result) {
+                        failure++;
+                        console.log(['<template>:', text1, verb, text2].join('\n'));
+                    }
+                }
+                else if (sName === 'script') {
+                    const cpCls = Modulo.cparts.script;
+                    element.rerender(); // ensure re-rendered before checking 
+                    const re = /^\s*assert:\s*(.+)\s*$/m;
+                    let content = data.content.replace(re, 'return $1');
+                    const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
+                    content = content.replace(eventRe, `
+                        if (!element.querySelector('$2')) {
+                            throw new Error('Event target not found: $2');
+                        }
+                        element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
+                    `);
+                    // TODO: Consider adding "utils" here
+                    const extra = {element, Modulo, document: Modulo.document}
+                    const vars = Object.assign(element.getCurrentRenderObj(), extra);
+                    const paramList = Object.keys(vars).join(',');
+                    const test = new Function(paramList, content);
+                    let result = false;
+                    try {
+                      result = test.apply(null, Object.values(vars));
+                    } catch (err) {
+                      result = err;
+                    }
                     if (result !== undefined) {
                         total++;
-                        if (!result) {
+                        if (!result || result instanceof Error) {
                             failure++;
-                            console.log(`ASSERTION <${sName}> FAILED:\n${message}`);
+                            const defaultArr = ['', 'ERROR'];
+                            const info = (data.content.match(re) || defaultArr)[1]
+                            console.log('<script>:', info, '--->', result);
                         }
                     }
                 }
@@ -1680,7 +1668,7 @@ Modulo.utils = class utils {
 
     static normalize(html) {
         // Normalize space to ' ' & trim around tags
-        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2').trim();
+        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2');
     }
 
     static get(obj, key) {
@@ -1817,7 +1805,7 @@ Modulo.CommandMenu = class CommandMenu {
             success += successes;
             failure += failures;
             if (!successes) {
-                console.log('FAILURE: No successful assertions.');
+                console.log('FAILURE: No assertations.');
                 failure++;
             }
         }

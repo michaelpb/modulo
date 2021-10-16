@@ -1,16 +1,25 @@
 let componentTexts = null;
+let componentTexts2 = null;
 let exCounter = 0; // global variable
 
+
+// Get text from the two example component libraries
 try {
     componentTexts = Modulo.factoryInstances['eg-eg']
             .baseRenderObj.script.exports.componentTexts;
-} catch {
-    console.log('couldnt get componentTexts');
+    componentTexts2 = Modulo.factoryInstances['docseg-docseg']
+            .baseRenderObj.script.exports.componentTexts;
+} catch (err) {
+    console.log('couldnt get componentTexts:', err);
     componentTexts = null;
+    componentTexts2 = null;
+}
+
+if (componentTexts) {
+    componentTexts = Object.assign({}, componentTexts, componentTexts2);
 }
 
 function codemirrorMount({el}) {
-    console.log('attempting to moutn cm');
     const demoType = props.demotype || 'snippet';
     _setupCodemirror(el, demoType, element, state);
 }

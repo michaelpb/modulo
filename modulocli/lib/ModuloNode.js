@@ -300,15 +300,51 @@ class ModuloNode {
 class ComponentFactoryNode extends baseModulo.ComponentFactory {
     createTestElement() {
         const instance = new this.componentClass();
-        const elemTag = `<${this.fullName}></${this.fullName}>`;
-        const html = `<div>${elemTag}</div>`;
-        this.testDom = new JSDOM(html);
+        this.testDom = new JSDOM(`<${this.fullName}></${this.fullName}>`);
         this.testDoc = this.testDom.window.document;
         const el = this.testDoc.querySelector(this.fullName);
         webComponentsUpgrade(el, instance); // ensure has minimum webcomponent API
         delete el.cparts.testsuite; // for testing, never include testsuite
-        //el.connectedCallback(); // ensure this is called, as its now connected
         return el; // Finally, return the upgraded element
+    }
+
+    doTestRerender(originalElement, testInfo) {
+        super.doTestRerender(originalElement, testInfo); // do default behavior
+        // Now, check for any component children and ensure those get
+        // upgraded as well
+        // NOTE: Not sure how this will play with namespaces in the future
+        // TODO: Refactor with above resolution code, after DOMRec rewrite
+        let allMounted = false;
+        let retries = 15; // Test render recursion depth
+        let factory;
+        const { factoryInstances } = baseModulo;
+        while (!allMounted && (--retries > 0)) {
+            const sel = (Object.keys(factoryInstances).join(',') || 'X');
+            const allModElems = originalElement.querySelectorAll(sel);
+            allMounted = true;
+            for (const elem of allModElems) {
+                if (elem.isMounted) {
+                    continue;
+                }
+                allMounted = false;
+                const lowerTag = (elem.tagName || '').toLowerCase();
+                for (factory of Object.values(factoryInstances)) {
+                    if (lowerTag === factory.fullName.toLowerCase()) {
+                        break;
+                    }
+                }
+                baseModulo.assert(factory, 'no fac for:', lowerTag);
+                /*
+                console.log('lower tag:', lowerTag);
+                if (lowerTag === 'x-testbtn') {
+                    console.log('------------------------------------')
+                    console.log('PRE UPGRADE', originalElement.innerHTML);
+                    console.log('------------------------------------')
+                }
+                */
+                webComponentsUpgrade(elem, new factory.componentClass());
+            }
+        }
     }
 }
 

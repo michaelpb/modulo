@@ -1,3 +1,4 @@
+// modulo build -102dleb
 'use strict';
 
 // # Introduction
@@ -427,10 +428,6 @@ Modulo.ComponentFactory = class ComponentFactory {
         return element;
     }
 
-    doTestRerender(elem, testInfo) {
-        elem.rerender(); // presently no other steps
-    }
-
     // ## ComponentFactory: register & registerInstance
     // These are minor helper functions. The first registers with the browser,
     // the second keeps a central location of all component factories defined.
@@ -798,75 +795,16 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         element.initRenderObj.props = initData;
     }
 
-    static templateAssertion(cpart, element, stepConf) {
-        const {makeDiv, normalize} = Modulo.utils;
-        const _process = 'testWhitespace' in stepConf ? s => s : normalize;
-        const text1 = _process(cpart.instance.render(stepConf));
-        if ('testValues' in stepConf) {
-            for (const input of element.querySelectorAll('input')) {
-                input.setAttribute('value', input.value);
-            }
-        }
-
-        const text2 = _process(element.innerHTML);
-        let verb = '===IS NOT===';
-        let result = true;
-        if ('stringCount' in stepConf) {
-            const count = Number(stepConf.stringCount);
-            // Splitting is a fast way to check count
-            const realCount = text2.split(text1).length - 1;
-            if (count !== realCount) {
-                verb = `=== FOUND BELOW ${realCount} ` +
-                        `TIMES (${count} expected) ===`;
-                result = false;
-            }
-        } else {
-            result = makeDiv(text1).isEqualNode(makeDiv(text2));
-        }
-        return [result, `${text1}\n${verb}\n${text2}`];
-    }
-
-    static scriptAssertion(cpart, element, stepConf, data) {
-        // Apply assert and event macros:
-        let assertionText, result;
-        const assertRe = /^\s*assert:\s*(.+)\s*$/m;
-        const isAssertion = assertRe.test(data.content);
-        let content = data.content;
-        if (isAssertion) {
-            assertionText = content.match(assertRe)[1];
-            content = content.replace(assertRe, 'return $1');
-        }
-        const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
-        content = content.replace(eventRe, `
-            if (!element.querySelector('$2')) {
-                throw new Error('Event target not found: $2');
-            }
-            element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
-        `);
-        const extra = {element, Modulo, document: Modulo.document}
-        const vars = Object.assign(element.getCurrentRenderObj(), extra);
-        const func = new Function(Object.keys(vars).join(','), content);
-        try {
-            result = func.apply(null, Object.values(vars));
-        } catch (err) {
-            return [false, `Error occured: ${err}`]
-        }
-        if (!isAssertion) {
-            return [undefined, undefined];
-        }
-        return [result, `${assertionText} --(YIELDED)--> ${result}`];
-    }
-
-    static runTests(options, factory) {
-        const {content} = options;
+    static runTests({content}, factory) {
+        const {makeDiv, normalize, isHTMLEqual} = Modulo.utils;
         const {testsuite} = Modulo.cparts;
 
         let total = 0;
         let failure = 0;
 
-        for (const testNode of Modulo.utils.makeDiv(content).children) {
+        for (const testNode of makeDiv(content).children) {
             const element = factory.createTestElement();
-            // Could be implied first test?
+            // could be implied first test?
             Modulo.assert(element.isMounted, 'Successfully mounted element');
 
             const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
@@ -877,18 +815,69 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                     const cpart = new Modulo.cparts[sName](element, options);
                     const initData = cpart.initializedCallback({[sName]: data});
                     testsuite[sName + 'Init'](cpart, element, initData);
-                } else if ((sName + 'Assertion') in testsuite) {
+                } else if (sName === 'template') {
                     const cpart = new Modulo.cparts[sName](element, options);
-                    if (!('skipRerender' in stepConf)) {
-                        // ensure re-rendered before running script
-                        element.factory.doTestRerender(element);
+                    element.rerender(); // ensure re-rendered before checking 
+
+                    const _process = 'testWhitespace' in stepConf ? s => s : normalize;
+                    const text1 = _process(cpart.instance.render(stepConf));
+                    if ('testValues' in stepConf) {
+                        for (const input of element.querySelectorAll('input')) {
+                            input.setAttribute('value', input.value);
+                        }
                     }
-                    const [result, message] = testsuite[sName + 'Assertion'](cpart, element, stepConf, data);
+
+                    const text2 = _process(element.innerHTML);
+                    let verb = '===IS NOT===';
+                    let result = true;
+                    if ('stringCount' in stepConf) {
+                        const count = Number(stepConf.stringCount);
+                        // Splitting is a fast way to check count
+                        const realCount = text2.split(text1).length - 1;
+                        if (count !== realCount) {
+                            verb = `=== FOUND BELOW ${realCount} ` +
+                                   `TIMES (${count} expected) ===`;
+                            result = false;
+                        }
+                    } else {
+                        result = makeDiv(text1).isEqualNode(makeDiv(text2));
+                    }
+                    total++;
+                    if (!result) {
+                        failure++;
+                        console.log(['<template>:', text1, verb, text2].join('\n'));
+                    }
+                }
+                else if (sName === 'script') {
+                    const cpCls = Modulo.cparts.script;
+                    element.rerender(); // ensure re-rendered before checking 
+                    const re = /^\s*assert:\s*(.+)\s*$/m;
+                    let content = data.content.replace(re, 'return $1');
+                    const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
+                    content = content.replace(eventRe, `
+                        if (!element.querySelector('$2')) {
+                            throw new Error('Event target not found: $2');
+                        }
+                        element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
+                    `);
+                    // TODO: Consider adding "utils" here
+                    const extra = {element, Modulo, document: Modulo.document}
+                    const vars = Object.assign(element.getCurrentRenderObj(), extra);
+                    const paramList = Object.keys(vars).join(',');
+                    const test = new Function(paramList, content);
+                    let result = false;
+                    try {
+                      result = test.apply(null, Object.values(vars));
+                    } catch (err) {
+                      result = err;
+                    }
                     if (result !== undefined) {
                         total++;
-                        if (!result) {
+                        if (!result || result instanceof Error) {
                             failure++;
-                            console.log(`ASSERTION <${sName}> FAILED:\n${message}`);
+                            const defaultArr = ['', 'ERROR'];
+                            const info = (data.content.match(re) || defaultArr)[1]
+                            console.log('<script>:', info, '--->', result);
                         }
                     }
                 }
@@ -1680,7 +1669,7 @@ Modulo.utils = class utils {
 
     static normalize(html) {
         // Normalize space to ' ' & trim around tags
-        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2').trim();
+        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2');
     }
 
     static get(obj, key) {
@@ -1817,7 +1806,7 @@ Modulo.CommandMenu = class CommandMenu {
             success += successes;
             failure += failures;
             if (!successes) {
-                console.log('FAILURE: No successful assertions.');
+                console.log('FAILURE: No assertations.');
                 failure++;
             }
         }
@@ -1872,3 +1861,131 @@ if (typeof customElements !== 'undefined') { // Browser
 
 // So... keep on reading for the latest Modulo project:
 // ------------------------------------------------------------------
+;
+
+Modulo.defineAll();
+Modulo.fetchQ.data = {
+  "/components/layouts.html": // (117 lines)
+`<component name="Page" mode="vanish-allow-script">
+    <props
+        navbar
+        docbarselected 
+        pagetitle
+    ></props>
+
+    <template src="./layouts/base.html"></template>
+
+    <script>
+        function initializedCallback() {
+            if (Modulo.isBackend) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                console.log('Warning: Couldnt get global info');
+            }
+        }
+    </script>
+</component>
+
+
+<!--<script src="/components/layouts/globalUtils.js"></script>-->
+<module>
+    <script>
+        let txt;
+
+        function sloccount() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            return Modulo.require('sloc')(txt, 'js').source;
+        }
+
+        function checksum() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            const CryptoJS = Modulo.require("crypto-js");
+            const hash = CryptoJS['SHA384'](txt);
+            return hash.toString(CryptoJS.enc.Base64);
+            //const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
+
+            //shaObj.update(txt);
+            //const hash = shaObj.getHash("B64");
+            //return hash;
+        }
+
+        function getGlobalInfo() {
+            // Only do once to speed up SSG
+            //console.log('this is Modulo', Object.keys(Modulo));
+            if (!Modulo.isBackend) {
+                return;
+            }
+            if (!Modulo.ssgStore.versionInfo) {
+                const bytes = Modulo.require('fs').readFileSync('./package.json');
+                const data = JSON.parse(bytes);
+                Modulo.ssgStore.versionInfo = {
+                    version: data.version,
+                    sloc: sloccount(),
+                    checksum: checksum(),
+                };
+            }
+            return Modulo.ssgStore.versionInfo;
+        }
+
+        // https://stackoverflow.com/questions/400212/
+        const {document, navigator} = Modulo.globals;
+        function fallbackCopyTextToClipboard(text) {
+            console.count('fallbackCopyTextToClipboard');
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                //console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                //console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                //console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    </script>
+
+</module>
+
+`,// (ends: /components/layouts.html) 
+
+};
+
+//  Preloading page: "/components/layouts.html" 
+Modulo.fetchQ.basePath = "/components/layouts.html";
+Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);

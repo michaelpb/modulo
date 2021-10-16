@@ -13,6 +13,7 @@
     <!-- TODO: Switch to <module><load> style syntax -->
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
 
 
 
@@ -232,38 +233,7 @@ template is evaluated, and tags, which control the logic of the template.</p>
 be explained later in this document.</p>
 
 
-<mws-demo demotype="minipreview" text="
-<template>
-<p>There are <em>{{ state.count }}
-  {{ state.count|pluralize:&quot;articles,article&quot; }}</em>
-  on {{ script.exports.title }}.</p>
-
-{# Show the articles #}
-{% for article in state.articles %}
-    <h4 style=&quot;color: blue&quot;>{{ article.headline|upper }}</h4>
-    {% if article.tease %}
-      <p>{{ article.tease|truncate:30 }}</p>
-    {% endif %}
-{% endfor %}
-</template>
-
-
-
-<!-- The data below was used to render the template above -->
-<state
-    count:=42
-    articles:='[
-      {&quot;headline&quot;: &quot;Modulo released!&quot;,
-       &quot;tease&quot;: &quot;The most exciting news of the century.&quot;},
-      {&quot;headline&quot;: &quot;Can JS be fun again?&quot;},
-      {&quot;headline&quot;: &quot;MTL considered harmful&quot;,
-       &quot;tease&quot;: &quot;Why constructing JS is risky business.&quot;}
-    ]'
-></state>
-<script>
-    script.exports.title = &quot;ModuloNews&quot;;
-</script>
-"><div class="demo-wrapper
+<mws-demo demotype="minipreview" fromlibrary="Templating_1"><div class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -802,4 +772,4 @@ code below for a concrete example of how this escaping behaves:</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10--1hqqcns.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10-6d32sv.js"></script></body>

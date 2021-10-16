@@ -66,39 +66,10 @@ template is evaluated, and tags, which control the logic of the template.</p>
 be explained later in this document.</p>
 
 
-<mws-Demo demotype="minipreview"
-text='
-<template>
-<p>There are <em>{{ state.count }}
-  {{ state.count|pluralize:"articles,article" }}</em>
-  on {{ script.exports.title }}.</p>
-
-{# Show the articles #}
-{% for article in state.articles %}
-    <h4 style="color: blue">{{ article.headline|upper }}</h4>
-    {% if article.tease %}
-      <p>{{ article.tease|truncate:30 }}</p>
-    {% endif %}
-{% endfor %}
-</template>
-
-
-
-<!-- The data below was used to render the template above -->
-<state
-    count:=42
-    articles:=&#x27;[
-      {"headline": "Modulo released!",
-       "tease": "The most exciting news of the century."},
-      {"headline": "Can JS be fun again?"},
-      {"headline": "MTL considered harmful",
-       "tease": "Why constructing JS is risky business."}
-    ]&#x27;
-></state>
-<script>
-    script.exports.title = "ModuloNews";
-</script>
-'></mws-Demo>
+<mws-Demo
+    demotype="minipreview"
+    fromlibrary="Templating_1"
+></mws-Demo>
 
 
 
@@ -179,11 +150,11 @@ variable with useful data:</p>
 <p>We'll go over template-tags later, but some template-tags can add variables
 into the mix as well. As a sneak-peak, examine the following code:</p>
 
-<pre>
+<mws-Demo text='
 {% for athlete in state.athletes %}
-    &lt;p&gt;{{ athlete.name }}&lt;/p&gt;
+    <p>{{ athlete.name }}</p>
 {% endfor %}
-</pre>
+'></mws-Demo>
 
 <p>Note how <code>athlete</code> declares a new variable, which can be reused
 in <code>{{ athlete.name }}</code>. For more on for-loops, see the 
@@ -276,39 +247,39 @@ href="/docs/template_reference.html#filters">built-in template-tag reference</a>
 <h4>for</h4>
 <p>Duplicate a block of HTML code for every item in a collection of items (e.g.
 an array). This allows a HTML code to be repeated while looping over each item
-in an array. For example, to display a list of athletes provided in
-<code>state.athletes</code>:</p>
+in an array. For example, to display a list of athletes, assuming one was
+stored as an array of objects within <code>state.athletes</code>:</p>
 
-<pre>
-&lt;ul&gt;
+<mws-Demo text='
+<ul>
     {% for athlete in state.athletes %}
-        &lt;li&gt;{{ athlete.name }}&lt;/li&gt;
+        <li>{{ athlete.name }}</li>
     {% endfor %}
-&lt;/ul&gt;
-</pre>
+</ul>
+'></mws-Demo>
 
 <h4>if</h4>
 <p>Evaluates a variable, and if that variable is "true" the contents of the
 block are displayed:</p>
 
-<pre>
+<mws-Demo text='
 {% if state.athletes %}
     Number of athletes: {{ state.athletes|length }}
 {% endif %}
-</pre>
+'></mws-Demo>
 
 <p>In the above, if state.athletes is not empty, the number of athletes will be
 displayed by the {{ state.athletes|length }} variable.</p>
 
 <p>You can also use filters and various operators in the if tag:</p>
 
-<pre>
+<mws-Demo text='
 {% if state.athletes|length gt 1 %}
    Team: {% for athlete in state.athletes %} ... {% endfor %}
 {% else %}
    Athlete: {{ state.athletes|first }}
 {% endif %}
-</pre>
+'></mws-Demo>
 </div>
 
 
@@ -346,17 +317,11 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
 
 <p>Examples of both are below:</p>
 
-<mws-Demo demotype="minipreview"
-text='
-<template>
-    <h1>hello {# greeting #}</h1>
-    {% comment %}
-      {% if a %}<div>{{ b }}</div>{% endif %}
-      <h3>{{ state.items|first }}</h3>
-    {% endcomment %}
-    <p>Below the greeting...</p>
-</template>
-'></mws-Demo>
+<mws-Demo
+    demotype="minipreview"
+    fromlibrary="Templating_Comments"
+></mws-Demo>
+
 
 <mws-Section name="escaping">Escaping</mws-Section>
 
@@ -420,33 +385,19 @@ This will not be escaped: &lt;b&gt;
 </pre>
 
 <p>Keep in mind that you should only mark trusted data as <code>|safe</code>.
-You don't want anyone trying to slip in malicious JS behavior!  Examine the
-code below for a concrete example of how this escaping behaves:</p>
+You don't want anyone trying to slip in malicious JS behavior! How to validate
+if a bit of HTML is safe to include verbatim (e.g. with <code>|safe</code>) is
+outside the scope of this document, but generally you should only trust HTML
+that has been validated on the backend or database, whitelisting only certain
+features of HTML and checking for "red flags" like embedded JavaScript code, or
+if it's a "staff-only" feature like a team blog, and thus the content generated
+is only editable by a trusted source (e.g. yourself or a member of your team).
+Examine the code below for a concrete example of how this escaping behaves:</p>
 
-<mws-Demo demotype="minipreview"
-text='
-<template>
-<p>User "<em>{{ state.username }}</em>" sent a message:</p>
-<div class="msgcontent">
-    {{ state.content|safe }}
-</div>
-</template>
 
-<state
-    username="Little <Bobby> <Drop> &tables"
-    content=&#x27;
-        I <i>love</i> the classic <a target="_blank"
-        href="https://xkcd.com/327/">xkcd #327</a> on
-        the risk of trusting <b>user inputed data</b>
-    &#x27;
-></state>
-<style>
-    .msgcontent {
-        background: #999;
-        padding: 10px;
-        margin: 10px;
-    }
-</style>
-'></mws-Demo>
+<mws-Demo
+    demotype="minipreview"
+    fromlibrary="Templating_Escaping"
+></mws-Demo>
 
 </x-Page>
