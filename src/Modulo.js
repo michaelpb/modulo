@@ -513,10 +513,16 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
     }
 
-    directivesMount(directives) {
-        for (const args of directives) {
-            args.setUp(args);
-        }
+    directiveMount(args) {
+        // TODO: Add a check to make sure that at least one of Mount, Unmount
+        // or Change exists
+        this._invokeCallback(args.dName, 'Mount', args);
+    }
+    directiveUnmount(args) {
+        this._invokeCallback(args.dName, 'Unmount', args);
+    }
+    directiveChange(args) {
+        this._invokeCallback(args.dName, 'Change', args);
     }
 
     rerender() {
@@ -549,7 +555,16 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
+    _invokeCallback(key, suffix, arg1) {
+        const result = this.resolveValue(key + suffix);
+        if (result) {
+            const thisContext = this.resolveValue(key.slice(0, key.lastIndexOf('.')));
+            result.call(thisContext, arg1);
+        }
+    }
+
     resolveValue(key) {
+        // TODO: RM, Only used in 2 spots (above, and eventMount)
         //const hackName = this.factory.name;
         //console.log(`   ${hackName} -- GET   ${key}`, rObj);
         //console.log(`   ${hackName} -- VALUE ${key} <<${result}>>`);
@@ -599,9 +614,9 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
             return;
         }
 
-        for (const [regexp, dir] of Modulo.directiveShortcuts) {
+        for (const [regexp, dName] of Modulo.directiveShortcuts) {
             if (rawName.match(regexp)) {
-                name = `[${dir}]` + name.replace(regexp, '');
+                name = `[${dName}]` + name.replace(regexp, '');
             }
         }
         if (!name.startsWith('[')) {
@@ -614,13 +629,18 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
             if (dName === attrName) {
                 continue; // Skip bare name
             }
-            const setUp = component.resolveValue(dName + 'Mount');
-            const tearDown = component.resolveValue(dName + 'Unmount');
+            const resolve = suffix => component.resolveValue(dName + suffix);
+            const onMount = resolve('Mount');
+            const onChange = resolve('Change');
+            const onUnmount = resolve('Unmount');
             //console.log('dName', dName, attrName, component);
             if (dName !== 'script.codemirror') { // TODO HACK UGH NO
-                Modulo.assert(setUp || tearDown, `Unknown directive "${dName}" `, el);
+                Modulo.assert(onMount || onUnmount || onChange, `Unknown directive "${dName}" `, el);
             }
-            arr.push({el, value, attrName, rawName, setUp, tearDown, dName, element})
+            const args = {el, value, attrName, rawName, onMount, onUnmount, dName, element};
+            // TODO RM ALL THIS dead cdoe
+            Object.assign(args, {setUp: onMount, tearDown: onUnmount});
+            arr.push(args)
         }
     }
     for (const child of el.children) {
@@ -630,36 +650,6 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     return arr; // HACK for testability
 }
 
-Modulo.parseDirectives = function parseDirectives(element, el, rawName) {
-    if (/^[a-z0-9-]$/i.test(rawName)) {
-        return null; // if alpha-only, break out right away
-    }
-
-    // "Expand" shortcuts into their full versions
-    let name = rawName;
-    for (const [regexp, dir] of Modulo.directiveShortcuts) {
-        if (rawName.match(regexp)) {
-            name = `[${dir}]` + name.replace(regexp, '');
-        }
-    }
-    if (!name.startsWith('[')) {
-        return null; // There are no directives, skip
-    }
-    // There are directives... time to resolve them
-    const arr = [];
-    const value = el.getAttribute(rawName);
-    const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
-    for (const dName of name.split(']').map(cleanWord)) {
-        if (dName === attrName) {
-            continue; // Skip bare name
-        }
-        const setUp = element.resolveValue(dName + 'Mount');
-        const tearDown = element.resolveValue(dName + 'Unmount');
-        Modulo.assert(setUp || tearDown, `Unknown directive "${dName}" `, el);
-        arr.push({el, value, attrName, rawName, setUp, tearDown, element})
-    }
-    return arr;
-}
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.resolve'] ];
 
@@ -842,6 +832,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         const {makeDiv, normalize} = Modulo.utils;
         const _process = 'testWhitespace' in stepConf ? s => s : normalize;
         const text1 = _process(cpart.instance.render(stepConf));
+
         if ('testValues' in stepConf) {
             for (const input of element.querySelectorAll('input')) {
                 input.setAttribute('value', input.value);
@@ -849,7 +840,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         }
 
         const text2 = _process(element.innerHTML);
-        let verb = '===IS NOT===';
+        let verb = '---(IS NOT)---';
         let result = true;
         if ('stringCount' in stepConf) {
             const count = Number(stepConf.stringCount);
@@ -863,12 +854,14 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         } else {
             result = makeDiv(text1).isEqualNode(makeDiv(text2));
         }
-        return [result, `${text1}\n${verb}\n${text2}`];
+        return [result, `${text1}\n${verb}\n${text2}\n`];
     }
 
     static scriptAssertion(cpart, element, stepConf, data) {
         // Apply assert and event macros:
         let assertionText, result;
+        // Idea for assert macro: Take expression and put it in an eval, with
+        // try/catch and variable dumping
         const assertRe = /^\s*assert:\s*(.+)\s*$/m;
         const isAssertion = assertRe.test(data.content);
         let content = data.content;
@@ -894,7 +887,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         if (!isAssertion) {
             return [undefined, undefined];
         }
-        return [result, `${assertionText}\n--(YIELDED)-->\n${result}`];
+        return [result, `${assertionText}\n--(YIELDED)-->\n${result}\n`];
     }
 
     static doTestStep(element, sName, data) {
@@ -923,7 +916,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         if (result) {
             return true;
         } else if (result === false) {
-            console.log(`ASSERTION <${sName}> FAILED:\n${message}`);
+            const msgAttrs = stepConf.name ? ` name="${stepConf.name}"` : '';
+            console.log(`ASSERTION <${sName}${msgAttrs}> FAILED:\n${message}`);
             return false;
         }
         return null;
@@ -939,10 +933,10 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         for (const testNode of Modulo.utils.makeDiv(content).children) {
             const element = factory.createTestElement();
             // Could be implied first test?
-            //const testName = testNode.getAttribute('name') || '<test>';
             Modulo.assert(element.isMounted, 'Successfully mounted element');
             const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
             console.group('[%]', '         ? TEST', testName);
+            Modulo.isTest = testName; // useful in tests, maybe remove, or document
             let testTotal = 0;
             let testFailed = 0;
             for (let [sName, data] of stepArray) {
@@ -1196,11 +1190,11 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         el.addEventListener(evName, func);
     }
 
-    bindUnmount({elem}) {
-        const name = elem.getAttr('name');
-        const [el, func, evName] = this.boundElements[name];
+    bindUnmount({el}) {
+        const name = el.getAttr('name');
+        const [el2, evName, func] = this.boundElements[name];
         delete this.boundElements[name];
-        el.removeEventListener(evName, func);
+        el2.removeEventListener(evName, func);
     }
 
     reloadCallback(oldPart) {
@@ -1441,44 +1435,43 @@ Modulo.templating.defaultOptions.tags = {
 };
 
 Modulo.reconcilers.ModRec = class ModuloReconciler {
-    constructor() {
-        const makePatchSet = true;
-        if (!makePatchSet) {
-            this.patch = this.applyPatch;
-        }
+    constructor(opts) {
+        this.shouldNotApplyPatches = opts && opts.makePatchSet;
     }
 
-    // TODO: For patches process, first implement
     reconcileChildren(node, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
-        // (It if helps, imagine they are children of rival parents
-        // at a posh school in Northern California, like in a certain
-        // popular television drama)
 
-        let child = node.firstChild;
+        // TODO: NOTE: Currently does not respect ANY resolver directives,
+        // including key=
+        let child = node.firstChild || null;
         let rival = rivalParent.firstChild;
         while (child || rival) {
-            // Does this node to be swapped out? Only swap if a
-            // mismatch in nodeType or nodeName
+            // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
                 child.nodeName !== rival.nodeName
             );
 
-            // Retrieve the next elements to 
-            if (!rival || needReplace) { // we have more than rival, delete it
+            if (!rival || needReplace) { // we have more rival, delete child
                 this.patchAndDescendants(child, 'Unmount');
                 this.patch(node, 'removeChild', child);
             }
-            if (!child || needReplace) { // we have less than rival, append rival
-                this.patch(node, 'append', rival);
+
+            if (!child || needReplace) { // we have less than rival, take rival
+                //this.patch(node, 'insertBefore', rival, child);
+                if (needReplace) {
+                    this.patch(node, 'insertBefore', rival, child.nextSibling);
+                } else {
+                    this.patch(node, 'appendChild', rival);
+                }
                 this.patchAndDescendants(rival, 'Mount');
             }
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
                 if (child.nodeType !== 1) { // text or comment node
-                    if (child.nodeValue !== rival.nodeValue) {
+                    if (child.nodeValue !== rival.nodeValue) { // update
                         this.patch(child, 'node-value', rival.nodeValue);
                     }
                 } else if (!child.isEqualNode(rival)) { // sync if not equal
@@ -1491,59 +1484,48 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
     }
 
-    patch(node, method, arg1, arg2) {
-        this.patches.push([node, method, arg1, arg2]);
+    patch(node, method, arg, arg2=null) {
+        this.patches.push([node, method, arg, arg2]);
     }
 
-    applyPatch(node, method, arg1, arg2) { // take that, rule of 3!
-        switch (method) {
-            case 'node-value':
-                node.nodeValue = arg1.nodeValue; // update text or comment
-            break; case 'componentMount':
-                throw new Error('not implemented');
-                // node.mountCallback();
-            break; case 'componentUnmount':
-                throw new Error('not implemented');
-                // node.unmountCallback();
-            break; case 'directivesMount':
-                // node.directivesMount();
-            break; case 'directivesChanged':
-                // node.directivesChanged();
-            break; case 'directivesUnmount':
-                // node.directivesUnmount();
-            break; default:
-                if (arg2 === undefined) {
-                    node[method].call(node, arg1); // invoke method
-                } else {
-                    node[method].call(node, arg1, arg2); // invoke method
-                }
+    applyPatch(node, method, arg, arg2) { // take that, rule of 3!
+        if (method === 'node-value') {
+            node.nodeValue = arg;
+        } else if (method === 'insertBefore') {
+            node.insertBefore(arg, arg2); // Needs 2 arguments
+        } else {
+            node[method].call(node, arg); // invoke method
         }
     }
 
     applyPatches() {
-        // DEAD CODE
+          // DEAD CODE
         return this.patches.map(patch => this.applyPatch.apply(this, patch));
     }
 
     patchDirectives(elem, rawName, suffix) {
-        const directives = Modulo.parseDirectives(this.element, elem, rawName);
+        const directives = this.parseDirectives(this.element, elem, rawName);
         if (directives) {
-            this.patch(this.element, 'directives' + suffix, directives);
+            for (const directive of directives) {
+                this.patch(this.element, 'directive' + suffix, directive);
+            }
         }
     }
 
     reconcileAttributes(node, rival) {
-        // TODO: Possibly refactor with patchAndDesc.
+        // TODO: Can this get refactored with patchAndDesc?
+        // Here's how:
+        // Use reconcileChildren(rival, rival) instead of patch & descdendents
         const myAttrs = new Set(node.getAttributeNames());
         const rivalAttributes = new Set(rival.getAttributeNames());
         for (const rawName of rivalAttributes) {
-            const value = rival.getAttribute(rawName);
-            if (myAttrs.has(rawName) && node.getAttribute(rawName) === value) {
-                continue;
+            const attr = rival.getAttributeNode(rawName);
+            if (myAttrs.has(rawName) && node.getAttribute(rawName) === attr.value) {
+                continue; // Already matches, on to next
             }
             const suffix = myAttrs.has(rawName) ? 'Change' : 'Mount';
             this.patchDirectives(rival, rawName, suffix);
-            this.patch(node, 'setAttribute', rawName, value);
+            this.patch(node, 'setAttributeNode', attr.cloneNode(true));
         }
 
         for (const rawName of myAttrs) {
@@ -1558,9 +1540,9 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (parentNode.nodeType !== 1) { // cannot have descendents
             return;
         }
-        const nodes = Array.from(parentNode.querySelectorAll('*'));
-        nodes.push(parentNode); // always patch self, last
-        for (const node of nodes) {
+        const nodes = Array.from(parentNode.querySelectorAll('*')); // all desc
+        nodes.push(parentNode); // also, patch self (but last)
+        for (const node of nodes) { // loop through nodes to patch
             for (const rawName of node.getAttributeNames()) {
                 // Loop through each attribute patching directives as necessary
                 this.patchDirectives(node, rawName, actionSuffix);
@@ -1571,19 +1553,44 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     reconcile(element, newHTML, skipLegacy=false) {
-        const {makeDiv} = Modulo.utils;
+        // Note: Always attempts to reconcile (even on first mount), in case
+        // it's been pre-rendered
+        const { makeDiv } = Modulo.utils;
+        const stuffystuff = makeDiv(element.innerHTML).innerHTML;
         this.patches = [];
         this.element = element; // element ctx
         this.reconcileChildren(this.element, makeDiv(newHTML));
-        if (!this.element.isMounted) {
-            this.patchAndDescendants(this.element, 'Mount'); // do all mounts
+        if (!this.shouldNotApplyPatches) {
+            this.patches.forEach(patch => this.applyPatch.apply(this, patch));
         }
-        //console.log('this is patches', this.patches);
 
+        /*
+        const {normalize} = Modulo.utils;
+        if (Modulo.isTest === 'renders board and handles flips') {
+            console.log('INPUT          ', normalize(stuffystuff));
+            console.log('OUTPUT(desired)', normalize(makeDiv(newHTML).innerHTML));
+            console.log('OUTPUT(actual) ', normalize(element.innerHTML));
+            element.innerHTML = newHTML;
+        } else {
+        }
+        */
         if (skipLegacy) {
             return;
         }
+        return;
+        //console.log('this is patches', this.patches);
 
+        /*
+        if (Modulo.isTest === 'Renders with different numbers') {
+            console.log('INPUT          ', normalize(stuffystuff));
+            console.log('OUTPUT(desired)', normalize(makeDiv(newHTML).innerHTML));
+            console.log('OUTPUT(actual) ', normalize(element.innerHTML));
+            element.innerHTML = newHTML;
+        } else {
+            // legacy -v
+            element.innerHTML = newHTML;
+        }
+        */
         element.innerHTML = newHTML;
         const directives = [];
         for (const child of element.children) {
@@ -1591,7 +1598,52 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
         element.applyDirectives(directives);
     }
+
+    parseDirectives(element, el, rawName) {
+        if (/^[a-z0-9-]$/i.test(rawName)) {
+            return null; // if alpha-only, stop right away
+        }
+
+        // "Expand" shortcuts into their full versions
+        let name = rawName;
+        for (const [regexp, directive] of Modulo.directiveShortcuts) {
+            if (rawName.match(regexp)) {
+                name = `[${directive}]` + name.replace(regexp, '');
+            }
+        }
+        if (!name.startsWith('[')) {
+            return null; // There are no directives, regular attribute, skip
+        }
+
+        // There are directives... time to resolve them
+        const arr = [];
+        const value = el.getAttribute(rawName);
+        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
+        for (const dName of name.split(']').map(cleanWord)) {
+            if (dName !== attrName) { // Skip bare name
+                arr.push({el, value, attrName, rawName, dName, element, name})
+            }
+        }
+        return arr;
+    }
 }
+
+/*
+//const args = {el, value, attrName, rawName, dName, element};
+// Extract Mount, Change, and Unmount callbacks
+//args.onChange = element.resolveValue(dName + 'Change');
+//args.onMount = element.resolveValue(dName + 'Mount');
+//args.onUnmount = element.resolveValue(dName + 'Unmount');
+//Modulo.assert(args.onMount, `Directive not found: "${dName}" `, el);
+//arr.push(args)
+*/
+/*
+// Extract Mount, Change, and Unmount callbacks
+for (const callbackSuffix of ['Mount', 'Change', 'Unmount']) {
+    const func = element.resolveValue(dName + callbackSuffix);
+    args['on' + callbackSuffix] = func;
+}
+*/
 
 Modulo.utils = class utils {
     static simplifyResolvedLiterals(attrs) {

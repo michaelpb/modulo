@@ -5,18 +5,65 @@
             const mockElement = makeDiv(html);
             mockElement.applyDirectives = () => {}; // dummy
             mockElement.resolveValue = () => () => {}; // dummy(2)
+            mockElement.directiveMount = () => {}; // dummy
+            mockElement.directiveUnmount = () => {}; // dummy
+            mockElement.directiveChange = () => {}; // dummy
             return mockElement;
         }
         Modulo.utils.getRecPatches = function reconcile (oldHTML, newHTML)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
-            const modRec = new ModRec(true);
+            const modRec = new ModRec({makePatchSet: true});
             modRec.reconcile(mockElement, newHTML, true); // skip old
             return modRec.patches;
         };
+
+        Modulo.utils.transformDOMCheck = function reconcile (oldHTML, newHTML, expectedDirCount)  {
+            if (newHTML === undefined) { // single argument given
+                newHTML = oldHTML;
+                oldHTML = '';
+            }
+            const {makeDiv} = Modulo.utils;
+            const mockElement = Modulo.utils.makeMockElement(oldHTML);
+            //const modRec = new ModRec({makePatchSet: true});
+            const modRec = new ModRec({makePatchSet: false});
+            modRec.reconcile(mockElement, newHTML, true); // skip old
+
+            let dirCount;
+            if (expectedDirCount !== undefined) {
+                dirCount = modRec.patches.filter(p => p[1].startsWith('directive')).length;
+            }
+            //modRec.patches.map(patch => modRec.applyPatch.apply(modRec, patch));
+            const genInner = makeDiv(mockElement.innerHTML).innerHTML;
+            const correctInner = makeDiv(newHTML).innerHTML;
+            const match = genInner === correctInner;
+            if (!match) {
+                console.log('-------------------------')
+                console.log('Error: no match');
+                console.log('Was naively wishing for:');
+                console.log(correctInner);
+                console.log('but instead got:');
+                console.log(genInner);
+                console.log('-------------------------')
+                const {pToString} = Modulo.utils;
+                console.log('- Examine the following:')
+                console.log(pToString(modRec.patches));
+                console.log('-------------------------')
+            } else {
+                //console.log('match', genInner, correctInner);
+            }
+
+            if (expectedDirCount !== dirCount) {
+                /*console.log('DIRECTIVE NOT MATCH:',
+                  modRec.patches.filter(p => p[1].startsWith('directive')));*/
+                console.log('DIRECTIVE NOT MATCH:', dirCount, 'actual', expectedDirCount, 'expected');
+            }
+            return match && expectedDirCount === dirCount;
+        };
+
         Modulo.utils.patchStringify = function patchStringify (patch)  {
-            const [node, method, arg1, arg2] = patch;
-            return `<${node.nodeType} ${node.nodeName}> ${method}("${arg1}", "${arg2}") </${node.nodeType}>`
+            const [node, method, arg1] = patch;
+            return `<${node.nodeType} ${node.nodeName}> ${method}("${arg1}") </${node.nodeType}>`
         }
         Modulo.utils.pToString = function patchStringify (patches)  {
             return patches.map(Modulo.utils.patchStringify).join('\n')
@@ -33,7 +80,6 @@
             `;
         }
 
-
         const {ModRec} = Modulo.reconcilers;
         assert: ModRec
     </script>
@@ -47,36 +93,84 @@
     <script name="Text node is updated correctly">
         const {getRecPatches, patchStringify} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p>Test2</p>');
-        const expected = '<3 #text> node-value("Test2", "undefined") </3>';
+        const expected = '<3 #text> node-value("Test2") </3>';
         assert: patches.length === 1 && patchStringify(patches[0]) === expected;
     </script>
 
     <script name="Text node is appending correctly">
         const {getRecPatches, patchStringify} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p>Test</p> Stuff');
-        const expected = '<1 DIV> append("[object Text]", "undefined") </1>';
+        const expected = '<1 DIV> appendChild("[object Text]") </1>';
         assert: patches.length === 1 && patchStringify(patches[0]) === expected;
     </script>
 
     <script name="Adds single attribute">
         const {getRecPatches, patchStringify} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p id="stuff">Test</p>');
-        const expected = '<1 P> setAttribute("id", "stuff") </1>';
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>';
         assert: patches.length === 1 && patchStringify(patches[0]) === expected;
     </script>
 
     <script name="Changes a single attribute">
         const {getRecPatches, patchStringify} = Modulo.utils;
         const patches = getRecPatches('<p id="stuff">Test</p>', '<p id="s t u f f">Test</p>');
-        const expected = '<1 P> setAttribute("id", "s t u f f") </1>';
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>';
         assert: patches.length === 1 && patchStringify(patches[0]) === expected;
     </script>
 
     <script name="Deletes a single attribute">
         const {getRecPatches, patchStringify} = Modulo.utils;
         const patches = getRecPatches('<p id="stuff">Test</p>', '<p>Test</p>');
-        const expected = '<1 P> removeAttribute("id", "undefined") </1>';
+        const expected = '<1 P> removeAttribute("id") </1>';
         assert: patches.length === 1 && patchStringify(patches[0]) === expected;
+    </script>
+
+    <script name="Appends an element">
+        const {getRecPatches, patchStringify} = Modulo.utils;
+        const patches = getRecPatches('<p>Test</p>', '<p>Test</p><p>Test 2</p>');
+        const expected = '<1 DIV> appendChild("[object HTMLParagraphElement]") </1>';
+        assert: patches.length === 1 && patchStringify(patches[0]) === expected;
+    </script>
+
+    <script name="Mounts a directive">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const patches = getRecPatches('<p>Test</p>', '<p [test.dir]a=b>Test</p>');
+        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        assert: patches.length === 2 && pToString(patches) === expected;
+    </script>
+
+    <script name="Mounts multiple directives">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const patches = getRecPatches('<p>Test</p>', '<p [test2.dir2][test.dir]a=b>Test</p>');
+        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                          '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        assert: patches.length === 3 && pToString(patches) === expected;
+    </script>
+
+    <script name="Supports a directive shortcut">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const patches = getRecPatches('<p>Test</p>', '<p @click=clickytarget>Test</p>');
+        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        assert: patches.length === 2 && pToString(patches) === expected;
+    </script>
+
+    <script name="Supports multiple directive shortcuts">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const patches = getRecPatches('<p>Test</p>', '<p @click:=clickytarget>Test</p>');
+        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                          '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        assert: patches.length === 3 && pToString(patches) === expected;
+    </script>
+
+    <script name="Ignores spurious directive shortcuts">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const patches = getRecPatches('<p>Test</p>', '<p %%%click=notarealclick>Test</p>');
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        assert: patches.length === 1 && pToString(patches) === expected;
     </script>
 
     <script name="Correctly generates no patches (1)">
@@ -137,7 +231,7 @@
     </script>
 </test>
 
-<test name="Patches get generated in expected ways in different DOM contexts">
+<test name="Patches generated in DOM contexts">
     <script name="Finds deep patchs as well as shallow patches">
         const {getRecPatches, patchStringify, anchorInTheDeep} = Modulo.utils;
         const str1 = '<main></main>';
@@ -200,7 +294,7 @@
         const {makeMockElement, pToString} = Modulo.utils;
         const {ModRec} = Modulo.reconcilers;
         const {patches, targetStr} = element;
-        const mr = new ModRec();
+        const mr = new ModRec({makePatchSet: true});
         mr.element = patches[0][0]; // get element out of 0th
         patches.map(patch => mr.applyPatch.apply(mr, patch))
         let results = mr.element.innerHTML.trim();
@@ -215,7 +309,7 @@
                     <p class="example2">Testing <em>nested</em> levels</p></div>`);
 
         const mockElement = makeMockElement(anchorInTheDeep(''));
-        const modRec = new ModRec(true);
+        const modRec = new ModRec({makePatchSet: true});
         modRec.reconcile(mockElement, element.targetStr2, true); // skip old
         element.patches2 = modRec.patches;
         element.mockElement = modRec.element; // ensure has element interface
@@ -229,15 +323,185 @@
         const {makeMockElement, pToString} = Modulo.utils;
         const {ModRec} = Modulo.reconcilers;
         const {patches2, targetStr2, mockElement} = element;
-        const mr = new ModRec();
+        const mr = new ModRec({makePatchSet: true});
         mr.element = patches2[0][0]; // get element out of 0th
         patches2.map(patch => mr.applyPatch.apply(mr, patch))
 
         // Ensure results are the same (normalized by wrapping in DOM element)
         let results = mockElement.innerHTML;
         const target = makeMockElement(targetStr2).innerHTML;
-        assert: results === target;
+        assert: results === target
     </script>
 
 </test>
 
+<test name="Applying patches for accurate DOM">
+    <script name="Works on adjacent items">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck('<p>Adjacent</p><p>Items</p>');
+    </script>
+
+    <script name="Works on nested items">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck('<div>Nested<div>Items</div></div>');
+    </script>
+
+    <script name="Adds attribute">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div>Text</div>',
+            '<div stuff="true">Text</div>',
+        );
+    </script>
+
+    <script name="Deletes attribute">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div stuff="true">Text</div>',
+            '<div>Text</div>',
+        );
+    </script>
+
+    <script name="Changes value of attribute">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div stuff="true">Text</div>',
+            '<div stuff="false">Text</div>',
+        );
+    </script>
+
+    <script name="Adds attribute with others">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div stuff="true">Text</div>',
+            '<div stuff="true" id="false">Text</div>',
+        );
+    </script>
+
+    <script name="Handles nested elements">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div>Text<div>Nested</div></div>',
+            '<div>Nested<div>Text</div></div>',
+        );
+    </script>
+
+    <script name="Handles nested elements (with P-tags behavior)">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<p>Text<p>Nested</p></p>',
+            '<p>Nested<p>Text</p></p>',
+        );
+    </script>
+
+    <script name="Updates nested elements">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<p>Text<!--test comment --></p>',
+            '<p>Nested<p>Text</p></p>',
+        );
+    </script>
+
+    <script name="Does complicated attribute and child manipulations">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div stuff="true">Text<div stuff="false">Nested</div></div>',
+            '<div stuff="verdad" id="nope">Nested<div stuff="mentira" id="falsa">Text</div></div>',
+        );
+    </script>
+
+    <script name="Collects new directives">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div>txt</div>',
+            '<div [directive.syntax]>txt</div>',
+            1,
+        );
+    </script>
+
+
+    <script name="Removes old directives">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div [directive.syntax]>txt</div>',
+            '<div>txt</div>',
+            1,
+        );
+    </script>
+
+    <script name="Modifies existing directive">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div [my.dir]test=3>txt</div>',
+            '<div [my.dir]test=4>txt</div>',
+            1,
+        );
+    </script>
+
+    <script name="Handles directive removal and change">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+            '<div [my.dir]test=4>txt<p [other.dir]=okay>p</p></div>',
+            '<div [my.dir]test=5>txt<p >p</p></div>',
+            2,
+        );
+    </script>
+
+    <script name="Registers multiple directives">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck('', `
+            <button @click:="script.countUp">Hello 101</button>
+        `,  2);
+    </script>
+
+    <script name="Ignores untouched directives">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(`
+                <button @click:="script.countUp">Hello 101</button>
+            `,`
+                <button @click:="script.countUp">Hello 102</button>
+            `,  0);
+    </script>
+
+    <script name="Simple complete replacement (1)">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+              '<h3>Abc</h3><p>cdef</p><abc-Fake></abc-Fake>',
+              '<div></div><p style=""></p>',
+              0,
+        );
+    </script>
+
+    <script name="Simple complete replacement (2)">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(
+              '<h3>Abc</h3><p [test.thing]style="">cdef</p><abc-Fake></abc-Fake>',
+              '<div>jkl;</div><p [test.thing]style=""></p><def-Fake></def-Fake>',
+              0,
+        );
+    </script>
+
+
+    <script name="Complicated complete replacement (from memory demo)">
+        const {transformDOMCheck} = Modulo.utils;
+        assert: transformDOMCheck(`
+                <h3>The Symbolic Memory Game</h3>
+                <p>Choose your difficulty:</p>
+                <button @click:="script.setup" click.payload="8">2x4</button>
+                <button @click:="script.setup" click.payload="16">4x4</button>
+                <button @click:="script.setup" click.payload="36">6x6</button>
+            `,`
+            <div class="board ">
+                <div key="c0" class="card " style=" " @click:="script.flip" click.payload="0"></div>
+                <div key="c1" class="card " style=" " @click:="script.flip" click.payload="1"></div>
+                <div key="c2" class="card " style=" " @click:="script.flip" click.payload="2"></div>
+                <div key="c3" class="card " style=" " @click:="script.flip" click.payload="3"></div>
+                <div key="c4" class="card " style=" " @click:="script.flip" click.payload="4"></div>
+                <div key="c5" class="card " style=" " @click:="script.flip" click.payload="5"></div>
+                <div key="c6" class="card " style=" " @click:="script.flip" click.payload="6"></div>
+                <div key="c7" class="card " style=" " @click:="script.flip" click.payload="7"></div>
+            </div>
+            <p style=""> Good luck!</p>
+            `,  22); // (8 * 2 = 16 mounts) + (3 * 2 = 6 unmounts)
+    </script>
+</test>

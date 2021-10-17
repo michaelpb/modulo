@@ -107,6 +107,21 @@
             // ...
         }
 
+# -------------------
+
+        Idea: CSS variables set by state
+
+        <state
+            userColor="red"
+        ></state>
+        <style [state.bind]color="userColor">
+            div {
+                color: var(--color);
+            }
+        </style>
+
+
+
 
 # More notes: 2021
 
