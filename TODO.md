@@ -29,6 +29,18 @@
       catch & throw? (defineComponent is the big try/catch)
     - Fix resolution issue with [component.children]... (causing x-Page to not show content)
     - CSS bundling
+    - An interesting ToDo:
+        - Maybe only good for mdu, not this, but with headless browser testing +
+          step-based testing, imagine the <style> tag also being for stuff like this:
+            - <style user-action>
+                  click button {
+                      color: blue;
+                      background: red;
+                  }
+              </style>
+            - Basically, can be used for both triggering events, and checking
+              that things are visually identifiable
+            - Could have other filters as well, e.g.  "color: contrast-with(var(background));"
     - Possibly change directive syntax,
         - Current has bad w3c compliance, not sure if better:
         -  __component.children__
@@ -81,6 +93,19 @@
       - This would also play nicely with the "cparts all the way down" approach
       - Cparts get attrs of parents. It would go up to Loader.
 
+# Misc performance update ideas:
+
+        // for directive search, would have to measure to see if a regexp can
+        // cut back time (I'm increasingly thinking: Probably not, only for
+        // very large attribute lists, everything else is probably slower)
+        for (const node of nodes) {
+            // Check if this speeds up, due to regexp compilation
+            const attrs = node.getAttributeNames().join(' ');
+            if (/^[ a-z-]+$/ig.test(attrs)) {
+                continue;
+            }
+            // ...
+        }
 
 
 # More notes: 2021

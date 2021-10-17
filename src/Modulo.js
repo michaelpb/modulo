@@ -377,7 +377,7 @@ Modulo.ComponentFactory = class ComponentFactory {
     // brand-new class definition.
     createClass() {
         const {fullName} = this;
-        const {reconciliationEngine = 'SetDom'} = this.options;
+        const {reconciliationEngine = 'ModRec'} = this.options;
         const engine = new Modulo.reconcilers[reconciliationEngine]();
         const func = (component, html) => engine.reconcile(component, html);
         return class CustomElement extends Modulo.Element {
@@ -488,12 +488,12 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     applyDirectives(directives) {
         for (const args of directives) {
-            const {setUp, tearDown, el, rawName, hasRun, value, dName} = args;
+            const {setUp, tearDown, el, rawName, hasRun, value} = args;
             if (!setUp) {
-                console.error('TMP Skipping:', dName, rawName, value);
+                console.error('TMP Skipping:', rawName, value);
                 continue;
             }
-            args.resolutionContext = this; // TODO fix this with truly predictable context
+            args.element = this; // TODO fix this with truly predictable context
             if (hasRun) {
                 if (!tearDown) {
                     console.error('TMP NO TEAR DOWN ERR:', rawName);
@@ -510,6 +510,12 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 el.onunload = tearDown.bind(thisContext, [args]);
             }
             */
+        }
+    }
+
+    directivesMount(directives) {
+        for (const args of directives) {
+            args.setUp(args);
         }
     }
 
@@ -580,6 +586,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     if (!arr) {
         arr = []; // HACK for testability
     }
+    const element = component;
 
     for (const rawName of el.getAttributeNames()) {
         // todo: optimize skipping most elements or attributes, e.g. "if
@@ -613,7 +620,7 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
             if (dName !== 'script.codemirror') { // TODO HACK UGH NO
                 Modulo.assert(setUp || tearDown, `Unknown directive "${dName}" `, el);
             }
-            arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
+            arr.push({el, value, attrName, rawName, setUp, tearDown, dName, element})
         }
     }
     for (const child of el.children) {
@@ -623,6 +630,36 @@ Modulo.collectDirectives = function collectDirectives(component, el, arr) {
     return arr; // HACK for testability
 }
 
+Modulo.parseDirectives = function parseDirectives(element, el, rawName) {
+    if (/^[a-z0-9-]$/i.test(rawName)) {
+        return null; // if alpha-only, break out right away
+    }
+
+    // "Expand" shortcuts into their full versions
+    let name = rawName;
+    for (const [regexp, dir] of Modulo.directiveShortcuts) {
+        if (rawName.match(regexp)) {
+            name = `[${dir}]` + name.replace(regexp, '');
+        }
+    }
+    if (!name.startsWith('[')) {
+        return null; // There are no directives, skip
+    }
+    // There are directives... time to resolve them
+    const arr = [];
+    const value = el.getAttribute(rawName);
+    const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
+    for (const dName of name.split(']').map(cleanWord)) {
+        if (dName === attrName) {
+            continue; // Skip bare name
+        }
+        const setUp = element.resolveValue(dName + 'Mount');
+        const tearDown = element.resolveValue(dName + 'Unmount');
+        Modulo.assert(setUp || tearDown, `Unknown directive "${dName}" `, el);
+        arr.push({el, value, attrName, rawName, setUp, tearDown, element})
+    }
+    return arr;
+}
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.resolve'] ];
 
@@ -730,6 +767,9 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     eventMount(info) {
         const {el, value, attrName, rawName} = info;
         const getAttr = getGetAttr(el);
+        // TODO: Fix this to be simpler, directly attach callback (once we get
+        // eventChanged callback). Then we won't need rawName
+
         //console.log('this is eventMount', info);
         const listener = (ev) => {
             //window.C = this;
@@ -749,10 +789,10 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
         el.removeEventListener(attrName, listener);
     }
 
-    resolveMount({el, value, attrName, resolutionContext}) {
-        //console.log('this is it', resolutionContext);
+    resolveMount({el, value, attrName, element}) {
+        //console.log('this is it', element);
         //console.log('this is resolve mount', attrName, value);
-        const resolvedValue = resolutionContext.resolveValue(value);
+        const resolvedValue = element.resolveValue(value);
         el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
         el.getAttr = (n, def) => {
             let val;
@@ -854,7 +894,39 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         if (!isAssertion) {
             return [undefined, undefined];
         }
-        return [result, `${assertionText} --(YIELDED)--> ${result}`];
+        return [result, `${assertionText}\n--(YIELDED)-->\n${result}`];
+    }
+
+    static doTestStep(element, sName, data) {
+        const {testsuite} = Modulo.cparts;
+        const options = {content: data.content, options: data};
+        const stepConf = data.options;
+        const isInit = (sName + 'Init') in testsuite;
+        const assertionMethod = testsuite[sName + 'Assertion'];
+        let cpart = null;
+        if (sName === 'template' || isInit) {
+            cpart = new Modulo.cparts[sName](element, options);
+        }
+        if (isInit) {
+            const initData = cpart.initializedCallback({[sName]: data});
+            testsuite[sName + 'Init'](cpart, element, initData);
+            return null;
+        } else if (!assertionMethod) {
+            throw new Error('Could not find', sName);
+        }
+
+        if (!('skipRerender' in stepConf)) {
+            // ensure re-rendered before running script
+            element.factory.doTestRerender(element);
+        }
+        const [result, message] = assertionMethod(cpart, element, stepConf, data);
+        if (result) {
+            return true;
+        } else if (result === false) {
+            console.log(`ASSERTION <${sName}> FAILED:\n${message}`);
+            return false;
+        }
+        return null;
     }
 
     static runTests(options, factory) {
@@ -867,32 +939,27 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         for (const testNode of Modulo.utils.makeDiv(content).children) {
             const element = factory.createTestElement();
             // Could be implied first test?
+            //const testName = testNode.getAttribute('name') || '<test>';
             Modulo.assert(element.isMounted, 'Successfully mounted element');
-
             const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
+            console.group('[%]', '         ? TEST', testName);
+            let testTotal = 0;
+            let testFailed = 0;
             for (let [sName, data] of stepArray) {
-                const options = {content: data.content, options: data};
-                const stepConf = data.options;
-                if ((sName + 'Init') in testsuite) {
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    const initData = cpart.initializedCallback({[sName]: data});
-                    testsuite[sName + 'Init'](cpart, element, initData);
-                } else if ((sName + 'Assertion') in testsuite) {
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    if (!('skipRerender' in stepConf)) {
-                        // ensure re-rendered before running script
-                        element.factory.doTestRerender(element);
-                    }
-                    const [result, message] = testsuite[sName + 'Assertion'](cpart, element, stepConf, data);
-                    if (result !== undefined) {
-                        total++;
-                        if (!result) {
-                            failure++;
-                            console.log(`ASSERTION <${sName}> FAILED:\n${message}`);
-                        }
-                    }
+                const result = testsuite.doTestStep(element, sName, data);
+                if (result !== null) {
+                    testTotal++;
+                    total++;
+                }
+                if (result === false) {
+                    testFailed++;
+                    failure++;
                 }
             }
+            const isOk = testFailed ? 'FAILURE' : 'OK     ';
+            const successes = testTotal - testFailed;
+            console.groupEnd();
+            console.log(`[%]  ${isOk} - ${testName} (${successes}/${testTotal})`);
         }
         return [total - failure, failure];
     }
@@ -1373,259 +1440,158 @@ Modulo.templating.defaultOptions.tags = {
     */
 };
 
-// SetDomReconciler ------------------
-Modulo.reconcilers.SetDom = class SetDomReconciler {
+Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor() {
-        this.KEY = 'key'
-        this.IGNORE = 'modulo-ignore'
-        this.CHECKSUM = 'modulo-checksum'
-        this.KEY_PREFIX = '_set-dom-'
-        this.mockBody = Modulo.globals.document.implementation
-                        .createHTMLDocument('').body;
-    }
-
-    reconcile(element, newHTML) {
-        //console.log('this is element', typeof element);
-        //Modulo.assert(element && element.tagName, 'Invalid element');
-        this.elemCtx = element;
-        if (!element.isMounted) {
-            element.innerHTML = newHTML;
-            this.findAndApplyDirectives(element);
-        } else {
-            this.mockBody.innerHTML = `<div>${newHTML}</div>`;
-            this.setChildNodes(element, this.mockBody.firstChild);
+        const makePatchSet = true;
+        if (!makePatchSet) {
+            this.patch = this.applyPatch;
         }
-        this.elemCtx = null;
     }
 
-    findAndApplyDirectives(element) {
-        const directives = [];
-        if (!element.children) {
-            //console.log('this is element', element); // NOT sure why text nodes get here
+    // TODO: For patches process, first implement
+    reconcileChildren(node, rivalParent) {
+        // Nonstandard nomenclature: "The rival" is the node we wish to match
+        // (It if helps, imagine they are children of rival parents
+        // at a posh school in Northern California, like in a certain
+        // popular television drama)
+
+        let child = node.firstChild;
+        let rival = rivalParent.firstChild;
+        while (child || rival) {
+            // Does this node to be swapped out? Only swap if a
+            // mismatch in nodeType or nodeName
+            const needReplace = child && rival && (
+                child.nodeType !== rival.nodeType ||
+                child.nodeName !== rival.nodeName
+            );
+
+            // Retrieve the next elements to 
+            if (!rival || needReplace) { // we have more than rival, delete it
+                this.patchAndDescendants(child, 'Unmount');
+                this.patch(node, 'removeChild', child);
+            }
+            if (!child || needReplace) { // we have less than rival, append rival
+                this.patch(node, 'append', rival);
+                this.patchAndDescendants(rival, 'Mount');
+            }
+
+            if (child && rival && !needReplace) {
+                // Both exist and are of same type, let's reconcile nodes
+                if (child.nodeType !== 1) { // text or comment node
+                    if (child.nodeValue !== rival.nodeValue) {
+                        this.patch(child, 'node-value', rival.nodeValue);
+                    }
+                } else if (!child.isEqualNode(rival)) { // sync if not equal
+                    this.reconcileAttributes(child, rival);
+                    this.reconcileChildren(child, rival);
+                }
+            }
+            child = child ? child.nextSibling : null;
+            rival = rival ? rival.nextSibling : null;
+        }
+    }
+
+    patch(node, method, arg1, arg2) {
+        this.patches.push([node, method, arg1, arg2]);
+    }
+
+    applyPatch(node, method, arg1, arg2) { // take that, rule of 3!
+        switch (method) {
+            case 'node-value':
+                node.nodeValue = arg1.nodeValue; // update text or comment
+            break; case 'componentMount':
+                throw new Error('not implemented');
+                // node.mountCallback();
+            break; case 'componentUnmount':
+                throw new Error('not implemented');
+                // node.unmountCallback();
+            break; case 'directivesMount':
+                // node.directivesMount();
+            break; case 'directivesChanged':
+                // node.directivesChanged();
+            break; case 'directivesUnmount':
+                // node.directivesUnmount();
+            break; default:
+                if (arg2 === undefined) {
+                    node[method].call(node, arg1); // invoke method
+                } else {
+                    node[method].call(node, arg1, arg2); // invoke method
+                }
+        }
+    }
+
+    applyPatches() {
+        // DEAD CODE
+        return this.patches.map(patch => this.applyPatch.apply(this, patch));
+    }
+
+    patchDirectives(elem, rawName, suffix) {
+        const directives = Modulo.parseDirectives(this.element, elem, rawName);
+        if (directives) {
+            this.patch(this.element, 'directives' + suffix, directives);
+        }
+    }
+
+    reconcileAttributes(node, rival) {
+        // TODO: Possibly refactor with patchAndDesc.
+        const myAttrs = new Set(node.getAttributeNames());
+        const rivalAttributes = new Set(rival.getAttributeNames());
+        for (const rawName of rivalAttributes) {
+            const value = rival.getAttribute(rawName);
+            if (myAttrs.has(rawName) && node.getAttribute(rawName) === value) {
+                continue;
+            }
+            const suffix = myAttrs.has(rawName) ? 'Change' : 'Mount';
+            this.patchDirectives(rival, rawName, suffix);
+            this.patch(node, 'setAttribute', rawName, value);
+        }
+
+        for (const rawName of myAttrs) {
+            if (!rivalAttributes.has(rawName)) {
+                this.patchDirectives(node, rawName, 'Unmount');
+                this.patch(node, 'removeAttribute', rawName);
+            }
+        }
+    }
+
+    patchAndDescendants(parentNode, actionSuffix) {
+        if (parentNode.nodeType !== 1) { // cannot have descendents
             return;
         }
+        const nodes = Array.from(parentNode.querySelectorAll('*'));
+        nodes.push(parentNode); // always patch self, last
+        for (const node of nodes) {
+            for (const rawName of node.getAttributeNames()) {
+                // Loop through each attribute patching directives as necessary
+                this.patchDirectives(node, rawName, actionSuffix);
+            }
+            // const mountAction = 'component' + actionSuffix;
+            //this.patch(this.element, mountAction);
+        }
+    }
+
+    reconcile(element, newHTML, skipLegacy=false) {
+        const {makeDiv} = Modulo.utils;
+        this.patches = [];
+        this.element = element; // element ctx
+        this.reconcileChildren(this.element, makeDiv(newHTML));
+        if (!this.element.isMounted) {
+            this.patchAndDescendants(this.element, 'Mount'); // do all mounts
+        }
+        //console.log('this is patches', this.patches);
+
+        if (skipLegacy) {
+            return;
+        }
+
+        element.innerHTML = newHTML;
+        const directives = [];
         for (const child of element.children) {
-            Modulo.collectDirectives(this.elemCtx, child, directives);
+            Modulo.collectDirectives(element, child, directives);
         }
-        this.elemCtx.applyDirectives(directives);
-    }
-
-    /**
-    * @private
-    * @description
-    * Updates a specific htmlNode and does whatever it takes to convert it to
-      another one.
-    *
-    * @param {Node} oldNode - The previous HTMLNode.
-    * @param {Node} newNode - The updated HTMLNode.
-    */
-    setNode(oldNode, newNode) {
-        if (oldNode.nodeType !== newNode.nodeType ||
-                oldNode.nodeName !== newNode.nodeName) {
-            // We have to fully replace the node --- the tag/type doesn't match
-            //this.dismount(oldNode);
-            oldNode.parentNode.replaceChild(newNode, oldNode)
-            this.mount(newNode);
-        } else if (oldNode.nodeType !== 1) { // 1 === ELEMENT_TYPE
-            // Handle other types of node updates (text/comments/etc).
-            // TODO: Is this if statement even a useful optimization..?
-            //if (oldNode.nodeValue !== newNode.nodeValue) {
-            //}
-            oldNode.nodeValue = newNode.nodeValue;
-        } else if (!this.isEqualNode(oldNode, newNode)) {
-            // Update children & attributes
-            this.setChildNodes(oldNode, newNode);
-            this.setAttributes(oldNode.attributes, newNode.attributes);
-            // TODO: do dismounts as necessary
-        }
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility that will update one list of attributes to match another.
-    *
-    * @param {NamedNodeMap} oldAttributes - The previous attributes.
-    * @param {NamedNodeMap} newAttributes - The updated attributes.
-    */
-    setAttributes (oldAttributes, newAttributes) {
-      let i, a, b, ns, name
-
-      // Remove old attributes.
-      for (i = oldAttributes.length; i--;) {
-        a = oldAttributes[i]
-        ns = a.namespaceURI
-        name = a.localName
-        b = newAttributes.getNamedItemNS(ns, name)
-        if (!b) oldAttributes.removeNamedItemNS(ns, name)
-      }
-
-      // Set new attributes.
-      for (i = newAttributes.length; i--;) {
-        a = newAttributes[i]
-        ns = a.namespaceURI
-        name = a.localName
-        b = oldAttributes.getNamedItemNS(ns, name)
-        if (!b) {
-          // Add a new attribute.
-          newAttributes.removeNamedItemNS(ns, name)
-          oldAttributes.setNamedItemNS(a)
-        } else if (b.value !== a.value) {
-          // Update existing attribute.
-          b.value = a.value
-        }
-      }
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility that will nodes childern to match another nodes children.
-    *
-    * @param {Node} oldParent - The existing parent node.
-    * @param {Node} newParent - The new parent node.
-    */
-    setChildNodes (oldParent, newParent) {
-      const keyedNodes = {};
-      let checkOld, oldKey, checkNew, newKey, foundNode
-      let oldNode = oldParent.firstChild
-      let newNode = newParent.firstChild
-      let extra = 0
-
-      // Extract keyed nodes from previous children and keep track of total
-      // count.
-      while (oldNode) {
-          extra++
-          checkOld = oldNode
-          oldKey = this.getKey(checkOld)
-          oldNode = oldNode.nextSibling
-          if (oldKey) {
-              keyedNodes[oldKey] = checkOld
-          }
-      }
-
-      // Loop over new nodes and perform updates.
-      oldNode = oldParent.firstChild
-      while (newNode) {
-          extra--
-          checkNew = newNode
-          newNode = newNode.nextSibling
-
-          const newKey = this.getKey(checkNew);
-          const foundNode = newKey ? keyedNodes[newKey] : null;
-          if (foundNode) {
-              delete keyedNodes[newKey]
-              // If we have a key and it existed before we move the previous
-              // node to the new position if needed and diff it.
-              if (foundNode !== oldNode) {
-                  oldParent.insertBefore(foundNode, oldNode)
-              } else {
-                  oldNode = oldNode.nextSibling
-              }
-
-              this.setNode(foundNode, checkNew)
-          } else if (oldNode) {
-              checkOld = oldNode
-              oldNode = oldNode.nextSibling
-              if (this.getKey(checkOld)) {
-                  // If the old child had a key we skip over it until the end.
-                  oldParent.insertBefore(checkNew, checkOld)
-                  this.mount(checkNew)
-              } else {
-                  // Otherwise we diff the two non-keyed nodes.
-                  this.setNode(checkOld, checkNew)
-              }
-          } else {
-              // Finally if there was no old node we add the new node.
-              oldParent.appendChild(checkNew)
-              if (checkNew.nodeType === 1) { // 1 === ELEMENT_TYPE
-                  this.mount(checkNew)
-              }
-          }
-      }
-
-      // Remove old keyed nodes.
-      for (oldKey in keyedNodes) {
-        extra--
-        oldParent.removeChild(this.dismount(keyedNodes[oldKey]))
-      }
-
-      // If we have any remaining unkeyed nodes remove them from the end.
-      while (--extra >= 0) {
-        oldParent.removeChild(this.dismount(oldParent.lastChild))
-      }
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility to try to pull a key out of an element.
-    * Uses 'data-key' if possible and falls back to 'id'.
-    *
-    * @param {Node} node - The node to get the key for.
-    * @return {string|void}
-    */
-    getKey (node) {
-      if (node.nodeType !== 1) return // 1 === ELEMENT_TYPE
-      let key = node.getAttribute(this.KEY) || node.id
-      if (key) return this.KEY_PREFIX + key
-    }
-
-    /**
-    * Checks if nodes are equal using the following by checking if
-    * they are both ignored, have the same checksum, or have the
-    * same contents.
-    *
-    * @param {Node} a - One of the nodes to compare.
-    * @param {Node} b - Another node to compare.
-    */
-    isEqualNode (a, b) {
-      return (
-        // Check if both nodes are ignored.
-        (this.isIgnored(a) && this.isIgnored(b)) ||
-        // Check if both nodes have the same checksum.
-        (this.getCheckSum(a) === this.getCheckSum(b)) ||
-        // Fall back to native isEqualNode check.
-        a.isEqualNode(b)
-      )
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility to try to pull a checksum attribute from an element.
-    * Uses 'data-checksum' or user specified checksum property.
-    *
-    * @param {Node} node - The node to get the checksum for.
-    * @return {string|NaN}
-    */
-    getCheckSum (node) {
-      return node.getAttribute(this.CHECKSUM) || NaN
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility to try to check if an element should be ignored by the algorithm.
-    * Uses 'data-ignore' or user specified ignore property.
-    *
-    * @param {Node} node - The node to check if it should be ignored.
-    * @return {boolean}
-    */
-    isIgnored (node) {
-      return node.getAttribute(this.IGNORE) != null
-    }
-
-    mount (node) {
-        this.findAndApplyDirectives(node);
-        return node;
-    }
-    dismount(node) {
-        return node;
+        element.applyDirectives(directives);
     }
 }
-// /setDOM ------------------
-
 
 Modulo.utils = class utils {
     static simplifyResolvedLiterals(attrs) {
@@ -1791,13 +1757,20 @@ Modulo.CommandMenu = class CommandMenu {
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
     test() {
-        //console.table(this.targeted);
-        const discovered = [];
+        let discovered = [];
+        let soloMode = false;
         for (const factory of Object.values(Modulo.factoryInstances)) {
             if (factory.baseRenderObj.testsuite) {
+                if ('solo' in factory.baseRenderObj.testsuite.options) {
+                    soloMode = true;
+                }
                 discovered.push([factory, factory.baseRenderObj.testsuite]);
             }
         }
+        if (soloMode) {
+            discovered = discovered.filter(([fac, {options}]) => 'solo' in options);
+        }
+
         if (discovered.length === 0) {
             console.warn('WARNING: No test suites discovered')
         }
@@ -1824,6 +1797,7 @@ Modulo.CommandMenu = class CommandMenu {
         if (!failure) {
             console.log('OK', success, 'tests passed');
         } else {
+            console.log('SUCCESSES:', success, 'tests passed');
             console.log('FAILURE', failure, 'tests failed:', failedComponents);
         }
     }
