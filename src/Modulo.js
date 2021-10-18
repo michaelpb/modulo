@@ -554,24 +554,30 @@ Modulo.directiveShortcuts = [[/^@/, 'component.event'],
 Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         const {engine = 'ModRec'} = this.options;
-        this.reconciler = new Modulo.reconcilers[engine]();
+        this.reconciler = new Modulo.reconcilers[engine]({makePatchSet: true});
     }
 
     prepareCallback() {
-        return { innerHTML: null };
+        return { innerHTML: null, patches: null };
     }
 
     updateCallback(renderObj) {
-        // TODO: Add code here to check for reattach children
-        if (renderObj.component.innerHTML !== null) {
-            let newContents = renderObj.component.innerHTML || '';
-            // TODO: move reconcile to this class
-            //console.log('element reconcile:', this.element, newContents);
-            this.reconciler.reconcile(this.element, newContents);
+        let { innerHTML, patches } = renderObj.component;
+        if (innerHTML !== null) {
+            patches = this.reconciler.reconcile(this.element, innerHTML || '',
+            /*{
+              'head': head =>...
+            }*/
+            );
         }
+        return { patches };
     }
 
     updatedCallback(renderObj) {
+        const { patches } = renderObj.component;
+        if (patches) {
+            this.reconciler.applyPatches(patches);
+        }
         if (!this.element.isMounted) { // First time initialized
             const mode = this.attrs ? (this.attrs.mode || 'default') : 'default';
             if (mode === 'vanish' || mode === 'vanish-allow-script') {
@@ -1153,7 +1159,25 @@ Modulo.templating.defaultOptions.tags = {
 
 Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor(opts) {
+        // Discontinue this?
         this.shouldNotApplyPatches = opts && opts.makePatchSet;
+    }
+
+    reconcile(element, rivalHTML, tagTransforms) {
+        // Note: Always attempts to reconcile (even on first mount), in case
+        // it's been pre-rendered
+        this.patches = [];
+        this.element = element; // element context
+        this.tagTransforms = tagTransforms || {}; // Used for rewrites eg {'x-Btn': 'a7e4f-Btn'}
+        this.reconcileChildren(this.element, Modulo.utils.makeDiv(rivalHTML));
+        if (!this.shouldNotApplyPatches) {
+            this.applyPatches(this.patches);
+        }
+        return this.patches;
+    }
+
+    applyPatches(patches) {
+        patches.forEach(patch => this.applyPatch.apply(this, patch));
     }
 
     reconcileChildren(node, rivalParent) {
@@ -1161,7 +1185,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
         // TODO: NOTE: Currently does not respect ANY resolver directives,
         // including key=
-        let child = node.firstChild || null;
+        let child = node.firstChild;
         let rival = rivalParent.firstChild;
         while (child || rival) {
             // Does this node to be swapped out? Swap if exist but mismatched
@@ -1175,13 +1199,13 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                 this.patch(node, 'removeChild', child);
             }
 
-            if (!child || needReplace) { // we have less than rival, take rival
-                //this.patch(node, 'insertBefore', rival, child);
-                if (needReplace) {
-                    this.patch(node, 'insertBefore', rival, child.nextSibling);
-                } else {
-                    this.patch(node, 'appendChild', rival);
-                }
+            if (needReplace) {
+                this.patch(node, 'insertBefore', rival, child.nextSibling);
+                this.patchAndDescendants(rival, 'Mount');
+            }
+
+            if (!child) { // we have less than rival, take rival
+                this.patch(node, 'appendChild', rival);
                 this.patchAndDescendants(rival, 'Mount');
             }
 
@@ -1213,11 +1237,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         } else {
             node[method].call(node, arg); // invoke method
         }
-    }
-
-    applyPatches() {
-          // DEAD CODE
-        return this.patches.map(patch => this.applyPatch.apply(this, patch));
     }
 
     patchDirectives(elem, rawName, suffix) {
@@ -1261,21 +1280,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                 // Loop through each attribute patching directives as necessary
                 this.patchDirectives(node, rawName, actionSuffix);
             }
-            // const mountAction = 'component' + actionSuffix;
-            //this.patch(this.element, mountAction);
-        }
-    }
 
-    reconcile(element, newHTML) {
-        // Note: Always attempts to reconcile (even on first mount), in case
-        // it's been pre-rendered
-        const { makeDiv } = Modulo.utils;
-        const stuffystuff = makeDiv(element.innerHTML).innerHTML;
-        this.patches = [];
-        this.element = element; // element ctx
-        this.reconcileChildren(this.element, makeDiv(newHTML));
-        if (!this.shouldNotApplyPatches) {
-            this.patches.forEach(patch => this.applyPatch.apply(this, patch));
+            // For now, the callbacks will just be functions
+            //if (tag in this.tagTransforms) { // TODO: this doesnt work... should think directives?
+            //this.patch(this.element, 'tagTransform', this.tagTransform[tag]);
+            //}
         }
     }
 

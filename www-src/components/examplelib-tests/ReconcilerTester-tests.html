@@ -14,7 +14,7 @@
             const {makeDiv} = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
             const modRec = new ModRec({makePatchSet: true});
-            modRec.reconcile(mockElement, newHTML, true); // skip old
+            modRec.reconcile(mockElement, newHTML);
             return modRec.patches;
         };
 
@@ -27,7 +27,7 @@
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
             //const modRec = new ModRec({makePatchSet: true});
             const modRec = new ModRec({makePatchSet: false});
-            modRec.reconcile(mockElement, newHTML, true); // skip old
+            modRec.reconcile(mockElement, newHTML);
 
             let dirCount;
             if (expectedDirCount !== undefined) {
@@ -64,10 +64,12 @@
         Modulo.utils.patchStringify = function patchStringify (patch)  {
             const [node, method, arg1] = patch;
             return `<${node.nodeType} ${node.nodeName}> ${method}("${arg1}") </${node.nodeType}>`
-        }
+        };
+
         Modulo.utils.pToString = function patchStringify (patches)  {
             return patches.map(Modulo.utils.patchStringify).join('\n')
-        }
+        };
+
         Modulo.utils.anchorInTheDeep = function anchorITD (html)  {
             return `
                 <div>
@@ -78,7 +80,7 @@
                     <footer><a href="#">${html}</a></footer>
                 </div>
             `;
-        }
+        };
 
         const {ModRec} = Modulo.reconcilers;
         assert: ModRec
@@ -310,7 +312,7 @@
 
         const mockElement = makeMockElement(anchorInTheDeep(''));
         const modRec = new ModRec({makePatchSet: true});
-        modRec.reconcile(mockElement, element.targetStr2, true); // skip old
+        modRec.reconcile(mockElement, element.targetStr2);
         element.patches2 = modRec.patches;
         element.mockElement = modRec.element; // ensure has element interface
         // Should be length 1 since it's 1 node and has no directives
@@ -419,7 +421,6 @@
         );
     </script>
 
-
     <script name="Removes old directives">
         const {transformDOMCheck} = Modulo.utils;
         assert: transformDOMCheck(
@@ -480,7 +481,6 @@
               0,
         );
     </script>
-
 
     <script name="Complicated complete replacement (from memory demo)">
         const {transformDOMCheck} = Modulo.utils;
