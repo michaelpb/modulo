@@ -371,21 +371,16 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     // ## ComponentFactory: createClass
     // Finally, we are ready to create the class that the browser will use to
-    // actually instantiate each Component. At this stage, we set up the
-    // reconciliation engine, since that's a component-wide option, create a
-    // "back reference" to the factory from the component, and then return a
-    // brand-new class definition.
+    // actually instantiate each Component.
+    // We create a "back reference" to the factory from the component, and then
+    // reconciliation engine, since that's a component-wide option, 
     createClass() {
         const {fullName} = this;
-        const {reconciliationEngine = 'ModRec'} = this.options;
-        const engine = new Modulo.reconcilers[reconciliationEngine]();
-        const func = (component, html) => engine.reconcile(component, html);
         return class CustomElement extends Modulo.Element {
             get factory() {
                 /* Gets current registered component factory (for hot-reloading) */
                 return Modulo.factoryInstances[fullName];
             }
-            get reconcile() { return func; }
         };
     }
 
@@ -467,17 +462,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
 
         this.originalHTML = this.innerHTML;
-        this.originalChildren = [];
-        //console.log('originalChildren!', this.originalChildren);
-        //console.log('originalInnerHTML!', this.innerHTML);
-        if (this.hasChildNodes()) {
-            const dupedChildren = Array.from(this.childNodes); // necessary
-            for (const child of dupedChildren) {
-                //this.originalChildren.push(this.removeChild(child)); // TODO: should i remove children?
-                this.originalChildren.push(child);
-            }
-            //console.log('originalChildren has child nodes!', this.originalChildren);
-        }
+        this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
         this.fullName = this.factory.fullName;
         this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
     }
@@ -486,43 +471,15 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.factory.buildCParts(this);
     }
 
-    applyDirectives(directives) {
-        for (const args of directives) {
-            const {setUp, tearDown, el, rawName, hasRun, value} = args;
-            if (!setUp) {
-                console.error('TMP Skipping:', rawName, value);
-                continue;
-            }
-            args.element = this; // TODO fix this with truly predictable context
-            if (hasRun) {
-                if (!tearDown) {
-                    console.error('TMP NO TEAR DOWN ERR:', rawName);
-                }
-                tearDown(args);
-            }
-            args.hasRun = true;
-            setUp(args);
-            /*
-            if (setUp) {
-                el.onload = setUp.bind(thisContext, [args]);
-            }
-            if (tearDown) {
-                el.onunload = tearDown.bind(thisContext, [args]);
-            }
-            */
-        }
-    }
-
     directiveMount(args) {
-        // TODO: Add a check to make sure that at least one of Mount, Unmount
-        // or Change exists
-        this._invokeCallback(args.dName, 'Mount', args);
+        // TODO: Add a check to ensure one of Mount, Unmount or Change exists
+        this._invokeCPart(args.dName, 'Mount', args);
     }
     directiveUnmount(args) {
-        this._invokeCallback(args.dName, 'Unmount', args);
+        this._invokeCPart(args.dName, 'Unmount', args);
     }
     directiveChange(args) {
-        this._invokeCallback(args.dName, 'Change', args);
+        this._invokeCPart(args.dName, 'Change', args);
     }
 
     rerender() {
@@ -530,41 +487,39 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     lifecycle(lifecycleNames, rObj={}) {
-        // NEW CODE: This is a quick re-implementation of lifecycle
         this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
-        // todo: maybe sort cparts ahead of time based on lifecycles?
-        for (const lcName of lifecycleNames) {
-            for (const [cPartName, cPart] of Object.entries(this.cparts)) {
-                const method = cPart[lcName + 'Callback'];
-                if (method) {
-                    const results = method.call(cPart, this.renderObj);
-                    if (results) {
-                        this.renderObj[cPartName] = results;
-                    }
-                }
+        for (const lc of lifecycleNames) {
+            for (const cName of Object.keys(this.cparts)) {
+                this._invokeCPart(cName, lc + 'Callback');
             }
         }
-        /* TODO: should probably be nulling this after */
-        //this.renderObj = null; // rendering is over, set to null
+        //this.renderObj = null; // ?rendering is over, set to null
     }
 
     getCurrentRenderObj() {
-        //console.log('this is initRenderObj', this.initRenderObj);
-        //console.log('this is renderObj', this.renderObj);
-        //console.log('this is eventRenderObj', this.eventRenderObj);
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
-    _invokeCallback(key, suffix, arg1) {
-        const result = this.resolveValue(key + suffix);
-        if (result) {
-            const thisContext = this.resolveValue(key.slice(0, key.lastIndexOf('.')));
-            result.call(thisContext, arg1);
+    _invokeCPart(cpartName, methodName, useArg) {
+        const argument = useArg || this.renderObj;
+        const splitKey = cpartName.split('.');
+        if (splitKey.length === 2) {         // "state.bind"
+            cpartName = splitKey[0];         // "state.
+            methodName = splitKey[1] + methodName; // .bindMount"
         }
+        const method = this.cparts[cpartName][methodName];
+        let result;
+        if (method) {
+            result = method.call(this.cparts[cpartName], argument);
+        }
+        if (!useArg && result) {
+            this.renderObj[cpartName] = result;
+        }
+        return result;
     }
 
     resolveValue(key) {
-        // TODO: RM, Only used in 2 spots (above, and eventMount)
+        // TODO: RM, Only used in 1 spots (resolveMount)
         //const hackName = this.factory.name;
         //console.log(`   ${hackName} -- GET   ${key}`, rObj);
         //console.log(`   ${hackName} -- VALUE ${key} <<${result}>>`);
@@ -593,78 +548,17 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 }
 
-// IDEA (2021-10-05): Call Collect directives during "update" phase, and return
-// a trimmed version of its structure in the component CPart data in renderObj.
-// Then call applyDirectives in the "updated" phase.  This is what the
-// documentation says happens (IRL, right now both happen in "update")
-Modulo.collectDirectives = function collectDirectives(component, el, arr) {
-    if (!arr) {
-        arr = []; // HACK for testability
-    }
-    const element = component;
-
-    for (const rawName of el.getAttributeNames()) {
-        // todo: optimize skipping most elements or attributes, e.g. "if
-        // alpha and dashes, skip"
-        let name = rawName;
-
-        // Skip: This element and descendants should be ignored
-        if (rawName === 'modulo-ignore') {
-            //console.log('skipping over', el);
-            return;
-        }
-
-        for (const [regexp, dName] of Modulo.directiveShortcuts) {
-            if (rawName.match(regexp)) {
-                name = `[${dName}]` + name.replace(regexp, '');
-            }
-        }
-        if (!name.startsWith('[')) {
-            continue; // There are no directives, skip
-        }
-
-        const value = el.getAttribute(rawName);
-        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
-        for (const dName of name.split(']').map(cleanWord)) {
-            if (dName === attrName) {
-                continue; // Skip bare name
-            }
-            const resolve = suffix => component.resolveValue(dName + suffix);
-            const onMount = resolve('Mount');
-            const onChange = resolve('Change');
-            const onUnmount = resolve('Unmount');
-            //console.log('dName', dName, attrName, component);
-            if (dName !== 'script.codemirror') { // TODO HACK UGH NO
-                Modulo.assert(onMount || onUnmount || onChange, `Unknown directive "${dName}" `, el);
-            }
-            const args = {el, value, attrName, rawName, onMount, onUnmount, dName, element};
-            // TODO RM ALL THIS dead cdoe
-            Object.assign(args, {setUp: onMount, tearDown: onUnmount});
-            arr.push(args)
-        }
-    }
-    for (const child of el.children) {
-        // tail recursion into children
-        Modulo.collectDirectives(component, child, arr);
-    }
-    return arr; // HACK for testability
-}
-
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.resolve'] ];
 
 Modulo.cparts.component = class Component extends Modulo.ComponentPart {
+    initializedCallback(renderObj) {
+        const {engine = 'ModRec'} = this.options;
+        this.reconciler = new Modulo.reconcilers[engine]();
+    }
+
     prepareCallback() {
-        return {
-            innerHTML: null,
-            // TODO shouldn't have to do this ---v
-            eventMount: this.eventMount.bind(this),
-            eventUnmount: this.eventUnmount.bind(this),
-            resolveMount: this.resolveMount.bind(this),
-            resolveUnmount: this.resolveUnmount.bind(this),
-            childrenMount: this.childrenMount.bind(this),
-            childrenUnmount: this.childrenUnmount.bind(this),
-        };
+        return { innerHTML: null };
     }
 
     updateCallback(renderObj) {
@@ -673,24 +567,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
             let newContents = renderObj.component.innerHTML || '';
             // TODO: move reconcile to this class
             //console.log('element reconcile:', this.element, newContents);
-            this.element.reconcile(this.element, newContents);
-
-            if (newContents.includes('Shop')) {
-                // TODO: extremely broken hack, remove after new reconciler is
-                // developed
-                if (this.directives) {
-                    this.directives.forEach(args => {
-                        if (args.tearDown) {
-                            args.tearDown(args)
-                        }
-                    });
-                }
-                this.directives = [];
-                for (const child of this.element.children) {
-                    Modulo.collectDirectives(this.element, child, this.directives);
-                }
-                this.element.applyDirectives(this.directives);
-            }
+            this.reconciler.reconcile(this.element, newContents);
         }
     }
 
@@ -711,25 +588,6 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
                     }
                 }
 
-                // TODO: finish this hack
-                // Hack to prevent nondeterministic bug with exact ordering,
-                // remove after finishing correct mounting / dom resolution
-                // ordering
-                const nodes = Array.from(this.element.querySelectorAll('*'));
-                if (nodes.length > 0) {
-                    for (const elem of nodes) {
-                        if (typeof elem === 'string') {
-                            continue;
-                        }
-                        const attrs = Modulo.utils.parseAttrs(elem);
-                        for (const name of elem.getAttributeNames()) {
-                            if (name === '[component.children]') {
-                                elem.innerHTML = this.element.originalHTML;
-                            }
-                        }
-                    }
-                }
-
                 this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
@@ -745,9 +603,7 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
 
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
-        //console.log('getting childrenMount', this.element);
         el.append(...this.element.originalChildren);
-        //this.element.originalChildren = [];
     }
 
     childrenUnmount() {
@@ -818,147 +674,10 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
-    static stateInit(cpart, element, initData) {
-        element.cparts.state.eventCallback();
-        Object.assign(element.cparts.state.data, initData);
-        element.cparts.state.eventCleanupCallback();
-    }
-
-    static propsInit(cpart, element, initData) {
-        element.initRenderObj.props = initData;
-    }
-
-    static templateAssertion(cpart, element, stepConf) {
-        const {makeDiv, normalize} = Modulo.utils;
-        const _process = 'testWhitespace' in stepConf ? s => s : normalize;
-        const text1 = _process(cpart.instance.render(stepConf));
-
-        if ('testValues' in stepConf) {
-            for (const input of element.querySelectorAll('input')) {
-                input.setAttribute('value', input.value);
-            }
-        }
-
-        const text2 = _process(element.innerHTML);
-        let verb = '---(IS NOT)---';
-        let result = true;
-        if ('stringCount' in stepConf) {
-            const count = Number(stepConf.stringCount);
-            // Splitting is a fast way to check count
-            const realCount = text2.split(text1).length - 1;
-            if (count !== realCount) {
-                verb = `=== FOUND BELOW ${realCount} ` +
-                        `TIMES (${count} expected) ===`;
-                result = false;
-            }
-        } else {
-            result = makeDiv(text1).isEqualNode(makeDiv(text2));
-        }
-        return [result, `${text1}\n${verb}\n${text2}\n`];
-    }
-
-    static scriptAssertion(cpart, element, stepConf, data) {
-        // Apply assert and event macros:
-        let assertionText, result;
-        // Idea for assert macro: Take expression and put it in an eval, with
-        // try/catch and variable dumping
-        const assertRe = /^\s*assert:\s*(.+)\s*$/m;
-        const isAssertion = assertRe.test(data.content);
-        let content = data.content;
-        if (isAssertion) {
-            assertionText = content.match(assertRe)[1];
-            content = content.replace(assertRe, 'return $1');
-        }
-        const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
-        content = content.replace(eventRe, `
-            if (!element.querySelector('$2')) {
-                throw new Error('Event target not found: $2');
-            }
-            element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
-        `);
-        const extra = {element, Modulo, document: Modulo.document}
-        const vars = Object.assign(element.getCurrentRenderObj(), extra);
-        const func = new Function(Object.keys(vars).join(','), content);
-        try {
-            result = func.apply(null, Object.values(vars));
-        } catch (err) {
-            return [false, `Error occured: ${err}`]
-        }
-        if (!isAssertion) {
-            return [undefined, undefined];
-        }
-        return [result, `${assertionText}\n--(YIELDED)-->\n${result}\n`];
-    }
-
-    static doTestStep(element, sName, data) {
-        const {testsuite} = Modulo.cparts;
-        const options = {content: data.content, options: data};
-        const stepConf = data.options;
-        const isInit = (sName + 'Init') in testsuite;
-        const assertionMethod = testsuite[sName + 'Assertion'];
-        let cpart = null;
-        if (sName === 'template' || isInit) {
-            cpart = new Modulo.cparts[sName](element, options);
-        }
-        if (isInit) {
-            const initData = cpart.initializedCallback({[sName]: data});
-            testsuite[sName + 'Init'](cpart, element, initData);
-            return null;
-        } else if (!assertionMethod) {
-            throw new Error('Could not find', sName);
-        }
-
-        if (!('skipRerender' in stepConf)) {
-            // ensure re-rendered before running script
-            element.factory.doTestRerender(element);
-        }
-        const [result, message] = assertionMethod(cpart, element, stepConf, data);
-        if (result) {
-            return true;
-        } else if (result === false) {
-            const msgAttrs = stepConf.name ? ` name="${stepConf.name}"` : '';
-            console.log(`ASSERTION <${sName}${msgAttrs}> FAILED:\n${message}`);
-            return false;
-        }
-        return null;
-    }
-
-    static runTests(options, factory) {
-        const {content} = options;
-        const {testsuite} = Modulo.cparts;
-
-        let total = 0;
-        let failure = 0;
-
-        for (const testNode of Modulo.utils.makeDiv(content).children) {
-            const element = factory.createTestElement();
-            // Could be implied first test?
-            Modulo.assert(element.isMounted, 'Successfully mounted element');
-            const [testName, stepArray] = factory.loader.loadFromDOMElement(testNode, []);
-            console.group('[%]', '         ? TEST', testName);
-            Modulo.isTest = testName; // useful in tests, maybe remove, or document
-            let testTotal = 0;
-            let testFailed = 0;
-            for (let [sName, data] of stepArray) {
-                const result = testsuite.doTestStep(element, sName, data);
-                if (result !== null) {
-                    testTotal++;
-                    total++;
-                }
-                if (result === false) {
-                    testFailed++;
-                    failure++;
-                }
-            }
-            const isOk = testFailed ? 'FAILURE' : 'OK     ';
-            const successes = testTotal - testFailed;
-            console.groupEnd();
-            console.log(`[%]  ${isOk} - ${testName} (${successes}/${testTotal})`);
-        }
-        return [total - failure, failure];
+    static factoryCallback() {
+        console.count('Ignored test-suite');
     }
 }
-
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
@@ -1163,10 +882,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         if (!this.data) {
             this.data = Modulo.utils.simplifyResolvedLiterals(this.rawDefaults);
         }
-
-        // TODO ---v delete these
-        this.data.bindMount = this.bindMount.bind(this);// Ugh hack
-        this.data.bindUnmount = this.bindUnmount.bind(this);// Ugh hack
         return this.data;
     }
 
@@ -1198,7 +913,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     reloadCallback(oldPart) {
-        // Used for hot-reloading: Merge data with oldPart's data
+        // DEAD CODE: Used for hot-reloading: Merge data with oldPart's data
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
@@ -1338,6 +1053,8 @@ Modulo.templating.defaultOptions.modes = {
 };
 
 Modulo.templating.defaultOptions.filters = (function () {
+    // TODO: Replace jsobj with actual loop in build template (and just
+    // backtick escape as filter)
     function jsobj(obj, arg) {
         let s = '{\n';
         for (const [key, value] of Object.entries(obj)) {
@@ -1513,9 +1230,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     reconcileAttributes(node, rival) {
-        // TODO: Can this get refactored with patchAndDesc?
-        // Here's how:
-        // Use reconcileChildren(rival, rival) instead of patch & descdendents
         const myAttrs = new Set(node.getAttributeNames());
         const rivalAttributes = new Set(rival.getAttributeNames());
         for (const rawName of rivalAttributes) {
@@ -1552,7 +1266,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
     }
 
-    reconcile(element, newHTML, skipLegacy=false) {
+    reconcile(element, newHTML) {
         // Note: Always attempts to reconcile (even on first mount), in case
         // it's been pre-rendered
         const { makeDiv } = Modulo.utils;
@@ -1563,40 +1277,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (!this.shouldNotApplyPatches) {
             this.patches.forEach(patch => this.applyPatch.apply(this, patch));
         }
-
-        /*
-        const {normalize} = Modulo.utils;
-        if (Modulo.isTest === 'renders board and handles flips') {
-            console.log('INPUT          ', normalize(stuffystuff));
-            console.log('OUTPUT(desired)', normalize(makeDiv(newHTML).innerHTML));
-            console.log('OUTPUT(actual) ', normalize(element.innerHTML));
-            element.innerHTML = newHTML;
-        } else {
-        }
-        */
-        if (skipLegacy) {
-            return;
-        }
-        return;
-        //console.log('this is patches', this.patches);
-
-        /*
-        if (Modulo.isTest === 'Renders with different numbers') {
-            console.log('INPUT          ', normalize(stuffystuff));
-            console.log('OUTPUT(desired)', normalize(makeDiv(newHTML).innerHTML));
-            console.log('OUTPUT(actual) ', normalize(element.innerHTML));
-            element.innerHTML = newHTML;
-        } else {
-            // legacy -v
-            element.innerHTML = newHTML;
-        }
-        */
-        element.innerHTML = newHTML;
-        const directives = [];
-        for (const child of element.children) {
-            Modulo.collectDirectives(element, child, directives);
-        }
-        element.applyDirectives(directives);
     }
 
     parseDirectives(element, el, rawName) {
@@ -1628,22 +1308,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 }
 
-/*
-//const args = {el, value, attrName, rawName, dName, element};
-// Extract Mount, Change, and Unmount callbacks
-//args.onChange = element.resolveValue(dName + 'Change');
-//args.onMount = element.resolveValue(dName + 'Mount');
-//args.onUnmount = element.resolveValue(dName + 'Unmount');
-//Modulo.assert(args.onMount, `Directive not found: "${dName}" `, el);
-//arr.push(args)
-*/
-/*
-// Extract Mount, Change, and Unmount callbacks
-for (const callbackSuffix of ['Mount', 'Change', 'Unmount']) {
-    const func = element.resolveValue(dName + callbackSuffix);
-    args['on' + callbackSuffix] = func;
-}
-*/
 
 Modulo.utils = class utils {
     static simplifyResolvedLiterals(attrs) {
@@ -1807,51 +1471,6 @@ Modulo.CommandMenu = class CommandMenu {
             this.targeted = [];
         }
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
-    }
-    test() {
-        let discovered = [];
-        let soloMode = false;
-        for (const factory of Object.values(Modulo.factoryInstances)) {
-            if (factory.baseRenderObj.testsuite) {
-                if ('solo' in factory.baseRenderObj.testsuite.options) {
-                    soloMode = true;
-                }
-                discovered.push([factory, factory.baseRenderObj.testsuite]);
-            }
-        }
-        if (soloMode) {
-            discovered = discovered.filter(([fac, {options}]) => 'solo' in options);
-        }
-
-        if (discovered.length === 0) {
-            console.warn('WARNING: No test suites discovered')
-        }
-        console.log(['%'], discovered.length + ' test suites found');
-        const {runTests} = Modulo.cparts.testsuite;
-        let success = 0;
-        let failure = 0;
-        const failedComponents = [];
-        for (const [factory, testsuite] of discovered) {
-            const info = ' ' + (testsuite.name || '');
-            console.group('[%]', 'TestSuite: ' + factory.fullName + info);
-            const [successes, failures] = runTests(testsuite, factory)
-            console.groupEnd();
-            if (failures) {
-                failedComponents.push(factory.fullName);
-            }
-            success += successes;
-            failure += failures;
-            if (!successes) {
-                console.log('FAILURE: No successful assertions.');
-                failure++;
-            }
-        }
-        if (!failure) {
-            console.log('OK', success, 'tests passed');
-        } else {
-            console.log('SUCCESSES:', success, 'tests passed');
-            console.log('FAILURE', failure, 'tests failed:', failedComponents);
-        }
     }
     build() {
         const {document, console} = Modulo.globals;

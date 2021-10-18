@@ -1,5 +1,10 @@
+// First, require baseModulo
 const baseModulo = require('./BaseModulo');
+// Then bring in CommandMenu & TestSuite
 const CommandMenuNode = require('./CommandMenuNode');
+const TestSuite = require('../../src/TestSuite.js');
+
+// Get test suite functions
 const fs = require('fs');
 const pathlib = require('path');
 const {JSDOM} = require('jsdom');
@@ -148,6 +153,7 @@ class ModuloNode {
         m.globals.HTMLElement.prototype.hasChildNodes = a => false; // HACK
         m.ComponentFactory = ComponentFactoryNode;
         m.CommandMenu = CommandMenuNode;
+        m.cparts.testsuite = TestSuite;
 
         //const element = new this.element.factory.createTestElement();
         let {inputFile, outputFile} = (config || {});

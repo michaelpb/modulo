@@ -526,6 +526,51 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         }
     }
 
+    test(config, modulo, isSrcServe=false) {
+        let discovered = [];
+        let soloMode = false;
+        for (const factory of Object.values(modulo.factoryInstances)) {
+            if (factory.baseRenderObj.testsuite) {
+                if ('solo' in factory.baseRenderObj.testsuite.options) {
+                    soloMode = true;
+                }
+                discovered.push([factory, factory.baseRenderObj.testsuite]);
+            }
+        }
+        if (soloMode) {
+            discovered = discovered.filter(([fac, {options}]) => 'solo' in options);
+        }
+
+        if (discovered.length === 0) {
+            console.warn('WARNING: No test suites discovered')
+        }
+        console.log(['%'], discovered.length + ' test suites found');
+        const {runTests} = modulo.cparts.testsuite;
+        let success = 0;
+        let failure = 0;
+        const failedComponents = [];
+        for (const [factory, testsuite] of discovered) {
+            const info = ' ' + (testsuite.name || '');
+            console.group('[%]', 'TestSuite: ' + factory.fullName + info);
+            const [successes, failures] = runTests(testsuite, factory)
+            console.groupEnd();
+            if (failures) {
+                failedComponents.push(factory.fullName);
+            }
+            success += successes;
+            failure += failures;
+            if (!successes) {
+                console.log('FAILURE: No successful assertions.');
+                failure++;
+            }
+        }
+        if (!failure) {
+            console.log('OK', success, 'tests passed');
+        } else {
+            console.log('SUCCESSES:', success, 'tests passed');
+            console.log('FAILURE', failure, 'tests failed:', failedComponents);
+        }
+    }
 }
 
 module.exports = CommandMenuNode;
