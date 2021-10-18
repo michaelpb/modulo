@@ -318,6 +318,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.loader = loader;
         this.options = options;
         this.name = name;
+        // TODO: loader.namespace defaulting to hash
         this.fullName = `${this.loader.namespace}-${name}`;
         Modulo.ComponentFactory.registerInstance(this);
         this.componentClass = this.createClass();
@@ -1188,6 +1189,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         let child = node.firstChild;
         let rival = rivalParent.firstChild;
         while (child || rival) {
+            rival = this.rivalTransform(rival);
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
@@ -1223,6 +1225,26 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             child = child ? child.nextSibling : null;
             rival = rival ? rival.nextSibling : null;
         }
+    }
+
+    rivalTransform(rival, parentNode) {
+        if (!rival) { // leave falsy values untouched (e.g. null next nodes)
+            return rival;
+        }
+        if (parentNode && rival === parentNode) {
+            return rival; // Second time encountering top-level node, do nothing
+        }
+        if (rival.tagName) { // First time encountering node, do transform
+            const tag = rival.tagName.toLowerCase();
+            if (tag in this.tagTransforms) {
+                rival = this.tagTransforms[tag](rival);
+            }
+            // TODO finish this
+            //if (rival.hasAttribute('modulo-ignore')) {
+            //    return rival.nextSibling;
+            //}
+        }
+        return rival;
     }
 
     patch(node, method, arg, arg2=null) {
@@ -1275,7 +1297,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
         const nodes = Array.from(parentNode.querySelectorAll('*')); // all desc
         nodes.push(parentNode); // also, patch self (but last)
-        for (const node of nodes) { // loop through nodes to patch
+        for (let node of nodes) { // loop through nodes to patch
+            node = this.rivalTransform(node, parentNode);
             for (const rawName of node.getAttributeNames()) {
                 // Loop through each attribute patching directives as necessary
                 this.patchDirectives(node, rawName, actionSuffix);
