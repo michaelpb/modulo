@@ -68,15 +68,145 @@ as well) -->
 </component>
 
 
-
-
-<!-- A component only being used for testing other components -->
-<component name="CompositionTests">
+<component name="Templating_Comments">
 <template>
-    Testing
+    <h1>hello {# greeting #}</h1>
+    {% comment %}
+      {% if a %}<div>{{ b }}</div>{% endif %}
+      <h3>{{ state.items|first }}</h3>
+    {% endcomment %}
+    <p>Below the greeting...</p>
 </template>
 
-<state a=1></state>
+<testsuite>
+    <test name="Hides comments">
+        <template>
+            <h1>hello </h1>
+            <p>Below the greeting...</p>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+
+<component name="Templating_Escaping">
+<template>
+<p>User "<em>{{ state.username }}</em>" sent a message:</p>
+<div class="msgcontent">
+    {{ state.content|safe }}
+</div>
+</template>
+
+<state
+    username="Little <Bobby> <Drop> &tables"
+    content='
+        I <i>love</i> the classic <a target="_blank"
+        href="https://xkcd.com/327/">xkcd #327</a> on
+        the risk of trusting <b>user inputted data</b>
+    '
+></state>
+<style>
+    .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style>
+
+<testsuite>
+    <test name="Escapes HTML, safe works">
+        <template>
+            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
+            &amp;tables</em>" sent a message:</p>
+            <div class="msgcontent"> I <i>love</i> the classic <a
+            target="_blank" href="https://xkcd.com/327/">xkcd #327</a> on
+            the risk of trusting <b>user inputted data</b></div>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+
+<component name="Tutorial_P1">
+<template>
+Hello <strong>Modulo</strong> World!
+<p class="neat">Any HTML can be here!</p>
+</template>
+<style>
+/* ...and any CSS here! */
+strong {
+    color: blue;
+}
+.neat {
+    font-variant: small-caps;
+}
+</style>
+
+<testsuite>
+    <test name="renders as expected">
+        <template>
+            Hello <strong>Modulo</strong> World!
+            <p class="neat">Any HTML can be here!</p>
+        </template>
+    </test>
+</testsuite>
+
+
+</component>
+
+
+
+
+
+
+
+
+
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<!-- The remaining components are only being used for adding more tests for
+the Modulo framework, not as an example -->
+<component name="TestBtn">
+    <props
+        myclicky
+        mytexty
+    ></props>
+    <template>
+        <button @click:=props.myclicky>{{ props.mytexty }}</button>
+    </template>
+</component>
+
+<component name="CompositionTests">
+<template name="comptest2">
+    <x-TestBtn
+        mytexty="Test text"
+        myclicky:=script.gotClickies
+    >should be IGNORED</x-TestBtn>
+    <p>state.a: {{ state.a }}</p>
+</template>
+
+<template name="comptest1">
+    Testing
+    <x-Tutorial_P1></x-Tutorial_P1>
+    <x-Templating_Escaping></x-Templating_Escaping>
+</template>
+
+<script>
+    function gotClickies(ev, payload) {
+        state.a = 1337;
+    }
+</script>
+
+<!-- just add some random stuff here -->
+<state
+    a:=1
+></state>
 <props b></props>
 
 <testsuite
@@ -85,6 +215,15 @@ as well) -->
 
 </component>
 
+
+
+<component name="ReconcilerTester">
+
+<testsuite
+    src="./examplelib-tests/ReconcilerTester-tests.html"
+></testsuite>
+
+</component>
 
 
 

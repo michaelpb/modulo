@@ -1,4 +1,45 @@
 
+# Notes on using ModRec to simplify load / reload:
+
+- ModRec + hooks for load
+  - Loader is just a domfragment
+  - It keeps the dom of the loaded components loaded
+  - It reconciles if hot-updated
+      - (eventually can do othe stuff)
+- modulo-loader can hook into tagTransforms, can hook into build process
+  - Use to populate load obj
+  - Thus, can use to load everything + get directives applied
+
+- One radical idea is to just do dom nodes all the way down:
+  - E.g. change state into < modulo-state /> dom node factory representation
+  - Factory loops through it's dom nodes
+
+- getAttr terminology ideas: ":="
+  - Give it a new name: dataProps
+  - The Props CPart will get its data from either dataProps or real attributes
+  - Can be for any JSON value (invalid word symbols, except for true/false/null)
+
+- Idea for "modulocli test" multiprocessing:
+  - Start "test server" -- HTTP server that serves up test results + badges
+  - Expose HTTP API to re-run tests (maybe also git pull & rerun?)
+  - HTTP API should allow "split" work -- this way it can be used as a primitive worker-queue
+      - This would allow starting X processes, one for each physical core
+      - Then TestSuites get "round-robined" between the processes
+
+- More ideas for "fetch actions":
+    <request
+        prefix="https://github.com/"
+        repos.GET="/api/users/{{ username }}"
+        repos.callback:=script.dataReceived
+    ></request>
+    - Under the hood uses fetchQ.enqueue + fetchQ.wait (to gather multiple)
+    - The routes are all templated, e.g.:
+    - request.repos.get({username: 'michaelpb'})
+    - Future idea: Could use reversable named routes from backend
+
+- Misc other ideas:
+    - "Scheduler": combine fetchQ + setTimeout into a custom queue
+
 # More notes: 2021 (later)
 
 
@@ -133,3 +174,13 @@
     - mutation-hash: 1a3a4f9
     - mutation-hash: 0000000 # for immutable, or initial state
     - mutation-hash is only implemented for State CPart
+
+        // Idea: Use Template interface for Style transformers (so that MTL
+        // could be used in a pinch well). Eg if ('transform' in options) {
+        // Transfomer().render(renderObj) }
+        // TODO: Need to do '<x-' -> '<xa3d2af-' for private components, and do
+        // '<x-' -> '<tagPref-' for public components
+        // (and remove '<my-')
+        //const content = (opts.content || '').replace(/(<\/?)x-/ig, tagPref);
+        // TODO -v prefered
+        //content = content.replace(/(<\/?)x-/g, tagPref);
