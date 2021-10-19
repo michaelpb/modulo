@@ -41,7 +41,7 @@ Modulo.defineAll = function defineAll() {
     // Then, looks for embedded modulo components, found in <template modulo>
     // tags or <script type="modulo/embed" tags>. For each of these, it loads
     // their contents into a global loader with namespace 'x'.
-    const opts = {options: {namespace: 'x'}};
+    const opts = {attrs: {namespace: 'x'}};
     Modulo.globalLoader = new Modulo.Loader(null, opts);
 
     const query = 'template[modulo-embed],script[type="modulo/embed"]';
@@ -73,7 +73,7 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
     initialize() {
         const src = this.getAttribute('src');
         const namespace = this.getAttribute('namespace');
-        const opts = {options: {namespace, src}};
+        const opts = {attrs: {namespace, src}};
         this.loader = new Modulo.Loader(null, opts);
         this.loader.doFetch();
     }
@@ -81,12 +81,12 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
 
 Modulo.ComponentPart = class ComponentPart {
     static loadCallback(node, loader) {
-        // TODO rename "options" to "attrs", refactor TEMPLATe etc to be
+        // TODO rename "attrs" to "attrs", refactor TEMPLATe etc to be
         // less hardcoded, more configured on a cpart basis
-        const options = Modulo.utils.mergeAttrs(node);
+        const attrs = Modulo.utils.mergeAttrs(node);
         const content = node.tagName.startsWith('TE') ? node.innerHTML
                                                       : node.textContent;
-        return {options, content, dependencies: options.src || null};
+        return {attrs, content, dependencies: attrs.src || null};
     }
 
     static loadedCallback(data, content) {
@@ -96,11 +96,9 @@ Modulo.ComponentPart = class ComponentPart {
     static factoryCallback() {}
 
     constructor(element, options) {
-        this.component = element; // TODO: Remove
         this.element = element;
         this.content = options.content;
-        this.options = options.options; // TODO: Remove
-        this.attrs = options.options;
+        this.attrs = options.attrs;
     }
 }
 
@@ -109,18 +107,18 @@ Modulo.ComponentPart = class ComponentPart {
 // the heavy lifting of fetching & registering Modulo components.
 Modulo.Loader = class Loader extends Modulo.ComponentPart {
     // ## Loader: connectedCallback()
-    constructor(element=null, options={options: {}}) { // TODO: refactor
+    constructor(element=null, options={attrs: {}}) {
         super(element, options);
         this.src = this.attrs.src;
         // TODO: loader.namespace defaulting to hash
         this.namespace = this.attrs.namespace;
         this.factoryData = [];
-        this.hash = 'zerohash';
+        this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
     // factoryCallback() could be the new connectdCallback for <module><load>
     // syntax!
-    doFetch(element, options) {
+    doFetch(element, attrs) {
         Modulo.assert(this.src, 'Loader: Invalid src= attribute:', this.src);
         Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute:', this.namespace);
 
@@ -142,14 +140,13 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
           <state -> <script type="modulo/state"
           <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
           </(state|props|template)> -> </script>*/
-        this.hash = Modulo.utils.hash(this.hash + text);
         if (this.src) {
             // not sure how useful this is
             Modulo.fetchQ.basePath = this.src;
         }
         this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text, true));
+        this.hash = Modulo.utils.hash(this.hash + text); // update hash
     }
-
 
     // ## Loader: loadFromDOMElement
     // Create a ComponentFactory instance from a given `<component>` definition.
@@ -188,19 +185,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         return array;
     }
 
-    // ## Loader: defineComponent
-    // Helper function that constructs a new ComponentFactory for a component,
-    // based on a loadObj data structure.
-    defineComponent(name, loadObj) {
-        throw new Error('Dead code');
-        const factory = new Modulo.ComponentFactory(this, name, loadObj);
-        factory.register();
-        if (Modulo.globals.defineComponentCallback) {
-            Modulo.globals.defineComponentCallback(factory); // TODO rm when possible
-        }
-        return factory;
-    }
-
     // ## Loader.getNodeCPartName
     // Helper function that determines the CPart name from a DOM node.
     getNodeCPartName(node) {
@@ -212,7 +196,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         if (nodeType !== 1) {
             // Text nodes, comment nodes, etc
             if (nodeType === 3 && textContent && textContent.trim()) {
-                console.error('Unexpected text in component def:', textContent);
+                console.error('Modulo.Loader: Unexpected text:', textContent);
             }
             return null;
         }
@@ -225,7 +209,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
             cPartName = splitType[1];
         }
         if (!(cPartName in Modulo.cparts)) {
-            console.error('Unknown CPart in component def:', tagName);
+            console.error('Modulo.Loader: Unknown CPart def:', tagName);
             return null;
         }
         return cPartName;
@@ -324,12 +308,12 @@ Modulo.ComponentFactory = class ComponentFactory {
 
         // It loops through the parsed array of objects that define the
         // Component Parts for this component, checking for errors.
-        for (const [name, partOptions] of this.childrenLoadObj) {
+        for (const [name, partattrs] of this.childrenLoadObj) {
             Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
             if (!(name in element.cpartSpares)) {
                 element.cpartSpares[name] = [];
             }
-            const instance = new Modulo.cparts[name](element, partOptions);
+            const instance = new Modulo.cparts[name](element, partattrs);
             element.cpartSpares[name].push(instance);
             element.cparts[name] = instance;
         }
@@ -463,8 +447,8 @@ Modulo.directiveShortcuts = [[/^@/, 'component.event'],
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
         const partName = this.name.toLowerCase();
-        // const {name} = data.options; // TODO change to attrs
-        const name = partName === 'module' ? loader.namespace : data.options.name;
+        // const {name} = data.attrs; // TODO change to attrs
+        const name = partName === 'module' ? loader.namespace : data.attrs.name;
         childrenLoadObj.push([partName, data]);
         const factory = new Modulo.ComponentFactory(loader, name, childrenLoadObj);
         factory.register();
@@ -479,7 +463,7 @@ Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     initializedCallback(renderObj) {
-        const {engine = 'ModRec'} = this.options;
+        const {engine = 'ModRec'} = this.attrs;
         this.reconciler = new Modulo.reconcilers[engine]({makePatchSet: true});
     }
 
@@ -529,7 +513,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         this.element.lifecycle(['event'], {_eventFunction: func});
         func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
         this.element.lifecycle(['eventCleanup']); // todo: should this go below rerender()?
-        // TODO: Add if (!this.component.options.controlledRender)
+        // TODO: Add if (!this.element.attrs.controlledRender)
         this.element.rerender(); // always rerender after events
     }
 
@@ -591,14 +575,14 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 }
 
 Modulo.cparts.props = class Props extends Modulo.ComponentPart {
-    static factoryCallback({options}, {componentClass}, renderObj) {
+    static factoryCallback({attrs}, {componentClass}, renderObj) {
         /* untested / daedcode ---v */
-        componentClass.observedAttributes = Object.keys(options);
+        componentClass.observedAttributes = Object.keys(attrs);
     }
     initializedCallback(renderObj) {
         const props = {};
         const { resolveDataProp } = Modulo.utils;
-        for (let [propName, def] of Object.entries(this.options)) {
+        for (let [propName, def] of Object.entries(this.attrs)) {
             propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
             props[propName] = resolveDataProp(propName, this.element, def);
         }
@@ -725,12 +709,12 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         `;
     }
 
-    static factoryCallback(partOptions, factory, renderObj) {
-        const code = partOptions.content || '';
+    static factoryCallback(partattrs, factory, renderObj) {
+        const code = partattrs.content || '';
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts');
-        // TODO: shouldn't use "this" in static
+        // TODO: shouldn't use "this" in static (?)
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
         const module = factory.loader.modFactory ?
                        factory.loader.modFactory.baseRenderObj : null;
@@ -787,8 +771,6 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         setLocalVariable('cparts', this.element.cparts);
         for (const localVar of localVars) {
             if (localVar in renderObj) {
-                //console.log("this is localVars", localVars);
-                //console.log("this is localVars", localVar, renderObj[localVar]);
                 setLocalVariable(localVar, renderObj[localVar]);
             }
         }
@@ -797,7 +779,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
 
 Modulo.cparts.state = class State extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
-        this.rawDefaults = renderObj.state.options || {};
+        this.rawDefaults = renderObj.state.attrs || {};
         this.boundElements = {};
         if (!this.data) {
             this.data = Modulo.utils.simplifyResolvedLiterals(this.rawDefaults);
@@ -868,7 +850,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 // ModuloTemplate
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
-        Object.assign(this, Modulo.templating.defaultOptions, options);
+        Object.assign(this, Modulo.templating.defaultattrs, options);
         this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.renderFunc = this.compile(text);
     }
@@ -935,7 +917,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 }
 Modulo.Template = Modulo.templating.MTL; // Alias
 
-Modulo.templating.defaultOptions = {
+Modulo.templating.defaultattrs = {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
     //opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,and,or',
     opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,gt,lt',
@@ -952,7 +934,7 @@ Modulo.templating.defaultOptions = {
     },
 };
 
-Modulo.templating.defaultOptions.modes = {
+Modulo.templating.defaultattrs.modes = {
     '{%': (text, tmplt, stack) => {
         const tTag = text.trim().split(' ')[0];
         const tagFunc = tmplt.tags[tTag];
@@ -972,7 +954,7 @@ Modulo.templating.defaultOptions.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-Modulo.templating.defaultOptions.filters = (function () {
+Modulo.templating.defaultattrs.filters = (function () {
     // TODO: Replace jsobj with actual loop in build template (and just
     // backtick escape as filter). Make sure keys are alphabetical (stable)
     function jsobj(obj, arg) {
@@ -1026,7 +1008,7 @@ Modulo.templating.defaultOptions.filters = (function () {
     return Object.assign(filters, {jsobj, safe});
 })();
 
-Modulo.templating.defaultOptions.tags = {
+Modulo.templating.defaultattrs.tags = {
     'if': (text, tmplt) => {
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
@@ -1086,7 +1068,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (!this.elementCtx) {
             this.elementCtx = node; // element context
         }
-        // Used for rewrites eg {'x-Btn': 'a7e4f-Btn'}
         this.tagTransforms = tagTransforms || {};
         this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML, true));
         if (!this.shouldNotApplyPatches) {
@@ -1120,7 +1101,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                 this.patch(node, 'removeChild', child);
             }
 
-            if (needReplace) {
+            if (needReplace) { // do swap with insertBefore
+                // TODO will this cause an error with "swap" if its last one?
                 this.patch(node, 'insertBefore', rival, child.nextSibling);
                 this.patchAndDescendants(rival, 'Mount');
             }

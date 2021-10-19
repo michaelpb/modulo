@@ -531,14 +531,14 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         let soloMode = false;
         for (const factory of Object.values(modulo.factoryInstances)) {
             if (factory.baseRenderObj.testsuite) {
-                if ('solo' in factory.baseRenderObj.testsuite.options) {
+                if ('solo' in factory.baseRenderObj.testsuite.attrs) {
                     soloMode = true;
                 }
                 discovered.push([factory, factory.baseRenderObj.testsuite]);
             }
         }
         if (soloMode) {
-            discovered = discovered.filter(([fac, {options}]) => 'solo' in options);
+            discovered = discovered.filter(([fac, {attrs}]) => 'solo' in attrs);
         }
 
         if (discovered.length === 0) {

@@ -77,13 +77,13 @@ class TestSuite extends Modulo.ComponentPart {
 
     static doTestStep(element, sName, data) {
         const {testsuite} = Modulo.cparts;
-        const options = {content: data.content, options: data};
-        const stepConf = data.options;
+        const attrs = {content: data.content, attrs: data};
+        const stepConf = data.attrs;
         const isInit = (sName + 'Init') in testsuite;
         const assertionMethod = testsuite[sName + 'Assertion'];
         let cpart = null;
         if (sName === 'template' || isInit) {
-            cpart = new Modulo.cparts[sName](element, options);
+            cpart = new Modulo.cparts[sName](element, attrs);
         }
         if (isInit) {
             const initData = cpart.initializedCallback({[sName]: data});
@@ -108,8 +108,8 @@ class TestSuite extends Modulo.ComponentPart {
         return null;
     }
 
-    static runTests(options, factory) {
-        const {content} = options;
+    static runTests(attrs, factory) {
+        const {content} = attrs;
         const {testsuite} = Modulo.cparts;
 
         let total = 0;
