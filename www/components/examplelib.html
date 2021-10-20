@@ -323,7 +323,7 @@ lord of the rings&rdquo;)</p>
     // (Hint: Curious how it calculates prime? See CSS!)
     script.exports.range = 
         Array.from({length: 63}, (x, i) => i + 2);
-    function setNum(ev) {
+    function setNum(payload, ev) {
         state.number = Number(ev.target.textContent);
     }
 </script>
@@ -355,7 +355,7 @@ div.hidden {
 div.number { background: green; }
 div.number::after { content: "*"; }
 /* Check for whole factors (an adjacent div.whole).
-   If found, then hide asterisk and green. */
+   If found, then hide asterisk and green */
 div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
 </style>
@@ -422,7 +422,7 @@ div.whole ~ div.number::after { opacity: 0; }
 
 <script>
 const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
-function setup(ev, payload) {
+function setup(payload) {
     const count = Number(payload);
     let symbols = symbolsStr.substr(0, count/2).split("");
     symbols = symbols.concat(symbols); // duplicate cards
@@ -436,7 +436,7 @@ function setup(ev, payload) {
     }
 }
 
-function failedFlipCallback(ev) {
+function failedFlipCallback() {
     // Remove both from revealed array & set to null
     state.revealed = state.revealed.filter(
             id => id !== state.failedflip
@@ -447,7 +447,7 @@ function failedFlipCallback(ev) {
     element.rerender();
 }
 
-function flip(ev, id) {
+function flip(id) {
     if (state.failedflip !== null) {
         return;
     }

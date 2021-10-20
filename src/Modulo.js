@@ -306,12 +306,12 @@ Modulo.ComponentFactory = class ComponentFactory {
 
         // It loops through the parsed array of objects that define the
         // Component Parts for this component, checking for errors.
-        for (const [name, partattrs] of this.childrenLoadObj) {
+        for (const [name, partOptions] of this.childrenLoadObj) {
             Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
             if (!(name in element.cpartSpares)) {
                 element.cpartSpares[name] = [];
             }
-            const instance = new Modulo.cparts[name](element, partattrs);
+            const instance = new Modulo.cparts[name](element, partOptions);
             element.cpartSpares[name].push(instance);
             element.cparts[name] = instance;
         }
@@ -352,6 +352,10 @@ Modulo.ComponentFactory = class ComponentFactory {
         Modulo.factoryInstances[instance.fullName] = instance;
     }
 }
+
+// TODO: Abstract away all cpart logic into CPartCollection which is "owned" by
+// whichever CPart is the parent CPart. Element becomes a thin helper for
+// Component.
 
 Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
@@ -401,8 +405,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
-    _invokeCPart(cpartName, methodName, useArg) {
-        const argument = useArg || this.renderObj;
+    _invokeCPart(cpartName, methodName, dirMountArg) {
+        const argument = dirMountArg || this.renderObj;
         const splitKey = cpartName.split('.');
         if (splitKey.length === 2) {         // "state.bind"
             cpartName = splitKey[0];         // "state.
@@ -413,7 +417,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         if (method) {
             result = method.call(this.cparts[cpartName], argument);
         }
-        if (!useArg && result) {
+        if (!dirMountArg && result) {
             this.renderObj[cpartName] = result;
         }
         return result;
@@ -693,15 +697,16 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         `;
     }
 
-    static factoryCallback(partattrs, factory, renderObj) {
-        const code = partattrs.content || '';
+    static factoryCallback(partOptions, factory, renderObj) {
+        const code = partOptions.content || '';
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts');
         // TODO: shouldn't use "this" in static (?)
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
-        const module = factory.loader.modFactory ?
-                       factory.loader.modFactory.baseRenderObj : null;
+        const ns = factory.loader.namespace;
+        const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
+        const module = moduleFac ? module.baseRenderObj : null;
         const results = (new Function('Modulo, factory, module', wrappedJS))
                            .call(null, Modulo, factory, module);
         results.localVars = localVars;
@@ -874,18 +879,18 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         return results;
     }
 
-    parseCondExpr(text) {
+    parseCondExpr(string) {
         // This RegExp splits around the tokens, with spaces added
-        const reText = ` (${this.opTokens.split(',').join('|')}) `;
-        //console.log(text.split(RegExp(reText)));
-        return text.split(RegExp(reText));
+        const regExpText = ` (${this.opTokens.split(',').join('|')}) `;
+        //console.log(string.split(RegExp(regExpText)));
+        return string.split(RegExp(regExpText));
     }
 
-    parseVal(s) {
+    parseVal(string) {
         // Parses string literals, de-escaping as needed, numbers, and context
         // variables
         const { cleanWord } = Modulo.utils;
-        s = s.trim();
+        const s = string.trim();
         if (s.match(/^('.*'|".*")$/)) { // String literal
             return JSON.stringify(s.substr(1, s.length - 2));
         }
@@ -1001,6 +1006,7 @@ Modulo.templating.defaultOptions.filters = (function () {
 
 Modulo.templating.defaultOptions.tags = {
     'if': (text, tmplt) => {
+        // TODO: for arbitrary expressions, loop here, don't limit to 3 (L/O/R)
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
         const condition = condStructure.replace(/([XY])/g,
@@ -1379,26 +1385,16 @@ Modulo.FetchQueue = class FetchQueue {
         delete this.queue[src]; // remove queue
         this.checkWait();
     }
+
     wait(callback) {
         this.waitCallbacks.push(callback); // add to end of queue
         this.checkWait(); // attempt to consume wait queue
     }
-        // v--dead code?
-    waitFinally(callback) {
-        this.wait(() => this.finallyCallbacks.push(callback));
-        this.checkWait(); // attempt to consume wait queue
-    }
+
     checkWait() {
         if (Object.keys(this.queue).length === 0) {
             while (this.waitCallbacks.length > 0) {
                 this.waitCallbacks.shift()(); // clear while invoking
-            }
-        }
-
-        // v--dead code?
-        if (Object.keys(this.queue).length === 0) {
-            while (this.finallyCallbacks.length > 0) {
-                this.finallyCallbacks.shift()(); // clear while invoking
             }
         }
     }

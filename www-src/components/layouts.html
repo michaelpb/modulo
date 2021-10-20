@@ -9,7 +9,7 @@
 
     <script>
         function initializedCallback() {
-            if (Modulo.isBackend) {
+            if (Modulo.isBackend && module) {
                 //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
                 //Object.assign(script.exports, Modulo.ssgStore.navbar);
                 const info = module.script.getGlobalInfo();
