@@ -286,13 +286,11 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     // ## ComponentFactory: createClass
     // Finally, we are ready to create the class that the browser will use to
-    // actually instantiate each Component.
-    // We create a "back reference" to the factory from the component, and then
-    // reconciliation engine, since that's a component-wide option, 
+    // actually instantiate each Component, with a "back reference" to the fac.
     createClass() {
         const {fullName} = this;
         return class CustomElement extends Modulo.Element {
-            get factory() {
+            factory() {
                 /* Gets current registered component factory (for hot-reloading) */
                 return Modulo.factoryInstances[fullName];
             }
@@ -366,12 +364,12 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.isMounted = false;
         this.originalHTML = this.innerHTML;
         this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
-        this.fullName = this.factory.fullName;
-        this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
+        this.fullName = this.factory().fullName;
+        this.initRenderObj = Object.assign({}, this.factory().baseRenderObj);
     }
 
     setupCParts() {
-        this.factory.buildCParts(this);
+        this.factory().buildCParts(this);
     }
 
     directiveMount(args) {
@@ -441,8 +439,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 }
 
+// TODO: add '.' in keys as a feature to dataProp
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
-                             [/:$/, 'component.resolve'] ];
+                             [/:$/, 'component.dataProp']];
 
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
@@ -509,12 +508,15 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         }
     }
 
-    handleEvent(func, ev, payload) {
+    handleEvent(func, payload, ev) {
         this.element.lifecycle(['event'], {_eventFunction: func});
-        func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
+        const { value } = (ev.target || {}); // Get value if is <INPUT>, etc
+        func.call(null, payload === undefined ? value : payload, ev);
         this.element.lifecycle(['eventCleanup']); // todo: should this go below rerender()?
         // TODO: Add if (!this.element.attrs.controlledRender)
-        this.element.rerender(); // always rerender after events
+        if (this.attrs.rerender !== 'manual') {
+            this.element.rerender(); // always rerender after events
+        }
     }
 
     childrenMount({el}) {
@@ -522,54 +524,52 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         el.append(...this.element.originalChildren);
     }
 
-    childrenUnmount() {
-        //this.element.innerHTML = '';
+    childrenUnmount({el}) {
+        el.innerHTML = '';
     }
 
-    eventMount(info) {
-        const {el, value, attrName, rawName} = info;
-        const getAttr = getGetAttr(el);
-        // TODO: Fix this to be simpler, directly attach callback (once we get
-        // eventChanged callback). Then we won't need rawName
-
-        //console.log('this is eventMount', info);
-        const listener = (ev) => {
-            //window.C = this;
-            //console.log('this is rawName', rawName, value);
-            const func = getAttr(attrName, getAttr(rawName));
-            Modulo.assert(func, `Bad ${attrName}, ${value} is ${func}`);
-            const payload = getAttr(`${attrName}.payload`,
-                                      getAttr('payload', el.value));
-            //console.log('this is payload', `${attrName}.payload`, payload);
-            this.handleEvent(func, ev, payload);
-        };
-        info.listener = listener;
-        el.addEventListener(attrName, listener);
+    eventMount({el, value, attrName, rawName}) {
+        // TODO: Make it @click.payload, and then have this see if '.' exists
+        // in attrName and attach as payload if so
+        const { resolveDataProp } = Modulo.utils;
+        const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
+        const func = get(attrName);
+        Modulo.assert(func, `Bad @${attrName} event: ${value} is falsy`);
+        if (!el.moduloEvents) {
+            el.moduloEvents = {};
+        }
+        const plName = attrName + '.payload';
+        const listen = ev => this.handleEvent(func, get(plName, 'payload'), ev);
+        el.moduloEvents[value] = listen;
+        el.addEventListener(attrName, listen);
     }
 
-    eventUnmount({el, attrName, listener}) {
-        el.removeEventListener(attrName, listener);
+    eventChange(info) {
+        // TODO: test this, or replace Change with Unmount -> Mount as default
+        this.eventUnmount(info);
+        this.eventMount(info);
     }
 
-    resolveMount({el, value, attrName, element}) {
+    eventUnmount({el, attrName}) {
+        const listen = el.moduloEvents[attrName];
+        el.removeEventListener(attrName, listen);
+        delete el.moduloEvents[attrName];
+    }
+
+    dataPropMount({el, value, attrName, element}) {
+        const { get } = Modulo.utils;
         // Resolve the given value and attach to dataProps
-        const rObj = element.getCurrentRenderObj()
-        // TODO: Look if value is a data literal, or a type (for propstypes)
-        const val = value.split('.').reduce((o, name) => o[name], rObj);
-
-        el.dataProps = Object.assign(el.dataProps || {}, {[attrName]: val});
-        el.getAttr = (n, def) => {
-            let val;
-            if (n in el.dataProps) {
-                val = el.dataProps[n];
-            } else {
-                val = el.getAttribute(n) || def;
-            }
-            //console.log('-------------------', n, val);
-            return val;
-        };
+        if (!el.dataProps) {
+            el.dataProps = {};
+        }
+        const val = get(element.getCurrentRenderObj(), value);
+        const index = attrName.lastIndexOf('.') + 1;
+        const key = attrName.slice(index);
+        const path = attrName.slice(0, index);
+        const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
+        dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
     }
-    resolveUnmount({el, attrName}) {
+    dataPropUnmount({el, attrName}) {
         delete el.dataProps[attrName];
     }
 }
@@ -647,15 +647,6 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, loadObj) {
         const tagPref = '$1' + factory.loader.namespace + '-';
         return {content: (opts.content || '').replace(/(<\/?)my-/ig, tagPref)};
-        /*
-        let instance = null;
-        if (content.includes('txt="Click me! :)"')) {
-            // TODO: need to remove this, very broken work around for
-            // a particular test
-            instance = new Modulo.templating.MTL(content);
-        }
-        return {content, instance};
-        */
     }
 
     constructor(element, options) {
@@ -666,13 +657,6 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
     renderCallback(renderObj) {
         renderObj.component.innerHTML = this.instance.render(renderObj);
-        /*
-        if (renderObj.template.instance) {
-            // TODO: broken
-            renderObj.component.innerHTML = renderObj.template.instance.render(renderObj);
-        } else {
-        }
-        */
     }
 }
 
@@ -787,31 +771,31 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         return this.data;
     }
 
-    bindMount({el}) {
-        el.getAttr = el.getAttr || el.getAttribute;
-        const name = el.getAttr('name');
-        Modulo.assert(name in this.data, `[state.bind]: no "${name}" in state`);
-        const func = () => {
+    bindMount({el, attrName, value}) {
+        const { assert } = Modulo;
+        const name = el.getAttribute('name') || attrName;
+        assert(name in this.data, `[state.bind]: key "${name}" not in state`);
+        assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
+        const listen = () => {
+            // TODO: redo
             let {value, type, checked} = el;
             if (type && type === 'checkbox') {
                 value === !!checked;
             }
             this.set(name, value);
-        }
-        // eventually customizable, eg [state.bind]mouseover=mouseY (event
-        // name, el property name, and/or state propery name etc)
+        };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
-        const evName = isText ? 'keyup' : 'change';
-        this.boundElements[name] = [el, evName, func];
+        const evName = value ? value : (isText ? 'keyup' : 'change');
+        this.boundElements[name] = [el, evName, listen];
         el.value = this.data[name];
-        el.addEventListener(evName, func);
+        el.addEventListener(evName, listen);
     }
 
-    bindUnmount({el}) {
-        const name = el.getAttr('name');
-        const [el2, evName, func] = this.boundElements[name];
+    bindUnmount({el, attrName}) {
+        const name = el.getAttribute('name') || attrName;
+        const [el2, evName, listen] = this.boundElements[name];
         delete this.boundElements[name];
-        el2.removeEventListener(evName, func);
+        el2.removeEventListener(evName, listen);
     }
 
     reloadCallback(oldPart) {
@@ -830,16 +814,14 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
     eventCleanupCallback() {
         for (const name of Object.keys(this.data)) {
-            const msg = `Tried to assign to "state.${name}"`;
-            Modulo.assert(name in this._oldData, msg);
-            if (name in this.boundElements) {
-                if (this.data[name] !== this._oldData[name]) {
-                    const [el, func, evName] = this.boundElements[name];
-                    if (el.type === 'checkbox') {
-                        el.checked = !!this.data[name];
-                    } else {
-                        el.value = this.data[name];
-                    }
+            Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
+            const val = this.data[name];
+            if (name in this.boundElements && val !== this._oldData[name]) {
+                const [el, listen, evName] = this.boundElements[name];
+                if (el.type === 'checkbox') {
+                    el.checked = !!val;
+                } else {
+                    el.value = val;
                 }
             }
         }
@@ -850,7 +832,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 // ModuloTemplate
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
-        Object.assign(this, Modulo.templating.defaultattrs, options);
+        Object.assign(this, Modulo.templating.defaultOptions, options);
         this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.renderFunc = this.compile(text);
     }
@@ -893,12 +875,16 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     }
 
     parseCondExpr(text) {
+        // This RegExp splits around the tokens, with spaces added
         const reText = ` (${this.opTokens.split(',').join('|')}) `;
         //console.log(text.split(RegExp(reText)));
         return text.split(RegExp(reText));
     }
 
     parseVal(s) {
+        // Parses string literals, de-escaping as needed, numbers, and context
+        // variables
+        const { cleanWord } = Modulo.utils;
         s = s.trim();
         if (s.match(/^('.*'|".*")$/)) { // String literal
             return JSON.stringify(s.substr(1, s.length - 2));
@@ -917,7 +903,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 }
 Modulo.Template = Modulo.templating.MTL; // Alias
 
-Modulo.templating.defaultattrs = {
+Modulo.templating.defaultOptions = {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
     //opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,and,or',
     opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,gt,lt',
@@ -934,7 +920,7 @@ Modulo.templating.defaultattrs = {
     },
 };
 
-Modulo.templating.defaultattrs.modes = {
+Modulo.templating.defaultOptions.modes = {
     '{%': (text, tmplt, stack) => {
         const tTag = text.trim().split(' ')[0];
         const tagFunc = tmplt.tags[tTag];
@@ -954,9 +940,15 @@ Modulo.templating.defaultattrs.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-Modulo.templating.defaultattrs.filters = (function () {
-    // TODO: Replace jsobj with actual loop in build template (and just
-    // backtick escape as filter). Make sure keys are alphabetical (stable)
+Modulo.templating.defaultOptions.filters = (function () {
+    //const { get } = Modulo.utils; // TODO, fix this code duplciation
+    function get(obj, key) {
+        return obj[key];
+    }
+
+    // TODO: Once we get unit tests for build, replace jsobj with actual loop
+    // in build template (and just backtick escape as filter). Make sure keys
+    // are alphabetical (stable).
     function jsobj(obj, arg) {
         let s = '{\n';
         for (const [key, value] of Object.entries(obj)) {
@@ -991,7 +983,6 @@ Modulo.templating.defaultattrs.filters = (function () {
         number: (s) => Number(s),
         //invoke: (s, arg) => s(arg),
         //getAttribute: (s, arg) => s.getAttribute(arg),
-        get: (s, arg) => s[arg],
         includes: (s, arg) => s.includes(arg),
         truncate: (s, arg) => ((s.length > arg*1) ?
                                 (s.substr(0, arg-1) + '…') : s),
@@ -1005,10 +996,10 @@ Modulo.templating.defaultattrs.filters = (function () {
         //                ), {safe: true}),
         renderas: (renderCtx, template) => safe(template.instance.render(renderCtx)),
     };
-    return Object.assign(filters, {jsobj, safe});
+    return Object.assign(filters, { get, jsobj, safe });
 })();
 
-Modulo.templating.defaultattrs.tags = {
+Modulo.templating.defaultOptions.tags = {
     'if': (text, tmplt) => {
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
@@ -1022,6 +1013,7 @@ Modulo.templating.defaultattrs.tags = {
     'comment': () => ({ start: "/*", end: "*/"}),
     'for': (text, tmplt) => {
         // Make variable name be based on nested-ness of tag stack
+        const { cleanWord } = Modulo.utils;
         const arrName = 'ARR' + tmplt.stack.length;
         const [varExp, arrExp] = text.split(' in ');
         let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
@@ -1164,7 +1156,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patchDirectives(elem, rawName, suffix) {
-        const directives = this.parseDirectives(this.elementCtx, elem, rawName);
+        const directives = Modulo.utils.parseDirectives(this.elementCtx, elem, rawName);
         if (directives) {
             for (const directive of directives) {
                 this.patch(this.elementCtx, 'directive' + suffix, directive);
@@ -1194,7 +1186,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patchAndDescendants(parentNode, actionSuffix) {
-        if (parentNode.nodeType !== 1) { // cannot have descendents
+        if (parentNode.nodeType !== 1) { // cannot have descendants
             return;
         }
         let nodes = [parentNode]; // also, patch self (but last)
@@ -1219,39 +1211,12 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
     }
 
-    parseDirectives(element, el, rawName) {
-        if (/^[a-z0-9-]$/i.test(rawName)) {
-            return null; // if alpha-only, stop right away
-        }
-
-        // "Expand" shortcuts into their full versions
-        let name = rawName;
-        for (const [regexp, directive] of Modulo.directiveShortcuts) {
-            if (rawName.match(regexp)) {
-                name = `[${directive}]` + name.replace(regexp, '');
-            }
-        }
-        if (!name.startsWith('[')) {
-            return null; // There are no directives, regular attribute, skip
-        }
-
-        // There are directives... time to resolve them
-        const arr = [];
-        const value = el.getAttribute(rawName);
-        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
-        for (const dName of name.split(']').map(cleanWord)) {
-            if (dName !== attrName) { // Skip bare name
-                arr.push({el, value, attrName, rawName, dName, element, name})
-            }
-        }
-        return arr;
-    }
 }
 
 
 Modulo.utils = class utils {
     static simplifyResolvedLiterals(attrs) {
-        // TODO: this will be obsolte once dataProps is done to load stage
+        // TODO: rm, this will be obsolte once dataProps is done to load stage
         const obj = {};
         for (let [name, value] of Object.entries(attrs)) {
             name = name.replace(/-([a-z])/g, g => g[1].toUpperCase());
@@ -1330,6 +1295,46 @@ Modulo.utils = class utils {
             h = Math.imul(31, h) + str.charCodeAt(i) | 0;
         }
         return (h || 0).toString(32);
+    }
+
+    static cleanWord(text) {
+        return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
+    }
+
+    static rpartition(s, seperator) {
+        // DEAD CODE
+        const index = s.lastIndexOf(separator) + 1;
+        return [s.slice(0, index - 1), s.slice(index)];
+        //return [index ? s.slice(0, index - 1) : s, s.slice(index)];
+    }
+
+    static parseDirectives(element, el, rawName) {
+        if (/^[a-z0-9-]$/i.test(rawName)) {
+            return null; // if alpha-only, stop right away
+        }
+
+        // "Expand" shortcuts into their full versions
+        let name = rawName;
+        for (const [regexp, directive] of Modulo.directiveShortcuts) {
+            if (rawName.match(regexp)) {
+                name = `[${directive}]` + name.replace(regexp, '');
+            }
+        }
+        if (!name.startsWith('[')) {
+            return null; // There are no directives, regular attribute, skip
+        }
+
+        // There are directives... time to resolve them
+        const { cleanWord } = Modulo.utils;
+        const arr = [];
+        const value = el.getAttribute(rawName);
+        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
+        for (const dName of name.split(']').map(cleanWord)) {
+            if (dName !== attrName) { // Skip the bare name itself
+                arr.push({el, value, attrName, rawName, dName, element, name})
+            }
+        }
+        return arr;
     }
 }
 
@@ -1434,24 +1439,6 @@ Modulo.CommandMenu = class CommandMenu {
             // TODO: finish, offer to download, also build CSS
         });
     }
-}
-
-/*
-# HACKY FUNCTIONS
-Pls ignore all
-*/
-function getGetAttr(element) {
-    // HACK
-    const myElement = element;
-    if (myElement.getAttr) {
-        return (...args) => myElement.getAttr(...args);
-    } else {
-        return (...args) => myElement.getAttribute(...args);
-    }
-}
-
-function cleanWord(text) {
-    return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
 }
 
 if (typeof module !== 'undefined') { // Node

@@ -102,7 +102,7 @@
     </template>
 </test>
 
-<test name="renders winning condition">
+<test name="Renders winning condition">
     <state
         message="Good luck!"
         cards:='[
@@ -119,16 +119,16 @@
         lastflipped:=null
         failedflip:=null
     ></state>
-    <script>
+    <script name="When all cards are flipped, winning message is shown">
         // "Reveal" all cards
-        script.flip(null, 7);
-        script.flip(null, 6);
-        script.flip(null, 5);
-        script.flip(null, 4);
-        script.flip(null, 3);
-        script.flip(null, 2);
-        script.flip(null, 1);
-        script.flip(null, 0);
+        script.flip(7);
+        script.flip(6);
+        script.flip(5);
+        script.flip(4);
+        script.flip(3);
+        script.flip(2);
+        script.flip(1);
+        script.flip(0);
         assert: state.message === "You win!"
     </script>
 

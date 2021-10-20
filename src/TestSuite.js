@@ -95,7 +95,7 @@ class TestSuite extends Modulo.ComponentPart {
 
         if (!('skipRerender' in stepConf)) {
             // ensure re-rendered before running script
-            element.factory.doTestRerender(element);
+            element.factory().doTestRerender(element);
         }
         const [result, message] = assertionMethod(cpart, element, stepConf, data);
         if (result) {

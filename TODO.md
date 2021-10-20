@@ -54,9 +54,7 @@
     - (DONE) Work on Modulo Router
     - MTL: Support for "or" and "and" operators in if statements, and better
       error messages if encountering unknown conditional operators
-    - ERROR: On GitHub API search, key= doesn't work to keep input focus
-      between renders, if a new element is introduced above it. Need to debug
-      SET DOM implementation how it uses key.
+    - Fix key=
     - Linting Rules!!
     - (DONE) component.innerHTML = ... is what does reconcile! ({component: {innerHTML: ..})
     - ShadowDOM + scoped style as an option (style could respect compnent)
