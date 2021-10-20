@@ -1345,29 +1345,34 @@ Modulo.FetchQueue = class FetchQueue {
         this.waitCallbacks = [];
         this.finallyCallbacks = [];
     }
-    enqueue(queueObj, callback) {
-        queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
-        for (let [label, src] of Object.entries(queueObj)) {
-            // TODO remove! ------------------------------------v
-            if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
-                src = src.replace('.', Modulo.utils.dirname(this.basePath));
-                src = src.replace(/\/\//, '/'); // remove double slashes
-            }
-            if (src in this.data) {
-                callback(this.data[src], label);
-            } else if (!(src in this.queue)) {
-                this.queue[src] = [callback];
-                // TODO: Think about if cache:no-store
-                Modulo.globals.fetch(src, {cache: 'no-store'})
-                    .then(response => response.text())
-                    .then(text => this.receiveData(text, label, src))
-                    // v- uncomment after switch to new BE
-                    //.catch(err => console.error('Modulo Load ERR', src, err));
-            } else {
-                this.queue[src].push(callback); // add to end of src queue
-            }
+    enqueue(fetchObj, callback) {
+        fetchObj = typeof fetchObj === 'string' ? { fetchObj } : fetchObj;
+        for (let [label, src] of Object.entries(fetchObj)) {
+            this._enqueue(src, label, callback);
         }
     }
+
+    _enqueue(src, label, callback) {
+        // TODO remove! ------------------------------------v
+        if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
+            src = src.replace('.', Modulo.utils.dirname(this.basePath));
+            src = src.replace(/\/\//, '/'); // remove double slashes
+        }
+        if (src in this.data) {
+            callback(this.data[src], label); // Synchronous route
+        } else if (!(src in this.queue)) {
+            this.queue[src] = [callback];
+            // TODO: Think about if cache:no-store
+            Modulo.globals.fetch(src, {cache: 'no-store'})
+                .then(response => response.text())
+                .then(text => this.receiveData(text, label, src))
+                // v- uncomment after switch to new BE
+                //.catch(err => console.error('Modulo Load ERR', src, err));
+        } else {
+            this.queue[src].push(callback); // add to end of src queue
+        }
+    }
+
     receiveData(text, label, src) {
         this.data[src] = text; // load data
         this.queue[src].forEach(func => func(text, label, src));
