@@ -477,11 +477,12 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updateCallback(renderObj) {
         let { innerHTML, patches } = renderObj.component;
         if (innerHTML !== null) {
-            patches = this.reconciler.reconcile(this.element, innerHTML || '',
-            /*{
-              'head': head =>...
-            }*/
-            );
+            if (!this.reconciler) {
+                // XXX (Delete this, only needed for SSG)
+                const {engine = 'ModRec'} = this.attrs;
+                this.reconciler = new Modulo.reconcilers[engine]({makePatchSet: true});
+            }
+            patches = this.reconciler.reconcile(this.element, innerHTML || '');
         }
         return { patches };
     }
@@ -525,11 +526,14 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
-        el.append(...this.element.originalChildren);
+        // XXX UNCOMMENT BELOW XXX
+        //el.append(...this.element.originalChildren);
+        // XXX UNCOMMENT BELOW XXX
     }
 
     childrenUnmount({el}) {
-        el.innerHTML = '';
+        // XXX UNCOMMENT BELOW XXX
+        //el.innerHTML = '';
     }
 
     eventMount({el, value, attrName, rawName}) {

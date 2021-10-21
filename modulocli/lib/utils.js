@@ -302,21 +302,6 @@ function doGenerate(config, modulo, text, outputFile, callback) {
                     console.error('(fail with --fail)');
                 }
                 callback();
-                return;
-                // DEAD CODE
-                const {ssgSubPaths} = modulo.baseModulo; // TODO: Remove this, after <Docs> done
-                if (verbose) {
-                    const s = '' + ssgSubPaths;
-                    console.log(`|%|  Document resolved; Subpaths: ${s}`);
-                }
-                if (ssgSubPaths && ssgSubPaths.length > 0) {
-                    console.log(`   '-> Rendering subpaths: ${ssgSubPaths.length}`);
-                    for (const subpath of ssgSubPaths) {
-                        patchModuloWithSSGFeatures(modulo.baseModulo, inputFile, subpath, outputFile);
-                        modulo.ssgSubPaths = null;
-                        doGenerate(config, modulo, text, subpath);
-                    }
-                }
             });
         });
     });

@@ -79,6 +79,7 @@ function getConfig(cliConfig, flags) {
 
 function doCommand(cliConfig, args) {
     let {command, positional, flags} = args;
+    console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
 
     const config = getConfig(cliConfig, flags);
     const {verbose} = config
@@ -117,7 +118,6 @@ function doCommand(cliConfig, args) {
             if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
                 command = 'help';
             }
-            console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
             modulo.fetchQ.wait(() => {
                 modulo.commands[command](config, modulo, skipFlags);
             });

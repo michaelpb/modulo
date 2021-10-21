@@ -1,4 +1,14 @@
 
+# Next refactor:
+
+- Switch to < load > , and fix sub-namespacing / hash namespacing
+
+- Namespacing fix:
+  - Start by simply renaming "namespace" to "global-namespace".
+  - Same behavior, always register absolutely to global-namespace
+  - This way we can "punt" on hash namespacing until "namespace" (private ns)
+    becomes a required feature
+
 # Notes on using ModRec to simplify load / reload:
 
 - ModRec + hooks for load
@@ -39,6 +49,17 @@
 
 - Misc other ideas:
     - "Scheduler": combine fetchQ + setTimeout into a custom queue
+
+
+- Release schedule ideas:
+    - Set up a robust testing matrix
+    - "Modulo Version"   x   "Unit-test version"   x   "Browser"
+    - e.g. 0.5.1         x   0.3.4                 x   Edge 18
+    - Will have to play by ear the old unit-test idea, but it would just check
+      out old git branches/tags, move in the latest src/Modulo.js, then test
+    - Might have to ONLY do this with "public API" unit tests, since the goal
+      is to check against old tests taht might be using old APIs, to ensure we
+      don't lose public-facing API features
 
 # More notes: 2021 (later)
 

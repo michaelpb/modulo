@@ -9,9 +9,11 @@
     <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
 
     <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 </head>
 <body>
 
@@ -50,7 +52,7 @@
         </aside>
     </main>
 {% else %}
-    <main [component.children] class="Main">
+    <main class="Main" [component.children] >
     </main>
 {% endif %}
 

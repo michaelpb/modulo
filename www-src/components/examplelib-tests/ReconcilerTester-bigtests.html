@@ -1,17 +1,54 @@
-<!--<script src="/m.js"></script>-->
-<script src="/js/Modulo.js"></script>
-<mod-load namespace="x" src="/components/layouts.html"></mod-load>
-<script>
-Modulo.defineAll()
-</script>
+<test name="Successfully sets up mocks and testing data">
+    <script>
+        Modulo.utils.makeMockElement = function reconcile (html)  {
+            const {makeDiv} = Modulo.utils;
+            const mockElement = makeDiv(html);
+            mockElement.applyDirectives = () => {}; // dummy
+            mockElement.resolveValue = () => () => {}; // dummy(2)
+            mockElement.directiveMount = () => {}; // dummy
+            mockElement.directiveUnmount = () => {}; // dummy
+            mockElement.directiveChange = () => {}; // dummy
+            return mockElement;
+        }
 
+        Modulo.utils.transformDOMCheck = function reconcile (oldHTML, newHTML, expectedDirCount)  {
+            if (newHTML === undefined) { // single argument given
+                newHTML = oldHTML;
+                oldHTML = '';
+            }
+            const {makeDiv} = Modulo.utils;
+            const mockElement = Modulo.utils.makeMockElement(oldHTML);
+            //const modRec = new ModRec({makePatchSet: true});
+            const modRec = new ModRec({makePatchSet: false});
+            const patches = modRec.reconcile(mockElement, newHTML);
 
+            let dirCount;
+            if (expectedDirCount !== undefined) {
+                dirCount = patches.filter(p => p[1].startsWith('directive')).length;
+            }
+            const genInner = makeDiv(mockElement.innerHTML).innerHTML;
+            const correctInner = makeDiv(newHTML).innerHTML;
+            const match = genInner === correctInner;
+            if (!match) {
+                console.log('-------------------------')
+                console.log('Error: no match');
+                console.log('Was naively wishing for:');
+                console.log(correctInner);
+                console.log('but instead got:');
+                console.log(genInner);
+                console.log('-------------------------')
+            } else {
+                //console.log('match', genInner, correctInner);
+            }
 
-<x-Page
-    docbarselected="tutorial.html"
-    pagetitle="Tutorial"
-    navbar="docs">
-
+            if (expectedDirCount !== dirCount) {
+                /*console.log('DIRECTIVE NOT MATCH:',
+                  patches.filter(p => p[1].startsWith('directive')));*/
+                console.log('DIRECTIVE NOT MATCH:', dirCount, 'actual', expectedDirCount, 'expected');
+            }
+            return match && expectedDirCount === dirCount;
+        };
+Modulo.utils.elementIH = `
 <h1>Tutorial</h1>
 
 <blockquote> <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this
@@ -26,7 +63,7 @@ learn how to use Modulo in your own projects.</p>
 Modulo?</strong></p>
 
 
-<mws-Section name="part1">Part 1: Components, CParts, Loaders</mws-Section>
+<mws-section name="part1">Part 1: Components, CParts, Loaders</mws-section>
 
 <h3>Including Modulo</h3>
 <p>The first step is to include the Modulo.js file. You can do this one of
@@ -35,7 +72,7 @@ Modulo?</strong></p>
     <li>Using a script tag to directly link to a CDN</li>
     <li>Downloading the Modulo.js and including it with a script tag, e.g.
     <code>&lt;script src="/js/Modulo.js"&gt;</code>
-</ol>
+</li></ol>
 
 <p>Then, Modulo needs to be explicitly activated. Somewhere before the closing body tag of your HTML file, you should activate Modulo with the following code:
     <code>&lt;script&gt;Modulo.defineAll();&lt;script&gt;</code>
@@ -48,7 +85,7 @@ Modulo?</strong></p>
     app? <em>Components</em> let you store repeated code in one place. Once
     defined, components can be re-used everywhere, saving developer time
     and reducing mistakes. Furthermore, within teams, components libraries
-    improve collaboration between developers.</p>
+    improve collaboration between developers./p>
 </blockquote>
 
 <h3>Defining your first component</h3>
@@ -103,11 +140,10 @@ can be embedded in an HTML page within a tag like
         to start from scratch, or use an existing project.</li>
         <li>Copy &amp; paste in the following code:
 
-<mws-Demo
-text='
+<mws-demo text="
 <!-- Define a custom component -->
-<template is="modulo-embed">
-    <component name="HelloWorld">
+<template is=&quot;modulo-embed&quot;>
+    <component name=&quot;HelloWorld&quot;>
         <template>
             Hello <strong>Modulo</strong> World!
         </template>
@@ -116,12 +152,9 @@ text='
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <x-HelloWorld></x-HelloWorld>
 <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
-<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
-<script src="https://modulojs.org/js/Modulo.js"></script>
-<script>Modulo.defineAll();</script>
-'></mws-Demo>
+<!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) -->
+"></mws-demo>
 </li>
-<!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
         <li>Ensure that the HTML file is opened in your preferred, modern web
         browser (such as Firefox or Chrome) as well.</li>
         <li>Refresh your web browser to view the results.</li>
@@ -135,9 +168,9 @@ Because it is so central, saying <em>Component Parts</em> over and over
 gets tiresome, so it's typically shortened to <em>CParts</em>.</p>
 
 <blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the cast and
-crew of a musical. Each are assigned to a different task&mdash;some are
+crew of a musical. Each are assigned to a different task?some are
 more flashy and visible, others being stage-hands working behind the
-scenes&mdash;but they all work together to put on the same
+scenes?but they all work together to put on the same
 show!</p></blockquote>
 
 <p>All component definitions consist of some number of CParts.  Thus, a
@@ -199,12 +232,9 @@ sample code editors only focus on the CPart definitions within.</p>
         <li>Practice incorporating these CParts into your own components on
         a real page by copying the code here and pasting it within your
         component definition (that is, the one that you created in the
-        previous part of this tutorial)</p>
-    </ol>
-    <mws-Demo
-        demotype="minipreview"
-        fromlibrary="Tutorial_P1"
-    ></mws-Demo>
+        previous part of this tutorial)<p></p>
+    </li></ol>
+    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P1"></mws-demo>
 </section>
 
 
@@ -229,8 +259,7 @@ limitations.</p>
 
 <p>Loader tags look like the following:</p>
 
-<pre>
-&lt;modulo-load
+<pre>&lt;modulo-load
     src="./components/my-stuff.html"
     namespace="coolstuff"&gt;
 &lt;/modulo-load&gt;
@@ -273,7 +302,7 @@ limitations.</p>
         defined like <code>&lt;component name="MyThing"&gt;</code>
         imported with <code>namespace="coolstuff"</code>, then the
         resulting full name would be <code>coolstuff-MyThing</code>, and
-        we'd use the component like<br />
+        we'd use the component like<br>
         <code>&lt;coolstuff-MyThing&gt;&lt;/coolstuff-MyThing&gt;</code>.</p>
     </li>
 
@@ -303,15 +332,13 @@ limitations.</p>
         relative path to your new component library file, and namespace can
         be <code>lib</code>.  For example, if you named everything based on
         the above suggestions, it would look like this:
-<pre>
-&lt;modulo-load src="./components/my-component-lib.html"
+<pre>&lt;modulo-load src="./components/my-component-lib.html"
             namespace="lib"&gt;&lt;/modulo-load&gt;
 </pre></li>
 
         <li>Finally, update your component usage to now use the new
         namespace (instead of the "x" default namespace placeholder):
-<pre>
-&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
+<pre>&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
 &lt;p&gt;In a P tag: &lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;&lt;/p&gt;
 </pre></li>
         <li>Refresh the web browser to view the results. If done correctly,
@@ -364,7 +391,7 @@ forms and interactive, changing components with the State CPart.</p>
 
 
 
-<mws-Section name="part2">Part 2: Props and Templating</mws-Section>
+<mws-section name="part2">Part 2: Props and Templating</mws-section>
 
 <blockquote> <p><strong>Why use Props?</strong>
 Components are "write once, use everywhere". That is to say, you only need to
@@ -399,11 +426,10 @@ specify its text, or which shape variation.</p>
     </ol>
 
 
-<mws-Demo
-text='
+<mws-demo text="
 <template>
 Hello <strong>Modulo</strong> World!
-<p class="neat">Any HTML can be here!</p>
+<p class=&quot;neat&quot;>Any HTML can be here!</p>
 </template>
 <style>
 /* ...and any CSS here! */
@@ -414,55 +440,136 @@ strong {
     font-variant: small-caps;
 }
 </style>
-'>
-</mws-Demo>
+">
+</mws-demo>
 </section>
 
 
-<mws-Demo
-text='
+<mws-demo text="
 <template>
     <p>Trying out the button...</p>
     <tutorial-Button
-        label="Button Example"
-        shape="square"
+        label=&quot;Button Example&quot;
+        shape=&quot;square&quot;
     ></tutorial-Button>
 
     <p>Another button...</p>
     <tutorial-Button
-        label="Rounded is Great Too"
-        shape="rounded"
+        label=&quot;Rounded is Great Too&quot;
+        shape=&quot;rounded&quot;
     ></tutorial-Button>
 </template>
-'>
-</mws-Demo>
-</section>
+">
+</mws-demo>
 
 
-<mws-Demo
-text='
-<component name="Button">
+
+<mws-demo text="
+<component name=&quot;Button&quot;>
     <props
         label
         shape
     ></props>
     <template>
-        <button class="my-btn my-btn_{{ props.shape }}">
+        <button class=&quot;my-btn my-btn_{{ props.shape }}&quot;>
             {{ props.label }}
         </button>
     </template>
 </component>
-'
-></mws-Demo>
+"></mws-demo>
 
 
 
 
 
-<mws-Section name="part3">Part 3: State and Script</mws-Section>
+<mws-section name="part3">Part 3: State and Script</mws-section>
 
 coming soon!
 
+`;
+
+Modulo.utils.componentIH = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf8" />
+    <title>Tutorial - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
+    <disabled-script src="/js/codemirror_5.63.0/codemirror_bundled.js"></disabled-script>
+
+    <!--
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
+</head>
+<body>
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
+    <ul>
+        <li>
+            <a href="/index.html#about" >About</a>
+        </li>
+        <li>
+            <a href="/start.html" >Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        v: undefined<br />
+        SLOC: undefined lines<br />
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
 
 
-</x-Page>
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar" >
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-DocSidebar path="tutorial.html"></mws-DocSidebar>
+            </nav>
+        </aside>
+        <aside style="border: none" [component.children]>
+        </aside>
+    </main>
+
+
+<footer>
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
+</body>
+</html>
+`;
+
+
+
+        const {ModRec} = Modulo.reconcilers;
+
+        assert: ModRec && Modulo.utils.elementIH;
+    </script>
+</test>
+
+
+<test name="Supporting interactions with directives">
+    <script name="Complete page replacement with children (1)">
+        const {transformDOMCheck, elementIH, componentIH} = Modulo.utils;
+        assert: transformDOMCheck(elementIH, componentIH, 1);
+    </script>
+
+    <script name="Complete page replacement with children (2)">
+        const {transformDOMCheck, elementIH, componentIH} = Modulo.utils;
+        assert: transformDOMCheck(componentIH, elementIH, 1);
+    </script>
+</test>
+

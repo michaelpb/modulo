@@ -122,6 +122,8 @@
     }
     let componentTexts;
     try {
+        //console.log('this is', Object.keys(Modulo.factoryInstances));
+        //console.log('this is', Modulo.factoryInstances);
         componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
     } catch {
         console.log('couldnt get componentTexts');
@@ -231,7 +233,6 @@
     function initializedCallback() {
         const {isBackend, ssgCurrentOutputPath} = Modulo;
         let path = props.path;
-        console.log('this is path', path);
         for (const groupObj of script.exports.menu) {
             if (props.showall) {
                 groupObj.active = true;

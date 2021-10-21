@@ -505,3 +505,32 @@
             `,  22); // (8 * 2 = 16 mounts) + (3 * 2 = 6 unmounts)
     </script>
 </test>
+
+<test name="Supporting interactions with directives">
+
+    <script name="Complete page replacement with children">
+        const {transformDOMCheck} = Modulo.utils;
+        const componentIH = `<!DOCTYPE html>
+            <html>
+            <head><title></title></head>
+            <body>
+                <main class="Main">
+                    <aside class="TitleAside" >
+                    </aside>
+                    <aside style="border: none" [component.children]>
+                    </aside>
+                </main>
+            </body>
+            </html>
+        `;
+        const elementIH = `
+            <h1>A</h1> <p>A</p> <p>A</p> <p>B</p> <p>B</p> <p>A</p> <h1>A</h1>
+            <p>C</p> <p>A</p> <div>A</div> <p>A</p> <p>A</p> <p>A</p> <p>A</p>
+            <h1>A</h1> <p>A</p> <p>A</p> <p>A</p> <p>A</p> <p>123</p> <p>B</p>
+            <p>A</p> <p>B</p> <p>123</p> <p>A</p> <p>B</p> <p>B</p> <p>A</p>
+            <p>A</p> <p>B</p> <p>A</p> <p>123</p> <p>B</p> <p>B</p>
+        `;
+        assert: transformDOMCheck(componentIH, elementIH);
+    </script>
+
+</test>

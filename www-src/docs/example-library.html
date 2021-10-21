@@ -1,19 +1,11 @@
-<!-- Note: Putting /m.js at the bottom, thinking if it should be
-     window.onload = () => Modulo.defineAll() -->
-
-<!--
+<!--<script src="/m.js"></script>-->
 <script src="/js/Modulo.js"></script>
-<script>Modulo.defineAll()</script>
-<mod-load namespace="x" src="/components/layouts.html"></mod-load>
-
-Just for testing purposes:
-<script src="/m.js"></script>
--->
-
-<x-Page
-    docbarselected="example-library.html"
-    pagetitle="Example Library"
-    navbar="docs">
+<modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo>
+<script>
+        window.onload = () => Modulo.defineAll()
+</script>
 
 <template modulo-embed>
     <component name="AllExamples">
@@ -30,6 +22,7 @@ Just for testing purposes:
         </template>
 
         <script>
+            console.log('loading AllExamples');
             script.exports.examples = [];
             function initializedCallback() {
                 // TODO: make initialized only get called once
@@ -40,9 +33,9 @@ Just for testing purposes:
                 });
             }
             function _setup(text) {
-                console.log('this is the example library');
                 let componentTexts;
                 try {
+                    componentTexts = Modulo.factoryInstances['eg-eg']
                     componentTexts = Modulo.factoryInstances['eg-eg']
                             .baseRenderObj.script.exports.componentTexts;
                 } catch {
@@ -65,11 +58,24 @@ Just for testing purposes:
 </template>
 
 
+<!--
+<script src="/js/Modulo.js"></script>
+<script>Modulo.defineAll()</script>
+<mod-load namespace="x" src="/components/layouts.html"></mod-load>
+
+Just for testing purposes:
+<script src="/m.js"></script>
+-->
+
+<x-Page
+    docbarselected="example-library.html"
+    pagetitle="Example Library"
+    navbar="docs">
+
+
 <h1>Example Library</h1>
 
 <x-AllExamples></x-AllExamples>
 
 </x-Page>
 
-
-<script src="/m.js"></script>

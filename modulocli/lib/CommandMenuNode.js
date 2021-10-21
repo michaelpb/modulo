@@ -529,13 +529,21 @@ class CommandMenuNode extends baseModulo.CommandMenu {
     test(config, modulo, isSrcServe=false) {
         let discovered = [];
         let soloMode = false;
+        let skippedCount = 0;
         for (const factory of Object.values(modulo.factoryInstances)) {
-            if (factory.baseRenderObj.testsuite) {
-                if ('solo' in factory.baseRenderObj.testsuite.attrs) {
-                    soloMode = true;
-                }
-                discovered.push([factory, factory.baseRenderObj.testsuite]);
+            //console.log('factory', factory.fullName);
+            const { testsuite } = factory.baseRenderObj;
+            if (!testsuite) {
+                continue;
             }
+            if ('skip' in testsuite.attrs) {
+                skippedCount++;
+                continue;
+            }
+            if ('solo' in testsuite.attrs) {
+                soloMode = true;
+            }
+            discovered.push([factory, testsuite]);
         }
         if (soloMode) {
             discovered = discovered.filter(([fac, {attrs}]) => 'solo' in attrs);
@@ -545,30 +553,39 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             console.warn('WARNING: No test suites discovered')
         }
         console.log(['%'], discovered.length + ' test suites found');
-        const {runTests} = modulo.cparts.testsuite;
+        const { runTests } = modulo.cparts.testsuite;
         let success = 0;
         let failure = 0;
         const failedComponents = [];
-        for (const [factory, testsuite] of discovered) {
+
+        for (const [ factory, testsuite ] of discovered) {
             const info = ' ' + (testsuite.name || '');
             console.group('[%]', 'TestSuite: ' + factory.fullName + info);
-            const [successes, failures] = runTests(testsuite, factory)
+            const [ successes, failures ] = runTests(testsuite, factory)
             console.groupEnd();
             if (failures) {
                 failedComponents.push(factory.fullName);
             }
             success += successes;
             failure += failures;
-            if (!successes) {
-                console.log('FAILURE: No successful assertions.');
+            if (!successes && !failures) {
+                console.log('FAILURE: No assertions were completed.');
                 failure++;
             }
         }
+
+        if (skippedCount > 0) {
+            console.log(TERM.YELLOW_FG, 'SKIPPED', TERM.RESET, skippedCount,
+                        'TestSuite(s) skipped');
+        }
+
         if (!failure) {
-            console.log('OK', success, 'tests passed');
+            console.log(TERM.GREEN_FG, 'OK', TERM.RESET,
+                        `${success} tests passed`);
         } else {
             console.log('SUCCESSES:', success, 'tests passed');
-            console.log('FAILURE', failure, 'tests failed:', failedComponents);
+            console.log(TERM.RED_FG, 'FAILURE', TERM.RESET, failure,
+              'tests failed. Failing components:', failedComponents);
         }
     }
 }

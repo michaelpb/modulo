@@ -231,7 +231,6 @@
     function initializedCallback() {
         const {isBackend, ssgCurrentOutputPath} = Modulo;
         let path = props.path;
-        console.log('this is path', path);
         for (const groupObj of script.exports.menu) {
             if (props.showall) {
                 groupObj.active = true;

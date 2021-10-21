@@ -4,9 +4,9 @@
 
 [modulojs.org](https://modulojs.org)
 
-**A tiny JavaScript UI framework**
+**A concise JavaScript Component framework**
 
-- [X] <1000 lines of code as a thin layer over vanilla Web Components
+- [X] About ~1000 lines of code as a thin layer over vanilla Custom Web Components
 - [X] Components system inspired by React, Svelte, and Polymer
 - [X] Modular with opinionated defaults and few assumptions
 - [X] A "no fuss" drop-in to add JS to existing web apps
@@ -22,6 +22,15 @@
 - release - use it, ready for general use, some small bugs may crop up, and
   some extra features may be added
 - mature - use it, featureset is stable and will have no changes
+
+
+### Versioning roadmap
+
+- Prealpha / alpha: no version numbers
+- Beta: 0.x.y
+    - Patch releases: No documentation changes
+    - Minor releases: Documentation or feature changes
+    - Major releases: Backwards incompatibility
 
 
 
