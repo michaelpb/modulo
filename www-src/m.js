@@ -47,10 +47,10 @@ Modulo.defineAll = function defineAll() {
 
     Modulo.CommandMenu.setup();
     Modulo.fetchQ.wait(() => {
-        const query = 'template[modulo-embed],modulo';
-        for (const embedElem of Modulo.globals.document.querySelectorAll(query)) {
+        const query = 'template[modulo-embed],modulo,m-module';
+        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
             // TODO: Should be elem.content if tag===TEMPLATE
-            Modulo.globalLoader.loadString(embedElem.innerHTML);
+            Modulo.globalLoader.loadString(elem.innerHTML);
         }
     });
 };
@@ -142,12 +142,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
     // definitions. Then, it uses `Loader.loadFromDOMElement` to create a
     // `ComponentFactory` instance for each component definition.
     loadString(text) {
-        /* TODO - Maybe use DOMParser here instead */
-        /* TODO - Recurse into other sub-loaders, applying namespace */
-        /* TODO: Do <script  / etc preprocessing here:
-          <state -> <script type="modulo/state"
-          <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
-          </(state|props|template)> -> </script>*/
         /*if (this.src) {
             // not sure how useful this is
             Modulo.fetchQ.basePath = this.src;
@@ -694,6 +688,16 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         this.instance = new engineClass(this.content, this.attrs);
     }
 
+    prepareCallback(renderObj) {
+        // Exposes templates in render context, so stuff like
+        // "|renderas:template.row" works
+        const obj = {};
+        for (const template of this.element.cpartSpares.template) {
+            obj[template.name || 'default'] = template;
+        }
+        return obj;
+    }
+
     renderCallback(renderObj) {
         renderObj.component.innerHTML = this.instance.render(renderObj);
     }
@@ -905,6 +909,8 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     }
 
     parseExpr(text) {
+        // TODO: Store a list of variables / paths, so there can be warnings or
+        // errors when variables are unspecified
         const filters = text.split('|');
         let results = this.parseVal(filters.shift());
         for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
@@ -1034,7 +1040,7 @@ Modulo.templating.defaultOptions.filters = (function () {
 
         //Object.assign(new String(
         //                ), {safe: true}),
-        renderas: (renderCtx, template) => safe(template.instance.render(renderCtx)),
+        renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
     };
     return Object.assign(filters, { get, jsobj, safe });
 })();
@@ -1313,6 +1319,10 @@ Modulo.utils = class utils {
     }
 
     static makeDiv(html, inFrag=false) {
+        /* TODO: Have an options for doing <script  / etc preprocessing here:
+          <state -> <script type="modulo/state"
+          <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
+          </(state|props|template)> -> </script>*/
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = html;
         if (inFrag) { // TODO: Don't think there's a reason for frags, actually
