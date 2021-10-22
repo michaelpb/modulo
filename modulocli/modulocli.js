@@ -1,7 +1,11 @@
+const fs = require('fs');
+const path = require('path');
+
 const Modulo = require('./lib/ModuloNode');
 const cliutils = require('./lib/utils');
-const fs = require('fs');
+
 const defaultConfig = require('./lib/defaultConfig');
+
 
 let modulo = null;
 
@@ -79,36 +83,56 @@ function getConfig(cliConfig, flags) {
 
 function doCommand(cliConfig, args) {
     let {command, positional, flags} = args;
+
+    // Console log command right away, before loading anything
     console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
 
+    // Configure (blocking)
     const config = getConfig(cliConfig, flags);
     const {verbose} = config
     const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
-    const preloadFiles = (config.preload || []).concat(positional || []);
+    const { preload, testAllowPreload, tests } = config;
+    if (command === 'test') {
+        if (!testAllowPreload && preload) {
+            preload.length = 0; // A bizarre but efficient way to empty an array
+        }
+    }
+    const preloadFiles = preload.concat(positional || []);
 
     modulo = Modulo.getOrCreate(config, 'preload');
-    modulo.preloadQueue = new modulo.FetchQueue();
+    modulo.defineAll(); // do any initial defines, get globalLoader
     for (let filePath of preloadFiles) {
+        let workingDir = null;
         if (filePath === '-') {
-            filePath = 0; // load from stdin, which has FD=0
+            filePath = 0; // Load from stdin, which has FD=0
+        } else {
+            workingDir = path.resolve(filePath, '../');
+            filePath = path.basename(filePath);
         }
-        modulo.preloadQueue.enqueue(filePath, source => {
+
+        modulo.fetchQ.enqueue(filePath, source => {
             log(`Preloading Modulo document ${filePath}`);
-            modulo.loadText(source, filePath);
-        });
+            modulo.loadText(source, workingDir + '/' + filePath);
+            console.log('...this is filepath', filePath );
+            modulo.globalLoader.loadString(source, workingDir + '/' + filePath);
+        }, workingDir);
     }
 
-    modulo.preloadQueue.wait(() => {
-        modulo.defineAll(); // do any initial defines, get globalLoader
+    // Wait for all promises to resolve (similar to allSettled, except will
+    // wait for future ones as well)
+    console.log('XXX queue before wait:', modulo.fetchQ.queue);
+    modulo.fetchQ.wait(() => {
+        console.log('XXX queue after wait:', modulo.fetchQ.queue);
+        /*
 
-        // Ensure preloadQueue gets loaded as components as well
-        for (const [path, data] of Object.entries(modulo.preloadQueue.data)) {
-            modulo.fetchQ.basePath = path;
+        // Ensure fetchQ gets loaded as components as well
+        for (const [path, data] of Object.entries(modulo.fetchQ.data)) {
+            console.log('queue after path:', path);
             modulo.globalLoader.loadString(data);
         }
-
         modulo.defineAll(); // do any more defines
-        // Make sure preloads are
+        */
+
         modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
             let skipFlags = undefined;
             if (!command) {

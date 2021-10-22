@@ -105,14 +105,19 @@ const defaultConfig = {
         // As with other BUILD paths, this path gets templated using MTL syntax
         // with the same variables available (see buildPath)
 
+    testAllowPreload: false,
+        // The "test" command is the only one which will NOT automatically
+        // preload before running, in order to save time and keep tests better
+        // isolated. Enable this if your test-suites need the preloads.
+
     isSkip: '^(\\.|_)',
         // For SSG, specify a RegExp string that is tested against every "path
         // part", or each directory or filename that make up a file path. If
         // any path part matches this, it will skip that path and everything
-        // under it.  The default behavior is to ignore dot-prefix and
+        // under it.  The default behavior is to ignore dot-prefixed and
         // underscore-prefixed hidden files. Since most OS's do not treat
         // underscore-prefixed files to be hidden, this is a handy way to get
-        // the SSG to skip a directory.
+        // the SSG to skip a directory, without it being fully hidden.
 
     isCopyOnly: '^components?$',
         // For SSG, specify a RegExp string that is tested against every "path
@@ -125,13 +130,12 @@ const defaultConfig = {
         // might be fine, but more likely will lead to unexpected results.
 
     isGenerate: '.*\\.html$',
-        // For SSG, specify a RegExp string that is tested against each files
-        // entire path
+        // For SSG, specify a RegExp string that is tested against each file's
+        // entire path (e.g. the $ is the end of the full path).
 
     preload: [],
-        // Specify extra preloaded HTML files. This option is identical to
-        // specifying positional arguments on the CLI, which means it should
-        // probably only be used in a package.json or modulo.json.
+        // For modulo.json (or package.json) configurations, this specifies
+        // extra preloaded HTML files (like positional arguments on the CLI).
 
     // (ENDHELP)
 
@@ -151,6 +155,18 @@ const defaultConfig = {
 
     fail: false,
         // Cause Modulo to fail on some recoverable errors
+
+
+    // presently not used-v
+    rootPath: 'CWD',
+        // Override the current working directory to specify a new base path.
+        // This will be used when loading relative file paths from the file
+        // system. The default is "CWD" for the current directory.
+
+    /*
+    // TODO:
+    tests: '(^tests$|*.test.html$)',
+    */
 };
 
 module.exports = defaultConfig;

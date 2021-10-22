@@ -1,6 +1,24 @@
 
 # Next refactor:
 
+- MAIN BUG: 2021-10-21:
+    - loadString doesn't enqueue until AFTER queue.wait(), causing ALL loading
+      to be broken
+e.g.
+
+```
+enqueueing tests/all.html
+queue before wait: { 'tests/all.html': [ [Function (anonymous)] ] }
+receiving tests/all.html
+this is queue {}
+queue after wait: {} // WAIT is triggered
+enqueueing ./reconciler1.test.html // nooooo
+enqueueing ./reconciler2.test.html
+enqueueing ./mtl.test.html
+enqueueing ./utils.test.html
+```
+
+
 - Switch to < load > , and fix sub-namespacing / hash namespacing
 
 - Namespacing fix:
@@ -8,6 +26,14 @@
   - Same behavior, always register absolutely to global-namespace
   - This way we can "punt" on hash namespacing until "namespace" (private ns)
     becomes a required feature
+
+- CLI testing: https://bitbucket.org/michaelb/scrollcli/src/master/runtests.sh
+- Use my old work on scrollcli BATS for "E2E" modulocli testing
+- Another: Either part of testing framework, or built-in, support archives of
+  site sources as "input" that it unzips to a tmp file, so we can have "frozen"
+  versions of CLI tests at different version tags for a more sophisticated CLI
+  test matrix
+- Improve "basePath" --> switch to workingDir and add as chdir() function
 
 # Notes on using ModRec to simplify load / reload:
 

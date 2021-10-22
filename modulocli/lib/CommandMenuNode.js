@@ -530,6 +530,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         let discovered = [];
         let soloMode = false;
         let skippedCount = 0;
+        console.log(Object.keys(modulo.factoryInstances));
         for (const factory of Object.values(modulo.factoryInstances)) {
             //console.log('factory', factory.fullName);
             const { testsuite } = factory.baseRenderObj;
@@ -552,7 +553,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         if (discovered.length === 0) {
             console.warn('WARNING: No test suites discovered')
         }
-        console.log(['%'], discovered.length + ' test suites found');
+        console.log('[%]', discovered.length + ' test suites found');
         const { runTests } = modulo.cparts.testsuite;
         let success = 0;
         let failure = 0;
@@ -562,16 +563,16 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             const info = ' ' + (testsuite.name || '');
             console.group('[%]', 'TestSuite: ' + factory.fullName + info);
             const [ successes, failures ] = runTests(testsuite, factory)
-            console.groupEnd();
             if (failures) {
                 failedComponents.push(factory.fullName);
             }
             success += successes;
             failure += failures;
             if (!successes && !failures) {
-                console.log('FAILURE: No assertions were completed.');
-                failure++;
+                console.log('[%]', 'TestSuite FAILED: No assertions executed.');
+                failure++; // no assertions = 1 failure
             }
+            console.groupEnd();
         }
 
         if (skippedCount > 0) {
@@ -579,13 +580,13 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                         'TestSuite(s) skipped');
         }
 
-        if (!failure) {
+        if (!failure && success) {
             console.log(TERM.GREEN_FG, 'OK', TERM.RESET,
                         `${success} tests passed`);
         } else {
             console.log('SUCCESSES:', success, 'tests passed');
-            console.log(TERM.RED_FG, 'FAILURE', TERM.RESET, failure,
-              'tests failed. Failing components:', failedComponents);
+            console.log(TERM.RED_FG, 'FAILURE ', TERM.RESET, failure,
+              'tests failed\n Failing components:', failedComponents);
         }
     }
 }

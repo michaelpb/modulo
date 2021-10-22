@@ -86,7 +86,7 @@ class ModuloNode {
             // Set the current basePath so that any fetches caused by render
             // will be relative to this file
             if (!basePath) {
-                basePath = null;
+                basePath = process.cwd(); // TODO rm this??
             }
             this.fetchQ.basePath = basePath;
         }
@@ -154,13 +154,17 @@ class ModuloNode {
         m.ComponentFactory = ComponentFactoryNode;
         m.CommandMenu = CommandMenuNode;
         m.cparts.testsuite = TestSuite;
+        m.utils.resolvePath = (baseDir, relDir) => pathlib.resolve(baseDir, relDir);
 
         //const element = new this.element.factory.createTestElement();
-        let {inputFile, outputFile} = (config || {});
+        let {rootPath, inputFile, outputFile} = (config || {});
         // TODO: to finish compatibility, add null replacer here
         if (inputFile) {
             utils.patchModuloWithSSGFeatures(m, inputFile, null, outputFile);
         }
+
+        // Not sure if  this is actually useful..? --v
+        //m.ROOT_PATH = (!rootPath || rootPath === 'CWD') ?  process.cwd() : rootPath;
     }
 
     fetchFile(src, opts) {
@@ -168,6 +172,7 @@ class ModuloNode {
         if (this.fetchPrefix) {
             src = this.fetchPrefix + '/' + src;
         }
+        console.log('thsi is src', src);
         return new Promise((resolve, reject) => {
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {
