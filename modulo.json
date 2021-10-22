@@ -1,5 +1,7 @@
 {
     "preload": ["www-src/components/layouts.html"],
     "output": "www",
+    "testLog": true,
+    "testLogPath": "modulo.testlog.json",
     "input": "www-src"
 }

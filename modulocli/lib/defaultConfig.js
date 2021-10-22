@@ -110,6 +110,18 @@ const defaultConfig = {
         // preload before running, in order to save time and keep tests better
         // isolated. Enable this if your test-suites need the preloads.
 
+    testLog: false,
+        // Enable the test log file will keep track of the maximum number of
+        // assertions that pass and fail when running. If enabled, an OMISSION
+        // FAILURE will occur if the number of assertions ever goes down. This
+        // is to ensure that no regressions get introduced which cause tests to
+        // not even be "picked up" or fail silently (e.g. Regressions during
+        // CPart load-steps can cause tests to not even load).
+
+    testLogPath: '.modulo.testlog.json',
+        // Specify the desired file path of your test log file. Do not ignore
+        // this file in VCS: Share when collaborating to "lock in" test count.
+
     isSkip: '^(\\.|_)',
         // For SSG, specify a RegExp string that is tested against every "path
         // part", or each directory or filename that make up a file path. If

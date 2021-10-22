@@ -556,6 +556,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         const { runTests } = modulo.cparts.testsuite;
         let success = 0;
         let failure = 0;
+        let omission = 0;
         const failedComponents = [];
 
         for (const [ factory, testsuite ] of discovered) {
@@ -568,8 +569,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             success += successes;
             failure += failures;
             if (!successes && !failures) {
-                console.log('[%]', 'TestSuite FAILED: No assertions executed.');
-                failure++; // no assertions = 1 failure
+                console.log('[%]', 'TestSuite omission: no assertions');
+                omission++; // no assertions = 1 omission failure
             }
             console.groupEnd();
         }
@@ -579,13 +580,49 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                         'TestSuite(s) skipped');
         }
 
-        if (!failure && success) {
+        if (config.testLog) {
+            let testLogData;
+            try {
+                const testLogFile = fs.readFileSync(config.testLogPath, 'utf8');
+                testLogData = JSON.parse(testLogFile);
+            } catch (err) {
+                console.log('omission: Could not open test log file', err);
+                omission++;
+            }
+            if (testLogData) {
+                const highscore = testLogData.highscore;
+                const total = failure + success;
+                if (total < highscore) {
+                    console.log('[!] omission: ', total, 'assertion(s) ran');
+                    console.log('[!] (while ', highscore, 'assertion(s) ran previously)');
+                    console.log('[!] (delete ', config.testLogPath, 'to reset)');
+                    omission++;
+                }
+            } else {
+                let data;
+                try {
+                    data = JSON.stringify({ highscore: failure + success });
+                    fs.writeFileSync(config.testLogPath, data);
+                } catch (err) {
+                    console.log('omission: Could not write to test log file', data, err);
+                    omission++;
+                }
+            }
+        }
+
+        if (!failure && !omission && success) {
             console.log(TERM.GREEN_FG, 'OK', TERM.RESET,
                         `${success} assertions passed`);
+            process.exit(0);
         } else {
             console.log('SUCCESSES:', success, 'assertions passed');
+            if (ommisions) {
+                console.log('OMISSIONS:', omissions, 'empty test suites or ' +
+                            'expected assertions');
+            }
             console.log(TERM.RED_FG, 'FAILURE ', TERM.RESET, failure,
               'assertions failed\n Failing components:', failedComponents);
+            process.exit(1);
         }
     }
 }

@@ -6,7 +6,6 @@ const cliutils = require('./lib/utils');
 
 const defaultConfig = require('./lib/defaultConfig');
 
-
 let modulo = null;
 
 const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
