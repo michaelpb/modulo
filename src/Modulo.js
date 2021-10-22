@@ -29,6 +29,7 @@ var Modulo = {
     templating: {}, // used later, for custom Templating languages
 };
 
+
 // ## Modulo.defineAll()
 // Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
 // "activate" all of Modulo by defining the "mod-load" web component. This
@@ -677,6 +678,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     constructor(element, options) {
         super(element, options);
         const engineClass = Modulo.templating[this.attrs.engine || 'MTL'];
+        // TODO: Do not put here! Move to factoryCallback, since otherwise
+        // it will compile every time (unless we cache templates)
         this.instance = new engineClass(this.content, this.attrs);
     }
 
@@ -702,22 +705,17 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const regexp2 = /function\s+(\w+)/; // hack, refactor
         const matches = contents.match(regexpG) || [];
         return matches.map(s => s.match(regexp2)[1])
+            .filter(s => s && !Modulo.INVALID_WORDS.has(s))
             .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
             .join('');
     }
 
     static wrapJavaScriptContext(contents, localVars) {
-        // TODO: Generalized wrapping idea:
-        //   - Split by word, get ALL symbols, filter out invalid ones, and
-        //   then do a "typeof ? :" loop in the return value. Then, assign all
-        //   functions to script, and all other values to script.exports.
-        // (Also: Need to check for reserved words in capture group:
-        // filter away things like "// function for games")
-        // (which generates a syntax error with "typeof for")
         const symbolsString = this.getSymbolsAsObjectAssignment(contents);
         const localVarsLet = localVars.join(',') || 'noLocalVars=true';
         const localVarsIfs = localVars
           .map(n => `if (name === '${n}') ${n} = value;`).join('\n');
+
 
         return `'use strict';
             var ${localVarsLet};
@@ -1491,6 +1489,16 @@ Modulo.FetchQueue = class FetchQueue {
         }
     }
 }
+
+
+Modulo.INVALID_WORDS = new Set((`
+    break case  catch class  const continue debugger default delete  do  else
+    enum  export extends finally  for if implements  import  in instanceof
+    interface new null  package  private protected  public return static  super
+    switch throw  try typeof var  void  while with await async
+`).split());
+
+//Modulo.RESERVED_WORDS = ['true', 'false', 'this'] // ? void
 
 Modulo.assert = function assert(value, ...info) {
     if (!value) {

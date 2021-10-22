@@ -43,6 +43,11 @@ class TestSuite extends Modulo.ComponentPart {
     }
 
     static scriptAssertion(cpart, element, stepConf, data) {
+        let errorValues = [];
+        function _reportValues(values) {
+            errorValues = values;
+        }
+
         // Apply assert and event macros:
         let assertionText, result;
         // Idea for assert macro: Take expression and put it in an eval, with
@@ -50,9 +55,29 @@ class TestSuite extends Modulo.ComponentPart {
         const assertRe = /^\s*assert:\s*(.+)\s*$/m;
         const isAssertion = assertRe.test(data.content);
         let content = data.content;
+        /*
+        if (!content.includes('assert:') && !content.includes('event:')) {
+            return [false, 'Script tag uses no macro'];
+        }
+        */
+
         if (isAssertion) {
             assertionText = content.match(assertRe)[1];
-            content = content.replace(assertRe, 'return $1');
+            //content = content.replace(assertRe, 'return $1');
+
+            // Alternate version, that breaks: This will show a "variable exposition" of failure
+            const assertRe2 = /\n\s*assert:\s*(.+)\s*$/;
+            const explanationCode = assertionText.split(/([^\w_\.]+)/)
+                .filter(s => s && !Modulo.INVALID_WORDS.has(s))
+                .map(word => (
+                    /^[a-zA-Z][\w_\.]*$/g.test(word) ?
+                      (`typeof ${word} !== "undefined" ? ${word} : '…'`)
+                    : JSON.stringify(word)
+                )).join(','); // TODO: Possibly change it to ellispis everything
+
+
+            content = content.replace(assertRe,
+                `_reportValues([${explanationCode}]); return $1`);
         }
         const eventRe = /^\s*event:\s*([a-zA-Z]+)\s+(.+)\s*$/m;
         content = content.replace(eventRe, `
@@ -61,9 +86,15 @@ class TestSuite extends Modulo.ComponentPart {
             }
             element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
         `);
-        const extra = {element, Modulo, document: Modulo.document}
+        const extra = {_reportValues, element, Modulo, document: Modulo.document}
         const vars = Object.assign(element.getCurrentRenderObj(), extra);
-        const func = new Function(Object.keys(vars).join(','), content);
+        let func;
+        try {
+            func = new Function(Object.keys(vars).join(','), content);
+        } catch (err) {
+            return [false, `Error occured, cannot compile: ${err}`]
+        }
+
         try {
             result = func.apply(null, Object.values(vars));
         } catch (err) {
@@ -72,7 +103,10 @@ class TestSuite extends Modulo.ComponentPart {
         if (!isAssertion) {
             return [undefined, undefined];
         }
-        return [result, `${assertionText}\n--(YIELDED)-->\n${result}\n`];
+        const resultArr = [
+            assertionText, '\n', '--(VALUES)-->', '\n'
+        ].concat(errorValues);
+        return [result, resultArr];
     }
 
     static doTestStep(element, sName, data) {
@@ -102,7 +136,12 @@ class TestSuite extends Modulo.ComponentPart {
             return true;
         } else if (result === false) {
             const msgAttrs = stepConf.name ? ` name="${stepConf.name}"` : '';
-            console.log(`ASSERTION <${sName}${msgAttrs}> FAILED:\n${message}`);
+            console.log(`ASSERTION <${sName}${msgAttrs}> FAILED:`)
+            if (message.map) {
+                console.log(...message);
+            } else {
+                console.log(message);
+            }
             return false;
         }
         return null;

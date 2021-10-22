@@ -581,11 +581,11 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
         if (!failure && success) {
             console.log(TERM.GREEN_FG, 'OK', TERM.RESET,
-                        `${success} tests passed`);
+                        `${success} assertions passed`);
         } else {
-            console.log('SUCCESSES:', success, 'tests passed');
+            console.log('SUCCESSES:', success, 'assertions passed');
             console.log(TERM.RED_FG, 'FAILURE ', TERM.RESET, failure,
-              'tests failed\n Failing components:', failedComponents);
+              'assertions failed\n Failing components:', failedComponents);
         }
     }
 }

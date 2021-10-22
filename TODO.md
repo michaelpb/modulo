@@ -1,23 +1,6 @@
 
 # Next refactor:
 
-- MAIN BUG: 2021-10-21:
-    - loadString doesn't enqueue until AFTER queue.wait(), causing ALL loading
-      to be broken
-e.g.
-
-```
-enqueueing tests/all.html
-queue before wait: { 'tests/all.html': [ [Function (anonymous)] ] }
-receiving tests/all.html
-this is queue {}
-queue after wait: {} // WAIT is triggered
-enqueueing ./reconciler1.test.html // nooooo
-enqueueing ./reconciler2.test.html
-enqueueing ./mtl.test.html
-enqueueing ./utils.test.html
-```
-
 
 - Switch to < load > , and fix sub-namespacing / hash namespacing
 
