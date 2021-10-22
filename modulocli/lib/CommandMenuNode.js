@@ -549,9 +549,6 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             discovered = discovered.filter(([fac, {attrs}]) => 'solo' in attrs);
         }
 
-        if (discovered.length === 0) {
-            console.warn('WARNING: No test suites discovered')
-        }
         console.log('[%]', discovered.length + ' test suites found');
         const { runTests } = modulo.cparts.testsuite;
         let success = 0;
@@ -559,6 +556,10 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         let omission = 0;
         const failedComponents = [];
 
+        if (discovered.length === 0) {
+            console.warn('OMISSION: No test suites discovered')
+            omission++;
+        }
         for (const [ factory, testsuite ] of discovered) {
             const info = ' ' + (testsuite.name || '');
             console.group('[%]', 'TestSuite: ' + factory.fullName + info);
@@ -582,6 +583,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
         if (config.testLog) {
             let testLogData;
+            let highscore = 0;
+            const total = failure + success;
             try {
                 const testLogFile = fs.readFileSync(config.testLogPath, 'utf8');
                 testLogData = JSON.parse(testLogFile);
@@ -590,21 +593,21 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                 omission++;
             }
             if (testLogData) {
-                const highscore = testLogData.highscore;
-                const total = failure + success;
-                if (total < highscore) {
-                    console.log('[!] omission: ', total, 'assertion(s) ran');
-                    console.log('[!] (while ', highscore, 'assertion(s) ran previously)');
-                    console.log('[!] (delete ', config.testLogPath, 'to reset)');
-                    omission++;
-                }
-            } else {
-                let data;
+                highscore = testLogData.highscore;
+            }
+
+            let data;
+            if (total < highscore) {
+                console.log('[!] OMISSION:', total, 'assertion(s) ran');
+                console.log('[!] OMISSION:', highscore, 'assertion(s) ran previously');
+                console.log('[!] (delete ', config.testLogPath, 'to reset)');
+                omission += highscore - total;
+            } else if (total > highscore) {
                 try {
-                    data = JSON.stringify({ highscore: failure + success });
+                    data = JSON.stringify({ highscore: failure + success }, null, 4);
                     fs.writeFileSync(config.testLogPath, data);
                 } catch (err) {
-                    console.log('omission: Could not write to test log file', data, err);
+                    console.log('OMISSION: Could not write to test log file', data, err);
                     omission++;
                 }
             }
@@ -616,8 +619,8 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             process.exit(0);
         } else {
             console.log('SUCCESSES:', success, 'assertions passed');
-            if (ommisions) {
-                console.log('OMISSIONS:', omissions, 'empty test suites or ' +
+            if (omission) {
+                console.log('OMISSIONS:', omission, 'empty test suites or ' +
                             'expected assertions');
             }
             console.log(TERM.RED_FG, 'FAILURE ', TERM.RESET, failure,

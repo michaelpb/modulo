@@ -1,9 +1,35 @@
 <component name="UtilTester"><testsuite>
 
-<test name="ensure utils is defined">
-    <script>
-        const { utils } = Modulo;
-        assert: utils
+<test name="utils.parseDirectives">
+    <script name="Ensure defined">
+        const { parseDirectives } = Modulo.utils;
+
+        Modulo.utils.parseDir = function parseDir (rawName, value) {
+            const pdArray = parseDirectives(
+                null, // element
+                { getAttribute: (() => value) }, // el
+                rawName,
+            );
+            if (pdArray[0]) delete pdArray[0].el
+            if (pdArray[1]) delete pdArray[1].el
+            return JSON.stringify(pdArray, null, 2);
+        }
+        assert: parseDirectives 
+    </script>
+
+    <script name="Ensure applies syntactic sugar">
+        const { parseDirectives, parseDir } = Modulo.utils;
+        // <a b="valb" c:="valc" @d="vald"></a>
+        const result = parseDir('c:', 'valc');
+        const expected = JSON.stringify([{
+            value: 'valc',
+            attrName: 'c',
+            rawName: 'c:',
+            dName: 'component.dataProp',
+            element: null,
+            name: '[component.dataProp]c',
+        }], null, 2);
+        assert: result === expected
     </script>
 </test>
 
