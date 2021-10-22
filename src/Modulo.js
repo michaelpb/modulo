@@ -1453,9 +1453,9 @@ Modulo.FetchQueue = class FetchQueue {
             // <-- TODO rm & straighten this stuff out
             this.basePath = this.basePath + '/'; // make sure trails '/'
         }
-        console.log('ENQUEUEING (1)', this.basePath, src);
+        //console.log('ENQUEUEING (1)', this.basePath, src);
         src = Modulo.utils.resolvePath(this.basePath || '', src);
-        console.log('ENQUEUEING (2)', this.basePath, src);
+        //console.log('ENQUEUEING (2)', this.basePath, src);
         if (src in this.data) {
             callback(this.data[src], label); // Synchronous route
         } else if (!(src in this.queue)) {

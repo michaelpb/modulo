@@ -172,7 +172,6 @@ class ModuloNode {
         if (this.fetchPrefix) {
             src = this.fetchPrefix + '/' + src;
         }
-        console.log('thsi is src', src);
         return new Promise((resolve, reject) => {
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {

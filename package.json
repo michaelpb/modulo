@@ -14,10 +14,9 @@
     "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
     "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
     "cli": "node ./modulocli/modulocli.js",
-    "test": "ava -v --serial"
+    "test": "npm run cli -- test ./tests/all.html"
   },
   "devDependencies": {
-    "ava": "3.14.0",
     "complexity-report-html": "0.0.3",
     "crypto-js": "4.1.1",
     "docco-next": "0.9.8",

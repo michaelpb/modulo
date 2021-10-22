@@ -113,18 +113,15 @@ function doCommand(cliConfig, args) {
         modulo.fetchQ.enqueue(filePath, source => {
             log(`Preloading Modulo document ${filePath}`);
             modulo.loadText(source, workingDir + '/' + filePath);
-            console.log('...this is filepath', filePath );
+            //console.log('...this is filepath', filePath );
             modulo.globalLoader.loadString(source, workingDir + '/' + filePath);
         }, workingDir);
     }
 
     // Wait for all promises to resolve (similar to allSettled, except will
     // wait for future ones as well)
-    console.log('XXX queue before wait:', modulo.fetchQ.queue);
     modulo.fetchQ.wait(() => {
-        console.log('XXX queue after wait:', modulo.fetchQ.queue);
         /*
-
         // Ensure fetchQ gets loaded as components as well
         for (const [path, data] of Object.entries(modulo.fetchQ.data)) {
             console.log('queue after path:', path);

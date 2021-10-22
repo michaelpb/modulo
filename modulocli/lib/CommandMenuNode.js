@@ -530,7 +530,6 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         let discovered = [];
         let soloMode = false;
         let skippedCount = 0;
-        console.log(Object.keys(modulo.factoryInstances));
         for (const factory of Object.values(modulo.factoryInstances)) {
             //console.log('factory', factory.fullName);
             const { testsuite } = factory.baseRenderObj;
