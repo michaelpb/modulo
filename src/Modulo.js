@@ -385,13 +385,16 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     directiveMount(args) {
         // TODO: Add a check to ensure one of Mount, Unmount or Change exists
-        this._invokeCPart(args.dName, 'Mount', args);
+        args.element = this;
+        this._invokeCPart(args.directiveName, 'Mount', args);
     }
     directiveUnmount(args) {
-        this._invokeCPart(args.dName, 'Unmount', args);
+        args.element = this;
+        this._invokeCPart(args.directiveName, 'Unmount', args);
     }
     directiveChange(args) {
-        this._invokeCPart(args.dName, 'Change', args);
+        args.element = this;
+        this._invokeCPart(args.directiveName, 'Change', args);
     }
 
     rerender() {
@@ -412,14 +415,14 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
-    _invokeCPart(cpartName, methodName, dirMountArg) {
+    _invokeCPart(cpartName, methodirectiveName, dirMountArg) {
         const argument = dirMountArg || this.renderObj;
         const splitKey = cpartName.split('.');
         if (splitKey.length === 2) {         // "state.bind"
             cpartName = splitKey[0];         // "state.
-            methodName = splitKey[1] + methodName; // .bindMount"
+            methodirectiveName = splitKey[1] + methodirectiveName; // .bindMount"
         }
-        const method = this.cparts[cpartName][methodName];
+        const method = this.cparts[cpartName][methodirectiveName];
         let result;
         if (method) {
             result = method.call(this.cparts[cpartName], argument);
@@ -1093,7 +1096,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     reconcile(node, rivalHTML, tagTransforms) {
         // Note: Always attempts to reconcile (even on first mount), in case
         // it's been pre-rendered
-        // TODO: remove <!DOCTYPE html>
+        // TODO: should normalize <!DOCTYPE html>
         this.patches = [];
         if (!this.elementCtx) {
             this.elementCtx = node; // element context
@@ -1211,10 +1214,12 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
     }
 
-    patchDirectives(elem, rawName, suffix) {
-        const directives = Modulo.utils.parseDirectives(this.elementCtx, elem, rawName);
+    patchDirectives(el, rawName, suffix) {
+        const directives = Modulo.utils.parseDirectives(rawName);
         if (directives) {
+            const value = el.getAttribute(rawName);
             for (const directive of directives) {
+                Object.assign(directive, { value, el });
                 this.patch(this.elementCtx, 'directive' + suffix, directive);
             }
         }
@@ -1400,7 +1405,7 @@ Modulo.utils = class utils {
         //return [index ? s.slice(0, index - 1) : s, s.slice(index)];
     }
 
-    static parseDirectives(element, el, rawName) {
+    static parseDirectives(rawName) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
         }
@@ -1419,11 +1424,10 @@ Modulo.utils = class utils {
         // There are directives... time to resolve them
         const { cleanWord } = Modulo.utils;
         const arr = [];
-        const value = el.getAttribute(rawName);
         const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
-        for (const dName of name.split(']').map(cleanWord)) {
-            if (dName !== attrName) { // Skip the bare name itself
-                arr.push({el, value, attrName, rawName, dName, element, name})
+        for (const directiveName of name.split(']').map(cleanWord)) {
+            if (directiveName !== attrName) { // Skip the bare name itself
+                arr.push({ attrName, rawName, directiveName, name })
             }
         }
         return arr;
@@ -1508,14 +1512,13 @@ Modulo.assert = function assert(value, ...info) {
 }
 
 // TODO: Probably should do this on an onload event or similar
-// TODO: Remove preloadData -- no longer exists
 //Modulo.globals.onload = () => Modulo.defineAll();
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
 Modulo.defineAll();
-Modulo.fetchQ.data = {{ allData|jsobj|safe }};
-{% for path, text in preloadData %}
-//  Preloading page: {{ path|escapejs|safe }} {# Simulates loading page #}
+Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
+{% for path in preload %}
+//  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
 Modulo.fetchQ.basePath = {{ path|escapejs|safe }};
 Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);
 {% endfor %}`);

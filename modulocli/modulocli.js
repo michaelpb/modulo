@@ -51,7 +51,7 @@ function getConfig(cliConfig, flags) {
     // Allow -p, -a, and -v as short-flags from CLI (but not conf):
     const shortFlags = {port: flags.p, host: flags.a, verbose: flags.v};
 
-    const pushKey = {preload: true};
+    const pushKey = { preload: true };
 
     // Finally, generate the config "stack", with items at the end taking
     // precedent over items at the top.
@@ -96,11 +96,11 @@ function doCommand(cliConfig, args) {
             preload.length = 0; // A bizarre but efficient way to empty an array
         }
     }
-    const preloadFiles = preload.concat(positional || []);
+    preload.push(...(positional || [])); // add in positional args to the full preload
 
     modulo = Modulo.getOrCreate(config, 'preload');
     modulo.defineAll(); // do any initial defines, get globalLoader
-    for (let filePath of preloadFiles) {
+    for (let filePath of preload) {
         let workingDir = null;
         if (filePath === '-') {
             filePath = 0; // Load from stdin, which has FD=0

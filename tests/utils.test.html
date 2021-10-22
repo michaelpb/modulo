@@ -2,35 +2,91 @@
 
 <test name="utils.parseDirectives">
     <script name="Ensure defined">
-        const { parseDirectives } = Modulo.utils;
-
-        Modulo.utils.parseDir = function parseDir (rawName, value) {
-            const pdArray = parseDirectives(
-                null, // element
-                { getAttribute: (() => value) }, // el
-                rawName,
-            );
-            if (pdArray[0]) delete pdArray[0].el
-            if (pdArray[1]) delete pdArray[1].el
-            return JSON.stringify(pdArray, null, 2);
+        // helper utility function:
+        Modulo.utils.parseDir = function parseDir (rawName) {
+            return JSON.stringify(parseDirectives(rawName), null, 2);
         }
+
+        const { parseDirectives } = Modulo.utils;
         assert: parseDirectives 
     </script>
 
-    <script name="Ensure applies syntactic sugar">
-        const { parseDirectives, parseDir } = Modulo.utils;
+    <script name="Can parse shortcuts">
+        const { parseDir } = Modulo.utils;
         // <a b="valb" c:="valc" @d="vald"></a>
         const result = parseDir('c:', 'valc');
         const expected = JSON.stringify([{
-            value: 'valc',
             attrName: 'c',
             rawName: 'c:',
-            dName: 'component.dataProp',
-            element: null,
+            directiveName: 'component.dataProp',
             name: '[component.dataProp]c',
         }], null, 2);
         assert: result === expected
     </script>
+
+    <script name="Can parse multiple shortcuts">
+        const { parseDir } = Modulo.utils;
+        const result = parseDir('@abc:', 'def');
+        const expected = JSON.stringify([
+                {
+                    attrName: 'abc',
+                    rawName: '@abc:',
+                    directiveName: 'component.dataProp',
+                    name: '[component.dataProp][component.event]abc',
+                },
+                {
+                    attrName: 'abc',
+                    rawName: '@abc:',
+                    directiveName: 'component.event',
+                    name: '[component.dataProp][component.event]abc',
+                },
+            ], null, 2);
+        assert: result === expected
+    </script>
+
+    <script name="Can parse multiple directives">
+        const { parseDir } = Modulo.utils;
+        // <a b="valb" c:="valc" @d="vald"></a>
+        const result = parseDir('[a][b][c][d]e', 'vale');
+        const expected = JSON.stringify([
+                { attrName: 'e', rawName: '[a][b][c][d]e',
+                    directiveName: 'a', name: '[a][b][c][d]e', },
+                { attrName: 'e', rawName: '[a][b][c][d]e',
+                    directiveName: 'b', name: '[a][b][c][d]e', },
+                { attrName: 'e', rawName: '[a][b][c][d]e',
+                    directiveName: 'c', name: '[a][b][c][d]e', },
+                { attrName: 'e', rawName: '[a][b][c][d]e',
+                    directiveName: 'd', name: '[a][b][c][d]e', },
+            ], null, 2);
+        assert: result === expected
+    </script>
+
+    <script name="Can parse bare directives">
+        const { parseDir } = Modulo.utils;
+        // <a b="valb" c:="valc" @d="vald"></a>
+        const result = parseDir('[testing]', '');
+        const expected = JSON.stringify([
+                { attrName: '', rawName: '[testing]',
+                    directiveName: 'testing', name: '[testing]', },
+            ], null, 2);
+        assert: result === expected
+    </script>
+
+    <script name="Can detect when no directives">
+        const { parseDirectives } = Modulo.utils;
+        const result = parseDirectives('just-a-normal-attribute-folks');
+        const expected = null;
+        assert: result === expected
+    </script>
+
+
+    <script name="Can detect when no directives or shortcuts">
+        const { parseDirectives } = Modulo.utils;
+        const result = parseDirectives('just-a$no.b.c:a---i??te-folks');
+        const expected = null;
+        assert: result === expected
+    </script>
+
 </test>
 
 </testsuite></component>

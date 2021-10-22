@@ -171,7 +171,7 @@ strong {
 <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
 <!-- The remaining components are only being used for adding more tests for
-the Modulo framework, not as an example -->
+examples to the Modulo framework, not as a examples themselves -->
 <component name="TestBtn">
     <props
         myclicky
@@ -183,6 +183,7 @@ the Modulo framework, not as an example -->
 </component>
 
 <component name="CompositionTests">
+<props b></props>
 <template name="comptest2">
     <x-TestBtn
         mytexty="Test text"
@@ -197,30 +198,21 @@ the Modulo framework, not as an example -->
     <x-Templating_Escaping></x-Templating_Escaping>
 </template>
 
-<script>
-    function gotClickies(ev, payload) {
-        state.a = 1337;
-    }
-</script>
 
 <!-- just add some random stuff here -->
 <state
     a:=1
 ></state>
-<props b></props>
+
+<script>
+    function gotClickies() {
+        state.a = 1337;
+    }
+</script>
 
 <testsuite
+    skip
     src="./examplelib-tests/CompositionTests-tests.html"
-></testsuite>
-
-</component>
-
-
-
-<component name="ReconcilerTester">
-
-<testsuite
-    src="./examplelib-tests/ReconcilerTester-tests.html"
 ></testsuite>
 
 </component>

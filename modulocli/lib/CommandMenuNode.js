@@ -253,17 +253,16 @@ class CommandMenuNode extends baseModulo.CommandMenu {
     build(config, modulo, allowEmpty=false, justBuildPath=false) {
         // NOTE: build is synchronous
         // TODO: Watch out, key order might not be stable, affect hash
-        const {preloadQueue, fetchQ} = modulo;
-        const preloadData = _removeKeyPrefix(preloadQueue.data, config.input);
+        // TODO: Once it has testing, look into using loader hashes for this
+        const { fetchQ } = modulo;
         const fetchData = _removeKeyPrefix(fetchQ.data, config.input);
-        const allData = Object.assign({}, preloadData, fetchData);
-        const dataStr = JSON.stringify(allData);
+        const dataStr = JSON.stringify(fetchData);
 
         if (!allowEmpty) {
-            modulo.assert(dataStr !== '{}', `No components (none loaded?)`);
+            modulo.assert(dataStr !== '{}', `No component or module data (no <load>?)`);
         }
         const hash = modulo.utils.hash(dataStr);
-        const {input, output, verbose, buildOutput} = config;
+        const { input, output, verbose, buildOutput, preload } = config;
         if (verbose) {
             console.log(` \`> - - Compiled: ${hash}`);
         }
@@ -279,7 +278,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
         // Build the output string
         const source = modulo.SOURCE_CODE;
-        const newCtx = {source, dataStr, fetchData, preloadData, allData};
+        const newCtx = { source, dataStr, fetchData, preload };
         const buildCtx = Object.assign(filePathCtx, newCtx);
         const str = modulo.buildTemplate.render(buildCtx);
         if (verbose) {
@@ -295,7 +294,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
     buildpreload(config, modulo) {
         const buildOutput = config.buildPreload;
-        const preloadBuildConf = Object.assign({}, config, {buildOutput});
+        const preloadBuildConf = Object.assign({}, config, { buildOutput });
         this._preloadBuildPath = this.build(preloadBuildConf, modulo);
     }
 

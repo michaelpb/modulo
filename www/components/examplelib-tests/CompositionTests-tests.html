@@ -1,13 +1,14 @@
 
 <!-- Due to bug with the test runner or testing framework, including this
 test will cause other tests to fail, but running it separately it succeeds. -->
-<!--
 <test name="Misc sub-components correctly render">
     <script>
         element.cparts.template =
             element.cpartSpares.template
                 .find(({attrs}) => attrs.name === 'comptest1')
+        assert: element.cparts.template
     </script>
+
     <template>
         Testing
         <x-Tutorial_P1>
@@ -25,7 +26,7 @@ test will cause other tests to fail, but running it separately it succeeds. -->
         </x-templating_escaping>
     </template>
 </test>
--->
+
 
 <test name="Button sub-component behavior">
     <script>
@@ -34,19 +35,21 @@ test will cause other tests to fail, but running it separately it succeeds. -->
                 .find(({attrs}) => attrs.name === 'comptest2')
     </script>
 
+    <!--
     <template name="Renders">
         <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
             <button @click:=props.myclicky>Test text</button>
         </x-TestBtn>
         <p>state.a: 1</p>
     </template>
+    -->
 
-    <!--
-    <script skip-rerender>
+    <script>
         event: click button
         assert: state.a === 1337
     </script>
 
+    <!--
     <template name="Renders after click">
         <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
             <button @click:=props.myclicky>Test text</button>
@@ -54,16 +57,10 @@ test will cause other tests to fail, but running it separately it succeeds. -->
         <p>state.a: 1337</p>
     </template>
 
-
     <template name="Shouldn't show subcomp children" string-count=0>
         IGNORED
     </template>
-    -->
 
-    <!--
-    <template name="Shows initial state" string-count=1>
-        <p>state.a: 1</p>
-    </template>
     -->
 </test>
 

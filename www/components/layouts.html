@@ -1,31 +1,9 @@
-<component name="Page" mode="vanish-allow-script">
-    <props
-        navbar
-        docbarselected 
-        pagetitle
-    ></props>
+<load src="./examplelib.html" namespace="eg"></load>
+<load src="./embeddedexampleslib.html" namespace="docseg"></load>
 
-    <template src="./layouts/base.html"></template>
-
-    <script>
-        function initializedCallback() {
-            if (Modulo.isBackend && module) {
-                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
-                //Object.assign(script.exports, Modulo.ssgStore.navbar);
-                const info = module.script.getGlobalInfo();
-                Object.assign(script.exports, info);
-                // Store results in DOM for FE JS
-                element.setAttribute('script-exports', JSON.stringify(script.exports));
-            } else if (element.getAttribute('script-exports')) {
-                // FE JS, retrieve from DOM
-                const dataStr = element.getAttribute('script-exports');
-                Object.assign(script.exports, JSON.parse(dataStr));
-            } else {
-                console.log('Warning: Couldnt get global info');
-            }
-        }
-    </script>
-</component>
+<!-- NOTE: Need to put modulowebsite.html last due to peer dependencies with
+     above -->
+<load src="./modulowebsite.html" namespace="mws"></load>
 
 
 <!--<script src="/components/layouts/globalUtils.js"></script>-->
@@ -113,4 +91,34 @@
     </script>
 
 </module>
+
+<component name="Page" mode="vanish-allow-script">
+    <props
+        navbar
+        docbarselected 
+        pagetitle
+    ></props>
+
+    <template src="./layouts/base.html"></template>
+
+    <script>
+        function initializedCallback() {
+            console.log('this is module', module);
+            if (Modulo.isBackend && module) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                console.log('Warning: Couldnt get global info');
+            }
+        }
+    </script>
+</component>
 

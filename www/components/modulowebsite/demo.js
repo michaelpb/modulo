@@ -2,8 +2,8 @@ let componentTexts = null;
 let componentTexts2 = null;
 let exCounter = 0; // global variable
 
-
 // Get text from the two example component libraries
+console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
 try {
     componentTexts = Modulo.factoryInstances['eg-eg']
             .baseRenderObj.script.exports.componentTexts;
@@ -25,6 +25,7 @@ function codemirrorMount({el}) {
 }
 
 function _setupCodemirror(el, demoType, myElement, myState) {
+    console.log('_setupCodemirror disabled'); return; ///////////////////
     let expBackoff = 10;
     const mountCM = () => {
         // TODO: hack, allow JS deps or figure out loader or something
@@ -109,7 +110,8 @@ function initializedCallback({el}) {
                 text = text.replace(/&#39;/g, "'"); // correct double escape
                 state.tabs.push({text, title});
             } else {
-                throw new Error('invalid fromlibrary:', title)
+                console.error('invalid fromlibrary:', title)
+                return;
             }
         }
     } else if (props.text) {
@@ -144,6 +146,8 @@ function initializedCallback({el}) {
 }
 
 function setupShaChecksum() {
+    console.log('setupShaChecksum disabled'); return; ///////////////////
+
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
     if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
         if (!mod || !mod.script || !mod.script.getVersionInfo) {
