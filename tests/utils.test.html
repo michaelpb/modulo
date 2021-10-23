@@ -89,4 +89,22 @@
 
 </test>
 
+<test name="utils.resolvePath">
+
+
+    <script name="Can resolve relativep paths">
+        const { resolvePath } = Modulo.utils;
+        /*
+        basesDir /home/michaelb/projects/modulo/tests/
+        relDir 
+        */
+        const baseDir = '/app/modulo/tests/';
+        const relPath = '../www-src/components/embeddedexampleslib.html';
+        const expected = '/app/modulo/www-src/components/embeddedexampleslib.html';
+        const result = resolvePath(baseDir, relPath);
+        assert: result === expected
+    </script>
+
+</test>
+
 </testsuite></component>

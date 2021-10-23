@@ -40,16 +40,17 @@ function logStatusBar(shoutyWord, finishedFiles, generateCount, maxCount=8) {
     lastStatusBar = statusBar;
 }
 
-function _removeKeyPrefix(data, prefix1, prefix2) {
-    // take that, rule of 3! this is only 2, so iz gud code
+function _relativeKeyPath(data, basePath) {
+    // Given an object where the keys are paths or an array where all the
+    // values are paths, return identical data, except all paths are relative
+    // to the base path.
+    const makeRel = abspath => '/' + path.relative(basePath, abspath)
+    if (data.map) {
+        return data.map(makeRel);
+    }
     const newObj = {};
-    for (let [key, value] of Object.entries(data)) {
-        if (key.startsWith(prefix1)) {
-            key = key.substr(prefix1.length);
-        } else if (key.startsWith(prefix2)) {
-            key = key.substr(prefix2.length);
-        }
-        newObj[key] = value;
+    for (let [ key, value ] of Object.entries(data)) {
+        newObj[makeRel(key)] = value;
     }
     return newObj;
 }
@@ -255,14 +256,14 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         // TODO: Watch out, key order might not be stable, affect hash
         // TODO: Once it has testing, look into using loader hashes for this
         const { fetchQ } = modulo;
-        const fetchData = _removeKeyPrefix(fetchQ.data, config.input);
+        const fetchData = _relativeKeyPath(fetchQ.data, config.input);
         const dataStr = JSON.stringify(fetchData);
 
         if (!allowEmpty) {
             modulo.assert(dataStr !== '{}', `No component or module data (no <load>?)`);
         }
         const hash = modulo.utils.hash(dataStr);
-        const { input, output, verbose, buildOutput, preload } = config;
+        const { input, output, verbose, buildOutput } = config;
         if (verbose) {
             console.log(` \`> - - Compiled: ${hash}`);
         }
@@ -278,7 +279,9 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
         // Build the output string
         const source = modulo.SOURCE_CODE;
-        const newCtx = { source, dataStr, fetchData, preload };
+        // Reroot all paths at base
+        const preload = _relativeKeyPath(config.preload, config.input);
+        const newCtx = { source, fetchData, preload };
         const buildCtx = Object.assign(filePathCtx, newCtx);
         const str = modulo.buildTemplate.render(buildCtx);
         if (verbose) {
@@ -335,7 +338,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             }
         }
         // Does a full generate across a directory
-        const {verbose, input, output} = config;
+        const { verbose, input, output } = config;
         const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
         if (this._ssgBuildInProgress) {
             log('SSG Build already in progress, not doing another.');
@@ -344,7 +347,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
         this._ssgBuildInProgress = true;
 
         // Build preload first
-        const _buildConf = val => Object.assign({}, config, {buildOutput: val})
+        const _buildConf = val => Object.assign({}, config, { buildOutput: val })
         log(`Building preload bundle: ${config.buildPreload}`);
         this.build(_buildConf(config.buildPreload), modulo, true); // empty = ok
 
@@ -363,7 +366,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
             log(`Beginning postprocessing (${ppFiles.length} file(s) may need it)`);
             let ppCount = 0;
             for (const outputFile of ppFiles) {
-                const ppConf = Object.assign({}, config, {outputFile});
+                const ppConf = Object.assign({}, config, { outputFile });
                 this._ssgPostProcess(outPath, ppConf, modulo, () => {
                     ppCount++;
                     if (verbose) {

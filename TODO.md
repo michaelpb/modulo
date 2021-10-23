@@ -17,6 +17,8 @@
   versions of CLI tests at different version tags for a more sophisticated CLI
   test matrix
 - Improve "basePath" --> switch to workingDir and add as chdir() function
+- Consideration for [component.children] ... Perhaps do < slot > interface
+  instead?
 
 # Notes on using ModRec to simplify load / reload:
 

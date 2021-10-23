@@ -7,9 +7,9 @@ const TestSuite = require('../../src/TestSuite.js');
 // Get test suite functions
 const fs = require('fs');
 const pathlib = require('path');
-const {JSDOM} = require('jsdom');
+const { JSDOM } = require('jsdom');
 const utils = require('./utils');
-const {webComponentsUpgrade, patchWindow} = require('./jsdomUtils');
+const { webComponentsUpgrade, patchWindow } = require('./jsdomUtils');
 
 const allModuloInstances = {};
 
@@ -61,7 +61,7 @@ class ModuloNode {
     clearAll(config) {
         baseModulo.factoryInstances = {};
         this.patchModulo(baseModulo, config);
-        const {defineAll} = this;
+        const { defineAll } = this;
         Object.assign(this, baseModulo, this); // in conflicts, "this" wins
         delete this.moduloNode; // prevent ugly ref loop
         this.doc = null;
@@ -154,7 +154,25 @@ class ModuloNode {
         m.ComponentFactory = ComponentFactoryNode;
         m.CommandMenu = CommandMenuNode;
         m.cparts.testsuite = TestSuite;
-        m.utils.resolvePath = (baseDir, relDir) => pathlib.resolve(baseDir, relDir);
+
+        /*
+        if (!m.utils.oldResolve) {
+            m.utils.oldResolve = m.utils.resolvePath;
+        }
+        m.utils.resolvePath = (baseDir, relDir) => {
+            const a = m.utils.oldResolve(baseDir, relDir);
+            const b = pathlib.resolve(baseDir, relDir);
+            if (a !== b) {
+                console.log('----------')
+                console.log('basesDir', baseDir);
+                console.log('relDir', relDir);
+                console.log('vanilla resolve', a);
+                console.log('node pathlib resolve', b);
+                console.log('----------')
+            }
+            return b;
+        };
+        */
 
         //const element = new this.element.factory.createTestElement();
         let {rootPath, inputFile, outputFile} = (config || {});
@@ -162,9 +180,6 @@ class ModuloNode {
         if (inputFile) {
             utils.patchModuloWithSSGFeatures(m, inputFile, null, outputFile);
         }
-
-        // Not sure if  this is actually useful..? --v
-        //m.ROOT_PATH = (!rootPath || rootPath === 'CWD') ?  process.cwd() : rootPath;
     }
 
     fetchFile(src, opts) {

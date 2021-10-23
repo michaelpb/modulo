@@ -1,7 +1,8 @@
 <module>
     <script>
         // Splits up own source-code to get source for each example
-        const myText = Modulo.fetchQ.data[factory.loader.src];
+        const mySrc = '/components/examplelib.html';
+        const myText = Modulo.fetchQ.data[mySrc];
         const componentTexts = {};
         if (myText) {
             let name = '';
@@ -26,6 +27,7 @@
         script.exports.componentTexts = componentTexts;
     </script>
 </module>
+
 <!--
 /*} else if (sName === 'style') {
     console.log('this is content', data.content);

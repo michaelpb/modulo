@@ -3,8 +3,8 @@
 // # Introduction
 // Welcome to the Modulo.js source code.
 
-// Unlike most code files, this one is arranged in a very deliberate way.  It's
-// arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
+// WIP: Unlike most code files, this one is arranged in a very deliberate way.
+// It's arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
 // component, such that the earlier and more important code is at the top, and
 // later and less important code is at the bottom. You can read it like a
 // linear "story" of how Modulo works. Modulo employs [literate
@@ -17,13 +17,12 @@
 // - Line limit: 80 chars
 // - Indentation: 4 spaces
 
-
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
 
 var Modulo = {
-    globals: {HTMLElement}, // globals is window in Browser, an obj in Node.js
+    globals: { HTMLElement }, // globals is window in Browser, an obj in Node.js
     reconcilers: {}, // used later, for custom DOM Reconciler classes
     cparts: {}, // used later, for custom CPart classes
     templating: {}, // used later, for custom Templating languages
@@ -44,7 +43,9 @@ Modulo.defineAll = function defineAll() {
     // tags or <script type="modulo/embed" tags>. For each of these, it loads
     // their contents into a global loader with namespace 'x'.
     const attrs = { namespace: 'x', src: '/' };
-    Modulo.globalLoader = new Modulo.Loader(null, { attrs });
+    if (!Modulo.globalLoader) {
+        Modulo.globalLoader = new Modulo.Loader(null, { attrs });
+    }
 
     Modulo.CommandMenu.setup();
     Modulo.fetchQ.wait(() => {
@@ -136,9 +137,11 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
     // definitions. Then, it uses `Loader.loadFromDOMElement` to create a
     // `ComponentFactory` instance for each component definition.
     loadString(text, newSrc = null) {
+        Modulo.assert(text, 'Text must be a non-empty string, not', text)
         if (newSrc) {
             this.src = newSrc;
         }
+        //this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text));
         this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text, true));
         this.hash = Modulo.utils.hash(this.hash + text); // update hash
     }
@@ -168,6 +171,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             if (data.dependencies) {
                 // Ensure any CPart dependencies are loaded (relative to src)
                 const basePath = Modulo.utils.resolvePath(this.src, '..');
+                //console.log('this is basePath', basePath);
                 const loadCb = cpartClass.loadedCallback.bind(cpartClass);
                 const cb = (text, label, src) => loadCb(data, text, label, this, src);
                 Modulo.fetchQ.enqueue(data.dependencies, cb, basePath);
@@ -346,6 +350,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         // down, that annotate the Error with extra info that then gets nicely
         // formatted here).
         try {
+            //console.log('registering ', tagName, this.componentClass);
             Modulo.globals.customElements.define(tagName, this.componentClass);
         } catch (err) {
             console.log('Modulo: Error with new component:', err);
@@ -373,10 +378,18 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     initialize() {
         this.cparts = {};
         this.isMounted = false;
-        this.originalHTML = this.innerHTML;
-        this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
+        this.originalHTML = null;
+        this.originalChildren = [];
         this.fullName = this.factory().fullName;
         this.initRenderObj = Object.assign({}, this.factory().baseRenderObj);
+        /*
+        if (this.fullName === 'x-Page') {
+            console.log('x page');
+            console.log('getting initialized!', this.originalHTML);
+            console.log('getting initialized!', this.originalChildren, this);
+            debugger;
+        }
+        */
     }
 
     setupCParts() {
@@ -415,14 +428,17 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
-    _invokeCPart(cpartName, methodirectiveName, dirMountArg) {
+    _invokeCPart(cpartName, methodName, dirMountArg) {
+        // Two valid invocation styles:
+        //  _invokeCPart('state.bind', 'Mount', {...})
+        //  _invokeCPart('state', 'bindMount')
         const argument = dirMountArg || this.renderObj;
         const splitKey = cpartName.split('.');
         if (splitKey.length === 2) {         // "state.bind"
             cpartName = splitKey[0];         // "state.
-            methodirectiveName = splitKey[1] + methodirectiveName; // .bindMount"
+            methodName = splitKey[1] + methodName; // .bindMount"
         }
-        const method = this.cparts[cpartName][methodirectiveName];
+        const method = this.cparts[cpartName][methodName];
         let result;
         if (method) {
             result = method.call(this.cparts[cpartName], argument);
@@ -434,18 +450,28 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     connectedCallback() {
-        /*
-        Note: For testability, setupCParts is invoked on first mount, before
-        initialize.  This is so the hacky "fake-upgrade" for custom components
-        works for the automated tests. Logically, it should probably be invoked
-        in the constructor.
-        */
+        if (this.isMounted) {
+            return; // TODO: possibly just return?
+        }
 
+        if (Modulo.isBackend) {
+            this.parsedCallback(); // ensure synchronous
+        } else {
+            // TODO Consider putting all async into single queue / loop
+            setTimeout(this.parsedCallback.bind(this), 0);
+        }
+    }
+
+
+    parsedCallback() {
         // HACK delete
-        if (!this.originalHTML && this.innerHTML) {
+        if (!this.isMounted) { // or is necessary?
             this.originalHTML = this.innerHTML;
+            this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
+            console.log('getting original chidlren', this.originalChildren);
         }
         // HACK delete
+
         this.setupCParts();
         this.lifecycle(['initialized'])
         this.rerender();
@@ -458,6 +484,7 @@ Modulo.directiveShortcuts = [[/^@/, 'component.event'],
 
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
+        //console.log('children loaded callback', childrenLoadObj);
         const partName = this.name.toLowerCase();
         let name = partName === 'module' ? loader.namespace : data.attrs.name;
         if (data.attrs.hackname) {
@@ -547,14 +574,14 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
-        // XXX Broken..?
         el.append(...this.element.originalChildren);
-        el.setAttribute('modulo-ignore', 'modulo-ignore');
+        //el.setAttribute('modulo-ignore', 'modulo-ignore');
     }
 
     childrenUnmount({el}) {
         el.innerHTML = '';
-        el.removeAttribute('modulo-ignore');
+        console.log('childrenUnmount!', el);
+        //el.removeAttribute('modulo-ignore');
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -658,8 +685,12 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
                 return selector;
             }
 
-            // Upgrade the "bare" component name to be the full name
-            selector = selector.replace(new RegExp(name, 'ig'), fullName);
+            // Upgrade the ":host" pseudoselector to be the full name (since
+            // this is not a Shadow DOM style-sheet)
+            selector = selector.replace(new RegExp(/:host(\([^)]*\))/, 'g'), hostClause => {
+                // TODO: this needs thorough testing
+                return fullName + ':is(' + hostClause || fullName + ')';
+            });
 
             // If it is not prefixed at this point, then be sure to prefix
             if (!selector.startsWith(fullName)) {
@@ -722,7 +753,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
 
         return `'use strict';
             var ${localVarsLet};
-            var script = {exports: {}};
+            var script = { exports: {} };
             function __set(name, value) { ${localVarsIfs} }
             ${contents}
             return { ${symbolsString} setLocalVariable: __set, exports: script.exports};
@@ -730,6 +761,12 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     }
 
     static factoryCallback(partOptions, factory, renderObj) {
+        // TODO: Much better idea:
+        // Put into IFFE (with same arguments as here) and then put into script
+        // tag into page.  Only do "just in time, e.g. before first time
+        // mounting this on this page. Just like with style.  That way we'll
+        // get full traceback, etc. Would maybe increase speed by preloading
+        // scripts too.
         const code = partOptions.content || '';
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
@@ -764,6 +801,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
             this[cbName] = renderObj => {
+                console.log('callback hapening to script', renderObj);
                 this.prepLocalVars(renderObj); // always prep (for event CB)
                 if (cbName in script) {
                     script[cbName](renderObj);
@@ -791,6 +829,9 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         setLocalVariable('element', this.element);
         setLocalVariable('cparts', this.element.cparts);
         for (const localVar of localVars) {
+            if (this.element.fullName = 'mws-DocPage') {
+                console.log('this is localVar', localVar, renderObj[localVar]);
+            }
             if (localVar in renderObj) {
                 setLocalVariable(localVar, renderObj[localVar]);
             }
@@ -808,14 +849,14 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         return this.data;
     }
 
-    bindMount({el, attrName, value}) {
+    bindMount({ el, attrName, value }) {
         const { assert } = Modulo;
         const name = el.getAttribute('name') || attrName;
         assert(name in this.data, `[state.bind]: key "${name}" not in state`);
         assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
         const listen = () => {
             // TODO: redo
-            let {value, type, checked} = el;
+            let { value, type, checked } = el;
             if (type && type === 'checkbox') {
                 value === !!checked;
             }
@@ -823,14 +864,14 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
         const evName = value ? value : (isText ? 'keyup' : 'change');
-        this.boundElements[name] = [el, evName, listen];
+        this.boundElements[name] = [ el, evName, listen ];
         el.value = this.data[name];
         el.addEventListener(evName, listen);
     }
 
-    bindUnmount({el, attrName}) {
+    bindUnmount({ el, attrName }) {
         const name = el.getAttribute('name') || attrName;
-        const [el2, evName, listen] = this.boundElements[name];
+        const [ el2, evName, listen ] = this.boundElements[name];
         delete this.boundElements[name];
         el2.removeEventListener(evName, listen);
     }
@@ -1101,7 +1142,18 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (!this.elementCtx) {
             this.elementCtx = node; // element context
         }
+
+        // New "Tag Transform":
+        // - This is the new way all local elements can omit prefixes
+        // - <MyElement a="3"></MyElement>
+        // - So, "namespaced" is just when it hits regular DOM
+        // - By default, namespace is within the component and/or module
+        // - So, when a Comopnent CPart does a render(), it has a
+        //   {'MyElement': 'a34af-MyElement'} transformer
+
         this.tagTransforms = tagTransforms || {};
+        //console.log('rendering:', rivalHTML);
+        //this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML));
         this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML, true));
         if (!this.shouldNotApplyPatches) {
             this.applyPatches(this.patches);
@@ -1121,18 +1173,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         let child = node.firstChild;
         let rival = rivalParent.firstChild;
         while (child || rival) {
-            rival = this.rivalTransform(rival);
-
-            /*
-            if (rival && rival.hasAttribute && rival.hasAttribute('modulo-ignore')) {
-                console.log('skipping modulo-ignore (rival)');
-                rival = rival ? rival.nextSibling : null;
-            }
-            if (child && child.hasAttribute && child.hasAttribute('modulo-ignore')) {
-                console.log('skipping modulo-ignore (child)');
-                child = child ? child.nextSibling : null;
-            }
-            */
+            //rival = this.rivalTransform(rival);
 
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
@@ -1164,7 +1205,9 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                     }
                 } else if (!child.isEqualNode(rival)) { // sync if not equal
                     this.reconcileAttributes(child, rival);
-                    if (!this.shouldNotDescend) {
+                    if (rival.hasAttribute('modulo-ignore')) {
+                        console.log('Skipping ignored node');
+                    } else if (!this.shouldNotDescend) {
                         this.reconcileChildren(child, rival);
                     }
                 }
@@ -1182,12 +1225,15 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (parentNode && rival === parentNode) {
             return rival; // Second time encountering top-level node, do nothing
         }
-        const tag = rival.tagName.toLowerCase();
         let result = rival;
-        if (tag in this.tagTransforms) {
-            result = this.tagTransforms[tag](rival);
+        /*
+        const tagN = rival.tagName.toLowerCase();
+        if (tagN in this.tagTransforms) {
+            const tag = Modulo.document.createElement(this.tagTransforms[tagN]);
+            tag.append(...rival.originalChildren);
         }
-        if (rival && rival.hasAttribute('modulo-ignore')) {
+        */
+        if (result && result.hasAttribute('modulo-ignore')) {
             result = null;
         }
         return result || (parentNode ? null : rival.nextSibling);
@@ -1202,14 +1248,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             node.nodeValue = arg;
         } else if (method === 'insertBefore') {
             node.insertBefore(arg, arg2); // Needs 2 arguments
-        //} else if (method === 'removeChild') {
-        //    console.log('this is removeChild, arg2', node, arg);
         } else {
-            /*if (method === 'removeChild') {
-                if (arg.textContent.trim().startsWith('Once you have included Modulo')) {
-                    console.log('before removeChild', node, arg);
-                }
-            }*/
             node[method].call(node, arg); // invoke method
         }
     }
@@ -1255,10 +1294,12 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             nodes = Array.from(parentNode.querySelectorAll('*')).concat(nodes);
         }
         for (let rival of nodes) { // loop through nodes to patch
+            /*
             rival = this.rivalTransform(rival, parentNode);
             if (!rival) {
                 continue;
             }
+            */
 
             for (const rawName of rival.getAttributeNames()) {
                 // Loop through each attribute patching directives as necessary
@@ -1356,39 +1397,38 @@ Modulo.utils = class utils {
     }
 
     static resolvePath(workingDir, relPath) {
-        // Similar to Node's path.resolve()
-        // stackoverflow.com/questions/62507149/
-        return (workingDir + '/' + relPath).split('/')
-                   .reduce((a, v) => {
-                     if (v === '.'); // do nothing
-                     else if (v === '..') a.pop();
-                     else a.push(v);
-                     return a;
-                   }, []);
-    }
-                   /*
-        if (relPath.startsWith('/')) {
-            console.log('Warning: Relpath isnt relative', relPath);
+        if (!workingDir) {
+            console.log('Warning: Blank workingDir:', workingDir);
         }
-        const results = [];
-        for (const pathPart of .split('/')) {
+        workingDir = workingDir || '';
+        // Similar to Node's path.resolve()
+        const combinedPath = workingDir + '/' + relPath;
+        const newPath = [];
+        for (const pathPart of combinedPath.split('/')) {
+            //console.log('this is path part', pathPart);
             if (pathPart === '..') {
-                results.pop()
-            } else if (pathPart[0] !== '.') {
-                results.push(pathPart);
+                newPath.pop();
+            } else if (pathPart === '.') {
+                // No-op
+            } else if (pathPart.trim()) {
+                newPath.push(pathPart);
             }
         }
-        // TODO: Refactor this
-        const prefix = workingDir && workingDir.startsWith('/') ? '/' : '';
-        // Join and remove doubled slashes
-        return prefix + results.join('/').replace(RegExp('//', 'g'), '/');
+        const prefix = workingDir.startsWith('/') ? '/' : '';
+        return prefix + newPath.join('/').replace(RegExp('//', 'g'), '/');
     }
-    */
 
     static hash(str) {
         // Simple, insecure, hashing function, returns base32 hash
         let h = 0;
+        let hashChunks = [];
         for(let i = 0; i < str.length; i++) {
+            /*
+            if (i % (str.length / hashChunkSize) === 0) {
+                hashChunks.push(h); // for hashChunkSize count chunks
+                h = 0;
+            }
+            */
             h = Math.imul(31, h) + str.charCodeAt(i) | 0;
         }
         return (h || 0).toString(32);
@@ -1424,7 +1464,7 @@ Modulo.utils = class utils {
         // There are directives... time to resolve them
         const { cleanWord } = Modulo.utils;
         const arr = [];
-        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
+        const attrName = cleanWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
         for (const directiveName of name.split(']').map(cleanWord)) {
             if (directiveName !== attrName) { // Skip the bare name itself
                 arr.push({ attrName, rawName, directiveName, name })
@@ -1445,7 +1485,7 @@ Modulo.FetchQueue = class FetchQueue {
     enqueue(fetchObj, callback, basePath = null) {
         this.basePath = basePath ? basePath : this.basePath;
         fetchObj = typeof fetchObj === 'string' ? { fetchObj } : fetchObj;
-        for (let [label, src] of Object.entries(fetchObj)) {
+        for (let [ label, src ] of Object.entries(fetchObj)) {
             this._enqueue(src, label, callback);
         }
     }
@@ -1455,9 +1495,7 @@ Modulo.FetchQueue = class FetchQueue {
             // <-- TODO rm & straighten this stuff out
             this.basePath = this.basePath + '/'; // make sure trails '/'
         }
-        //console.log('ENQUEUEING (1)', this.basePath, src);
         src = Modulo.utils.resolvePath(this.basePath || '', src);
-        //console.log('ENQUEUEING (2)', this.basePath, src);
         if (src in this.data) {
             callback(this.data[src], label); // Synchronous route
         } else if (!(src in this.queue)) {
@@ -1519,8 +1557,8 @@ Modulo.defineAll();
 Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
 {% for path in preload %}
 //  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
-Modulo.fetchQ.basePath = {{ path|escapejs|safe }};
-Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);
+Modulo.globalLoader.loadString(Modulo.fetchQ.data[{{ path|escapejs|safe }}],
+                               {{ path|escapejs|safe }});
 {% endfor %}`);
 
 Modulo.CommandMenu = class CommandMenu {
@@ -1551,7 +1589,6 @@ if (typeof module !== 'undefined') { // Node
 }
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
-    //Modulo.ROOT_PATH = document.location.url;
 }
 
 // And that's the end of the Modulo source code story. This means it's where
