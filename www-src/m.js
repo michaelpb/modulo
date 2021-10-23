@@ -469,7 +469,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         if (!this.isMounted) { // or is necessary?
             this.originalHTML = this.innerHTML;
             this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
-            console.log('getting original chidlren', this.originalChildren);
+            //console.log('getting original chidlren', this.originalHTML, this.originalChildren);
         }
         // HACK delete
 
@@ -576,13 +576,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
         el.append(...this.element.originalChildren);
-        //el.setAttribute('modulo-ignore', 'modulo-ignore');
+        el.setAttribute('modulo-ignore', 'modulo-ignore');
     }
 
     childrenUnmount({el}) {
         el.innerHTML = '';
-        console.log('childrenUnmount!', el);
-        //el.removeAttribute('modulo-ignore');
+        //console.log('childrenUnmount!', el);
+        el.removeAttribute('modulo-ignore');
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -802,7 +802,6 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
             this[cbName] = renderObj => {
-                console.log('callback hapening to script', renderObj);
                 this.prepLocalVars(renderObj); // always prep (for event CB)
                 if (cbName in script) {
                     script[cbName](renderObj);
@@ -830,9 +829,6 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         setLocalVariable('element', this.element);
         setLocalVariable('cparts', this.element.cparts);
         for (const localVar of localVars) {
-            if (this.element.fullName = 'mws-DocPage') {
-                console.log('this is localVar', localVar, renderObj[localVar]);
-            }
             if (localVar in renderObj) {
                 setLocalVariable(localVar, renderObj[localVar]);
             }
@@ -1207,7 +1203,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                 } else if (!child.isEqualNode(rival)) { // sync if not equal
                     this.reconcileAttributes(child, rival);
                     if (rival.hasAttribute('modulo-ignore')) {
-                        console.log('Skipping ignored node');
+                        //console.log('Skipping ignored node');
                     } else if (!this.shouldNotDescend) {
                         this.reconcileChildren(child, rival);
                     }

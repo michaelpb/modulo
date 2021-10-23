@@ -3,15 +3,20 @@ let componentTexts2 = null;
 let exCounter = 0; // global variable
 
 // Get text from the two example component libraries
-console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
+//console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
 try {
     componentTexts = Modulo.factoryInstances['eg-eg']
-            .baseRenderObj.script.exports.componentTexts;
-    componentTexts2 = Modulo.factoryInstances['docseg-docseg']
             .baseRenderObj.script.exports.componentTexts;
 } catch (err) {
     console.log('couldnt get componentTexts:', err);
     componentTexts = null;
+}
+
+try {
+    componentTexts2 = Modulo.factoryInstances['docseg-docseg']
+            .baseRenderObj.script.exports.componentTexts;
+} catch (err) {
+    console.log('couldnt get componentTexts2:', err);
     componentTexts2 = null;
 }
 
@@ -19,13 +24,13 @@ if (componentTexts) {
     componentTexts = Object.assign({}, componentTexts, componentTexts2);
 }
 
-function codemirrorMount({el}) {
+function codemirrorMount({ el }) {
     const demoType = props.demotype || 'snippet';
     _setupCodemirror(el, demoType, element, state);
 }
 
 function _setupCodemirror(el, demoType, myElement, myState) {
-    console.log('_setupCodemirror disabled'); return; ///////////////////
+    //console.log('_setupCodemirror DISABLED'); return; ///////////////////
     let expBackoff = 10;
     const mountCM = () => {
         // TODO: hack, allow JS deps or figure out loader or something
@@ -57,9 +62,10 @@ function _setupCodemirror(el, demoType, myElement, myState) {
             myState.showpreview = true;
         }
 
-        const cm = Modulo.globals.CodeMirror(el, conf);
-        myElement.codeMirrorEditor = cm;
-        cm.refresh()
+        if (!myElement.codeMirrorEditor) {
+            myElement.codeMirrorEditor = Modulo.globals.CodeMirror(el, conf);
+        }
+        myElement.codeMirrorEditor.refresh()
         //myElement.rerender();
     };
     const {isBackend} = Modulo;
@@ -69,7 +75,8 @@ function _setupCodemirror(el, demoType, myElement, myState) {
     }
 }
 
-function selectTab(ev, newTitle) {
+function selectTab(newTitle) {
+    console.log('tab getting selected!', newTitle);
     if (!element.codeMirrorEditor) {
         return; // not ready yet
     }
@@ -95,7 +102,7 @@ function doCopy() {
     }
 }
 
-function initializedCallback({el}) {
+function initializedCallback({ el }) {
     let text;
     state.tabs = [];
     if (props.fromlibrary) {
@@ -108,9 +115,9 @@ function initializedCallback({el}) {
             if (title in componentTexts) {
                 text = componentTexts[title].trim();
                 text = text.replace(/&#39;/g, "'"); // correct double escape
-                state.tabs.push({text, title});
+                state.tabs.push({ text, title });
             } else {
-                console.error('invalid fromlibrary:', title)
+                console.error('invalid fromlibrary:', title, componentTexts)
                 return;
             }
         }
@@ -129,7 +136,7 @@ function initializedCallback({el}) {
     state.text = state.tabs[0].text; // load first
 
     state.selected = state.tabs[0].title; // set first as tab title
-    setupShaChecksum();
+    //setupShaChecksum();
     if (demoType === 'minipreview') {
         doRun();
     }
@@ -146,7 +153,7 @@ function initializedCallback({el}) {
 }
 
 function setupShaChecksum() {
-    console.log('setupShaChecksum disabled'); return; ///////////////////
+    console.log('setupShaChecksum DISABLED'); return; ///////////////////
 
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
     if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
@@ -166,7 +173,7 @@ function doRun() {
     //console.log('There are ', exCounter, ' examples on this page. Gee!')
     const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
     state.nscounter++;
-    const loadOpts = {src: '', namespace};
+    const attrs = { src: '', namespace };
     const tagName = 'Example';
 
     if (element.codeMirrorEditor) {
@@ -174,7 +181,7 @@ function doRun() {
     }
     let componentDef = state.text;
     componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
-    const loader = new Modulo.Loader(null, {options: loadOpts});
+    const loader = new Modulo.Loader(null, { attrs } );
     loader.loadString(componentDef);
     const fullname = `${namespace}-${tagName}`;
     const factory = Modulo.factoryInstances[fullname];
@@ -223,7 +230,7 @@ function doFullscreen() {
 }
 
 /*
-function previewspotMount({el}) {
+function previewspotMount({ el }) {
     element.previewSpot = el;
     if (!element.isMounted) {
         doRun(); // mount after first render

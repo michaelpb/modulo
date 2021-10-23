@@ -68,7 +68,7 @@
 
 <template>
 <ul>
-    {% for linkGroup in script.exports.menu %}
+    {% for linkGroup in state.menu %}
         <li class="
             {% if linkGroup.children %}
                 {% if linkGroup.active %}gactive{% else %}ginactive{% endif %}
@@ -112,6 +112,10 @@
     <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
 </template>
+
+<state
+  menu
+></state>
 
 <script>
     function _child(label, hash, keywords=[]) {
@@ -231,10 +235,10 @@
     ];
 
     function initializedCallback() {
-        const {isBackend, ssgCurrentOutputPath} = Modulo;
-        let path = props.path;
-        for (const groupObj of script.exports.menu) {
-            if (props.showall) {
+        const { path, showall } = props;
+        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
+        for (const groupObj of state.menu) {
+            if (showall) {
                 groupObj.active = true;
             }
             if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
