@@ -1,0 +1,91 @@
+<component name="ReconcilerTester3"><testsuite>
+
+
+<test name="ensure ModRec and MTL are defined">
+    <script>
+        Modulo.utils.makeMockElement = function reconcile (html)  {
+            const {makeDiv} = Modulo.utils;
+            const mockElement = makeDiv(html);
+            mockElement.applyDirectives = () => {}; // dummy
+            mockElement.resolveValue = () => () => {}; // dummy(2)
+            mockElement.directiveMount = () => {}; // dummy
+            mockElement.directiveUnmount = () => {}; // dummy
+            mockElement.directiveChange = () => {}; // dummy
+            return mockElement;
+        }
+
+        Modulo.utils.getRecPatches = function reconcile (oldHTML, newHTML, tagTransforms)  {
+            const {makeDiv} = Modulo.utils;
+            const mockElement = Modulo.utils.makeMockElement(oldHTML);
+            const modRec = new ModRec({makePatchSet: true});
+            modRec.reconcile(mockElement, newHTML, tagTransforms);
+            return modRec.patches;
+        };
+
+        Modulo.utils.patchStringify = function patchStringify (patch)  {
+            const {parseAttrs} = Modulo.utils;
+            const [node, method, arg1] = patch;
+            let arg = arg1;
+            if (arg1 && arg1.nodeType && arg1.nodeType === 1) {
+                const attrs = parseAttrs(arg1);
+                arg = `<1 ${arg1.tagName}>${JSON.stringify(attrs)}</1>`;
+            }
+            return `<${node.nodeType} ${node.nodeName}> ${method}("${arg}") </${node.nodeType}>`
+        };
+
+        Modulo.utils.pToString = function patchStringify (patches)  {
+            return patches.map(Modulo.utils.patchStringify).join('\n')
+        };
+
+        const {ModRec} = Modulo.reconcilers;
+        assert: ModRec
+    </script>
+</test>
+
+
+<test name="Test tagTransforms">
+    <script name="Doesn't do transform when not specified">
+        const { getRecPatches, pToString } = Modulo.utils;
+        const patches = pToString(getRecPatches(
+            '<p></p>',
+            '<p><testy a=b c=d></testy></p>',
+        ));
+        const expected = '<1 P> appendChild("<1 TESTY>{"a":"b","c":"d"}</1>") </1>';
+
+        assert: patches === expected
+    </script>
+
+    <script name="Does tag transform with expected attributes">
+        const { getRecPatches, pToString } = Modulo.utils;
+
+        const patches = pToString(getRecPatches(
+            '<p></p>',
+            '<p><testy a=b c=d></testy></p>',
+            { testy: 'x-stuff' },
+        ));
+
+        const expected = '<1 P> appendChild("<1 X-STUFF>{"a":"b","c":"d"}</1>") </1>';
+
+        assert: patches === expected
+    </script>
+
+
+    <script name="Can handle multiple nested tag transforms">
+        const { getRecPatches, pToString } = Modulo.utils;
+
+        const patches = pToString(getRecPatches(
+            '<div></div>',
+            ('<div><otherthing a=b c=d><span>' +
+              '<otherthing abc="123"></otherthing>' +
+                '</span></otherthing></div>'),
+            { testy: 'x-stuff', otherthing: 'y-other' },
+        ));
+
+        const expected = '<1 DIV> appendChild("<1 Y-OTHER>{"a":"b","c":"d"}</1>") </1>';
+
+        assert: patches === expected
+    </script>
+</test>
+
+</testsuite></component>
+

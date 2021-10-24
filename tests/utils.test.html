@@ -107,4 +107,59 @@
 
 </test>
 
+
+<test name="utils.transformTag">
+    <script name="Ensure defined">
+        const { transformTag } = Modulo.utils;
+        assert: transformTag
+    </script>
+
+    <script name="Can transform simple tag">
+        const { transformTag } = Modulo.utils;
+        const doc = Modulo.globals.document;
+        element.innerHTML = '<p>Abc</p>';
+        transformTag(element.querySelector('p'), 'span');
+        assert: element.innerHTML === '<span>Abc</span>'
+    </script>
+
+    <script name="Can transform complicated tag">
+        const { transformTag } = Modulo.utils;
+        const doc = Modulo.globals.document;
+        element.innerHTML = `<div><span></span>
+            <p id="para" class="Test" [b][c]d="DEFhij"></p>
+        </div>`;
+        transformTag(element.querySelector('p'), 'span');
+
+        const expectedHTML = `<div><span></span>
+            <span id="para" class="Test" [b][c]d="DEFhij"></span>
+        </div>`;
+
+        assert: element.innerHTML === expectedHTML
+    </script>
+
+
+    <script name="Can transform complicated tag with chilren">
+        const { transformTag } = Modulo.utils;
+        const doc = Modulo.globals.document;
+
+        const children = `<span>item
+        </span>
+        <abbr>abc<b>i<i>t</i>em</b></abbr>
+        <span>st<a>u</a>ff
+        </span>`;
+
+        element.innerHTML = `<div><span></span>
+            <p id="para" class="Test" [b][c]d="DEFhij">${children}</p>
+        </div>`;
+        transformTag(element.querySelector('p'), 'div');
+
+        const expectedHTML = `<div><span></span>
+            <div id="para" class="Test" [b][c]d="DEFhij">${children}</div>
+        </div>`;
+
+        assert: element.innerHTML === expectedHTML
+    </script>
+
+</test>
+
 </testsuite></component>

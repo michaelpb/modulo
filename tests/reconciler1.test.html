@@ -1,4 +1,4 @@
-<component name="ReconcilerTester"><testsuite>
+<component name="ReconcilerTester1"><testsuite>
 
 
 <test name="ensure ModRec and MTL are defined">
@@ -21,7 +21,7 @@
             return modRec.patches;
         };
 
-        Modulo.utils.transformDOMCheck = function reconcile (oldHTML, newHTML, expectedDirCount)  {
+        Modulo.utils.transformDOMCheck = function reconcile (oldHTML, newHTML, expectedDirCount, invertCheck)  {
             if (newHTML === undefined) { // single argument given
                 newHTML = oldHTML;
                 oldHTML = '';
@@ -39,7 +39,12 @@
             //modRec.patches.map(patch => modRec.applyPatch.apply(modRec, patch));
             const genInner = makeDiv(mockElement.innerHTML).innerHTML;
             const correctInner = makeDiv(newHTML).innerHTML;
-            const match = genInner === correctInner;
+
+            let match = genInner === correctInner;
+            if (invertCheck) {
+                match = !match;
+            }
+
             if (!match) {
                 console.log('-------------------------')
                 console.log('Error: no match');
@@ -48,7 +53,7 @@
                 console.log('but instead got:');
                 console.log(genInner);
                 console.log('-------------------------')
-                const {pToString} = Modulo.utils;
+                const { pToString } = Modulo.utils;
                 console.log('- Examine the following:')
                 console.log(pToString(modRec.patches));
                 console.log('-------------------------')
@@ -87,10 +92,6 @@
 
         const {ModRec} = Modulo.reconcilers;
         assert: ModRec
-    </script>
-    <script>
-        const {MTL} = Modulo.templating;
-        assert: MTL
     </script>
 </test>
 
@@ -512,7 +513,7 @@
 <test name="Supporting interactions with directives">
 
     <script name="Complete page replacement with children">
-        const {transformDOMCheck} = Modulo.utils;
+        const { transformDOMCheck } = Modulo.utils;
         const componentIH = `<!DOCTYPE html>
             <html>
             <head><title></title></head>
@@ -535,6 +536,131 @@
         `;
         assert: transformDOMCheck(componentIH, elementIH);
     </script>
+</test>
+
+<test name="Supports modulo-ignore">
+
+    <script name="Support modifying other items">
+        const { transformDOMCheck } = Modulo.utils;
+        assert: transformDOMCheck(`
+                <div></div>
+                <div modulo-ignore><p>Ignore</p></div>
+                <div [test.thing]>DEF</div>
+            `,`
+                <div>ABC</div>
+                <div modulo-ignore><p>Ignore</p></div>
+                <div [test.thing]>HIJ</div>
+            `,  0);
+    </script>
+
+    <script name="Support modifying attributes on ignored">
+        const { transformDOMCheck } = Modulo.utils;
+        assert: transformDOMCheck(`
+                <div>ABC</div>
+                <div what="ever" modulo-ignore><p>Ignore</p></div>
+                <div [test.thing]>DEF</div>
+            `,`
+                <div>ABC</div>
+                <div modulo-ignore test="thing"><p>Ignore</p></div>
+                <div [test.thing]>HIJ</div>
+            `,  0);
+    </script>
+
+    <script name="Will not make match in ignored item">
+        const { transformDOMCheck } = Modulo.utils;
+        assert: transformDOMCheck(`
+                <div></div>
+                <div modulo-ignore><p>Ignore</p></div>
+                <div [test.thing]>DEF</div>
+            `,`
+                <div>ABC</div>
+                <div modulo-ignore><p>should not match</p></div>
+                <div [test.thing]>HIJ</div>
+            `,  0, true);
+        //          ^- NOTE: It's inverted!
+    </script>
+
+    <script name="Correctly ignores children of modulo-ignore (1)">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const patches = getRecPatches(
+            '<div modulo-ignore><p>ignore me</p><p>ignore me 2</p></div>',
+            '<div modulo-ignore><a>ignore me 3</a></div>',
+        );
+        assert: patches && patches.length === 0
+    </script>
+
+
+    <script name="Correctly ignores children of modulo-ignore (2)">
+        const {getRecPatches, anchorInTheDeep} = Modulo.utils;
+        const str1 = anchorInTheDeep('<span modulo-ignore><abbr>ignore me</abbr><abbr>ignore me 2</abbr></span>');
+        const str2 = anchorInTheDeep('<span modulo-ignore><code>ignore me 3</code></span>');
+
+        const patches = getRecPatches(str1, str2);
+
+        assert: patches && patches.length === 0
+    </script>
+
+    <script name="Correctly ignores children of modulo-ignore (3)">
+        const {getRecPatches, pToString} = Modulo.utils;
+        const str1 = `
+            <h1>A</h1>
+            <div>A <p>A</p> <p modulo-ignore>B</p> <p>B</p> <p>A</p> A</div>
+            <div>ABC</div>
+            <div modulo-ignore>DEF</div>
+            <div>HIJ</div>
+        `;
+        // 5 changes: h1 B, p B, p C, div DEF, div JKL
+        const str2 = `
+            <h1>B</h1>
+            <div>A <p>B</p> <p modulo-ignore>D</p> <p>C</p> <p>A</p> A</div>
+            <div>DEF</div>
+            <div modulo-ignore>EFG <p ok="3">more stuff</p></div>
+            <div>JKL</div>
+        `;
+
+
+        const patches = pToString(getRecPatches(str1, str2));
+        const expected = [
+            '<3 #text> node-value("B") </3>',
+            '<3 #text> node-value("B") </3>',
+            '<3 #text> node-value("C") </3>',
+            '<3 #text> node-value("DEF") </3>',
+            '<3 #text> node-value("JKL") </3>',
+        ].join('\n');
+
+        assert: patches === expected
+    </script>
+
+
+    <script name="Copies modulo-ignore with children when first encountered, but ignores directives in children">
+        const { getRecPatches, pToString } = Modulo.utils;
+        const str1 = `
+            <h1>A</h1>
+            <div>A <p>A</p> <p modulo-ignore>B</p> <p>B</p> <p>A</p> A</div>
+            <div>ABC</div>
+        `.trim()
+        // 4 changes: h1 B, p B, p C, div DEF
+        // Then 1 big insertion, but directive gets ignored
+        const str2 = `
+            <h1>B</h1>
+            <div>A <p>B</p> <p modulo-ignore>D</p> <p>C</p> <p>A</p> A</div>
+            <div>DEF</div><div modulo-ignore>EFG <p [my.directive]>more stuff</p></div>
+        `.trim()
+
+
+        const patches = pToString(getRecPatches(str1, str2));
+        const expected = [
+            '<3 #text> node-value("B") </3>',
+            '<3 #text> node-value("B") </3>',
+            '<3 #text> node-value("C") </3>',
+            '<3 #text> node-value("DEF") </3>',
+            '<1 DIV> appendChild("[object HTMLDivElement]") </1>',
+        ].join('\n');
+
+        assert: patches === expected
+    </script>
+
+
 </test>
 
 </testsuite></component>
