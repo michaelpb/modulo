@@ -1182,6 +1182,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     markRecDirectives(elem) {
         // Mark all children of modulo-ignore with mm-ignore
         for (const node of elem.querySelectorAll('[modulo-ignore] *')) {
+            // TODO: Very important: also mark to ignore children that are
+            // custom!
             node.setAttribute('mm-ignore', 'mm-ignore');
         }
     }

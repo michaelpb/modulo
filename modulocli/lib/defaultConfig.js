@@ -153,6 +153,9 @@ const defaultConfig = {
 
     // Undocumented:
 
+    domEngine: 'jsdom',
+        // Which DOM engine to use.
+
     watchAllowPartialBuilds: false,
         // Not supported.
 

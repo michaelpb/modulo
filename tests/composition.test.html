@@ -1,0 +1,38 @@
+<component name="LilTester">
+    <template><p>Defhij</p></template>
+</component>
+
+<component name="PassThrough">
+    <template>
+        <p>Before</p>
+        <div>Defhij</div>
+        <p>After</p>
+    </template>
+</component>
+
+<component name="CompositionTester1">
+<template>
+    <div>Abc</div>
+    <LilTester></LilTester>
+</template>
+
+<testsuite>
+
+    <test>
+        <template name="Renders as expected">
+            <div>Abc</div>
+            <x-LilTester><p>Defhij</p></x-LilTester>
+        </template>
+        <script skip-rerender>
+            const expected = `
+              <div>Abc</div>
+              <x-liltester><p>Defhij</p></x-liltester>
+            `.trim().replace(/\s+/g, '');
+            const ih = element.innerHTML.trim().replace(/\s+/g, '');
+            assert: ih === expected
+        </script>
+    </test>
+
+</testsuite>
+
+</component>

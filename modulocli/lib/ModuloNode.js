@@ -4,10 +4,24 @@ const baseModulo = require('./BaseModulo');
 const CommandMenuNode = require('./CommandMenuNode');
 const TestSuite = require('../../src/TestSuite.js');
 
+let jsdomParseHTML;
+try {
+    const { JSDOM } = require('jsdom');
+    jsdomParseHTML = html => new JSDOM(html);
+} catch (err) {
+    console.log('Warning: Could not load JSDOM', err);
+}
+
+let linkedomParseHTML;
+try {
+    linkedomParseHTML = require('linkedom').parseHTML;
+} catch (err) {
+    console.log('Warning: Could not load linkedom', err);
+}
+
 // Get test suite functions
 const fs = require('fs');
 const pathlib = require('path');
-const { JSDOM } = require('jsdom');
 const utils = require('./utils');
 const { webComponentsUpgrade, patchWindow } = require('./jsdomUtils');
 
@@ -54,6 +68,17 @@ class ModuloNode {
         if (preloadQueue) {
             modulo.preloadQueue = preloadQueue; // XXX HACK
         }
+
+        if (config) {
+            if (config.domEngine === 'jsdom') {
+                baseModulo.jsdomParseHTML = jsdomParseHTML;
+                console.log('assinging to jsdomParseHTML');
+            } else if (config.domEngine === 'linkedom') {
+                baseModulo.jsdomParseHTML = linkedomParseHTML;
+            } else {
+                console.log('ERROR: Invalid domEngine (jsdom, linkedom): ' + config.domEngine);
+            }
+        }
         modulo.patchModulo(baseModulo, config);
         return modulo;
     }
@@ -74,7 +99,11 @@ class ModuloNode {
     }
 
     loadText(text, basePath=null) {
-        this.jsdom = new JSDOM(text);
+        if (!this.jsdomParseHTML ) {
+            this.jsdomParseHTML = jsdomParseHTML;
+            console.log('Warning: failsafe defaulting to JSDOM');
+        }
+        this.jsdom = this.jsdomParseHTML(text);
         this.allDoms.push(this.jsdom);
         patchWindow(this.jsdom.window);
 
@@ -290,7 +319,7 @@ class ModuloNode {
             } else if (el.tagName === 'MOD-LOAD') { // TODO: delete after deleting mod-load
                 instance = new this.DOMLoader();
             } else {
-                throw new Error('Could not find factory for:', el)
+                new Error('Could not find factory for:', el)
             }
             webComponentsUpgrade(el, instance);
         }
@@ -324,8 +353,10 @@ class ModuloNode {
 
 class ComponentFactoryNode extends baseModulo.ComponentFactory {
     createTestElement() {
+
         const instance = new this.componentClass();
-        this.testDom = new JSDOM(`<${this.fullName}></${this.fullName}>`);
+        //this.testDom = new JSDOM(`<${this.fullName}></${this.fullName}>`);
+        this.testDom = baseModulo.jsdomParseHTML(`<${this.fullName}></${this.fullName}>`);
         this.testDoc = this.testDom.window.document;
         const el = this.testDoc.querySelector(this.fullName);
         webComponentsUpgrade(el, instance); // ensure has minimum webcomponent API

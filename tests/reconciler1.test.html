@@ -647,7 +647,6 @@
             <div>DEF</div><div modulo-ignore>EFG <p [my.directive]>more stuff</p></div>
         `.trim()
 
-
         const patches = pToString(getRecPatches(str1, str2));
         const expected = [
             '<3 #text> node-value("B") </3>',
