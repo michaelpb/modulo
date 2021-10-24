@@ -1,19 +1,10 @@
-<!DOCTYPE HTML>
-<head>
-</head><body>
-
-
-    <meta charset="utf8">
-    <title>Testing - modulojs.org</title>
-    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/png" href="/img/mono_logo.png">
-    
-
-    <!-- TODO: Switch to <module><load> style syntax -->
+<head><script src="/m.js"></script>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script></head><body><meta charset="utf8"><title>Testing - modulojs.org</title><link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css"><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
@@ -32,8 +23,8 @@
     </ul>
 
     <div class="Navbar-rightInfo">
-        v: 0.0.1<br>
-        SLOC: 1253 lines<br>
+        v: undefined<br>
+        SLOC: undefined lines<br>
         <a href="https://github.com/michaelpb/modulo/">github</a> | 
         <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
     </div>
@@ -56,27 +47,9 @@
     
         <li class="
             
-                gactive
+                ginactive
             
             "><a href="/docs/tutorial.html">Tutorial</a>
-            
-                
-                    <ul>
-                    
-                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a>
-                        
-                        </li>
-                    
-                    </ul>
-                
             
         </li>
     
@@ -179,32 +152,28 @@
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]="">
+        <aside style="border: none" [component.children]="" modulo-ignore="modulo-ignore">
+        
 
-<h1>Testing</h1>
 
-<p>Modulo comes with a unit testing framework, specifically for testing
+    <h1>Testing</h1>
+    <p>Modulo comes with a unit testing framework, specifically for testing
 components. Note that without any extra add-ons or modifications, Modulo's
 testing framework is focused on components unit tests only, and thus is
 strictly synchronous. This means its incapable of integration testing with HTTP
 API's, or asynchronous code. That said, through proper mocking, state, and
 props manipulation, you should be more than equipped to test component behavior
 in most scenarios, without actually issuing the request itself.</p>
-
-
-<mws-section name="testsuites">
-        <a class="secanchor" title="Click to focus on this section." id="testsuites" name="testsuites" href="#testsuites">#</a>
-        <h2 [component.children]="">Test suites</h2>
+    <mws-section name="testsuites"><a class="secanchor" title="Click to focus on this section." id="testsuites" name="testsuites" href="#testsuites">#</a>
+        <h2 [component.children]="" modulo-ignore="modulo-ignore">
+        </h2>
     </mws-section>
-
-<p>A test suite is a collection of tests. Test suites can be embedded in
+    <p>A test suite is a collection of tests. Test suites can be embedded in
 Component definitions. In this case, the test suite will be applied to the
 component definition that it exists inside.</p>
-
-<p>For an overview of what the Modulo test suite framework is capable of, see
+    <p>For an overview of what the Modulo test suite framework is capable of, see
 the below example:</p>
-
-<mws-demo text="
+    <mws-demo text="
 <testsuite>
     <test name=&quot;ensure cool&quot;>
         <!-- SETUP -->
@@ -295,9 +264,7 @@ the below example:</p>
 
 </mws-demo>
 
-
-
-</aside>
+    </aside>
     </main>
 
 
@@ -310,4 +277,4 @@ the below example:</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10-6d32sv.js"></script></body>
+</body>

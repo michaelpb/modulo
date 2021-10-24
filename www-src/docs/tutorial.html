@@ -1,10 +1,4 @@
-<!--<script src="/m.js"></script>-->
-<script src="/js/Modulo.js"></script>
-<mod-load namespace="x" src="/components/layouts.html"></mod-load>
-<script>
-Modulo.defineAll()
-</script>
-
+<script src="/m.js"></script>
 
 
 <x-Page
@@ -29,6 +23,14 @@ Modulo?</strong></p>
 <mws-Section name="part1">Part 1: Components, CParts, Loaders</mws-Section>
 
 <h3>Including Modulo</h3>
+
+<p>Modulo is useful when using plain HTML and CSS is no longer sufficient. It
+has no dependencies, has no "build process", and does not require knowledge of
+JavaScript, use of terminal applications, or use of NPM. This means it can be
+equally easily incorporated into a plain HTML "static site" (e.g. when you
+assemble HTML, CSS, and other static assets in a directory), or into a
+"multi-page" web app written in some other programming language.</p>
+
 <p>The first step is to include the Modulo.js file. You can do this one of
 2 ways:</p>
 <ol>
@@ -37,9 +39,15 @@ Modulo?</strong></p>
     <code>&lt;script src="/js/Modulo.js"&gt;</code>
 </ol>
 
-<p>Then, Modulo needs to be explicitly activated. Somewhere before the closing body tag of your HTML file, you should activate Modulo with the following code:
-    <code>&lt;script&gt;Modulo.defineAll();&lt;script&gt;</code>
-</p>
+<p>Then, Modulo needs to be explicitly activated. Until Modulo is activated
+with defineAll, it WILL NOT do anything at all. Somewhere before the closing
+"body" tag of your HTML file, you should activate Modulo with the following
+code:</p>
+<pre>&lt;script&gt;Modulo.defineAll()&lt;script&gt;</pre>
+
+
+<p>Alternatively, you can have it only activate after the page loads:</p>
+<pre>&lt;script&gt;window.onload = () =&gt; Modulo.defineAll()&lt;script&gt;</pre>
 
 
 <blockquote>
@@ -53,10 +61,10 @@ Modulo?</strong></p>
 
 <h3>Defining your first component</h3>
 
-<p>Once you have included Modulo and activated it, you can define your
-first <em>custom component</em>. Right now, we'll do that all in one file,
-although soon we'll learn how to split your components into a separate
-file, which is the preferred way.</p>
+<p>Once you have included Modulo and activated it, you can define your first
+<em>custom component</em>. Right now, we'll do that "embedded" into one file
+for simplicity's sake, although before the end of this section, we'll learn how
+to split your components into a separate file, which is the preferred way.</p>
 
 
 <p><strong>Component definitions</strong> start with a "component"
@@ -83,8 +91,8 @@ referenced elsewhere like
 
 <p>Finally, one more thing: When defining custom components in an HTML
 document, you can't put them scattered everywhere. You have to keep them in one
-place.  Specifically, to keep things neater, Modulo searches for component
-definitions only within a <code>modulo-embed</code> HTML template tag:
+place. Specifically, to keep things neater, Modulo searches for component
+definitions only within a <code>modulo-embed</code> tag:
 <code>&lt;template modulo-embed&gt;</code></p>
 
 <p>To quickly summarize: Components are reusable bits of HTML, JS, and CSS
@@ -106,7 +114,7 @@ can be embedded in an HTML page within a tag like
 <mws-Demo
 text='
 <!-- Define a custom component -->
-<template is="modulo-embed">
+<template modulo-embed>
     <component name="HelloWorld">
         <template>
             Hello <strong>Modulo</strong> World!
@@ -128,15 +136,16 @@ text='
     </ol>
 </section>
 
+
 <h3>Introducing: Component Parts</h3>
 
 <p>The central concept to Modulo is that of <em>Component Parts</em>.
 Because it is so central, saying <em>Component Parts</em> over and over
 gets tiresome, so it's typically shortened to <em>CParts</em>.</p>
 
-<blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the cast and
-crew of a musical. Each are assigned to a different task&mdash;some are
-more flashy and visible, others being stage-hands working behind the
+<blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the
+cast and crew of a musical. Each are assigned to a different task&mdash;some
+are more flashy and visible, others being stage-hands working behind the
 scenes&mdash;but they all work together to put on the same
 show!</p></blockquote>
 
@@ -384,6 +393,17 @@ customized about a component. It allows for options or other data to be
 other ones. For example, a button component might have <em>Props</em> that
 specify its text, or which shape variation.</p>
 
+<!--
+TODO Idea:
+Implement another demo type:
+- Very similar to minipreview with tabs, but with 1 exception:
+    - Have tabs be on left to be more readable with longer names
+    - Disable editing
+    - By default, have a play button "[>]" that every 3 seconds loops to the
+      next example snippet
+    - The goal is to cycle through showing off different props of the same
+      component
+-->
 
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>

@@ -427,6 +427,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
             for (const cName of Object.keys(this.cparts)) {
                 this._invokeCPart(cName, lc + 'Callback');
             }
+            if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
+                  (this.fullName + '|' + lc) in Modulo.breakpoints)) {
+                debugger;
+            }
         }
         //this.renderObj = null; // ?rendering is over, set to null
     }

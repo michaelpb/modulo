@@ -1,4 +1,4 @@
-// modulo build -b18qva
+// modulo build cmptte
 'use strict';
 
 // # Introduction
@@ -116,7 +116,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
 
         // TODO: loader.namespace defaulting to hash
         this.namespace = this.attrs.namespace;
-        this.factoryData = [];
+        this.localNameMap = {};
         this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
@@ -249,7 +249,14 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.loader = loader;
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
+
+        // "Register" local name with loader, and instance in general
+        // TODO: Have localNameMap propagate up, as long as there is no
+        // "namespace" attribute (rename TBD). That way, localNameMap
+        // "dumps" into the upper one.
+        this.loader.localNameMap[name.toLowerCase()] = this.fullName;
         Modulo.ComponentFactory.registerInstance(this);
+
         this.componentClass = this.createClass();
         this.childrenLoadObj = childrenLoadObj;
         this.baseRenderObj = this.runFactoryLifecycle(this.childrenLoadObj);
@@ -519,7 +526,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                 const { engine = 'ModRec' } = this.attrs;
                 this.reconciler = new Modulo.reconcilers[engine]({ makePatchSet: true });
             }
-            patches = this.reconciler.reconcile(this.element, innerHTML || '');
+            const { localNameMap } = this.element.factory().loader;
+            patches = this.reconciler.reconcile(this.element, innerHTML || '', localNameMap);
         }
         return { patches, innerHTML }; // TODO remove innerHTML from here
     }
@@ -1148,14 +1156,44 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // - So, when a Comopnent CPart does a render(), it has a
         //   {'MyElement': 'a34af-MyElement'} transformer
 
-        this.tagTransforms = tagTransforms || {};
         //console.log('rendering:', rivalHTML);
         //this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML));
-        this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML, true));
+        const rival = Modulo.utils.makeDiv(rivalHTML, true);
+        this.applyTagTransforms(rival, tagTransforms);
+        this.markRecDirectives(rival);
+        this.reconcileChildren(node, rival);
+        this.cleanRecDirectiveMarks(node);
         if (!this.shouldNotApplyPatches) {
             this.applyPatches(this.patches);
         }
         return this.patches;
+    }
+
+    applyTagTransforms(elem, tagTransforms) {
+        // Remove all mm-ignores
+        const sel = Object.keys(tagTransforms || { X: 0 }).join(',');
+        for (const node of elem.querySelectorAll(sel)) {
+            const newTag = tagTransforms[node.tagName.toLowerCase()];
+            if (newTag) {
+                Modulo.utils.transformTag(node, newTag);
+            }
+        }
+    }
+
+    markRecDirectives(elem) {
+        // Mark all children of modulo-ignore with mm-ignore
+        for (const node of elem.querySelectorAll('[modulo-ignore] *')) {
+            // TODO: Very important: also mark to ignore children that are
+            // custom!
+            node.setAttribute('mm-ignore', 'mm-ignore');
+        }
+    }
+
+    cleanRecDirectiveMarks(elem) {
+        // Remove all mm-ignores
+        for (const node of elem.querySelectorAll('[mm-ignore]')) {
+            node.removeAttribute('mm-ignore');
+        }
     }
 
     applyPatches(patches) {
@@ -1170,15 +1208,13 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         let child = node.firstChild;
         let rival = rivalParent.firstChild;
         while (child || rival) {
-            //rival = this.rivalTransform(rival);
-
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
                 child.nodeName !== rival.nodeName
             );
 
-            if (!rival || needReplace) { // we have more rival, delete child
+            if ((child && !rival) || needReplace) { // we have more rival, delete child
                 this.patchAndDescendants(child, 'Unmount');
                 this.patch(node, 'removeChild', child);
             }
@@ -1189,7 +1225,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                 this.patchAndDescendants(rival, 'Mount');
             }
 
-            if (!child) { // we have less than rival, take rival
+            if (!child && rival) { // we have less than rival, take rival
                 this.patch(node, 'appendChild', rival);
                 this.patchAndDescendants(rival, 'Mount');
             }
@@ -1213,27 +1249,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             child = child ? child.nextSibling : null;
             rival = rival ? rival.nextSibling : null;
         }
-    }
-
-    rivalTransform(rival, parentNode) {
-        if (!rival || rival.nodeType !== 1) {
-            return rival; // Leave falsy & text values untouched
-        }
-        if (parentNode && rival === parentNode) {
-            return rival; // Second time encountering top-level node, do nothing
-        }
-        let result = rival;
-        /*
-        const tagN = rival.tagName.toLowerCase();
-        if (tagN in this.tagTransforms) {
-            const tag = Modulo.document.createElement(this.tagTransforms[tagN]);
-            tag.append(...rival.originalChildren);
-        }
-        */
-        if (result && result.hasAttribute('modulo-ignore')) {
-            result = null;
-        }
-        return result || (parentNode ? null : rival.nextSibling);
     }
 
     patch(node, method, arg, arg2=null) {
@@ -1264,6 +1279,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     reconcileAttributes(node, rival) {
         const myAttrs = new Set(node ? node.getAttributeNames() : []);
         const rivalAttributes = new Set(rival.getAttributeNames());
+        // Check for new and changed attributes
         for (const rawName of rivalAttributes) {
             const attr = rival.getAttributeNode(rawName);
             if (myAttrs.has(rawName) && node.getAttribute(rawName) === attr.value) {
@@ -1274,6 +1290,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             this.patch(node, 'setAttributeNode', attr.cloneNode(true));
         }
 
+        // Check for old attributes that were removed
         for (const rawName of myAttrs) {
             if (!rivalAttributes.has(rawName)) {
                 this.patchDirectives(node, rawName, 'Unmount');
@@ -1291,22 +1308,15 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             nodes = Array.from(parentNode.querySelectorAll('*')).concat(nodes);
         }
         for (let rival of nodes) { // loop through nodes to patch
-            /*
-            rival = this.rivalTransform(rival, parentNode);
-            if (!rival) {
+            if (rival.hasAttribute('mm-ignore')) {
+                // Skip any marked to ignore
                 continue;
             }
-            */
 
             for (const rawName of rival.getAttributeNames()) {
                 // Loop through each attribute patching directives as necessary
                 this.patchDirectives(rival, rawName, actionSuffix);
             }
-
-            // For now, the callbacks will just be functions
-            //if (tag in this.tagTransforms) { // TODO: this doesnt work... should think directives?
-            //this.patch(this.element, 'tagTransform', this.tagTransform[tag]);
-            //}
         }
     }
 
@@ -1433,6 +1443,16 @@ Modulo.utils = class utils {
 
     static cleanWord(text) {
         return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
+    }
+
+    static transformTag(n1, tag2) {
+        // Transforms given element n1 into an identical n2 with given tag2
+        const n2 = Modulo.globals.document.createElement(tag2);
+        n2.append(...(n1.childNodes || []));
+        for (const name of n1.getAttributeNames()) {
+            n2.setAttributeNode(n1.getAttributeNode(name).cloneNode(true));
+        }
+        return n1.replaceWith(n2) || n2;
     }
 
     static rpartition(s, seperator) {
@@ -3400,6 +3420,92 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 `,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
 
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
+
+  "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
+`
+<!-- Due to bug with the test runner or testing framework, including this
+test will cause other tests to fail, but running it separately it succeeds. -->
+<test name="Misc sub-components correctly render">
+    <script>
+        element.cparts.template =
+            element.cpartSpares.template
+                .find(({attrs}) => attrs.name === 'comptest1')
+        assert: element.cparts.template
+    </script>
+
+    <template>
+        Testing
+        <x-Tutorial_P1>
+            Hello <strong>Modulo</strong> World!
+            <p class="neat">Any HTML can be here!</p>
+        </x-Tutorial_P1>
+        <x-templating_escaping>
+            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
+            &amp;tables</em>" sent a message:</p>
+            <div class="msgcontent">
+                I <i>love</i> the classic <a target="_blank"
+                href="https://xkcd.com/327/">xkcd #327</a> on
+                the risk of trusting <b>user inputted data</b>
+            </div>
+        </x-templating_escaping>
+    </template>
+</test>
+
+
+<test name="Button sub-component behavior">
+    <script>
+        element.cparts.template =
+            element.cpartSpares.template
+                .find(({attrs}) => attrs.name === 'comptest2')
+    </script>
+
+    <!--
+    <template name="Renders">
+        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+            <button @click:=props.myclicky>Test text</button>
+        </x-TestBtn>
+        <p>state.a: 1</p>
+    </template>
+    -->
+
+    <script>
+        event: click button
+        assert: state.a === 1337
+    </script>
+
+    <!--
+    <template name="Renders after click">
+        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+            <button @click:=props.myclicky>Test text</button>
+        </x-TestBtn>
+        <p>state.a: 1337</p>
+    </template>
+
+    <template name="Shouldn't show subcomp children" string-count=0>
+        IGNORED
+    </template>
+
+    -->
+</test>
+
+
+
+
+`,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
+
   "/components/examplelib-tests/MemoryGame-tests.html": // (152 lines)
 `<test name="starts a game">
     <template name="Ensure initial render is correct">
@@ -3553,92 +3659,6 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
-
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
-  "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
-`
-<!-- Due to bug with the test runner or testing framework, including this
-test will cause other tests to fail, but running it separately it succeeds. -->
-<test name="Misc sub-components correctly render">
-    <script>
-        element.cparts.template =
-            element.cpartSpares.template
-                .find(({attrs}) => attrs.name === 'comptest1')
-        assert: element.cparts.template
-    </script>
-
-    <template>
-        Testing
-        <x-Tutorial_P1>
-            Hello <strong>Modulo</strong> World!
-            <p class="neat">Any HTML can be here!</p>
-        </x-Tutorial_P1>
-        <x-templating_escaping>
-            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
-            &amp;tables</em>" sent a message:</p>
-            <div class="msgcontent">
-                I <i>love</i> the classic <a target="_blank"
-                href="https://xkcd.com/327/">xkcd #327</a> on
-                the risk of trusting <b>user inputted data</b>
-            </div>
-        </x-templating_escaping>
-    </template>
-</test>
-
-
-<test name="Button sub-component behavior">
-    <script>
-        element.cparts.template =
-            element.cpartSpares.template
-                .find(({attrs}) => attrs.name === 'comptest2')
-    </script>
-
-    <!--
-    <template name="Renders">
-        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
-            <button @click:=props.myclicky>Test text</button>
-        </x-TestBtn>
-        <p>state.a: 1</p>
-    </template>
-    -->
-
-    <script>
-        event: click button
-        assert: state.a === 1337
-    </script>
-
-    <!--
-    <template name="Renders after click">
-        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
-            <button @click:=props.myclicky>Test text</button>
-        </x-TestBtn>
-        <p>state.a: 1337</p>
-    </template>
-
-    <template name="Shouldn't show subcomp children" string-count=0>
-        IGNORED
-    </template>
-
-    -->
-</test>
-
-
-
-
-`,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
 
   "/components/modulowebsite/demo.html": // (71 lines)
 `<div class="demo-wrapper

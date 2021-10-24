@@ -71,11 +71,13 @@ class ModuloNode {
 
         if (config) {
             if (config.domEngine === 'jsdom') {
-                baseModulo.jsdomParseHTML = jsdomParseHTML;
-                console.log('assinging to jsdomParseHTML');
+                modulo.assert(jsdomParseHTML, 'Could not import linkedom');
+                baseModulo.backendDOM = jsdomParseHTML;
             } else if (config.domEngine === 'linkedom') {
-                baseModulo.jsdomParseHTML = linkedomParseHTML;
+                modulo.assert(linkedomParseHTML, 'Could not import linkedom');
+                baseModulo.backendDOM = linkedomParseHTML;
             } else {
+                baseModulo.backendDOM = jsdomParseHTML;
                 console.log('ERROR: Invalid domEngine (jsdom, linkedom): ' + config.domEngine);
             }
         }
@@ -90,7 +92,7 @@ class ModuloNode {
         Object.assign(this, baseModulo, this); // in conflicts, "this" wins
         delete this.moduloNode; // prevent ugly ref loop
         this.doc = null;
-        this.allDoms = [];
+        //this.allDoms = [];
         this.defineAll = defineAll.bind(this); // ensure bound
         this.baseModulo = baseModulo;
         if (this.fetchQ) {
@@ -99,12 +101,12 @@ class ModuloNode {
     }
 
     loadText(text, basePath=null) {
-        if (!this.jsdomParseHTML ) {
-            this.jsdomParseHTML = jsdomParseHTML;
+        if (!this.backendDOM) {
+            this.backendDOM = jsdomParseHTML;
             console.log('Warning: failsafe defaulting to JSDOM');
         }
-        this.jsdom = this.jsdomParseHTML(text);
-        this.allDoms.push(this.jsdom);
+        this.jsdom = this.backendDOM(text);
+        //this.allDoms.push(this.jsdom);
         patchWindow(this.jsdom.window);
 
         this.globals.document = this.jsdom.window.document;
@@ -176,7 +178,7 @@ class ModuloNode {
         m.globals.fetch = this.fetchFile.bind(this);
         m.assert = this.assert.bind(this);
         const define = this.defineCustomElement.bind(this);
-        m.globals.customElements = {define};
+        m.globals.customElements = { define };
         // TODO -v should clean this up? Probably replace with JSDOM HTMLElement impl
         m.globals.HTMLElement.prototype.getAttribute = a => 'XYZYX getAttribute plcholder hack';
         m.globals.HTMLElement.prototype.hasChildNodes = a => false; // HACK
@@ -208,6 +210,18 @@ class ModuloNode {
         // TODO: to finish compatibility, add null replacer here
         if (inputFile) {
             utils.patchModuloWithSSGFeatures(m, inputFile, null, outputFile);
+        }
+
+        if (this.backendDOM === linkedomParseHTML) {
+            // Patch linkedom specific features
+            const {
+                window, document, customElements, HTMLElement, Event,
+                CustomEvent
+            } = this.jsdom;
+            const patchedVersions = {
+                window, document, customElements, HTMLElement, Event,
+            };
+            Object.assign(m.globals, patchedVersions);
         }
     }
 
@@ -356,7 +370,7 @@ class ComponentFactoryNode extends baseModulo.ComponentFactory {
 
         const instance = new this.componentClass();
         //this.testDom = new JSDOM(`<${this.fullName}></${this.fullName}>`);
-        this.testDom = baseModulo.jsdomParseHTML(`<${this.fullName}></${this.fullName}>`);
+        this.testDom = baseModulo.backendDOM(`<${this.fullName}></${this.fullName}>`);
         this.testDoc = this.testDom.window.document;
         const el = this.testDoc.querySelector(this.fullName);
         webComponentsUpgrade(el, instance); // ensure has minimum webcomponent API

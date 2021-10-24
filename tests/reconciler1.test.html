@@ -589,7 +589,6 @@
         assert: patches && patches.length === 0
     </script>
 
-
     <script name="Correctly ignores children of modulo-ignore (2)">
         const {getRecPatches, anchorInTheDeep} = Modulo.utils;
         const str1 = anchorInTheDeep('<span modulo-ignore><abbr>ignore me</abbr><abbr>ignore me 2</abbr></span>');
@@ -617,7 +616,6 @@
             <div modulo-ignore>EFG <p ok="3">more stuff</p></div>
             <div>JKL</div>
         `;
-
 
         const patches = pToString(getRecPatches(str1, str2));
         const expected = [
