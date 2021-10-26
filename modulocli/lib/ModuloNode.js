@@ -1,5 +1,6 @@
 // First, require baseModulo
 const baseModulo = require('./BaseModulo');
+const { customElementsUpgrade } = require('./DomAdapter');
 // Then bring in CommandMenu & TestSuite
 const CommandMenuNode = require('./CommandMenuNode');
 const TestSuite = require('../../src/TestSuite.js');
@@ -239,7 +240,7 @@ class ModuloNode {
                 // support either text or json modes
                 const text = () => new Promise(r => r(data));
                 const json = () => new Promise(r => r(JSON.parse(data)))
-                resolve({text, json});
+                resolve({ text, json });
             });
         });
     }
@@ -293,10 +294,10 @@ class ModuloNode {
         this.assert(maxDepth, 'ssgRenderDepth/maxDepth is falsy');
         tries++;
         if (tries > maxDepth) {
-            // Base case 1:  Prevent infinite recursion:
-            // Could be caused by components being too nested (in which case
-            // ssgRenderDepth should be increased) or by non-deterministic
-            // components (in which case they should be deterministic!)
+            // Base case 1:  Prevent infinite recursion: Could be caused by
+            // components being too nested (in which case ssgRenderDepth should
+            // be increased) or by non-deterministic components (in which case
+            // they should be deterministic!)
             console.log(`WARNING: Hit limit: ssgRenderDepth=${maxDepth}`);
             return callback();
         }
@@ -380,41 +381,8 @@ class ComponentFactoryNode extends baseModulo.ComponentFactory {
 
     doTestRerender(originalElement, testInfo) {
         super.doTestRerender(originalElement, testInfo); // do default behavior
-        // Now, check for any component children and ensure those get
-        // upgraded as well
-        // NOTE: Not sure how this will play with namespaces in the future
-        // TODO: Refactor with above resolution code, after DOMRec rewrite
-        let allMounted = false;
-        let retries = 15; // Test render recursion depth
-        let factory;
         const { factoryInstances } = baseModulo;
-        while (!allMounted && (--retries > 0)) {
-            const sel = (Object.keys(factoryInstances).join(',') || 'X');
-            const allModElems = originalElement.querySelectorAll(sel);
-            allMounted = true;
-            for (const elem of allModElems) {
-                if (elem.isMounted) {
-                    continue;
-                }
-                allMounted = false;
-                const lowerTag = (elem.tagName || '').toLowerCase();
-                for (factory of Object.values(factoryInstances)) {
-                    if (lowerTag === factory.fullName.toLowerCase()) {
-                        break;
-                    }
-                }
-                baseModulo.assert(factory, 'no fac for:', lowerTag);
-                /*
-                console.log('lower tag:', lowerTag);
-                if (lowerTag === 'x-testbtn') {
-                    console.log('------------------------------------')
-                    console.log('PRE UPGRADE', originalElement.innerHTML);
-                    console.log('------------------------------------')
-                }
-                */
-                webComponentsUpgrade(elem, new factory.componentClass());
-            }
-        }
+        customElementsUpgrade(originalElement, factoryInstances);
     }
 }
 

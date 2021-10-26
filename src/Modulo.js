@@ -418,6 +418,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     rerender() {
+        // IDEA: Render-path micro-optimization idea:
+        // - Push prebound func to list, to "pre-compute" render loop
+        // - .rerender() thus is just looping through list of funcs running each
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
@@ -429,6 +432,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
             }
             if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
                   (this.fullName + '|' + lc) in Modulo.breakpoints)) {
+                // DEADCODE, finish or delete
                 debugger;
             }
         }
@@ -492,6 +496,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.dataProp']];
+
+                             // TODO delete this--v ? maybe not the best way?
+Modulo.directiveUniques = { 'component.children': true }; // DEAD CODE - TODO: Autogenerate key from this?
 
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
@@ -587,13 +594,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
         el.append(...this.element.originalChildren);
-        el.setAttribute('modulo-ignore', 'modulo-ignore');
+        //el.setAttribute('modulo-ignore', 'modulo-ignore');
     }
 
     childrenUnmount({el}) {
         el.innerHTML = '';
         //console.log('childrenUnmount!', el);
-        el.removeAttribute('modulo-ignore');
+        //el.removeAttribute('modulo-ignore');
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -1203,6 +1210,19 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         patches.forEach(patch => this.applyPatch.apply(this, patch));
     }
 
+    getMatchedNode(elem, keyedElems, keyedOthers) {
+        const key = elem && elem.getAttribute && elem.getAttribute('key');
+        if (!key) {
+            return null;
+        } else if (key in keyedOthers) {
+            const matched = keyedOthers[key];
+            delete keyedOthers[key];
+            return matched;
+        } else {
+            keyedElems[key] = elem;
+        }
+    }
+
     reconcileChildren(node, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
 
@@ -1210,7 +1230,28 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // including key=
         let child = node.firstChild;
         let rival = rivalParent.firstChild;
+        const keyedChildren = {};
+        const keyedRivals = {};
         while (child || rival) {
+
+            // Handle keys
+            let matchedRival = this.getMatchedNode(child, keyedChildren, keyedRivals);
+            let matchedChild = this.getMatchedNode(rival, keyedRivals, keyedChildren);
+            if (matchedChild || matchedRival) {
+                matchedChild = matchedChild || child;
+                matchedRival = matchedRival || rival;
+                if (matchedChild && matchedRival) {
+                    this.reconcileMatchedNodes(matchedChild, matchedRival);
+                }
+                if (matchedChild === child) {
+                    child = child.nextSibling; // skip on to next child
+                }
+                if (matchedRival === rival) {
+                    rival = rival.nextSibling; // skip on to next rival
+                }
+                continue;
+            }
+
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
@@ -1223,7 +1264,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
 
             if (needReplace) { // do swap with insertBefore
-                // TODO will this cause an error with "swap" if its last one?
                 this.patch(node, 'insertBefore', rival, child.nextSibling);
                 this.patchAndDescendants(rival, 'Mount');
             }
@@ -1235,22 +1275,28 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
-                if (child.nodeType !== 1) { // text or comment node
-                    if (child.nodeValue !== rival.nodeValue) { // update
-                        this.patch(child, 'node-value', rival.nodeValue);
-                    }
-                } else if (!child.isEqualNode(rival)) { // sync if not equal
-                    this.reconcileAttributes(child, rival);
-                    if (rival.hasAttribute('modulo-ignore')) {
-                        //console.log('Skipping ignored node');
-                    } else if (!this.shouldNotDescend) {
-                        this.reconcileChildren(child, rival);
-                    }
-                }
+                this.reconcileMatchedNodes(child, rival);
             }
             // Walk through DOM trees in parallel BFS, on to next sibling(s)!
             child = child ? child.nextSibling : null;
             rival = rival ? rival.nextSibling : null;
+        }
+
+        // TODO: Add in new "keyed" rivals, delete keyed children
+    }
+
+    reconcileMatchedNodes(child, rival) {
+        if (child.nodeType !== 1) { // text or comment node
+            if (child.nodeValue !== rival.nodeValue) { // update
+                this.patch(child, 'node-value', rival.nodeValue);
+            }
+        } else if (!child.isEqualNode(rival)) { // sync if not equal
+            this.reconcileAttributes(child, rival);
+            if (rival.hasAttribute('modulo-ignore')) {
+                //console.log('Skipping ignored node');
+            } else if (!this.shouldNotDescend) {
+                this.reconcileChildren(child, rival);
+            }
         }
     }
 

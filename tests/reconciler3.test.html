@@ -1,4 +1,7 @@
-<component name="ReconcilerTester3"><testsuite>
+<!--
+    Tests of tagTransforms and keys
+-->
+<component name="ReconcilerTester3"><testsuite solo>
 
 
 <test name="ensure ModRec and MTL are defined">
@@ -82,6 +85,39 @@
         ));
 
         const expected = '<1 DIV> appendChild("<1 Y-OTHER>{"a":"b","c":"d"}</1>") </1>';
+
+        assert: patches === expected
+    </script>
+</test>
+
+<test name="Keys">
+    <script name="Can handle keyed elements lined up but interspersed">
+        const { getRecPatches, pToString } = Modulo.utils;
+
+        const patches = pToString(getRecPatches(
+            (`
+                <div>A</div>
+                <div key="bob">B</div>
+                <div>C</div>
+                <div key="dave">D</div>
+                <div>E</div>
+            `),
+            (`
+                <div>Alice</div>
+                <div key="bob">Bob</div>
+                <div>Candice</div>
+                <div key="dave">Dave</div>
+                <div>Eve</div>
+            `),
+        ));
+
+        const expected = (`
+            <3 #text> node-value("Alice") </3>
+            <3 #text> node-value("Bob") </3>
+            <3 #text> node-value("Candice") </3>
+            <3 #text> node-value("Dave") </3>
+            <3 #text> node-value("Eve") </3>
+        `).replace(/    /g, '');
 
         assert: patches === expected
     </script>
