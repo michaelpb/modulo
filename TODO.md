@@ -214,3 +214,17 @@
         //const content = (opts.content || '').replace(/(<\/?)x-/ig, tagPref);
         // TODO -v prefered
         //content = content.replace(/(<\/?)x-/g, tagPref);
+
+            // Possibility matrix:
+            // (Note: It's not symmetric due to side-effect of getMatchedNode,
+            // specifically ordering of checking child first.)
+            // matchedRival    ===  null
+            //                              rival
+            //                                       !== rival
+            // matchedChild                                            false
+            //       ===  null  . normal    .  e   . nr=r,r=MR    .   skip R
+            //           child  . normal    .  e   .  normal      .   normal
+            //       !== child  . c=MC,nc=c .  e   .  skip both   .   r=MR,nr=r...
+            //           false  . skip C    .  e   . c=MC,nc=c... .   skip both
+            //Modulo.assert(matchedRival ? (matchedRival !== rival) : false, 'Repeated key!');
+

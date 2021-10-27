@@ -689,6 +689,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     }
 
     static prefixAllSelectors(namespace, name, text='') {
+        // TODO - Refactor this into a helper (has old tests that can be resurrected)
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
 
@@ -1141,6 +1142,127 @@ Modulo.templating.defaultOptions.tags = {
     */
 };
 
+
+        // TODO: New idea for how to refactor reconciler directives, and clean
+        // up this mess, while allowing another level to "slice" into:
+        //  - RecStep object:
+        //     - .nextChild, .nextRival, .child, .rival, .ancestor, .skipDescendant
+        //  - Have a "parseDirectives" step after (while (child || rival))
+        //  - Immediately invoke element.reconcilePreDirective()
+        //  - Then, implement [component.key] and [component.ignore]
+        //  - Possibly: Use this to then do granular patches (directiveMount etc)
+Modulo.reconcilers.Cursor = class Cursor {
+    constructor(parentNode, parentRival) {
+        this.initialize(parentNode, parentRival);
+    }
+    initialize(parentNode, parentRival) {
+        this.nextChild = parentNode.firstChild;
+        this.nextRival = parentRival.firstChild;
+        this.keyedChildren = {};
+        this.keyedRivals = {};
+        this.parentNodeQueue = [];
+        this.keyedChildrenArr = null;
+        this.keyedRivalsArr = null;
+    }
+
+    pushDescent(parentNode, parentRival) {
+        this.parentNodeQueue.push([parentNode, parentRival]);
+    }
+
+    popDescent() {
+        if (this.parentNodeQueue.length < 1) {
+            return false;
+        }
+        this.initialize(...this.parentNodeQueue.shift());
+        return true;
+    }
+
+    hasNext() {
+        if (this.nextChild || this.nextRival) {
+            return true; // Is pointing at another node
+        }
+
+        // Convert objects into arrays so we can pop
+        if (!this.keyedChildrenArr) {
+            this.keyedChildrenArr = Object.values(this.keyedChildren);
+        }
+        if (!this.keyedRivalsArr) {
+            this.keyedRivalsArr = Object.values(this.keyedRivals);
+        }
+
+        if (this.keyedRivalsArr.length || this.keyedChildrenArr.length) {
+            return true; // We have queued up nodes from keyed values
+        }
+
+        return this.popDescent();
+    }
+
+    next() {
+        let child = this.nextChild;
+        let rival = this.nextRival;
+        if (!this.nextChild && !this.nextRival) {
+            if (!this.keyedRivalsArr) {
+                return [null, null];
+            }
+            return this.keyedRivalsArr.length ?
+                  [null, this.keyedRivalsArr.pop()] :
+                  [this.keyedChildrenArr.pop(), null];
+        }
+
+        // Handle keys
+        this.nextChild = child ? child.nextSibling : null;
+        this.nextRival = rival ? rival.nextSibling : null;
+
+        let matchedRival = this.getMatchedNode(child, this.keyedChildren, this.keyedRivals);
+        let matchedChild = this.getMatchedNode(rival, this.keyedRivals, this.keyedChildren);
+        // TODO refactor this
+        if (matchedRival === false) {
+            // Child has a key, but does not match rival, so SKIP on child
+            child = this.nextChild;
+            this.nextChild = child ? child.nextSibling : null;
+        } else if (matchedChild === false) {
+            // Rival has a key, but does not match child, so SKIP on rival
+            rival = this.nextRival;
+            this.nextRival = rival ? rival.nextSibling : null;
+        }
+        const keyWasFound = matchedRival !== null || matchedChild !== null;
+        const matchFound = matchedChild !== child && keyWasFound
+        if (matchFound && matchedChild) {
+            // Rival matches, but not with child. Swap in child.
+            this.nextChild = child;
+            child = matchedChild;
+        }
+
+        if (matchFound && matchedRival) {
+            // Child matches, but not with rival. Swap in rival.
+            Modulo.assert(matchedRival !== rival, 'Dupe!'); // (We know this due to ordering)
+            this.nextRival = rival;
+            rival = matchedRival;
+        }
+
+        return [ child, rival ];
+    }
+
+    getMatchedNode(elem, keyedElems, keyedOthers) {
+        const key = elem && elem.getAttribute && elem.getAttribute('key');
+        if (!key) {
+            return null;
+        }
+        if (key in keyedOthers) {
+            const matched = keyedOthers[key];
+            delete keyedOthers[key];
+            return matched;
+        } else {
+            if (key in keyedElems) {
+                console.error('MODULO WARNING: Duplicate key:', key);
+            }
+            keyedElems[key] = elem;
+            return false;
+        }
+    }
+
+}
+
 Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor(opts) {
         // Discontinue this?
@@ -1180,7 +1302,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     applyTagTransforms(elem, tagTransforms) {
-        // Remove all mm-ignores
         const sel = Object.keys(tagTransforms || { X: 0 }).join(',');
         for (const node of elem.querySelectorAll(sel)) {
             const newTag = tagTransforms[node.tagName.toLowerCase()];
@@ -1210,47 +1331,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         patches.forEach(patch => this.applyPatch.apply(this, patch));
     }
 
-    getMatchedNode(elem, keyedElems, keyedOthers) {
-        const key = elem && elem.getAttribute && elem.getAttribute('key');
-        if (!key) {
-            return null;
-        } else if (key in keyedOthers) {
-            const matched = keyedOthers[key];
-            delete keyedOthers[key];
-            return matched;
-        } else {
-            keyedElems[key] = elem;
-        }
-    }
-
     reconcileChildren(node, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
-
-        // TODO: NOTE: Currently does not respect ANY resolver directives,
-        // including key=
-        let child = node.firstChild;
-        let rival = rivalParent.firstChild;
-        const keyedChildren = {};
-        const keyedRivals = {};
-        while (child || rival) {
-
-            // Handle keys
-            let matchedRival = this.getMatchedNode(child, keyedChildren, keyedRivals);
-            let matchedChild = this.getMatchedNode(rival, keyedRivals, keyedChildren);
-            if (matchedChild || matchedRival) {
-                matchedChild = matchedChild || child;
-                matchedRival = matchedRival || rival;
-                if (matchedChild && matchedRival) {
-                    this.reconcileMatchedNodes(matchedChild, matchedRival);
-                }
-                if (matchedChild === child) {
-                    child = child.nextSibling; // skip on to next child
-                }
-                if (matchedRival === rival) {
-                    rival = rival.nextSibling; // skip on to next rival
-                }
-                continue;
-            }
+        const cursor = new Modulo.reconcilers.Cursor(node, rivalParent);
+        while (cursor.hasNext()) {
+            const [ child, rival ] = cursor.next();
 
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
@@ -1275,17 +1360,12 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
-                this.reconcileMatchedNodes(child, rival);
+                this.reconcileMatchedNodes(child, rival, cursor);
             }
-            // Walk through DOM trees in parallel BFS, on to next sibling(s)!
-            child = child ? child.nextSibling : null;
-            rival = rival ? rival.nextSibling : null;
         }
-
-        // TODO: Add in new "keyed" rivals, delete keyed children
     }
 
-    reconcileMatchedNodes(child, rival) {
+    reconcileMatchedNodes(child, rival, cursor) {
         if (child.nodeType !== 1) { // text or comment node
             if (child.nodeValue !== rival.nodeValue) { // update
                 this.patch(child, 'node-value', rival.nodeValue);
@@ -1295,6 +1375,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (rival.hasAttribute('modulo-ignore')) {
                 //console.log('Skipping ignored node');
             } else if (!this.shouldNotDescend) {
+                //cursor.pushDescent(child, rival);
                 this.reconcileChildren(child, rival);
             }
         }
