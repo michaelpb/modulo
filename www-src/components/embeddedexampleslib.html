@@ -1,35 +1,37 @@
 <module>
     <script>
         // Splits up own source-code to get source for each example
-        const myText = Modulo.fetchQ.data[factory.loader.src];
+        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
+        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
+        //console.log('this si myText', myText);
         const componentTexts = {};
-        if (myText) {
-            let name = '';
-            let currentComponent = '';
-            let inTestSuite = false;
-            for (const line of myText.split('\n')) {
-                if (line.startsWith('</component>')) {
-                    componentTexts[name] = currentComponent;
-                    currentComponent = '';
-                    name = null;
-                } else if (line.startsWith('<component')) {
-                    name = line.split(' name="')[1].split('"')[0];
-                } else if (line.startsWith('<testsuite')) {
-                    inTestSuite = true;
-                } else if (line.includes('</testsuite>')) {
-                    inTestSuite = false;
-                } else if (name && !inTestSuite) {
-                    currentComponent += line + '\n';
-                }
+        if (!myText) {
+            console.error('ERROR: Could not load own text :(');
+            myText = '';
+        }
+        let name = '';
+        let currentComponent = '';
+        let inTestSuite = false;
+        for (const line of myText.split('\n')) {
+            if (line.startsWith('</component>')) {
+                componentTexts[name] = currentComponent;
+                currentComponent = '';
+                name = null;
+            } else if (line.startsWith('<component')) {
+                name = line.split(' name="')[1].split('"')[0];
+            } else if (line.startsWith('<testsuite')) {
+                inTestSuite = true;
+            } else if (line.includes('</testsuite>')) {
+                inTestSuite = false;
+            } else if (name && !inTestSuite) {
+                currentComponent += line + '\n';
             }
         }
         script.exports.componentTexts = componentTexts;
     </script>
 </module>
 
-<!-- NOTE / TODO: These are duplicated, present in docs as well. (Should
-dedupe and use fromlibrary in docs, and allow fromlibrary to get from here
-as well) -->
+
 
 <component name="Templating_1">
 <template>
@@ -66,6 +68,7 @@ as well) -->
 ></testsuite>
 
 </component>
+
 
 
 <component name="Templating_Comments">
@@ -144,6 +147,12 @@ strong {
 .neat {
     font-variant: small-caps;
 }
+:host { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
 </style>
 
 <testsuite>
@@ -159,7 +168,69 @@ strong {
 </component>
 
 
+<component name="Tutorial_P2">
+<template>
+    <p>Trying out the button...</p>
+    <x-ExampleBtn
+        label="Button Example"
+        shape="square"
+    ></x-ExampleBtn>
 
+    <p>Another button...</p>
+    <x-ExampleBtn
+        label="Example 2: Rounded"
+        shape="round"
+    ></x-ExampleBtn>
+</template>
+
+<testsuite>
+    <test name="renders as expected">
+        <template string-count=1>
+            <p>Trying out the button...</p>
+        </template>
+        <!-- Unfortunately can't test the following... -->
+        <!--
+        <template>
+            <button class="my-btn my-btn__square">
+                Button Example
+            </button>
+        </template>
+        <template>
+            <button class="my-btn my-btn__round">
+                Rounded is Great Too
+            </button>
+        </template>
+        -->
+    </test>
+</testsuite>
+</component>
+
+
+<component name="Tutorial_P2_filters_demo">
+<template>
+    <p>Trying out the button...</p>
+    <x-ExampleBtn
+        label="Button Example"
+        shape="square"
+    ></x-ExampleBtn>
+
+    <p>Another button...</p>
+    <x-ExampleBtn
+        label="Example 2: Rounded"
+        shape="round"
+    ></x-ExampleBtn>
+</template>
+
+<testsuite>
+    <test name="renders as expected">
+        <template string-count=1>
+            <p>Trying out the button...</p>
+        </template>
+    </test>
+</testsuite>
+
+
+</component>
 
 
 

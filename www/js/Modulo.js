@@ -113,7 +113,8 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         super(element, options);
         this.src = this.attrs.src;
 
-        // TODO: loader.namespace defaulting to hash
+        // TODO: "Namespace", should be "global-namespace"?
+        // If loader.namespace = null, cause defaulting to hash.
         this.namespace = this.attrs.namespace;
         this.localNameMap = {};
         this.hash = 'zerohash'; // the hash of an unloaded loader
@@ -249,11 +250,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
 
-        // "Register" local name with loader, and instance in general
-        // TODO: Have localNameMap propagate up, as long as there is no
-        // "namespace" attribute (rename TBD). That way, localNameMap
-        // "dumps" into the upper one.
-        this.loader.localNameMap[name.toLowerCase()] = this.fullName;
+        this.isModule = this.loader.namespace === name; // if name = namespace
         Modulo.ComponentFactory.registerInstance(this);
 
         this.componentClass = this.createClass();
@@ -306,7 +303,7 @@ Modulo.ComponentFactory = class ComponentFactory {
     // Finally, we are ready to create the class that the browser will use to
     // actually instantiate each Component, with a "back reference" to the fac.
     createClass() {
-        const {fullName} = this;
+        const { fullName } = this;
         return class CustomElement extends Modulo.Element {
             factory() {
                 /* Gets current registered component factory (for hot-reloading) */
@@ -369,6 +366,24 @@ Modulo.ComponentFactory = class ComponentFactory {
             Modulo.factoryInstances = {};
         }
         Modulo.factoryInstances[instance.fullName] = instance;
+
+        const lcName = instance.name.toLowerCase();
+        console.log('registering', lcName);
+        if (instance.isModule) {
+            // TODO: Dead-ish feature: not Sure how useful this is, or if only
+            // "local" modules are typically used. Ideally this should be based
+            // on local module names / localNameMap, not global namespaces.
+            if (!Modulo.modules) {
+                Modulo.modules = {};
+            }
+            Modulo.modules[lcName] = instance.baseRenderObj;
+        } else {
+            // "Register" local name with loader, and instance in general
+            // TODO: Have localNameMap propagate up, as long as there is no
+            // "namespace" attribute (namespace rename is TBD). That way,
+            // localNameMap "dumps" into the upper one.
+            instance.loader.localNameMap[lcName] = instance.fullName;
+        }
     }
 }
 
@@ -418,6 +433,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     rerender() {
+        // IDEA: Render-path micro-optimization idea:
+        // - Push prebound func to list, to "pre-compute" render loop
+        // - .rerender() thus is just looping through list of funcs running each
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
@@ -426,6 +444,11 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         for (const lc of lifecycleNames) {
             for (const cName of Object.keys(this.cparts)) {
                 this._invokeCPart(cName, lc + 'Callback');
+            }
+            if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
+                  (this.fullName + '|' + lc) in Modulo.breakpoints)) {
+                // DEADCODE, finish or delete
+                debugger;
             }
         }
         //this.renderObj = null; // ?rendering is over, set to null
@@ -489,6 +512,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.dataProp']];
 
+                             // TODO delete this--v ? maybe not the best way?
+Modulo.directiveUniques = { 'component.children': true }; // DEAD CODE - TODO: Autogenerate key from this?
+
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
         //console.log('children loaded callback', childrenLoadObj);
@@ -514,7 +540,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     prepareCallback() {
-        return { innerHTML: null, patches: null };
+        const { originalHTML } = this.element;
+        return { originalHTML, innerHTML: null, patches: null };
     }
 
     updateCallback(renderObj) {
@@ -583,13 +610,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
         el.append(...this.element.originalChildren);
-        el.setAttribute('modulo-ignore', 'modulo-ignore');
+        //el.setAttribute('modulo-ignore', 'modulo-ignore');
     }
 
     childrenUnmount({el}) {
         el.innerHTML = '';
         //console.log('childrenUnmount!', el);
-        el.removeAttribute('modulo-ignore');
+        //el.removeAttribute('modulo-ignore');
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -678,6 +705,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     }
 
     static prefixAllSelectors(namespace, name, text='') {
+        // TODO - Refactor this into a helper (has old tests that can be resurrected)
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
 
@@ -695,9 +723,10 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
             // Upgrade the ":host" pseudoselector to be the full name (since
             // this is not a Shadow DOM style-sheet)
-            selector = selector.replace(new RegExp(/:host(\([^)]*\))/, 'g'), hostClause => {
+            selector = selector.replace(new RegExp(/:host(\([^)]*\))?/, 'g'), hostClause => {
                 // TODO: this needs thorough testing
-                return fullName + ':is(' + hostClause || fullName + ')';
+                const notBare = (hostClause && hostClause !== ':host');
+                return fullName + (notBare ? `:is(${hostClause})` : '');
             });
 
             // If it is not prefixed at this point, then be sure to prefix
@@ -728,6 +757,7 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     prepareCallback(renderObj) {
         // Exposes templates in render context, so stuff like
         // "|renderas:template.row" works
+        // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
             obj[template.name || 'default'] = template;
@@ -808,10 +838,12 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
-            this[cbName] = renderObj => {
+            this[cbName] = (arg) => {
+                // NOTE: renderObj is passed in for Callback, but not Mount
+                const renderObj = this.element.getCurrentRenderObj();
                 this.prepLocalVars(renderObj); // always prep (for event CB)
-                if (cbName in script) {
-                    script[cbName](renderObj);
+                if (cbName in script) { // if we also have this
+                    script[cbName](arg);
                 }
             };
         }
@@ -832,6 +864,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     // This is important: It's what enables us to avoid using the "this"
     // context, since the current element is set before any custom code is run.
     prepLocalVars(renderObj) {
+        if (!renderObj.script) {
+            console.error('ERROR: Script CPart missing from renderObj:', renderObj);
+            return false;
+        }
         const {setLocalVariable, localVars} = renderObj.script;
         setLocalVariable('element', this.element);
         setLocalVariable('cparts', this.element.cparts);
@@ -1061,6 +1097,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         join: (s, arg) => s.join(arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        allow: (s, arg) => arg.split(',').includes(s) ? s : '', // color|allow:"red,blue"|default:"blue"
         add: (s, arg) => s + arg,
         subtract: (s, arg) => s - arg,
         default: (s, arg) => s || arg,
@@ -1130,6 +1167,127 @@ Modulo.templating.defaultOptions.tags = {
     */
 };
 
+
+        // TODO: New idea for how to refactor reconciler directives, and clean
+        // up this mess, while allowing another level to "slice" into:
+        //  - Then, implement [component.key] and [component.ignore]
+        //  - Possibly: Use this to then do granular patches (directiveMount etc)
+Modulo.reconcilers.Cursor = class Cursor {
+    constructor(parentNode, parentRival) {
+        this.initialize(parentNode, parentRival);
+    }
+    initialize(parentNode, parentRival) {
+        this.nextChild = parentNode.firstChild;
+        this.nextRival = parentRival.firstChild;
+        this.keyedChildren = {};
+        this.keyedRivals = {};
+        this.parentNodeQueue = [];
+        this.keyedChildrenArr = null;
+        this.keyedRivalsArr = null;
+    }
+
+    pushDescent(parentNode, parentRival) {
+        // DEADCODE
+        this.parentNodeQueue.push([parentNode, parentRival]);
+    }
+
+    popDescent() {
+        // DEADCODE
+        if (this.parentNodeQueue.length < 1) {
+            return false;
+        }
+        const result = this.parentNodeQueue.shift();
+        console.log('this is reuslt', result);
+        this.initialize(...result);
+        return true;
+    }
+
+    hasNext() {
+        if (this.nextChild || this.nextRival) {
+            return true; // Is pointing at another node
+        }
+
+        // Convert objects into arrays so we can pop
+        if (!this.keyedChildrenArr) {
+            this.keyedChildrenArr = Object.values(this.keyedChildren);
+        }
+        if (!this.keyedRivalsArr) {
+            this.keyedRivalsArr = Object.values(this.keyedRivals);
+        }
+
+        if (this.keyedRivalsArr.length || this.keyedChildrenArr.length) {
+            return true; // We have queued up nodes from keyed values
+        }
+        // DEADCODE -v
+        return this.popDescent();
+    }
+
+    next() {
+        let child = this.nextChild;
+        let rival = this.nextRival;
+        if (!this.nextChild && !this.nextRival) {
+            if (!this.keyedRivalsArr) {
+                return [null, null];
+            }
+            return this.keyedRivalsArr.length ?
+                  [null, this.keyedRivalsArr.pop()] :
+                  [this.keyedChildrenArr.pop(), null];
+        }
+
+        // Handle keys
+        this.nextChild = child ? child.nextSibling : null;
+        this.nextRival = rival ? rival.nextSibling : null;
+
+        let matchedRival = this.getMatchedNode(child, this.keyedChildren, this.keyedRivals);
+        let matchedChild = this.getMatchedNode(rival, this.keyedRivals, this.keyedChildren);
+        // TODO refactor this
+        if (matchedRival === false) {
+            // Child has a key, but does not match rival, so SKIP on child
+            child = this.nextChild;
+            this.nextChild = child ? child.nextSibling : null;
+        } else if (matchedChild === false) {
+            // Rival has a key, but does not match child, so SKIP on rival
+            rival = this.nextRival;
+            this.nextRival = rival ? rival.nextSibling : null;
+        }
+        const keyWasFound = matchedRival !== null || matchedChild !== null;
+        const matchFound = matchedChild !== child && keyWasFound
+        if (matchFound && matchedChild) {
+            // Rival matches, but not with child. Swap in child.
+            this.nextChild = child;
+            child = matchedChild;
+        }
+
+        if (matchFound && matchedRival) {
+            // Child matches, but not with rival. Swap in rival.
+            Modulo.assert(matchedRival !== rival, 'Dupe!'); // (We know this due to ordering)
+            this.nextRival = rival;
+            rival = matchedRival;
+        }
+
+        return [ child, rival ];
+    }
+
+    getMatchedNode(elem, keyedElems, keyedOthers) {
+        const key = elem && elem.getAttribute && elem.getAttribute('key');
+        if (!key) {
+            return null;
+        }
+        if (key in keyedOthers) {
+            const matched = keyedOthers[key];
+            delete keyedOthers[key];
+            return matched;
+        } else {
+            if (key in keyedElems) {
+                console.error('MODULO WARNING: Duplicate key:', key);
+            }
+            keyedElems[key] = elem;
+            return false;
+        }
+    }
+
+}
+
 Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor(opts) {
         // Discontinue this?
@@ -1146,17 +1304,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (!this.elementCtx) {
             this.elementCtx = node; // element context
         }
-
-        // New "Tag Transform":
-        // - This is the new way all local elements can omit prefixes
-        // - <MyElement a="3"></MyElement>
-        // - So, "namespaced" is just when it hits regular DOM
-        // - By default, namespace is within the component and/or module
-        // - So, when a Comopnent CPart does a render(), it has a
-        //   {'MyElement': 'a34af-MyElement'} transformer
-
-        //console.log('rendering:', rivalHTML);
-        //this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML));
         const rival = Modulo.utils.makeDiv(rivalHTML, true);
         this.applyTagTransforms(rival, tagTransforms);
         this.markRecDirectives(rival);
@@ -1169,7 +1316,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     applyTagTransforms(elem, tagTransforms) {
-        // Remove all mm-ignores
         const sel = Object.keys(tagTransforms || { X: 0 }).join(',');
         for (const node of elem.querySelectorAll(sel)) {
             const newTag = tagTransforms[node.tagName.toLowerCase()];
@@ -1201,12 +1347,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     reconcileChildren(node, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
+        const cursor = new Modulo.reconcilers.Cursor(node, rivalParent);
+        while (cursor.hasNext()) {
+            const [ child, rival ] = cursor.next();
 
-        // TODO: NOTE: Currently does not respect ANY resolver directives,
-        // including key=
-        let child = node.firstChild;
-        let rival = rivalParent.firstChild;
-        while (child || rival) {
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
@@ -1219,7 +1363,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
 
             if (needReplace) { // do swap with insertBefore
-                // TODO will this cause an error with "swap" if its last one?
                 this.patch(node, 'insertBefore', rival, child.nextSibling);
                 this.patchAndDescendants(rival, 'Mount');
             }
@@ -1231,26 +1374,30 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
-                if (child.nodeType !== 1) { // text or comment node
-                    if (child.nodeValue !== rival.nodeValue) { // update
-                        this.patch(child, 'node-value', rival.nodeValue);
-                    }
-                } else if (!child.isEqualNode(rival)) { // sync if not equal
-                    this.reconcileAttributes(child, rival);
-                    if (rival.hasAttribute('modulo-ignore')) {
-                        //console.log('Skipping ignored node');
-                    } else if (!this.shouldNotDescend) {
-                        this.reconcileChildren(child, rival);
-                    }
-                }
+                this.reconcileMatchedNodes(child, rival, cursor);
             }
-            // Walk through DOM trees in parallel BFS, on to next sibling(s)!
-            child = child ? child.nextSibling : null;
-            rival = rival ? rival.nextSibling : null;
         }
     }
 
-    patch(node, method, arg, arg2=null) {
+    reconcileMatchedNodes(child, rival, cursor) {
+        if (child.nodeType !== 1) { // text or comment node
+            if (child.nodeValue !== rival.nodeValue) { // update
+                this.patch(child, 'node-value', rival.nodeValue);
+            }
+        } else if (!child.isEqualNode(rival)) { // sync if not equal
+            this.reconcileAttributes(child, rival);
+            if (rival.hasAttribute('modulo-ignore')) {
+                //console.log('Skipping ignored node');
+            } else if (!this.shouldNotDescend) {
+                // NOTE: Cannot do pushDescent (which would be BFS, then) since
+                // presently only works with DFS, for some reason.
+                //cursor.pushDescent(child, rival);
+                this.reconcileChildren(child, rival);
+            }
+        }
+    }
+
+    patch(node, method, arg, arg2 = null) {
         this.patches.push([node, method, arg, arg2]);
     }
 
@@ -1265,12 +1412,17 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patchDirectives(el, rawName, suffix) {
+        const callbackName = 'directive' + suffix;
         const directives = Modulo.utils.parseDirectives(rawName);
         if (directives) {
             const value = el.getAttribute(rawName);
             for (const directive of directives) {
-                Object.assign(directive, { value, el });
-                this.patch(this.elementCtx, 'directive' + suffix, directive);
+                Object.assign(directive, { value, el,  callbackName});
+                this.patch(this.elementCtx, callbackName, directive);
+                //const result = this.elementCtx.directiveCallback(directive, suffix);
+                //if (result) {
+                //    this.patch(this.elementCtx, callbackName, directive);
+                //}
             }
         }
     }
@@ -1278,6 +1430,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     reconcileAttributes(node, rival) {
         const myAttrs = new Set(node ? node.getAttributeNames() : []);
         const rivalAttributes = new Set(rival.getAttributeNames());
+
         // Check for new and changed attributes
         for (const rawName of rivalAttributes) {
             const attr = rival.getAttributeNode(rawName);
@@ -1318,7 +1471,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
         }
     }
-
 }
 
 
@@ -1607,11 +1759,5 @@ if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
 
-// And that's the end of the Modulo source code story. This means it's where
-// your own Modulo story begins!
-
-// No, really, your story will begin right here. When Modulo is compiled,
-// whatever code exists below this point is user-created code.
-
-// So... keep on reading for the latest Modulo project:
+// End of Modulo.js source code. Below is the latest Modulo project:
 // ------------------------------------------------------------------

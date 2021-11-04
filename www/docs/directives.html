@@ -1,6 +1,5 @@
-<!DOCTYPE HTML>
-<head>
-</head><body>
+<head><script src="/m.js"></script>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script></head><body>
 
 
     <meta charset="utf8">
@@ -11,9 +10,11 @@
     
 
     <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
@@ -32,8 +33,8 @@
     </ul>
 
     <div class="Navbar-rightInfo">
-        v: 0.0.1<br>
-        SLOC: 1253 lines<br>
+        v: undefined<br>
+        SLOC: undefined lines<br>
         <a href="https://github.com/michaelpb/modulo/">github</a> | 
         <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
     </div>
@@ -157,14 +158,15 @@
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]="">
+        <aside style="border: none">
+            
 
 <h1>Lifecycle &amp; Directives</h1>
 
 
 <mws-section name="lifecycle">
         <a class="secanchor" title="Click to focus on this section." id="lifecycle" name="lifecycle" href="#lifecycle">#</a>
-        <h2 [component.children]="">Lifecycle</h2>
+        <h2>Lifecycle</h2>
     </mws-section>
 
 <p>Every Modulo Component goes through a certain "lifecycle". Here's an
@@ -235,10 +237,11 @@ you don't have a <em>Template</em> CPart defined, although without a
     <li><code>prepare</code> - Gather data needed before rendering (e.g. gather
     variables for template)</li>
     <li><code>render</code> - Use the Template to render HTML code</li>
-    <li><code>update</code> - Updates the DOM to reflect the newly generated
-    HTML code, while collecting directives.</li>
-    <li><code>updated</code> - Perform any clean-up tasks after DOM update, and
-    invoke the directive methods collected in the previous step.</li>
+    <li><code>reconcile</code> - Compares the new rendered HTML to the DOM, and
+    generates a "patch-set" or array of operations necessary to reconcile the
+    DOM to the new HTML</li>
+    <li><code>update</code> - Applies the "patches" generated in the previous
+    step, actually modifying the DOM and invoking directives</li>
 </ul>
 
 
@@ -341,7 +344,7 @@ Open your browser dev console to see messages...
         
             <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
-                    <span alt="Go Full Screen">⤧</span>
+                    <span alt="Go Full Screen">↗</span>
                 
             </button>
             &nbsp;
@@ -361,11 +364,11 @@ Open your browser dev console to see messages...
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e1g1-example>
+                    <e7g1-example mm-ignore="mm-ignore">
 Hello <strong>Modulo</strong> World!
 Open your browser dev console to see messages...
 <button @click:="script.gotClicked">Click me to generate an event</button>
-</e1g1-example>
+</e7g1-example>
                 </div>
             </div>
         
@@ -382,7 +385,7 @@ Open your browser dev console to see messages...
 
 <mws-section name="renderobj">
         <a class="secanchor" title="Click to focus on this section." id="renderobj" name="renderobj" href="#renderobj">#</a>
-        <h2 [component.children]="">renderObj</h2>
+        <h2>renderObj</h2>
     </mws-section>
 
 <blockquote>
@@ -468,8 +471,8 @@ Show messages in console</label>
 <script>
     function _logInfo(message, renderObj) {
         // Little helper function to do messages in console
-        const formattedOutput = JSON.stringify(renderObj, null, 2);
         if (state.enabled) {
+            const formattedOutput = JSON.stringify(renderObj, null, 2);
             console.log(message, formattedOutput);
         }
     }
@@ -509,7 +512,7 @@ Show messages in console</label>
         
             <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
-                    <span alt="Go Full Screen">⤧</span>
+                    <span alt="Go Full Screen">↗</span>
                 
             </button>
             &nbsp;
@@ -529,11 +532,11 @@ Show messages in console</label>
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e2g1-example>
+                    <e8g1-example mm-ignore="mm-ignore">
 <label>
 <input [state.bind]="" name="enabled" type="checkbox" value="false">
 Show messages in console</label>
-</e2g1-example>
+</e8g1-example>
                 </div>
             </div>
         
@@ -546,7 +549,7 @@ Show messages in console</label>
 
 <mws-section name="directives">
         <a class="secanchor" title="Click to focus on this section." id="directives" name="directives" href="#directives">#</a>
-        <h2 [component.children]="">Directives</h2>
+        <h2>Directives</h2>
     </mws-section>
 
 <blockquote><p><strong>Directives are like "refs"</strong> - Directives have
@@ -631,7 +634,7 @@ run into the limits of what Modulo is capable of doing.</p>
         
             <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
-                    <span alt="Go Full Screen">⤧</span>
+                    <span alt="Go Full Screen">↗</span>
                 
             </button>
             &nbsp;
@@ -651,7 +654,7 @@ run into the limits of what Modulo is capable of doing.</p>
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e3g1-example>
+                    <e9g1-example mm-ignore="mm-ignore">
 
 <input [script.myinput]="">
 
@@ -659,7 +662,7 @@ run into the limits of what Modulo is capable of doing.</p>
 <button [component.event]click:="script.showInfo">
     Click me
 </button>
-</e3g1-example>
+</e9g1-example>
                 </div>
             </div>
         
@@ -680,14 +683,21 @@ run into the limits of what Modulo is capable of doing.</p>
     <li><code>[state.bind]</code> - Two-way binding with <em>State</em>
     data, with the key determined by the <code>name=</code> property of
     whatever it is attached to.</li>
+
     <li><code>[component.children]</code> - Reattach the original child
     elements that this component had when it was first mounted to a new DOM
-    element.</li>
+    element. (For React users, this is similar to doing
+    <code>{this.props.children}</code>.)</li>
+
     <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
-    Attach event listeners to DOM elements</li>
-    <li><code>[component.resolve]</code> (<em>shortcut:</em> <code>:</code>) -
-    Directly pass <code>renderObj</code> values as <em>Props</em> or
-    events.</li>
+    Attach event listeners to DOM elements, and remove them when the DOM
+    elements are removed. (For jQuery users, this is used for similar purposes
+    as "live" (delegated) events, but is faster.)</li>
+
+    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
+    Attach data to a DOM element's `.dataProp` object, which can be used to
+    directly pass <code>renderObj</code> values as <em>Props</em> or
+    events</li>
 </ul>
 
 <h3>Directives vs templates</h3>
@@ -712,7 +722,7 @@ stricter structure.</p>
     <p>Never attempt to mix <em>Template</em> CPart variables with directives.
     Directives cannot access template variables, since directives are only are
     applied after the template is fully rendered and all template variables are
-    already forgotten.  As an example, consider the following code:</p>
+    already forgotten. As an example, consider the following code:</p>
 
 <mws-demo text="
 <template>
@@ -771,38 +781,64 @@ stricter structure.</p>
 
 </mws-demo>
 
-    <p>The first attempt uses a directive (<code>[component.resolve]</code>, in
+<blockquote>
+    <p><strong>Why "payload"?</strong> Why does Modulo take this approach, vs
+    something like React, that allows direct attachment of anonymous JavaScript
+    functions? As any React developer knows by now, there are a lot of
+    "footguns" (common mistakes) with attaching events like this, specifically
+    because complexities with "this" context, anonymous functions, and bound
+    functions with arguments can make introspection (e.g. interactive
+    debugging) hard.</p>
+
+    <p>The Modulo approach is always "DOM determines behavior".  Just by using
+    "Inspect" in your browser's Developer Tools, you can examine or even modify
+    the "payload" attribute while debugging event behavior. In other words,
+    Modulo <em>tends to treat the DOM as the "source of truth"</em>, and thus
+    derives it's behavior from properties on DOM elements.</p>
+</blockquote>
+
+    <p>The first attempt (HTML Attributes) uses a directive (<code>[component.dataProp]</code>, in
     this case using the colon <code>:</code> shortcut), in an attempt to "directly"
     attach the URL to href. The second attempt correctly uses the template variable
     with double curly braces to embed it as an actual HTML property.  The first
     attempt will fail because it fails to take into account that the directives
     will happen <em>after</em> rendering the template. That is, the resulting HTML
-    will resemble something like this:
+    will literally resemble something like this:
     “<code>&lt;a href:=athlete.url&gt;Steph Curry &lt;/a&gt;
     &lt;a href:=athlete.url&gt;Megan Rapinoe&lt;/a&gt;
     &lt;a href:=athlete.url&gt;Aaron Rogers&lt;/a&gt;</code>”.
 
-    </p><p>In other words, the "athlete" variable <em>is a Template variable in the for
-    loop</em> and will only be resolved at the templating step. Since directives
-    happen after templating, there is no way to resolve the variable from the for
-    loop.</p>
+    </p><p>In other words, the "athlete" variable <em>is a temporary Template
+    variable in the for loop</em> (that is to say, not a variable in the
+    <em>renderObj</em>), and will only be used at the templating step, and
+    forgotten immediately after. Since directives are only invoked once
+    templating is fully completed, there is no way to resolve the variable from
+    the for loop.</p>
 
-    <p>What is the proper use of the <code>[component.resolve]</code>
-    directive, you might ask? The proper use is for direct assignment or attachment
-    of values that are not strings or numbers <em>at the top level of the
-    renderObj</em>. Basically, anything that can't be conveniently serialized
-    into a string attribute. The common usage is passing down nested data types
-    as <code>Props</code> (i.e. without having to waste memory with a massive
-    JSON object serialized as an attribute), or for attaching callbacks from
-    the renderObj.</p>
 
-    <p>We see such correct usage in the second "correct" example: It
-    references <code>script.selectAthlete</code> which is at the global level,
-    and then attaches an ID to the DOM element as a "payload" so that the
-    callback function knows which athlete was selected. This is the correct
-    approach: It keeps the DOM clean and predictable in behavior, with no
-    "hidden" values getting attached.</p>
+    <p>What is the proper use of the <code>[component.dataProp]</code>
+    directive, you might ask? The proper use is for direct assignment or
+    attachment of values that are not strings or numbers <em>at the top level
+    of the renderObj</em>. Basically, anything that can't be conveniently
+    serialized into a string attribute. The common usage is passing down
+    complex nested data types as <code>Props</code> (i.e. without having to
+    clutter the DOM and waste memory with a massive JSON object serialized as
+    an attribute), or for attaching callbacks from the renderObj.</p>
+
+    <p>We see such correct usage in the second (Events) "correct" example: It
+    references <code>script.selectAthlete</code> which is at the global level.
+    We can tell that it's at the global renderObj level since it starts with
+    <code>script.</code>, referencing the contribution to the renderObj that
+    was provided by the Script CPart. The issue with this, however, is that we
+    won't know <em>which</em> button was clicked, since it references one
+    universal <code>selectAthlete</code> function.
+    This is solved by attaching some sort of ID reference to the DOM element as
+    a "payload" so that the callback function knows which athlete was selected.
+    This is the correct approach: It uses the DOM as a "source of truth" and is
+    predictable in behavior, with no "hidden" functions getting attached.</p>
+
 </div>
+
 
 <h3>Registering CPart directives with shortcuts</h3>
 
@@ -872,7 +908,7 @@ custom directives used (which should be avoided to begin with).</p>
         
             <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
-                    <span alt="Go Full Screen">⤧</span>
+                    <span alt="Go Full Screen">↗</span>
                 
             </button>
             &nbsp;
@@ -892,7 +928,7 @@ custom directives used (which should be avoided to begin with).</p>
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e4g1-example>
+                    <e10g1-example mm-ignore="mm-ignore">
     Game Shop: 31 moneys<br>
     Avg Movie Creeps: 10 moneys<br>
     <button @click:="script.toggle">
@@ -901,7 +937,7 @@ custom directives used (which should be avoided to begin with).</p>
         
     </button> <br>
     
-</e4g1-example>
+</e10g1-example>
                 </div>
             </div>
         
@@ -917,7 +953,8 @@ component, but in general shortcuts are only intended for CPart directives, not
 custom script tag directives.</p>
 
 
-</aside>
+
+        </aside>
     </main>
 
 
@@ -930,4 +967,4 @@ custom script tag directives.</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10-6d32sv.js"></script></body>
+</body>

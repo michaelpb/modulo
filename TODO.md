@@ -1,7 +1,6 @@
 
 # Next refactor:
 
-
 - Switch to < load > , and fix sub-namespacing / hash namespacing
 
 - Namespacing fix:
@@ -17,8 +16,30 @@
   versions of CLI tests at different version tags for a more sophisticated CLI
   test matrix
 - Improve "basePath" --> switch to workingDir and add as chdir() function
-- Consideration for [component.children] ... Perhaps do < slot > interface
-  instead?
+
+- TODO: New lifecycle names:
+  - Prepare -> Render -> Reconcile -> Update
+
+- Another idea: Create a JavaScript interface for Component and CPart
+  definition that uses Template literals tagged syntax:
+    - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
+    - Would be very easy for massive gain (e.g. much more clear integration into other frameworks)
+    - Perhaps the Modulo object could have it?  - const modulo = new Modulo(); - modulo.define` -    <component> ...  - `
+    - Not sure how useful this is, on second thought, compared to: modulo.loadString(`...`)
+    - Much better to be per-component, then:
+      - const { component } = modulo.cpartDef;
+      - component`name=""`
+      - endcompnent``
+
+- How to show off practicing different props:
+    - Add another "type" of text: Preview text
+    - By default, show as another pane (?)
+        - Maybe to the right of the preview?
+    - By default, do not allow editing
+    - By default, show some other tabs (?) to select
+- Could allow a show-off "auto" mode, for the front-page or other places, where
+  it just cycles through different sets of props, showing the result of each
+  (could look really cool with a transition!!)
 
 # Notes on using ModRec to simplify load / reload:
 
@@ -72,8 +93,18 @@
       is to check against old tests taht might be using old APIs, to ensure we
       don't lose public-facing API features
 
-# More notes: 2021 (later)
+# More notes: 2021 (Nov)
 
+- GET params config idea:
+    - Allow importing of libraries with GET parameters, e.g. /components.html?theme=bootstrap
+    - This generates that loader with the given config (which it adds to the
+      hash), allowing for the same library to be imported multiple times with
+      different configs and different namespaces.
+    - This would allow for the same component library to be configured multiple
+      times. The ideal sitch
+
+
+# More notes: 2021 (Sep)
 
 - Main next steps:
     - (DONE) Remove ".name"
@@ -122,23 +153,10 @@
 
 - Supposed to be much faster and support customElements out of the box.
 
-### Good ideas
-        // Post setdom refactor idea:
-        // 1. CParts can contain other CParts
-        // 2. CParts classes self-configure:
-        //         - parentCPart = true;
-
-        // Re 1, maybe those could be "modulo-containers", eg customElements,
-        // so m-loader, m-component and m-module. These self-enable.
 --------------
-
 
     - // TODO: Idea: Allow global dot resolution for config like this, so we
         // can do settings=:module.script.exports.templateSettings
-- Code quality idea: Max cyclomatic complexity
-    - (Can be configured via linting?)
-    - Currently only collectDirectives (7) and "anon method-18" (6) violate
-      this
 
 - Why doesn't this already work, via factory properties? -v (see below for more thoughts)
 - Idea for configuring cparts from within script tag:
@@ -228,3 +246,20 @@
             //           false  . skip C    .  e   . c=MC,nc=c... .   skip both
             //Modulo.assert(matchedRival ? (matchedRival !== rival) : false, 'Repeated key!');
 
+        // The "Everything is custom component" idea:
+        // - Use tagTransforms to convert <state> into <m-state> etc
+        // - Use connectedCallback to do: this.parentNode.cparts[this.cpartName] = this;
+
+- Does not work, shadowDom only:Consideration for [component.children] ... Perhaps do < slot > interface
+  instead?
+<!--
+TODO Idea:
+Implement another demo type:
+- Very similar to minipreview with tabs, but with 1 exception:
+    - Have tabs be on left to be more readable with longer names
+    - Disable editing
+    - By default, have a play button "[>]" that every 3 seconds loops to the
+      next example snippet
+    - The goal is to cycle through showing off different props of the same
+      component
+-->

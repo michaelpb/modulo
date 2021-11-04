@@ -2,26 +2,29 @@ let componentTexts = null;
 let componentTexts2 = null;
 let exCounter = 0; // global variable
 
-// Get text from the two example component libraries
-//console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
-try {
-    componentTexts = Modulo.factoryInstances['eg-eg']
-            .baseRenderObj.script.exports.componentTexts;
-} catch (err) {
-    console.log('couldnt get componentTexts:', err);
-    componentTexts = null;
-}
+function _setupGlobalVariables() {
+    // TODO: Refactor this, obvs
+    // Get text from the two example component libraries
+    //console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
+    try {
+        componentTexts = Modulo.factoryInstances['eg-eg']
+                .baseRenderObj.script.exports.componentTexts;
+    } catch (err) {
+        console.log('couldnt get componentTexts:', err);
+        componentTexts = null;
+    }
 
-try {
-    componentTexts2 = Modulo.factoryInstances['docseg-docseg']
-            .baseRenderObj.script.exports.componentTexts;
-} catch (err) {
-    console.log('couldnt get componentTexts2:', err);
-    componentTexts2 = null;
-}
+    try {
+        componentTexts2 = Modulo.factoryInstances['docseg-docseg']
+                .baseRenderObj.script.exports.componentTexts;
+    } catch (err) {
+        console.log('couldnt get componentTexts2:', err);
+        componentTexts2 = null;
+    }
 
-if (componentTexts) {
-    componentTexts = Object.assign({}, componentTexts, componentTexts2);
+    if (componentTexts) {
+        componentTexts = Object.assign({}, componentTexts, componentTexts2);
+    }
 }
 
 function codemirrorMount({ el }) {
@@ -76,7 +79,7 @@ function _setupCodemirror(el, demoType, myElement, myState) {
 }
 
 function selectTab(newTitle) {
-    console.log('tab getting selected!', newTitle);
+    //console.log('tab getting selected!', newTitle);
     if (!element.codeMirrorEditor) {
         return; // not ready yet
     }
@@ -103,10 +106,15 @@ function doCopy() {
 }
 
 function initializedCallback({ el }) {
+    if (componentTexts === null) {
+        _setupGlobalVariables();
+    }
+
     let text;
     state.tabs = [];
     if (props.fromlibrary) {
         if (!componentTexts) {
+            componentTexts = false;
             throw new Error('Couldnt load:', props.fromlibrary)
         }
 
@@ -117,7 +125,8 @@ function initializedCallback({ el }) {
                 text = text.replace(/&#39;/g, "'"); // correct double escape
                 state.tabs.push({ text, title });
             } else {
-                console.error('invalid fromlibrary:', title, componentTexts)
+                console.error('invalid fromlibrary:', title);
+                console.log(componentTexts);
                 return;
             }
         }
@@ -153,6 +162,7 @@ function initializedCallback({ el }) {
 }
 
 function setupShaChecksum() {
+     return; ///////////////////
     console.log('setupShaChecksum DISABLED'); return; ///////////////////
 
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
@@ -192,7 +202,11 @@ function doRun() {
     if (!isBackend) {
         setTimeout(() => {
             const div = element.querySelector('.editor-minipreview > div');
-            div.innerHTML = state.preview;
+            if (div) {
+                div.innerHTML = state.preview;
+            } else {
+                console.log('warning, cant update minipreview', div);
+            }
         }, 0);
     }
 }

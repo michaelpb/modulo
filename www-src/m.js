@@ -1,4 +1,4 @@
-// modulo build cmptte
+// modulo build 1o94o8v
 'use strict';
 
 // # Introduction
@@ -114,7 +114,8 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         super(element, options);
         this.src = this.attrs.src;
 
-        // TODO: loader.namespace defaulting to hash
+        // TODO: "Namespace", should be "global-namespace"?
+        // If loader.namespace = null, cause defaulting to hash.
         this.namespace = this.attrs.namespace;
         this.localNameMap = {};
         this.hash = 'zerohash'; // the hash of an unloaded loader
@@ -250,11 +251,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
 
-        // "Register" local name with loader, and instance in general
-        // TODO: Have localNameMap propagate up, as long as there is no
-        // "namespace" attribute (rename TBD). That way, localNameMap
-        // "dumps" into the upper one.
-        this.loader.localNameMap[name.toLowerCase()] = this.fullName;
+        this.isModule = this.loader.namespace === name; // if name = namespace
         Modulo.ComponentFactory.registerInstance(this);
 
         this.componentClass = this.createClass();
@@ -307,7 +304,7 @@ Modulo.ComponentFactory = class ComponentFactory {
     // Finally, we are ready to create the class that the browser will use to
     // actually instantiate each Component, with a "back reference" to the fac.
     createClass() {
-        const {fullName} = this;
+        const { fullName } = this;
         return class CustomElement extends Modulo.Element {
             factory() {
                 /* Gets current registered component factory (for hot-reloading) */
@@ -370,6 +367,24 @@ Modulo.ComponentFactory = class ComponentFactory {
             Modulo.factoryInstances = {};
         }
         Modulo.factoryInstances[instance.fullName] = instance;
+
+        const lcName = instance.name.toLowerCase();
+        console.log('registering', lcName);
+        if (instance.isModule) {
+            // TODO: Dead-ish feature: not Sure how useful this is, or if only
+            // "local" modules are typically used. Ideally this should be based
+            // on local module names / localNameMap, not global namespaces.
+            if (!Modulo.modules) {
+                Modulo.modules = {};
+            }
+            Modulo.modules[lcName] = instance.baseRenderObj;
+        } else {
+            // "Register" local name with loader, and instance in general
+            // TODO: Have localNameMap propagate up, as long as there is no
+            // "namespace" attribute (namespace rename is TBD). That way,
+            // localNameMap "dumps" into the upper one.
+            instance.loader.localNameMap[lcName] = instance.fullName;
+        }
     }
 }
 
@@ -419,6 +434,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     rerender() {
+        // IDEA: Render-path micro-optimization idea:
+        // - Push prebound func to list, to "pre-compute" render loop
+        // - .rerender() thus is just looping through list of funcs running each
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
@@ -427,6 +445,11 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         for (const lc of lifecycleNames) {
             for (const cName of Object.keys(this.cparts)) {
                 this._invokeCPart(cName, lc + 'Callback');
+            }
+            if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
+                  (this.fullName + '|' + lc) in Modulo.breakpoints)) {
+                // DEADCODE, finish or delete
+                debugger;
             }
         }
         //this.renderObj = null; // ?rendering is over, set to null
@@ -490,6 +513,9 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.dataProp']];
 
+                             // TODO delete this--v ? maybe not the best way?
+Modulo.directiveUniques = { 'component.children': true }; // DEAD CODE - TODO: Autogenerate key from this?
+
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
         //console.log('children loaded callback', childrenLoadObj);
@@ -515,7 +541,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     prepareCallback() {
-        return { innerHTML: null, patches: null };
+        const { originalHTML } = this.element;
+        return { originalHTML, innerHTML: null, patches: null };
     }
 
     updateCallback(renderObj) {
@@ -584,13 +611,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     childrenMount({el}) {
         // IDEA: Have value be querySelector, eg [component.children]="div"
         el.append(...this.element.originalChildren);
-        el.setAttribute('modulo-ignore', 'modulo-ignore');
+        //el.setAttribute('modulo-ignore', 'modulo-ignore');
     }
 
     childrenUnmount({el}) {
         el.innerHTML = '';
         //console.log('childrenUnmount!', el);
-        el.removeAttribute('modulo-ignore');
+        //el.removeAttribute('modulo-ignore');
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -679,6 +706,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     }
 
     static prefixAllSelectors(namespace, name, text='') {
+        // TODO - Refactor this into a helper (has old tests that can be resurrected)
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
 
@@ -696,9 +724,10 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
             // Upgrade the ":host" pseudoselector to be the full name (since
             // this is not a Shadow DOM style-sheet)
-            selector = selector.replace(new RegExp(/:host(\([^)]*\))/, 'g'), hostClause => {
+            selector = selector.replace(new RegExp(/:host(\([^)]*\))?/, 'g'), hostClause => {
                 // TODO: this needs thorough testing
-                return fullName + ':is(' + hostClause || fullName + ')';
+                const notBare = (hostClause && hostClause !== ':host');
+                return fullName + (notBare ? `:is(${hostClause})` : '');
             });
 
             // If it is not prefixed at this point, then be sure to prefix
@@ -729,6 +758,7 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     prepareCallback(renderObj) {
         // Exposes templates in render context, so stuff like
         // "|renderas:template.row" works
+        // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
             obj[template.name || 'default'] = template;
@@ -809,10 +839,12 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
-            this[cbName] = renderObj => {
+            this[cbName] = (arg) => {
+                // NOTE: renderObj is passed in for Callback, but not Mount
+                const renderObj = this.element.getCurrentRenderObj();
                 this.prepLocalVars(renderObj); // always prep (for event CB)
-                if (cbName in script) {
-                    script[cbName](renderObj);
+                if (cbName in script) { // if we also have this
+                    script[cbName](arg);
                 }
             };
         }
@@ -833,6 +865,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     // This is important: It's what enables us to avoid using the "this"
     // context, since the current element is set before any custom code is run.
     prepLocalVars(renderObj) {
+        if (!renderObj.script) {
+            console.error('ERROR: Script CPart missing from renderObj:', renderObj);
+            return false;
+        }
         const {setLocalVariable, localVars} = renderObj.script;
         setLocalVariable('element', this.element);
         setLocalVariable('cparts', this.element.cparts);
@@ -1062,6 +1098,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         join: (s, arg) => s.join(arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        allow: (s, arg) => arg.split(',').includes(s) ? s : '', // color|allow:"red,blue"|default:"blue"
         add: (s, arg) => s + arg,
         subtract: (s, arg) => s - arg,
         default: (s, arg) => s || arg,
@@ -1131,6 +1168,127 @@ Modulo.templating.defaultOptions.tags = {
     */
 };
 
+
+        // TODO: New idea for how to refactor reconciler directives, and clean
+        // up this mess, while allowing another level to "slice" into:
+        //  - Then, implement [component.key] and [component.ignore]
+        //  - Possibly: Use this to then do granular patches (directiveMount etc)
+Modulo.reconcilers.Cursor = class Cursor {
+    constructor(parentNode, parentRival) {
+        this.initialize(parentNode, parentRival);
+    }
+    initialize(parentNode, parentRival) {
+        this.nextChild = parentNode.firstChild;
+        this.nextRival = parentRival.firstChild;
+        this.keyedChildren = {};
+        this.keyedRivals = {};
+        this.parentNodeQueue = [];
+        this.keyedChildrenArr = null;
+        this.keyedRivalsArr = null;
+    }
+
+    pushDescent(parentNode, parentRival) {
+        // DEADCODE
+        this.parentNodeQueue.push([parentNode, parentRival]);
+    }
+
+    popDescent() {
+        // DEADCODE
+        if (this.parentNodeQueue.length < 1) {
+            return false;
+        }
+        const result = this.parentNodeQueue.shift();
+        console.log('this is reuslt', result);
+        this.initialize(...result);
+        return true;
+    }
+
+    hasNext() {
+        if (this.nextChild || this.nextRival) {
+            return true; // Is pointing at another node
+        }
+
+        // Convert objects into arrays so we can pop
+        if (!this.keyedChildrenArr) {
+            this.keyedChildrenArr = Object.values(this.keyedChildren);
+        }
+        if (!this.keyedRivalsArr) {
+            this.keyedRivalsArr = Object.values(this.keyedRivals);
+        }
+
+        if (this.keyedRivalsArr.length || this.keyedChildrenArr.length) {
+            return true; // We have queued up nodes from keyed values
+        }
+        // DEADCODE -v
+        return this.popDescent();
+    }
+
+    next() {
+        let child = this.nextChild;
+        let rival = this.nextRival;
+        if (!this.nextChild && !this.nextRival) {
+            if (!this.keyedRivalsArr) {
+                return [null, null];
+            }
+            return this.keyedRivalsArr.length ?
+                  [null, this.keyedRivalsArr.pop()] :
+                  [this.keyedChildrenArr.pop(), null];
+        }
+
+        // Handle keys
+        this.nextChild = child ? child.nextSibling : null;
+        this.nextRival = rival ? rival.nextSibling : null;
+
+        let matchedRival = this.getMatchedNode(child, this.keyedChildren, this.keyedRivals);
+        let matchedChild = this.getMatchedNode(rival, this.keyedRivals, this.keyedChildren);
+        // TODO refactor this
+        if (matchedRival === false) {
+            // Child has a key, but does not match rival, so SKIP on child
+            child = this.nextChild;
+            this.nextChild = child ? child.nextSibling : null;
+        } else if (matchedChild === false) {
+            // Rival has a key, but does not match child, so SKIP on rival
+            rival = this.nextRival;
+            this.nextRival = rival ? rival.nextSibling : null;
+        }
+        const keyWasFound = matchedRival !== null || matchedChild !== null;
+        const matchFound = matchedChild !== child && keyWasFound
+        if (matchFound && matchedChild) {
+            // Rival matches, but not with child. Swap in child.
+            this.nextChild = child;
+            child = matchedChild;
+        }
+
+        if (matchFound && matchedRival) {
+            // Child matches, but not with rival. Swap in rival.
+            Modulo.assert(matchedRival !== rival, 'Dupe!'); // (We know this due to ordering)
+            this.nextRival = rival;
+            rival = matchedRival;
+        }
+
+        return [ child, rival ];
+    }
+
+    getMatchedNode(elem, keyedElems, keyedOthers) {
+        const key = elem && elem.getAttribute && elem.getAttribute('key');
+        if (!key) {
+            return null;
+        }
+        if (key in keyedOthers) {
+            const matched = keyedOthers[key];
+            delete keyedOthers[key];
+            return matched;
+        } else {
+            if (key in keyedElems) {
+                console.error('MODULO WARNING: Duplicate key:', key);
+            }
+            keyedElems[key] = elem;
+            return false;
+        }
+    }
+
+}
+
 Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor(opts) {
         // Discontinue this?
@@ -1147,17 +1305,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (!this.elementCtx) {
             this.elementCtx = node; // element context
         }
-
-        // New "Tag Transform":
-        // - This is the new way all local elements can omit prefixes
-        // - <MyElement a="3"></MyElement>
-        // - So, "namespaced" is just when it hits regular DOM
-        // - By default, namespace is within the component and/or module
-        // - So, when a Comopnent CPart does a render(), it has a
-        //   {'MyElement': 'a34af-MyElement'} transformer
-
-        //console.log('rendering:', rivalHTML);
-        //this.reconcileChildren(node, Modulo.utils.makeDiv(rivalHTML));
         const rival = Modulo.utils.makeDiv(rivalHTML, true);
         this.applyTagTransforms(rival, tagTransforms);
         this.markRecDirectives(rival);
@@ -1170,7 +1317,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     applyTagTransforms(elem, tagTransforms) {
-        // Remove all mm-ignores
         const sel = Object.keys(tagTransforms || { X: 0 }).join(',');
         for (const node of elem.querySelectorAll(sel)) {
             const newTag = tagTransforms[node.tagName.toLowerCase()];
@@ -1202,12 +1348,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     reconcileChildren(node, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
+        const cursor = new Modulo.reconcilers.Cursor(node, rivalParent);
+        while (cursor.hasNext()) {
+            const [ child, rival ] = cursor.next();
 
-        // TODO: NOTE: Currently does not respect ANY resolver directives,
-        // including key=
-        let child = node.firstChild;
-        let rival = rivalParent.firstChild;
-        while (child || rival) {
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
@@ -1220,7 +1364,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
 
             if (needReplace) { // do swap with insertBefore
-                // TODO will this cause an error with "swap" if its last one?
                 this.patch(node, 'insertBefore', rival, child.nextSibling);
                 this.patchAndDescendants(rival, 'Mount');
             }
@@ -1232,26 +1375,30 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
-                if (child.nodeType !== 1) { // text or comment node
-                    if (child.nodeValue !== rival.nodeValue) { // update
-                        this.patch(child, 'node-value', rival.nodeValue);
-                    }
-                } else if (!child.isEqualNode(rival)) { // sync if not equal
-                    this.reconcileAttributes(child, rival);
-                    if (rival.hasAttribute('modulo-ignore')) {
-                        //console.log('Skipping ignored node');
-                    } else if (!this.shouldNotDescend) {
-                        this.reconcileChildren(child, rival);
-                    }
-                }
+                this.reconcileMatchedNodes(child, rival, cursor);
             }
-            // Walk through DOM trees in parallel BFS, on to next sibling(s)!
-            child = child ? child.nextSibling : null;
-            rival = rival ? rival.nextSibling : null;
         }
     }
 
-    patch(node, method, arg, arg2=null) {
+    reconcileMatchedNodes(child, rival, cursor) {
+        if (child.nodeType !== 1) { // text or comment node
+            if (child.nodeValue !== rival.nodeValue) { // update
+                this.patch(child, 'node-value', rival.nodeValue);
+            }
+        } else if (!child.isEqualNode(rival)) { // sync if not equal
+            this.reconcileAttributes(child, rival);
+            if (rival.hasAttribute('modulo-ignore')) {
+                //console.log('Skipping ignored node');
+            } else if (!this.shouldNotDescend) {
+                // NOTE: Cannot do pushDescent (which would be BFS, then) since
+                // presently only works with DFS, for some reason.
+                //cursor.pushDescent(child, rival);
+                this.reconcileChildren(child, rival);
+            }
+        }
+    }
+
+    patch(node, method, arg, arg2 = null) {
         this.patches.push([node, method, arg, arg2]);
     }
 
@@ -1266,12 +1413,17 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patchDirectives(el, rawName, suffix) {
+        const callbackName = 'directive' + suffix;
         const directives = Modulo.utils.parseDirectives(rawName);
         if (directives) {
             const value = el.getAttribute(rawName);
             for (const directive of directives) {
-                Object.assign(directive, { value, el });
-                this.patch(this.elementCtx, 'directive' + suffix, directive);
+                Object.assign(directive, { value, el,  callbackName});
+                this.patch(this.elementCtx, callbackName, directive);
+                //const result = this.elementCtx.directiveCallback(directive, suffix);
+                //if (result) {
+                //    this.patch(this.elementCtx, callbackName, directive);
+                //}
             }
         }
     }
@@ -1279,6 +1431,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     reconcileAttributes(node, rival) {
         const myAttrs = new Set(node ? node.getAttributeNames() : []);
         const rivalAttributes = new Set(rival.getAttributeNames());
+
         // Check for new and changed attributes
         for (const rawName of rivalAttributes) {
             const attr = rival.getAttributeNode(rawName);
@@ -1319,7 +1472,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
         }
     }
-
 }
 
 
@@ -1608,13 +1760,7 @@ if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
 
-// And that's the end of the Modulo source code story. This means it's where
-// your own Modulo story begins!
-
-// No, really, your story will begin right here. When Modulo is compiled,
-// whatever code exists below this point is user-created code.
-
-// So... keep on reading for the latest Modulo project:
+// End of Modulo.js source code. Below is the latest Modulo project:
 // ------------------------------------------------------------------
 ;
 
@@ -2369,39 +2515,41 @@ h3 {
 
 `,// (ends: /components/examplelib.html) 
 
-  "/components/embeddedexampleslib.html": // (222 lines)
+  "/components/embeddedexampleslib.html": // (293 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
-        const myText = Modulo.fetchQ.data[factory.loader.src];
+        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
+        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
+        //console.log('this si myText', myText);
         const componentTexts = {};
-        if (myText) {
-            let name = '';
-            let currentComponent = '';
-            let inTestSuite = false;
-            for (const line of myText.split('\\n')) {
-                if (line.startsWith('</component>')) {
-                    componentTexts[name] = currentComponent;
-                    currentComponent = '';
-                    name = null;
-                } else if (line.startsWith('<component')) {
-                    name = line.split(' name="')[1].split('"')[0];
-                } else if (line.startsWith('<testsuite')) {
-                    inTestSuite = true;
-                } else if (line.includes('</testsuite>')) {
-                    inTestSuite = false;
-                } else if (name && !inTestSuite) {
-                    currentComponent += line + '\\n';
-                }
+        if (!myText) {
+            console.error('ERROR: Could not load own text :(');
+            myText = '';
+        }
+        let name = '';
+        let currentComponent = '';
+        let inTestSuite = false;
+        for (const line of myText.split('\\n')) {
+            if (line.startsWith('</component>')) {
+                componentTexts[name] = currentComponent;
+                currentComponent = '';
+                name = null;
+            } else if (line.startsWith('<component')) {
+                name = line.split(' name="')[1].split('"')[0];
+            } else if (line.startsWith('<testsuite')) {
+                inTestSuite = true;
+            } else if (line.includes('</testsuite>')) {
+                inTestSuite = false;
+            } else if (name && !inTestSuite) {
+                currentComponent += line + '\\n';
             }
         }
         script.exports.componentTexts = componentTexts;
     </script>
 </module>
 
-<!-- NOTE / TODO: These are duplicated, present in docs as well. (Should
-dedupe and use fromlibrary in docs, and allow fromlibrary to get from here
-as well) -->
+
 
 <component name="Templating_1">
 <template>
@@ -2438,6 +2586,7 @@ as well) -->
 ></testsuite>
 
 </component>
+
 
 
 <component name="Templating_Comments">
@@ -2516,6 +2665,12 @@ strong {
 .neat {
     font-variant: small-caps;
 }
+:host { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
 </style>
 
 <testsuite>
@@ -2531,7 +2686,69 @@ strong {
 </component>
 
 
+<component name="Tutorial_P2">
+<template>
+    <p>Trying out the button...</p>
+    <x-ExampleBtn
+        label="Button Example"
+        shape="square"
+    ></x-ExampleBtn>
 
+    <p>Another button...</p>
+    <x-ExampleBtn
+        label="Example 2: Rounded"
+        shape="round"
+    ></x-ExampleBtn>
+</template>
+
+<testsuite>
+    <test name="renders as expected">
+        <template string-count=1>
+            <p>Trying out the button...</p>
+        </template>
+        <!-- Unfortunately can't test the following... -->
+        <!--
+        <template>
+            <button class="my-btn my-btn__square">
+                Button Example
+            </button>
+        </template>
+        <template>
+            <button class="my-btn my-btn__round">
+                Rounded is Great Too
+            </button>
+        </template>
+        -->
+    </test>
+</testsuite>
+</component>
+
+
+<component name="Tutorial_P2_filters_demo">
+<template>
+    <p>Trying out the button...</p>
+    <x-ExampleBtn
+        label="Button Example"
+        shape="square"
+    ></x-ExampleBtn>
+
+    <p>Another button...</p>
+    <x-ExampleBtn
+        label="Example 2: Rounded"
+        shape="round"
+    ></x-ExampleBtn>
+</template>
+
+<testsuite>
+    <test name="renders as expected">
+        <template string-count=1>
+            <p>Trying out the button...</p>
+        </template>
+    </test>
+</testsuite>
+
+
+</component>
 
 
 
@@ -2593,18 +2810,18 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/embeddedexampleslib.html) 
 
-  "/components/modulowebsite.html": // (476 lines)
+  "/components/modulowebsite.html": // (479 lines)
 `<component name="Section">
     <props
         name
     ></props>
     <template>
         <a class="secanchor"
-          title="Click to focus on this section."
-          id="{{ props.name }}"
-          name="{{ props.name }}"
-          href="#{{ props.name }}">#</a>
-        <h2 [component.children]></h2>
+            title="Click to focus on this section."
+            id="{{ props.name }}"
+            name="{{ props.name }}"
+            href="#{{ props.name }}">#</a>
+        <h2>{{ component.originalHTML|safe }}</h2>
     </template>
     <style>
         Section {
@@ -2675,7 +2892,7 @@ examples to the Modulo framework, not as a examples themselves -->
                     <ul>
                     {% for childLink in linkGroup.children %}
                         <li><a
-                          href="{{ linkGroup.filename }}#{{ childLink.hash }}"
+                          href="{% if childLink.filepath %}{{ childLink.filepath }}{% else %}{{ linkGroup.filename }}#{{ childLink.hash }}{% endif %}"
                             >{{ childLink.label }}</a>
                         {% if props.showall %}
                             {% if childLink.keywords.length gt 0 %}
@@ -2714,11 +2931,14 @@ examples to the Modulo framework, not as a examples themselves -->
 ></state>
 
 <script>
-    function _child(label, hash, keywords=[]) {
+    function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
             hash = label.toLowerCase()
         }
-        return {label, hash, keywords};
+        if (hash.endsWith('.html') && filepath === null) {
+            filepath = hash;
+        }
+        return {label, hash, keywords, filepath};
     }
     let componentTexts;
     try {
@@ -2739,9 +2959,9 @@ examples to the Modulo framework, not as a examples themselves -->
             label: 'Tutorial',
             filename: '/docs/tutorial.html',
             children: [
-                _child('Part 1: Components, CParts, Loaders', 'part1', ['cdn', 'module-embed']),
-                _child('Part 2: Props and Templating', 'part2', ['cparts', 'props', 'basic templating']),
-                _child('Part 3: State and Script', 'part3', ['state', 'basic scripting']),
+                _child('Part 1: Components, CParts, Loaders', '/docs/tutorial_part1.html', ['cdn', 'module-embed']),
+                _child('Part 2: Props and Templating', '/docs/tutorial_part2.html', ['cparts', 'props', 'basic templating']),
+                _child('Part 3: State and Script', '/docs/tutorial_part3.html', ['state', 'basic scripting']),
             ],
         },
 
@@ -3071,7 +3291,7 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/modulowebsite.html) 
 
-  "/components/layouts/base.html": // (67 lines)
+  "/components/layouts/base.html": // (69 lines)
 `<!DOCTYPE html>
 <html>
 <head>
@@ -3122,11 +3342,13 @@ examples to the Modulo framework, not as a examples themselves -->
                 <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]>
+        <aside style="border: none">
+            {{ component.originalHTML|safe }}
         </aside>
     </main>
 {% else %}
-    <main class="Main" [component.children] >
+    <main class="Main">
+        {{ component.originalHTML|safe }}
     </main>
 {% endif %}
 
@@ -3420,92 +3642,6 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 `,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
 
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
-  "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
-`
-<!-- Due to bug with the test runner or testing framework, including this
-test will cause other tests to fail, but running it separately it succeeds. -->
-<test name="Misc sub-components correctly render">
-    <script>
-        element.cparts.template =
-            element.cpartSpares.template
-                .find(({attrs}) => attrs.name === 'comptest1')
-        assert: element.cparts.template
-    </script>
-
-    <template>
-        Testing
-        <x-Tutorial_P1>
-            Hello <strong>Modulo</strong> World!
-            <p class="neat">Any HTML can be here!</p>
-        </x-Tutorial_P1>
-        <x-templating_escaping>
-            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
-            &amp;tables</em>" sent a message:</p>
-            <div class="msgcontent">
-                I <i>love</i> the classic <a target="_blank"
-                href="https://xkcd.com/327/">xkcd #327</a> on
-                the risk of trusting <b>user inputted data</b>
-            </div>
-        </x-templating_escaping>
-    </template>
-</test>
-
-
-<test name="Button sub-component behavior">
-    <script>
-        element.cparts.template =
-            element.cpartSpares.template
-                .find(({attrs}) => attrs.name === 'comptest2')
-    </script>
-
-    <!--
-    <template name="Renders">
-        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
-            <button @click:=props.myclicky>Test text</button>
-        </x-TestBtn>
-        <p>state.a: 1</p>
-    </template>
-    -->
-
-    <script>
-        event: click button
-        assert: state.a === 1337
-    </script>
-
-    <!--
-    <template name="Renders after click">
-        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
-            <button @click:=props.myclicky>Test text</button>
-        </x-TestBtn>
-        <p>state.a: 1337</p>
-    </template>
-
-    <template name="Shouldn't show subcomp children" string-count=0>
-        IGNORED
-    </template>
-
-    -->
-</test>
-
-
-
-
-`,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
-
   "/components/examplelib-tests/MemoryGame-tests.html": // (152 lines)
 `<test name="starts a game">
     <template name="Ensure initial render is correct">
@@ -3660,6 +3796,92 @@ test will cause other tests to fail, but running it separately it succeeds. -->
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
 
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
+
+  "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
+`
+<!-- Due to bug with the test runner or testing framework, including this
+test will cause other tests to fail, but running it separately it succeeds. -->
+<test name="Misc sub-components correctly render">
+    <script>
+        element.cparts.template =
+            element.cpartSpares.template
+                .find(({attrs}) => attrs.name === 'comptest1')
+        assert: element.cparts.template
+    </script>
+
+    <template>
+        Testing
+        <x-Tutorial_P1>
+            Hello <strong>Modulo</strong> World!
+            <p class="neat">Any HTML can be here!</p>
+        </x-Tutorial_P1>
+        <x-templating_escaping>
+            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
+            &amp;tables</em>" sent a message:</p>
+            <div class="msgcontent">
+                I <i>love</i> the classic <a target="_blank"
+                href="https://xkcd.com/327/">xkcd #327</a> on
+                the risk of trusting <b>user inputted data</b>
+            </div>
+        </x-templating_escaping>
+    </template>
+</test>
+
+
+<test name="Button sub-component behavior">
+    <script>
+        element.cparts.template =
+            element.cpartSpares.template
+                .find(({attrs}) => attrs.name === 'comptest2')
+    </script>
+
+    <!--
+    <template name="Renders">
+        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+            <button @click:=props.myclicky>Test text</button>
+        </x-TestBtn>
+        <p>state.a: 1</p>
+    </template>
+    -->
+
+    <script>
+        event: click button
+        assert: state.a === 1337
+    </script>
+
+    <!--
+    <template name="Renders after click">
+        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+            <button @click:=props.myclicky>Test text</button>
+        </x-TestBtn>
+        <p>state.a: 1337</p>
+    </template>
+
+    <template name="Shouldn't show subcomp children" string-count=0>
+        IGNORED
+    </template>
+
+    -->
+</test>
+
+
+
+
+`,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
+
   "/components/modulowebsite/demo.html": // (71 lines)
 `<div class="demo-wrapper
         {% if state.showpreview %}     demo-wrapper__minipreview{% endif %}
@@ -3733,31 +3955,34 @@ test will cause other tests to fail, but running it separately it succeeds. -->
 
 `,// (ends: /components/modulowebsite/demo.html) 
 
-  "/components/modulowebsite/demo.js": // (249 lines)
+  "/components/modulowebsite/demo.js": // (263 lines)
 `let componentTexts = null;
 let componentTexts2 = null;
 let exCounter = 0; // global variable
 
-// Get text from the two example component libraries
-//console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
-try {
-    componentTexts = Modulo.factoryInstances['eg-eg']
-            .baseRenderObj.script.exports.componentTexts;
-} catch (err) {
-    console.log('couldnt get componentTexts:', err);
-    componentTexts = null;
-}
+function _setupGlobalVariables() {
+    // TODO: Refactor this, obvs
+    // Get text from the two example component libraries
+    //console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
+    try {
+        componentTexts = Modulo.factoryInstances['eg-eg']
+                .baseRenderObj.script.exports.componentTexts;
+    } catch (err) {
+        console.log('couldnt get componentTexts:', err);
+        componentTexts = null;
+    }
 
-try {
-    componentTexts2 = Modulo.factoryInstances['docseg-docseg']
-            .baseRenderObj.script.exports.componentTexts;
-} catch (err) {
-    console.log('couldnt get componentTexts2:', err);
-    componentTexts2 = null;
-}
+    try {
+        componentTexts2 = Modulo.factoryInstances['docseg-docseg']
+                .baseRenderObj.script.exports.componentTexts;
+    } catch (err) {
+        console.log('couldnt get componentTexts2:', err);
+        componentTexts2 = null;
+    }
 
-if (componentTexts) {
-    componentTexts = Object.assign({}, componentTexts, componentTexts2);
+    if (componentTexts) {
+        componentTexts = Object.assign({}, componentTexts, componentTexts2);
+    }
 }
 
 function codemirrorMount({ el }) {
@@ -3812,7 +4037,7 @@ function _setupCodemirror(el, demoType, myElement, myState) {
 }
 
 function selectTab(newTitle) {
-    console.log('tab getting selected!', newTitle);
+    //console.log('tab getting selected!', newTitle);
     if (!element.codeMirrorEditor) {
         return; // not ready yet
     }
@@ -3839,10 +4064,15 @@ function doCopy() {
 }
 
 function initializedCallback({ el }) {
+    if (componentTexts === null) {
+        _setupGlobalVariables();
+    }
+
     let text;
     state.tabs = [];
     if (props.fromlibrary) {
         if (!componentTexts) {
+            componentTexts = false;
             throw new Error('Couldnt load:', props.fromlibrary)
         }
 
@@ -3853,7 +4083,8 @@ function initializedCallback({ el }) {
                 text = text.replace(/&#39;/g, "'"); // correct double escape
                 state.tabs.push({ text, title });
             } else {
-                console.error('invalid fromlibrary:', title, componentTexts)
+                console.error('invalid fromlibrary:', title);
+                console.log(componentTexts);
                 return;
             }
         }
@@ -3889,6 +4120,7 @@ function initializedCallback({ el }) {
 }
 
 function setupShaChecksum() {
+     return; ///////////////////
     console.log('setupShaChecksum DISABLED'); return; ///////////////////
 
     let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
@@ -3928,7 +4160,11 @@ function doRun() {
     if (!isBackend) {
         setTimeout(() => {
             const div = element.querySelector('.editor-minipreview > div');
-            div.innerHTML = state.preview;
+            if (div) {
+                div.innerHTML = state.preview;
+            } else {
+                console.log('warning, cant update minipreview', div);
+            }
         }, 0);
     }
 }

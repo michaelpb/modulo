@@ -11,7 +11,7 @@
         <ul>
             <li>Fewer than 2000 total lines of simple, commented code</li>
             <li>Component system inspired by React, Svelte, and Polymer</li>
-            <!--<li>Modular with opinionated defaults and few assumptions</li>-->
+            <!--<li>Declarative, synchronous, modular, and ease of learning</li>-->
             <li>A dependency-free, "no fuss" drop-in for existing web apps</li>
         <ul>
     </div>
@@ -38,9 +38,10 @@
         <p><a href="start.html">Get started now &#187;</a></p>
     </aside>
     <aside>
-        <p><strong>Zero set-up</strong> - Like the golden age of jQuery,
-        just drop it into any HTML file.  Unlike jQuery, that 1 file packs
-        in all the creature-comforts of a modern component framework.</p>
+        <p><strong>Zero set-up</strong> - Like the golden age of jQuery, just
+        drop it into any HTML file.  Unlike jQuery, that 1 file packs in many
+        of the creature-comforts of a modern component framework, without any
+        dependencies or new syntax to learn.</p>
         <!--
         a modern component system, a swappable templating language based
         on Liquid-syntax, DOM resolution, and more.
@@ -48,37 +49,43 @@
         build system to pack your CSS and JS for production, and even debug
         tools.</p>-->
 
-        <p><strong>Very vanilla</strong> -  Modulo doesn't re-invent any
-        wheels. Like Polymer (litElement) or Skate.js, Modulo is built as a
-        thin-layer over the custom element web standard that is now
-        well-supported. Modulo's templates use a common syntax,
-        which means your editor can probably
-        <abbr title="Modulo templating language uses a 'Djangolike' or Liquid-style syntax templating language, e.g. {{ like|this }}">
-        already syntax highlight Modulo template code</abbr>!</p>
+        <p><strong>A gentle learning curve</strong> - Modulo's declarative,
+        synchronous coding style is intended to be easier for newbie coders to
+        pick-up&mdash;in fact, many components can be developed without use of
+        any JavaScript!</p>
 
-        <p><strong>Progressive enhancement</strong> - JAMStack is fine and
-        all, but what about all our existing server-side apps in Ruby on
-        Rails, Python and Django, or that one home-grown PHP monster that
-        will never go away? Modulo was made to give structure and
-        convenience to that extra sprinkle of JavaScript that will make
-        your "traditional" web apps <em>shine</em>.</p>
+        <p><strong><strike style="color: gray">Progressive Web Apps</strike>
+        Progressive Enhancement</strong> - Modulo makes few assumptions, and
+        renders components mixed with plain HTML for easier integration into
+        backend apps. JAMStack and PWA's are fine and all, but what about all
+        our existing server-side apps in Ruby on Rails, Python, Go, or that one
+        home-grown PHP monster that will never go away? Sprinkle in some Modulo
+        components to make your "traditional" web apps
+        <em>shine</em>.</p>
+        <!--
+        <abbr title="In fact, Modulo templating language uses a backend-inspired 'Djangolike' or Liquid-style syntax templating language, e.g. {{ example|filter }}">
+        </abbr>
+        -->
     </aside>
 </section>
 
 <section class="SideBySide">
     <aside>
-        <p><strong>CParts</strong> - Create components by putting together
-        one or more Component Parts or <em>CParts</em>. Mix Script, Style,
-        State, Props, and Templates to make components that have one or
-        all, or multiples, of these features. Combine CParts between
-        components for a powerful system of "composition-based" inheritance
-        that's more familiar to web developers.</p>
+        <p><strong>CParts</strong> - CParts are like Lego blocks for your
+        components! Create components by snapping together one or more
+        Component Parts or <em>CParts</em>. Mix Script, Style, State, Props,
+        and Templates to make components that have one or all, or even
+        multiples, of these features. Reusing CParts between components
+        provides a powerful system of "composition-based" inheritance.</p>
+
         <p><strong>Everything is swappable</strong> - Components configure
-        themselves, meaning you can "mix and match" templating languages,
-        or try out DOM-resolution on or off per-component basis.</p>
-        <p><strong>Lifecycle hooks and directives</strong> - Hook your
-        own code into the component rendering lifecycle, either through
-        callbacks, or by defining custom attribute-based directives.</p>
+        themselves, meaning you can create custom CParts, "mix and match" your
+        favorite JS templating languages, or fine-tune DOM-resolution behavior
+        on a per-component basis.</p>
+
+        <p><strong>Lifecycle hooks and directives</strong> - Hook your own code
+        into the rendering process, either through lifecycle callbacks, or by
+        defining custom attribute-based directives.</p>
     </aside>
     <aside>
         <h3><span alt="Sigma">&#x03A3;</span></h3>
@@ -95,23 +102,26 @@
     </aside>
 
     <aside>
-        <p><strong>"It's like React"</strong> - Modulo is
-        batteries-included to be like React.js or Vue.js, except without
-        the complications of dependencies or build systems. You get props,
-        state, lifecycle methods, smart DOM resolution, encapsulated
-        components, and a simple namespace and library loading system.</p>
+        <p><strong>"It's like React"</strong> - Modulo is "batteries-included"
+        to function like React.js or Vue.js. You get encapsulated components
+        with state management, two-way data binding, props &amp; types,
+        computed values, DOM resolution, event directives, and more. You even
+        get a simple importing and namespacing system, that self-packs with
+        your components into a single JS file!</p>
 
-        <p><strong>Clean & concise</strong> - The code-base is intentionally kept
-        short &amp; sweet: Under 1000
+        <p><strong>Clean & concise</strong> - The code-base of Modulo itself is
+        intentionally kept short &amp; sweet: It hovers around roughly 1000
         <abbr title="Source Lines of Code - This counts 'physical lines' and thus does not include comments, documentation, blanks, etc">SLOC</abbr>,
-        80 char lines, 4 spaces of
-        indent, and a <abbr title="Functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
-        imperative style. When something goes wrong,
-        <tt>git blame</tt> Modulo.</p>
+        80 char line limit, 4 spaces of
+        indent, and a <abbr title="Almost all functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
+        imperative style. When something goes wrong (which it probably will
+        since it's a new framework), it's easy to "<tt>git blame</tt>"
+        Modulo.</p>
 
         <p><strong>A basis for whatever comes next</strong> - Want to write
-        your own component framework, but don't want to start from scratch?
-        Read the "literate" code for a starting spot, and fork away!</p>
+        your own component framework? Modulo's core is in only a few hundred
+        lines of code. Read the source code, fork away, and swap the
+        "batteries-included" for your own!</p>
     </aside>
 </section>
 
@@ -119,16 +129,18 @@
     <h4>Project Status</h4>
 
     <p><strong>Current status:</strong> <code>prealpha</code></p>
+    <p><em>Prealpha means... shhhhh! This site is not yet ready.</em></p>
 
     <br />
     <h3>Roadmap:</h3>
 
     <p><code>alpha</code></p>
     <p><strong>Completed:</strong> core functionality, under 2000 SLOC, ssg to
-    generate website via JSDOM, partial documentation</p>
-    <p><strong>Incomplete:</strong> directive unmount, new DOM resolver,
-    tutorial part 2 and 3, documentation (template tags, CParts, SSG, and core
-    API), unit tests for examples, unit tests for core CParts, CSS bundling</p>
+    generate website via JSDOM, partial documentation, directives, new DOM
+    resolver</p>
+    <p><strong>Incomplete:</strong> debugged SSG, tutorial part 2 and 3,
+    documentation (template tags, CParts, SSG, and core API), unit tests for
+    examples, unit tests for core CParts, CSS bundling</p>
     <br/>
 
     <p><code>beta</code></p>

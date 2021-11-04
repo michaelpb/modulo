@@ -4,11 +4,11 @@
     ></props>
     <template>
         <a class="secanchor"
-          title="Click to focus on this section."
-          id="{{ props.name }}"
-          name="{{ props.name }}"
-          href="#{{ props.name }}">#</a>
-        <h2 [component.children]></h2>
+            title="Click to focus on this section."
+            id="{{ props.name }}"
+            name="{{ props.name }}"
+            href="#{{ props.name }}">#</a>
+        <h2>{{ component.originalHTML|safe }}</h2>
     </template>
     <style>
         Section {
@@ -79,7 +79,7 @@
                     <ul>
                     {% for childLink in linkGroup.children %}
                         <li><a
-                          href="{{ linkGroup.filename }}#{{ childLink.hash }}"
+                          href="{% if childLink.filepath %}{{ childLink.filepath }}{% else %}{{ linkGroup.filename }}#{{ childLink.hash }}{% endif %}"
                             >{{ childLink.label }}</a>
                         {% if props.showall %}
                             {% if childLink.keywords.length gt 0 %}
@@ -118,11 +118,14 @@
 ></state>
 
 <script>
-    function _child(label, hash, keywords=[]) {
+    function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
             hash = label.toLowerCase()
         }
-        return {label, hash, keywords};
+        if (hash.endsWith('.html') && filepath === null) {
+            filepath = hash;
+        }
+        return {label, hash, keywords, filepath};
     }
     let componentTexts;
     try {
@@ -143,9 +146,9 @@
             label: 'Tutorial',
             filename: '/docs/tutorial.html',
             children: [
-                _child('Part 1: Components, CParts, Loaders', 'part1', ['cdn', 'module-embed']),
-                _child('Part 2: Props and Templating', 'part2', ['cparts', 'props', 'basic templating']),
-                _child('Part 3: State and Script', 'part3', ['state', 'basic scripting']),
+                _child('Part 1: Components, CParts, Loaders', '/docs/tutorial_part1.html', ['cdn', 'module-embed']),
+                _child('Part 2: Props and Templating', '/docs/tutorial_part2.html', ['cparts', 'props', 'basic templating']),
+                _child('Part 3: State and Script', '/docs/tutorial_part3.html', ['state', 'basic scripting']),
             ],
         },
 
