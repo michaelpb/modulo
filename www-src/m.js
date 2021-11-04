@@ -1,4 +1,4 @@
-// modulo build 1o94o8v
+// modulo build -1c5vdj0
 'use strict';
 
 // # Introduction
@@ -2957,7 +2957,7 @@ examples to the Modulo framework, not as a examples themselves -->
 
         {
             label: 'Tutorial',
-            filename: '/docs/tutorial.html',
+            filename: '/docs/tutorial_part1.html',
             children: [
                 _child('Part 1: Components, CParts, Loaders', '/docs/tutorial_part1.html', ['cdn', 'module-embed']),
                 _child('Part 2: Props and Templating', '/docs/tutorial_part2.html', ['cparts', 'props', 'basic templating']),
