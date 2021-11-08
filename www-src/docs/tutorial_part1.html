@@ -3,10 +3,10 @@
 
 <x-Page
     docbarselected="tutorial_part1.html"
-    pagetitle="Tutorial"
+    pagetitle="Part 1 - Tutorial"
     navbar="docs">
 
-<h1>The Modulo Tutorial</h1>
+<h1>The Modulo Tutorial: Part 1</h1>
 
 <blockquote> <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this
 tutorial requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
@@ -31,7 +31,7 @@ Modulo?</strong></p>
 
 
 
-<mws-Section name="including">Your first Modulo component</mws-Section>
+<mws-Section name="including">1. Components</mws-Section>
 
 <h3>Including Modulo</h3>
 
@@ -152,7 +152,7 @@ text='
 </section>
 
 
-<h3>Introducing: Component Parts</h3>
+<mws-Section name="cparts">2. CParts</mws-Section>
 
 <p>The central concept to Modulo is that of <em>Component Parts</em>.
 Because it is so central, saying <em>Component Parts</em> over and over
@@ -232,26 +232,28 @@ sample code editors only focus on the CPart definitions within.</p>
 </section>
 
 
-<h3>Modulo Loader</h3>
-
-<p>Up until now, we have practiced with a component embedded on the same
-page that it is used. This is not recommended. Instead, you should put your
-components in a separate file, and then use the
-<code>&lt;load&gt;</code> tag to import your components into every
-HTML file that needs them.</p>
-
+<mws-Section name="cparts">3. Loading Libraries</mws-Section>
 
 <blockquote> <p><strong>Why use load?</strong>
 Think of the <code>&lt;load&gt;</code> tag as being analogous to the
 <code>&lt;link&gt;</code> tag, which lets multiple HTML files share the
 same CSS. The same rationale applies here: Components are "write once, use
 everywhere", so the way we get access to them "everywhere" is by
-<em>loading</em> them into each file that needs to use them.  Another
-reason: <code>&lt;load&gt;</code> smooths over certain browser
-limitations.</p>
+<em>loading</em> them into each file that needs to use them. Other
+reasons include that <code>&lt;load&gt;</code> smooths over certain browser
+limitations, and that it can keep your files neater.</p>
 </blockquote>
 
-<p>Loader tags look like the following:</p>
+
+
+<p>Up until now, we have practiced with a component embedded on the same page
+that it is used. This is not recommended. Instead, you should put your
+components in a separate <em>component library</em> HTML file, and then use the
+<code>&lt;load&gt;</code> tag to import your components into every HTML file
+that needs them.</p>
+
+
+<p>"Load" tags look like the following:</p>
 
 <pre>
 &lt;load

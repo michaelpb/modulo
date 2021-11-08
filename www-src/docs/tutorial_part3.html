@@ -1,16 +1,311 @@
-
 <script src="/m.js"></script>
 <load src="/components/embeddedexampleslib.html" namespace="docseg"></load>
 
 <x-Page
     docbarselected="tutorial_part1.html"
-    pagetitle="Tutorial"
+    pagetitle="Part 3 - Tutorial"
     navbar="docs">
 
+<h1>The Modulo Tutorial: Part 3</h1>
 
-<mws-Section name="part3">Part 3: State and Script</mws-Section>
 
-coming soon!
+
+<p>In Part 3 of this tutorial, we'll dig deeper with two new CParts: State,
+which allows individual components to store, modify, and link together data,
+and Script, which allows custom JavaScript with complex behaviors.
+Prerequisites: HTML, CSS, JavaScript, and Part 1 &amp; 2.</p>
+
+
+<mws-Section name="state">State</mws-Section>
+
+
+<p> So far, our components have been static and unchanging. They can't do a
+lot.  They might be useful for refactoring HTML into more DRY, reusable
+components, but not much more than that.  They can't validate form data, use
+APIs, or form complete applications. In fact, they can't have any sort of
+<em>interaction</em> whatsoever, or any <em>dynamic</em> or changing
+content.</p>
+
+
+<h3>Examining a memory game's usage of State</h3>
+
+<blockquote>
+    <eg-MemoryGame></eg-MemoryGame>
+</blockquote>
+
+<p>Let's put on our "Holmes-style" detective hats and get out our detective
+magnifying glasses, we're about to go sleuthing!
+Examine this "Symbolic Memory Game" in the box here. Just like any other
+component, this was placed on this HTML page here with the following code:
+<code>&lt;eg-MemoryGame&gt;&lt;/eg-MemoryGame&gt;</code></p>
+
+<p>However, this demo component is doing much more than what we have covered in
+the tutorial so far. It is changing, or <em>mutating</em> based on user
+interaction. This is no longer a simple, static component, but a
+<em>dynamic</em> component.</p>
+
+<p>We can deduce two things about this little memory game component. Deduction
+One: It used a <em>State</em> CPart. We know that it used a <em>State</em>
+CPart because it changes or mutates. Without a <em>State</em> CPart, a
+component cannot "change state", or mutate or have dynamic content, and instead
+will be rendered the same way every time (given certain props).
+In other words, if a component needs to have dynamic content or change over
+time, then a <em>State</em> CPart is necessary to store this dynamic content.</p>
+
+<p>Now on to Deduction Two: It used a <em>Script</em> CPart. Script CParts
+allow for complicated interactions and new behavior to be developed. Memory
+game logic is complicated behavior that requires custom JavaScript. We'll get
+to Script later on.</p>
+
+
+<hr />
+
+<blockquote> <p><strong>Why keep State separate?</strong>
+Earlier jQuery-style JS frameworks were more concerned with manipulating the
+DOM directly. Now, the modern approach is to combine templating and/or DOM
+building tools (e.g. JSX, virtual DOM) with "state management" (e.g. Redux,
+useState). This is due to perceived flaws with the original approach of direct
+DOM manipulation: Pretty soon as an app grows, you get a big tangled mess of
+different code reaching in different spots. Frontend frameworks clearly needed
+an "MVC Model"-like structure to "keep stuff separate".</p>
+
+<p>Modulo closely follows this modern approach. This "detangles" the spaghetti
+mess of DOM manipulation: Instead of one button inserting stuff over here, and
+one input reaching in and sending data over there, the "state" creates a single
+"choke-point" that keeps data "flowing" in one direction. No matter what you
+want changed, you do one thing: <em>Change state &amp; rerender</em>!</p>
+</blockquote>
+
+<h3>State is private</h3>
+
+<p>State allows each component instance to store data. Each component instance
+has a separate state from every other instance. As a demonstration of that,
+examine the following "Hello" counting buttons, once again taken from the demo
+page:</p>
+
+<p> <eg-Hello></eg-Hello> <eg-Hello></eg-Hello> <eg-Hello></eg-Hello> </p>
+
+<p>(Source code:
+<code>&lt;eg-Hello&gt;&lt;/eg-Hello&gt;</code>
+<code>&lt;eg-Hello&gt;&lt;/eg-Hello&gt;</code>
+<code>&lt;eg-Hello&gt;&lt;/eg-Hello&gt;</code>
+)</p>
+
+<p>Once again, we can determine that state is being used, as the text on the
+button changes when that button is clicked. Furthermore, this demonstrates how
+state is not shared: Each button is a totally separate instance that keeps it's
+own private state.</p>
+
+
+<h3>Initializing the <em>State</em> CPart</h3>
+
+
+<p>Let's "peel back the layers" and examine out how these "stateful" or dynamic
+components were written.</p>
+
+
+<p>In order for a component to be able to "modify state", we
+must define a <em>State</em> CPart, conventionally placed after the Template
+but before the Script or Style tags in a component definition (such that the
+order is <em>Props, Template, State, Script, Style</em>). <em>State</em> CParts
+are defined much like <em>Props</em>, except that instead of just listing the
+attribute names, initial values must be provided as defaults.  A <em>State</em>
+CPart might look like this:</p>
+
+<pre>&lt;state
+    count="1"
+    color="blue"
+&gt;&lt;/state&gt;</pre>
+
+
+<p>Here we are defining two <em>state variables</em>: <code>count</code>, which
+we initialize to equal <code>"1"</code>, and <code>color</code>, which we
+initialize to equal <code>blue</code>. We can then use the state variables in
+our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
+
+<pre>&lt;template&gt;
+    &lt;p style="color: {{ state.color }}"&gt;
+        You have {{ state.count }} bananas.
+    &lt;/p&gt;
+&lt;/template&gt;</pre>
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <ol>
+        <li>Practice modifying the <strong>State</strong> CPart
+        (<code>&lt;state&gt;</code>) to see how that affects the
+        output. No need to mess with the template for now.</li>
+        <li>Practice incorporating these CParts into your own components on
+        a real page by copying the code here and pasting it within your
+        component definition (that is, the one that you created in the
+        <em>Part 1</em> of this tutorial)</p>
+    </ol>
+
+    <!-- TODO: Add a better thing here, should be just a few basic "state"
+         variables and rendering them in template with filters -->
+
+    <mws-Demo
+        demotype="minipreview"
+        fromlibrary="Templating_1"
+    ></mws-Demo>
+
+</section>
+
+
+
+<h3>Types of state data</h3>
+
+<blockquote> <p><strong>Why don't we use "strings" for numbers?</strong> Using
+strings of digits (e.g. in quotes) instead of the numbers themselves means that
+things like arithmetic won't work as intended. Example: If state variable
+<code>count="1"</code>, then <code>{{&nbsp;state.count|add:10&nbsp;}}</code>
+will result in <code>"110"</code> instead of the desired <code>11</code>, since
+it's a string of digits, so <code>"1" + "10" = "110"</code></p></blockquote>
+
+<p>Typically, when we add attributes to anything, whether it is a CPart or even
+just in regular HTML, the attribute value can only be a string. This means when
+we did <code>&lt;state count="1" ... &gt;</code> previously, we made a mistake:
+The <code>count</code> variable didn't get assigned to <code>1</code> the
+<em>Number</em>, but rather <code>"1"</code> the <em>String</em>. To fix it, we
+do the following:</p>
+
+<pre>&lt;state
+    count:=1
+    color="blue"
+&gt;&lt;/state&gt;</pre>
+
+<p>This is called a <em>data prop</em>. The <em>data prop</em> is technically a
+type of attribute <em>directive</em>, which refers to special instructions that
+are embedded within attribute names. In the case of <em>data prop</em>
+(<code>:=</code>), we suffix the attribute name with a colon right before the
+equal, like this: <code>attributeName:=value</code>.</p>
+
+<p>Let's take a look at another directive next: <code>[state.bind]</code></p>
+
+
+<h3>Binding state data with [state.bind]</h3>
+
+
+<blockquote> <p><strong>State and predictability</strong>
+The purpose of <em>State</em> is to separate out everything that changes
+about a component into it's an isolated data structure. It should be the case
+that for a well-written component, if anything changes visually, that "visual"
+change should always start with changing state. There should never be a
+"mismatch", or a way for visual changes to occur without state changes. If such
+a thing were possible, it would imply a component that is non-deterministic, or
+renders unpredictably. In other words, given a particular state (and props), a
+component should be predictable or deterministic in that it renders the same
+way every time.</p></blockquote>
+
+
+<p>State comes with a directive that helps "bind" it to form data.  What does
+this mean? The most common thing to change about components are form inputs: As
+people type new characters appear, thus representing a visual change, and thus
+also needing a state change to keep that predictable structure. The
+<code>[state.bind]</code> directive should be attached to each
+<code>&lt;input&gt;</code> and "syncs up" the input with the state after every
+keystroke. The binding is "two-way" or goes in both directions: The input gets
+the initial state value, and if the state ever changes, the input will be
+updated to reflect that, and if the input ever changes, the state gets
+updated.</p>
+
+<p>To bind an input to state, use something like the following:</p>
+
+<pre>&lt;template&gt;
+    &lt;input [state.bind] name="subject" /&gt;
+&lt;/template&gt;
+&lt;state
+    subject="Testing message..."
+&gt;&lt;/state&gt;</pre>
+
+
+<p>It's important that you always include a "name" attribute when binding. This
+is the variable that state will keep in sync with that input.</p>
+
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <ol>
+        <li>Practice modifying the <strong>State</strong> CPart
+        (<code>&lt;state&gt;</code>) to see how that affects the
+        output. No need to mess with the template for now.</li>
+        <li>Practice incorporating these CParts into your own components on
+        a real page by copying the code here and pasting it within your
+        component definition (that is, the one that you created in the
+        <em>Part 1</em> of this tutorial)</p>
+    </ol>
+
+    <!-- TODO: Can do "validation"
+         template with filters -->
+
+    <mws-Demo
+        demotype="minipreview"
+        fromlibrary="Tutorial_P3_state_bind"
+    ></mws-Demo>
+
+</section>
+
+
+
+<h3>Final notes on data props & state</h3>
+
+<p>Finally, a few things to note about <em>data props</em>:</p>
+
+<ol>
+    <li>Note that <em>data props</em> are not the same as the <em>Props</em>
+    CPart.  They are, however, related, in that the <em>Props</em> CPart looks
+    for both regular attributes and data props: You can in fact set any
+    <em>Props</em> attributes with the <code>:=</code> syntax.</li>
+
+    <li>The state data is a JavaScript object, and thus can store anything that
+    JavaScript can store. While there is no technical limitations on what can
+    be stored in state, it is recommended you keep it to simple JSON-style data
+    types: Strings, Numbers, true/false/null, along with Objects and Arrays
+    that combine the above types. Initial values must only be JSON-supported
+    types.</li>
+
+    <li>Technically, <em>data props</em> can have double quotes just like
+    normal String-based attributes. However, as a stylistic convention, you may
+    omit the double quotes for any one-word value. For complex types, such as
+    JSON-formatted Arrays or Objects, use single quotes. See below for
+    stylistic examples of data props with different types:
+
+
+<mws-Demo
+text='
+<state
+    color="blue"      (String)
+    count:=1          (Number)
+    ready:=true       (Boolean)
+    speed:=null       (null value)
+    items:=&apos;[         (JSON Array)
+        "abc",
+        "def"
+    ]&apos;
+    data_obj:=&apos;{      (JSON Object)
+        "a": "b",
+        "c": "d"
+    }&apos;
+></state>
+'
+></mws-Demo>
+
+</li>
+
+
+
+<pre>&lt;state
+    count="1"
+    color="blue"
+&gt;&lt;/state&gt;</pre>
+
+
+
+
+
+
 
 
 

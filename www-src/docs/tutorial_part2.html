@@ -49,21 +49,17 @@
 
 <x-Page
     docbarselected="tutorial_part1.html"
-    pagetitle="Tutorial"
+    pagetitle="Part 2 - Tutorial"
     navbar="docs">
 
 
-<h1>The Modulo Tutorial</h1>
+<h1>The Modulo Tutorial: Part 2</h1>
 <p>In Part 2 of this tutorial, we'll explore three more features: Customizing
 with Props, substituting with Template variables, and finally building your
 finished project into a single JS file. Prerequisites: HTML, CSS, and Part 1.</p>
 
 
-
-<mws-Section name="part2">Part 2: Props, Templating, and Building</mws-Section>
-
-
-<h3>CPart: Props</h3>
+<mws-Section name="part2">1. Props</mws-Section>
 
 <p>In the previous section, we were mostly concerned with <em>defining
 components</em>. Recall that components are defined once, but can be used many
@@ -73,7 +69,7 @@ The purpose of <em>Props</em> is to allow more flexibility in that second step:
 about a component each time it is reused.  Thus, to start our discussion of
 <em>Props</em> we'll first get more practice reusing components.</p>
 
-<h4>Other people's components</h4>
+<h3>Other people's components</h3>
 
 <p>Before we learn how to use the <em>Props</em> CPart itself, let's first get
 acquainted with a concept we haven't done before: Reusing components that were
@@ -143,7 +139,7 @@ of the same component.</p>
 </blockquote>
 
 
-<h4>Defining props</h4>
+<h3>Defining props</h3>
 
 <p>Let's "peel back the layers" and examine out how this ExampleBtn was
 written.</p>
@@ -175,10 +171,8 @@ the <em>Props</em> CPart, you can then reference the values of those props
 elsewhere within the component: Either in the <em>Template</em> CPart (what
 we'll cover next), or in the <em>Script</em> CPart (covered later).</p>
 
-<hr />
 
-<h3>Templating</h3>
-
+<mws-Section name="part2">2. Templating</mws-Section>
 
 <blockquote> <p><strong>Can I use props in CSS?</strong>
 
@@ -426,8 +420,8 @@ examples of all filters available.</p>
 -->
 
 
-<h3>Modulo build: Packing it up</h3>
 
+<mws-Section name="build">3. Build</mws-Section>
 
 
 <blockquote> <p><strong>Why build?</strong>
@@ -450,8 +444,7 @@ experience for users. This is why building to one file is useful.</p>
 or bundling your component library for production.</p>
 
 
-<h4>Intro to building</h4>
-
+<h3>Modulo build: Packing it all up</h3>
 
 <p>"Building" is a feature of Modulo where it will pack up all the components
 you have loaded on a particular page, mix in it's own source code, and spit out
@@ -465,9 +458,9 @@ results in the fastest possible loading time.</p>
 <p>To build a project, we will need to run a <em>Modulo Console Command</em>.
 The <em>console</em> is a feature of all web browsers. As a web developer you
 likely have used it: It's a panel, hidden by default, where JS, CSS, and other
-such error messages are displayed. While most JS frameworks use complicated
-NPM-based tools to build,  Modulo can be built right from your browser's
-console, simply by typing <code>m.build</code> and hitting enter.</p>
+such error messages are displayed. While most JS frameworks require NPM-based
+tools to build,  Modulo can be built right from your browser's console, simply
+by typing <code>m.build</code> and hitting enter.</p>
 
 
 

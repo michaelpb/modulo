@@ -234,6 +234,95 @@ strong {
 
 
 
+<!-- ................................ -->
+<!-- . Tutorial - Part 3 ............ -->
+<!-- ................................ -->
+
+<component name="Tutorial_P3_state_demo">
+<template>
+<p>Nonsense poem:</p> <pre>
+Professor {{ state.verb|capfirst }} who
+{{ state.verb }}ed a {{ state.noun }},
+taught {{ state.verb }}ing in
+the City of {{ state.noun|capfirst }},
+to {{ state.count }} {{ state.noun }}s.
+</pre>
+</template>
+
+<state
+    verb="toot"
+    noun="kazoo"
+    count="two"
+></state>
+
+<style>
+    :host {
+        font-size: 0.8rem;
+    }
+</style>
+
+<testsuite>
+    <test>
+        <template>
+            <p>Nonsense poem:</p>
+            <pre> Professor Toot who tooted a kazoo, taught tooting in the City
+            of Kazoo, to two kazoos. </pre>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+<component name="Tutorial_P3_state_bind">
+<template>
+
+<div>
+    <input [state.bind] name="username" />
+    <label>Color: <input [state.bind] name="color" />
+        (valid options "green" or "blue")</label>
+    <input [state.bind]
+        name="opacity"
+        type="number" min="0" max="1" step="0.1" />
+
+    <h5 style="
+            opacity: {{ state.opacity }};
+            color: {{ state.color|allow:"green,blue"|default:"red" }};
+        ">
+        {{ state.username|lower }}
+    </h5>
+</div>
+
+</template>
+
+<state
+    opacity="0.5"
+    color="blue"
+    username="Testing_Username"
+></state>
+
+<testsuite>
+    <test>
+        <template name="Ensure state from search box renders" test-values>
+            <input [state.bind] name="username" value="michaelpb" />
+            <label>Color: <input [state.bind] name="color" value="blue" />
+                (valid options "green" or "blue")</label>
+            <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" />
+            <h4 style="
+                    opacity: {{ state.opacity }};
+                    color: {{ state.color|allow:"green,blue"|default:"red" }};
+                ">
+                {{ state.username|lower }}
+            </h4>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
 
 
 

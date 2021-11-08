@@ -1089,6 +1089,7 @@ Modulo.templating.defaultOptions.filters = (function () {
     const filters = {
         upper: s => s.toUpperCase(),
         lower: s => s.toLowerCase(),
+        capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
         escapejs: s => JSON.stringify(s),
         first: s => s[0],
         last: s => s[s.length - 1],

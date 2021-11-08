@@ -1,4 +1,4 @@
-// modulo build -1c5vdj0
+// modulo build 1v3igne
 'use strict';
 
 // # Introduction
@@ -1090,6 +1090,7 @@ Modulo.templating.defaultOptions.filters = (function () {
     const filters = {
         upper: s => s.toUpperCase(),
         lower: s => s.toLowerCase(),
+        capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
         escapejs: s => JSON.stringify(s),
         first: s => s[0],
         last: s => s[s.length - 1],
@@ -2515,7 +2516,7 @@ h3 {
 
 `,// (ends: /components/examplelib.html) 
 
-  "/components/embeddedexampleslib.html": // (293 lines)
+  "/components/embeddedexampleslib.html": // (382 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
@@ -2750,6 +2751,95 @@ strong {
 
 </component>
 
+
+
+<!-- ................................ -->
+<!-- . Tutorial - Part 3 ............ -->
+<!-- ................................ -->
+
+<component name="Tutorial_P3_state_demo">
+<template>
+<p>Nonsense poem:</p> <pre>
+Professor {{ state.verb|capfirst }} who
+{{ state.verb }}ed a {{ state.noun }},
+taught {{ state.verb }}ing in
+the City of {{ state.noun|capfirst }},
+to {{ state.count }} {{ state.noun }}s.
+</pre>
+</template>
+
+<state
+    verb="toot"
+    noun="kazoo"
+    count="two"
+></state>
+
+<style>
+    :host {
+        font-size: 0.8rem;
+    }
+</style>
+
+<testsuite>
+    <test>
+        <template>
+            <p>Nonsense poem:</p>
+            <pre> Professor Toot who tooted a kazoo, taught tooting in the City
+            of Kazoo, to two kazoos. </pre>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+<component name="Tutorial_P3_state_bind">
+<template>
+
+<div>
+    <input [state.bind] name="username" />
+    <label>Color: <input [state.bind] name="color" />
+        (valid options "green" or "blue")</label>
+    <input [state.bind]
+        name="opacity"
+        type="number" min="0" max="1" step="0.1" />
+
+    <h5 style="
+            opacity: {{ state.opacity }};
+            color: {{ state.color|allow:"green,blue"|default:"red" }};
+        ">
+        {{ state.username|lower }}
+    </h5>
+</div>
+
+</template>
+
+<state
+    opacity="0.5"
+    color="blue"
+    username="Testing_Username"
+></state>
+
+<testsuite>
+    <test>
+        <template name="Ensure state from search box renders" test-values>
+            <input [state.bind] name="username" value="michaelpb" />
+            <label>Color: <input [state.bind] name="color" value="blue" />
+                (valid options "green" or "blue")</label>
+            <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" />
+            <h4 style="
+                    opacity: {{ state.opacity }};
+                    color: {{ state.color|allow:"green,blue"|default:"red" }};
+                ">
+                {{ state.username|lower }}
+            </h4>
+        </template>
+    </test>
+</testsuite>
+
+</component>
 
 
 
@@ -3482,6 +3572,45 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/API-tests.html) 
 
+  "/components/examplelib-tests/PrimeSieve-tests.html": // (37 lines)
+`<test name="renders with search data">
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" whole ">2</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" number whole ">64</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" ">3</div>
+    </template>
+
+    <script>
+        // 20 is effectively 21 (since starts at 2)
+        event: mouseover div:nth-child(20)
+    </script>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" whole ">3</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" whole ">7</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" number whole ">21</div>
+    </template>
+
+    <script>
+        // 46 is effectively 47 (since starts at 2)
+        event: mouseover div:nth-child(46)
+    </script>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" number whole ">47</div>
+    </template>
+
+    <template name="Ensure only one whole number (since prime)"
+        string-count=1>whole</template>
+</test>
+`,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
+
   "/components/examplelib-tests/SearchBox-tests.html": // (119 lines)
 `<test name="Renders based on state">
     <template name="Ensure initial render is correct" test-values>
@@ -3602,45 +3731,6 @@ examples to the Modulo framework, not as a examples themselves -->
 
 
 `,// (ends: /components/examplelib-tests/SearchBox-tests.html) 
-
-  "/components/examplelib-tests/PrimeSieve-tests.html": // (37 lines)
-`<test name="renders with search data">
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" whole ">2</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" number whole ">64</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" ">3</div>
-    </template>
-
-    <script>
-        // 20 is effectively 21 (since starts at 2)
-        event: mouseover div:nth-child(20)
-    </script>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" whole ">3</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" whole ">7</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" number whole ">21</div>
-    </template>
-
-    <script>
-        // 46 is effectively 47 (since starts at 2)
-        event: mouseover div:nth-child(46)
-    </script>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" number whole ">47</div>
-    </template>
-
-    <template name="Ensure only one whole number (since prime)"
-        string-count=1>whole</template>
-</test>
-`,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
 
   "/components/examplelib-tests/MemoryGame-tests.html": // (152 lines)
 `<test name="starts a game">
@@ -3796,20 +3886,6 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
 
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
   "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
 `
 <!-- Due to bug with the test runner or testing framework, including this
@@ -3954,6 +4030,20 @@ test will cause other tests to fail, but running it separately it succeeds. -->
 </div>
 
 `,// (ends: /components/modulowebsite/demo.html) 
+
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
 
   "/components/modulowebsite/demo.js": // (263 lines)
 `let componentTexts = null;
