@@ -131,8 +131,20 @@ function initializedCallback({ el }) {
             }
         }
     } else if (props.text) {
+        let title = props.ttitle || 'Example';
         text = props.text.trim();
-        state.tabs.push({title: 'Example', text});
+        state.tabs.push({title, text});
+        // hack -v
+        if (props.text2) {
+            title = props.ttitle2 || 'Example';
+            text = props.text2.trim();
+            state.tabs.push({title, text});
+        }
+        if (props.text3) {
+            title = props.ttitle3 || 'Example';
+            text = props.text3.trim();
+            state.tabs.push({title, text});
+        }
     }
 
     const demoType = props.demotype || 'snippet';

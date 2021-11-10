@@ -1093,6 +1093,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         escapejs: s => JSON.stringify(s),
         first: s => s[0],
         last: s => s[s.length - 1],
+        reversed: s => Array.from(s).reverse(),
         length: s => s.length,
         //trim: s => s.trim(), // TODO: improve interface to be more useful
         join: (s, arg) => s.join(arg),

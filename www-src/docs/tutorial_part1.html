@@ -19,9 +19,9 @@ learn how to use Modulo in your own projects.</p>
 <h3>When to use Modulo</h3>
 
 <p>Modulo is useful when using plain HTML and CSS is no longer sufficient. It
-has no dependencies, has no "build process", and does not require knowledge of
-JavaScript, use of terminal applications, or use of NPM. This means it can be
-equally easily incorporated into a plain HTML "static site" (e.g. when you
+has no dependencies, has no "build process", and does not require experience
+with JavaScript, terminal applications, or NPM. This means it can
+be equally easily incorporated into a plain HTML "static site" (e.g. when you
 assemble HTML, CSS, and other static assets in a directory), or into a
 "multi-page" web app built with a backend language or MVC framework.</p>
 
@@ -31,7 +31,7 @@ Modulo?</strong></p>
 
 
 
-<mws-Section name="including">1. Components</mws-Section>
+<mws-Section name="components">1. Components</mws-Section>
 
 <h3>Including Modulo</h3>
 
@@ -46,7 +46,7 @@ Modulo?</strong></p>
     working offline, or for bundling Modulo with other JS frameworks)</em></li>
     <li>Including a "self-bundled" Modulo "build" that packs your custom
     components into a single JS file for faster load times <em>(more advanced
-    usage, covered at the end of this tutorial)</em></li>
+    usage, covered at the end of Part 2 of this tutorial)</em></li>
 </ol>
 
 <p>Once Modulo.js is included in a page, Modulo itself needs to be explicitly
@@ -80,21 +80,25 @@ to split your components into a separate file, which is the preferred way.</p>
 
 <p><strong>Component definitions</strong> start with a "component"
 opening tag in the format of
-<code>&lt;component&nbsp;name="HelloWorld"&gt;</code>. Modulo will scan a
-document for these tags, defining components for each one it encounters.
-Every component definition must specify a name, conventionally in
-<code>UpperCamelCase</code>. This is just a convention when writing code:
-Technically HTML tag names are all case insensitive, and so while inspecting
-the DOM, browsers may display them in <code>all-lowercase</code>.</p>
+<code>&lt;component&nbsp;name="HelloWorld"&gt;</code>. Modulo will look for
+these tags, defining components for each one it encounters.  Every component
+definition must specify a name, conventionally in <code>UpperCamelCase</code>.
+This is just a convention when writing code: Technically HTML tag names are all
+case insensitive, and so while inspecting the DOM, browsers typically display
+them in <code>all-lowercase</code>, removing any capitalization.</p>
 
-<p>Once defined, you can use a component by referring to it's name as
-though it were a plain HTML tag like &lt;div&gt;. Components can go
-anywhere that plain HTML tags can go, and can be styled with CSS the same
-way as well. Unlike plain HTML tags, you must use a dash (<code>-</code>)
-when referring to a component. This is a rule of the HTML5 Custom
-Components standard, which Modulo is based upon.</p>
+<p>Once defined, you can use a component by referring to it's name as though it
+were a plain HTML tag. Components can go anywhere that plain HTML tags can go,
+and can be styled with CSS the same way as well.  In other words, creating a
+component is like creating a brand-new type of HTML tag that can be used
+anywhere, just like the original HTML tags of <code>&lt;div&gt;</code>,
+<code>&lt;a&gt;</code>, etc.</p>
 
-<p>Modulo's default behavior is to prefix custom components with an
+<p>
+Unlike plain HTML tags, you must use a dash
+(<code>-</code>) when referring to a component.  This is a rule of the HTML5
+Custom Components standard, which Modulo is based upon.
+Modulo's default behavior is to prefix custom components with an
 <code>x-</code>. So, if a component is defined like
 <code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, then it can be
 referenced elsewhere like
@@ -232,7 +236,7 @@ sample code editors only focus on the CPart definitions within.</p>
 </section>
 
 
-<mws-Section name="cparts">3. Loading Libraries</mws-Section>
+<mws-Section name="load">3. Loading Libraries</mws-Section>
 
 <blockquote> <p><strong>Why use load?</strong>
 Think of the <code>&lt;load&gt;</code> tag as being analogous to the

@@ -371,6 +371,10 @@ a:visited {
     list-style: disc;
     margin-left: 40px;
 }
+.Main nav ul li {
+    list-style: none;
+    margin-left: 0;
+}
 
 .Main .InfoBox {
     border: 1px solid var(--highlight-color);
@@ -415,6 +419,17 @@ a:visited {
     font-weight: bold;
     font-size: 1.1rem;
     margin-top: 5px;
+}
+
+/* Adding some top margin for the top-level h3/h4s */
+.Main > * > h3 {
+    margin-top: 40px;
+}
+.Main > * > h4 {
+    margin-top: 20px;
+}
+.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {
+    margin-bottom: 60px;
 }
 
 .Main blockquote {

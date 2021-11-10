@@ -1,0 +1,46 @@
+<test name="Behaves as expected">
+    <template name="Ensure initial inputs are bound so render is as expected" test-values>
+        <div>
+            <input [state.bind] name="username" value="Testing_Username" />
+            <label>Color: <input [state.bind] name="color" value="blue" />
+                (valid options "green" or "blue")</label>
+            <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" />
+            <h5 style="
+                    opacity: 0.5;
+                    color: blue;
+                ">
+                testing_username
+            </h5>
+        </div>
+    </template>
+
+    <script>
+        element.querySelector('input[name="username"]').value = 'tEsT2'
+        event: keyup input[name="username"]
+    </script>
+
+    <script>
+        element.querySelector('input[name="color"]').value = 'green'
+        event: keyup input[name="color"]
+    </script>
+
+    <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
+        <div>
+            <input [state.bind] name="username" value="tEsT2" />
+            <label>Color: <input [state.bind] name="color" value="green" />
+                (valid options "green" or "blue")</label>
+            <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" />
+            <h5 style="
+                    opacity: 0.5;
+                    color: green;
+                ">
+                test2
+            </h5>
+        </div>
+    </template>
+</test>
+

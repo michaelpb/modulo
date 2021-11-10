@@ -34,8 +34,14 @@
 
 
 <component name="Demo">
+    <!-- TODO: Refactor the following to take variable length props instead of 2, 3, etc-->
     <props
         text
+        text2
+        text3
+        ttitle
+        ttitle2
+        ttitle3
         demotype
         fromlibrary
     ></props>
@@ -146,9 +152,9 @@
             label: 'Tutorial',
             filename: '/docs/tutorial_part1.html',
             children: [
-                _child('Part 1: Components, CParts, Loaders', '/docs/tutorial_part1.html', ['cdn', 'module-embed']),
-                _child('Part 2: Props and Templating', '/docs/tutorial_part2.html', ['cparts', 'props', 'basic templating']),
-                _child('Part 3: State and Script', '/docs/tutorial_part3.html', ['state', 'basic scripting']),
+                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
+                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
+                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
             ],
         },
 
@@ -214,8 +220,8 @@
             label: 'Template Reference',
             filename: '/docs/templating-reference.html',
             children: [
-                _child('Built-in Filters', 'filters'),
                 _child('Built-in Template Tags', 'tags'),
+                _child('Built-in Filters', 'filters'),
                 _child('Custom Filters', 'customfilters'),
                 _child('Custom Template Tags', 'customtags'),
             ],

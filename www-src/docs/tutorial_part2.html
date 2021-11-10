@@ -59,7 +59,7 @@ with Props, substituting with Template variables, and finally building your
 finished project into a single JS file. Prerequisites: HTML, CSS, and Part 1.</p>
 
 
-<mws-Section name="part2">1. Props</mws-Section>
+<mws-Section name="props">1. Props</mws-Section>
 
 <p>In the previous section, we were mostly concerned with <em>defining
 components</em>. Recall that components are defined once, but can be used many
@@ -172,7 +172,7 @@ elsewhere within the component: Either in the <em>Template</em> CPart (what
 we'll cover next), or in the <em>Script</em> CPart (covered later).</p>
 
 
-<mws-Section name="part2">2. Templating</mws-Section>
+<mws-Section name="templating">2. Templating</mws-Section>
 
 <blockquote> <p><strong>Can I use props in CSS?</strong>
 
@@ -440,8 +440,43 @@ the mean-time.  On slow connections, this could be end up being a frustrating
 experience for users. This is why building to one file is useful.</p>
 </blockquote>
 
-<p>We've got one more topic for <em>Part 2</em> of the Modulo tutorial: Packing
-or bundling your component library for production.</p>
+<p>We've got one more topic for <em>Part 2</em> of the Modulo tutorial:
+How to keep your project manageable and loading fast as <em>Component</em>
+definitions grow and larger.</p>
+
+<h3>Splitting off larger CParts with <code>src=</code></h3>
+
+<p>A convenient feature of Modulo is the ability to "split off" CParts into
+separate files. This can be done by cutting out the contents of a CPart, and
+pasting it in a new file, and then saving this new file in the same directory
+as your library. Then, to re-include it, add a <code>src=</code> attribute to
+CPart. By default, <code>src=</code> is supported by any CPart that uses it's
+contents, meaning <em>Template</em> and <em>Style</em> are the only two that
+we've learned so far that support it.</p>
+
+<p>For example, you can split off a <em>Template</em> into it's own separate
+file, as such:</p>
+
+<pre>&lt;template
+    src="./my-file-name.html"
+&gt;&lt;/template&gt;</pre>
+
+
+<p>Similarly, you can split off a <em>Style</em> as well:</p>
+
+<pre>&lt;style
+    src="./some/other/path.css"
+&gt;&lt;/style&gt;</pre>
+
+<p>The rules for <code>src=</code> relative paths are similar to HTML's rules:
+Any URI path can be specified, and use a dot (<code>.</code>) to specify a path
+relative to the current HTML file (e.g. the <em>Component</em> library file).
+The behavior is the exact same as if you had included the text in the same
+file, meaning this feature is only intended to be used when a component library
+gets too long and difficult to edit. In that case, conventional usage is to
+start splitting off larger CParts into their own files, until the HTML library
+file itself is just tie-ing everything together.</p>
+
 
 
 <h3>Modulo build: Packing it all up</h3>
@@ -449,7 +484,8 @@ or bundling your component library for production.</p>
 <p>"Building" is a feature of Modulo where it will pack up all the components
 you have loaded on a particular page, mix in it's own source code, and spit out
 a single JS file. This single JS file, called a <em>build</em>, will contain
-all the code from all your components. You can then comment out or delete the
+all the code from all your components (including CParts that were split off
+using <code>src=</code>). You can then comment out or delete the
 <code>&lt;load&gt;</code> tags, since this one JS file will be all you need.
 Generally, developers create builds before "launching" their site to
 "production" (e.g. publishing their site for the world to see), since it
@@ -521,5 +557,50 @@ text='
     don't take effect!</p>
 
 </section>
+
+
+<h3>Part 2: Summary</h3>
+
+<p>In this tutorial, we learned how to specify props as attributes to use and
+configure other people's components and how to define the <em>Props</em> CPart
+which allows our components to be configured via attributes when used. We
+learned how to use Modulo's templating language to include variables and format
+values using filters, and finally wrapped up with trying Modulo's self-building
+feature.</p>
+
+
+<h4>Key terms</h4>
+
+<ul>
+<li> <strong>Props</strong> - A CPart used to specify attributes that can be
+used to configure a Component</li>
+
+<li><strong>Template variable</strong> and <strong>template filter</strong> -
+Modulo's Templating language can include template variables (e.g.  <code>{{
+props.name }}</code>) mixed in with the HTML, and possibly modified or
+reformatted by attaching template filters (e.g. <code>{{ props.name|upper
+}}</code>)</li>
+
+<li><strong>build</strong> - Bundling all your JS and files together into a
+single file that loads faster.</li>
+</ul>
+
+
+<h4>Next step</h4>
+
+<p>At this point, you've learned enough to be dangerous! If you intend to
+mostly use Modulo as a template developer, refactoring HTML into template-based
+web components, then you are all ready to get going.  Feel free to try using
+Modulo to refactor your HTML, be sure to test on all target browsers (Modulo is
+still under development, after all), and then finally use the self-packing to
+include a JS file that loads quickly. To improve your template development
+skills, you might only want to read deeper on the <a
+href="/docs/templating.html">Modulo templating language's capabilities</a></p>
+
+<p>However, if you are at least a little familiar with JavaScript and/or
+React-style SPA frameworks, and want to learn how to make more complex,
+interactive applications using State and Script, then get going with <a
+href="/docs/tutorial_part3.html">Part 3: State and Script</a></p>
+
 
 </x-Page>

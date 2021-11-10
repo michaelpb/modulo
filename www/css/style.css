@@ -371,6 +371,10 @@ a:visited {
     list-style: disc;
     margin-left: 40px;
 }
+.Main nav ul li {
+    list-style: none;
+    margin-left: 0;
+}
 
 .Main .InfoBox {
     border: 1px solid var(--highlight-color);
@@ -410,6 +414,9 @@ a:visited {
     font-weight: bold;
     font-size: 1.3rem;
     margin-top: 10px;
+}
+.Main > h3 {
+    margin-top: 30px;
 }
 .Main h4 {
     font-weight: bold;

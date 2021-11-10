@@ -7,16 +7,437 @@
 <h1>Templating Reference</h1>
 
 
+<p>Modulo's templating language comes with a standard library of filters and
+template-tags, modeled closely on the behavior of Django's templating language
+library. Although Django's has considerably more features, some Django
+templates will work as Modulo templates without modification (just include it
+with "src="!). In fact, there's such large overlap that much of this very
+documentation was <a
+href="https://docs.djangoproject.com/en/3.2/ref/templates/language/">copied and
+arranged just like Django's own</a>, to be instantly more familiar to
+developers. Thanks, Django!</p>
 
 
 
+<mws-Section name="script">Built-in Template Tags</mws-Section>
+
+
+<h3>comment</h3>
+
+<p>Used specifically for commenting out blocks of Templating code. Ignores
+everything between <code>{% comment %}</code> and <code>{% endcomment
+%}</code>.  An optional note may be inserted in the first tag. This can be
+useful to document why the code was commented out or disabled. You should avoid
+nesting comment tags.</p>
+
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>Before comment</p>
+    {% comment "Optional note" %}
+        <p>Commented out text that will be ignored
+          {{ nonExistingVar|brokenFilter:"abc" }}</p>
+    {% endcomment %}
+    <p>After comment</p>
+</template>
+'></mws-Demo>
+
+<h3>for</h3>
+
+<p>For-loops are for repeating the same HTML code multiple times. It will
+repeat a block of templating code for every item in a specified array or
+object. It's useful for displaying search results, blog articles, chat
+messages, and much more: Any time you have unknown quantities or
+<em>plural</em> amounts of data that you want to template on the screen.</p>
+
+<p>At it's core, <code>{% for %}</code> will loop over each item in an array,
+making the item available in a specified template variable. This is often done
+to objects in an array stored in state, such as data that came back from an
+API. Examine the following example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <ul>
+        {% for athlete in state.athletes %}
+            <li>{{ athlete.name }}</li>
+        {% endfor %}
+    </ul>
+</template>
+
+<state
+  athletes:=&apos;[
+    {"name": "Devante Adams"},
+    {"name": "Steph Curry"},
+    {"name": "Megan Rapinoe"}
+  ]&apos;
+></state>
+'></mws-Demo>
+
+<p>Note that your for loops should conventionally follow the pattern of
+<code>{% for SINGULAR_THING in PLURAL_THINGS %}</code>. For 3 examples of this:
+<code>{% for item in state.item_data %}</code>,
+<code>{% for user in users %}</code>, or
+<code>{% for city in cities %}</code>.</p>
+
+<p>Within the repeated code of the for
+loop, then the "singular thing" (the variable defined by the for loop) will be
+available as a template variable. Typically, the "plural variable" will be an
+Array or Object defined from the <code>State</code> or <code>Props</code>
+CParts.  Also, it's worth noting that you can loop over an array in reverse by
+using the <code>|reversed</code> filter, e.g.
+<code>{% for obj in list|reversed %}</code>.</p>
+
+<p>If you need to loop over an <em>object</em>, you can unpack each key / value
+pair into individual variables. For example, if your state contains an array of
+(x, y) coordinates called <code>state.data</code>, you could use the following to output the list
+of points:</p>
+
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <ul>
+        {% for name, color in state.fave_colors %}
+            <li><strong>{{ name }}</strong>: {{ color }}</li>
+        {% endfor %}
+    </ul>
+</template>
+
+<state
+    fave_colors:=&apos;{
+      "Devante Adams": "Green",
+      "Steph Curry": "Golden",
+      "Megan Rapinoe": "Blue"
+    }&apos;
+></state>
+'></mws-Demo>
+
+
+<h4>empty</h4>
+
+<p>Often you will want to include a default, empty, or "404 message" if nothing
+is in the array of a <code>for</code> tag. To avoid cluttering your loops with
+extra if-statements, the for tag can take an optional <code>{% empty %}</code>
+clause, which functions identically to an if-statement that executes only if
+the given data is empty or could not be found (e.g. if 0 iterations of the loop
+were run). Observe the following example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <ul>
+        {% for name, color in state.fave_colors %}
+            <li><strong>{{ name }}</strong>: {{ color }}</li>
+        {% empty %}
+            No athletes were found.
+        {% endfor %}
+    </ul>
+</template>
+
+<state
+    fave_colors:=&apos;{}&apos;
+></state>
+'></mws-Demo>
+
+
+<h3>if</h3>
+
+<p>The if-statement allows a block of HTML code to be conditionally
+included. It allows "branching" in your templates: That is, one or more
+optional "branches" or blocks of HTML templating code that will be included
+only if a certain condition is satisfied.</p>
+
+
+<p>The simplest behavior of the <code>{% if %}</code> tag is to evaluate a variable,
+and if that variable both exists and is a "truthy" value according to JavaScript
+(<a href="https://developer.mozilla.org/en-US/docs/Glossary/Truthy">see MDN "Truthy"</a>),
+the specified block will be included.  By default, <code>if</code> will include
+(or not) all code until it encounters an <code>{% endif %}</code> tag to close.
+However, it also supports using an <code>{% else %}</code> tag before the
+<code>{% endif %}</code> tag, which can provide alternative code.</p>
+
+<p>Examine the following example, and observe what happens as you change state
+variables from <code>true</code> to <code>false</code>, or vice-versa:</p>
+
+
+<mws-Demo demotype="minipreview"
+ttitle="SimpleIf"
+text='
+<template>
+    {% if state.show %}
+        Hello testing template world!
+    {% endif %}
+</template>
+
+<state
+  show:=true
+></state>
+'
+ttitle2="IfElse"
+text2='
+<template>
+    {% if state.hello %}
+        Hello testing template world!
+    {% else %}
+        Goodbye testing template world!
+    {% endif %}
+</template>
+
+<state
+  hello:=false
+></state>
+'></mws-Demo>
+
+<h4>elif</h4>
+
+<p>Like with the <code>else</code> tag, the <code>if</code> tag may also
+optionally proceed <code>{% elif %}</code> tags, which is a shortened version
+of the word "else" and "if", combined into a single, made-up word "elif". The
+behavior of the <code>{% elif %}</code> is very similar to the "if": It requires
+specifying condition which will be evaluated, and it will only include the
+specified code block if that condition evaluates to be true.  Unlike the
+<code>{% else %}</code> tag, a single <code>{% if %}</code> can has as many
+<code>{% elif %}</code> tags as you'd like, and it is guaranteed that it will
+only execute  one of those. In other words, only one <code>{% if %}</code>,
+<code>{% elif %}</code>, or <code>{% else %}</code> code block will be
+executed, and there's never a risk that two "elifs" could get executed in the
+same "chain".</p>
+
+<p>For an example of this, examine the following more complicated example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if state.athletes %}
+        Athletes exists. Total athletes: {{ state.athletes|length }}
+    {% elif state.benched %}
+        Benched exists. Total benched: {{ state.benched|length }}
+    {% else %}
+        No athletes.
+    {% endif %}
+</template>
+
+<state
+  benched:=&apos;[
+    {"name": "Steph Curry"}
+  ]&apos;
+></state>
+'></mws-Demo>
+
+<p>In the above, if <code>state.athletes</code> exists, the number of athletes will be
+displayed by the <code>{{ state.athletes|length }}</code> filtered template variable.</p>
+
+<h4>Operators</h4>
+
+<p>Within the if tag, you can use a variety of "operators". Operators behave
+similarly to JavaScript operators: They allow comparisons of template variables
+with other template variables and/or hardcoded values. There are about a dozen
+built-in operators. As with template-tags, it is also possible to configure
+your own custom operators.</p>
+
+<p>Built-in operators: <code>==, &gt;, &lt;, &gt;=, &lt;=, !=, not in, is not, is, in, not, gt, lt</code>
 
 
 
+<h4><code>==</code>, <code>is</code> (operator)</h4>
+
+<p>Check for equality. Note that this will be a "strict" comparison, equivalent
+to JavaScript's triple-equals <code>===</code> operator.  The syntax variants
+<code>==</code> and <code>is</code> are aliases of each other.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if state.somevar == "x" %}
+        This appears if variable somevar equals the string "x"
+    {% endif %}
+</template>
+
+<state
+  somevar="x"
+></state>
+'></mws-Demo>
 
 
 
+<h4><code>!=</code>, <code>is not</code> (operator)</h4>
 
+<p>Check for inequality. Note that this will be a "strict" comparison, equivalent to
+JavaScript's triple-not-equals <code>!==</code> operator. The syntax variants
+<code>!==</code> and <code>is not</code> are aliases of each other.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if state.somevar != "x" %}
+        This appears if variable state.somevar does not equal the string "x".
+    {% endif %}
+</template>
+
+<state
+  somevar="y"
+></state>
+'></mws-Demo>
+
+
+<h4><code>not</code> (operator)</h4>
+
+<p>You can use "not" to invert or negate an "if" tag:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if not state.show %}
+        Do not show it!
+    {% else %}
+        Show it!
+    {% endif %}
+</template>
+
+<state
+  show:=false
+></state>
+'></mws-Demo>
+
+
+<h4><code>lt</code>, <code>&lt;</code>, <code>&lt;=</code> (operators)</h4>
+
+<p>Less than. Has a few variants: <code>lt</code> and <code>&lt;</code> will
+check to see if a variable is strictly less than a given variable or value,
+while <code>&lt;=</code> will be "less than or equal to" and thus also allow it
+if its equal.  Example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if state.somevar lt 100 %}
+        This appears if variable somevar is less than 100.
+    {% endif %}
+</template>
+
+<state
+  somevar:=50
+></state>
+'></mws-Demo>
+
+
+
+<h4><code>gt</code>, <code>&gt;</code>, <code>&gt;=</code> (operators)</h4>
+
+<p>Greater than. Has a few variants: <code>gt</code> and <code>&gt;</code> will
+check to see if a variable is strictly greater than a given variable or value,
+while <code>&gt;=</code> will be "greater than or equal to" and thus also allow
+it if its equal.  Example:</p>
+
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if state.somevar gt 100 %}
+        This appears if variable somevar is greater than 100.
+    {% endif %}
+</template>
+
+<state
+  somevar:=2600
+></state>
+'></mws-Demo>
+
+
+<h4><code>in</code>, <code>not in</code> (operators)</h4>
+
+<p>Contained within. Unlike the built-in JavaScript operator "in" which is only
+supported by Objects, this operator supports Strings, Arrays, and Objects as
+the "container" types being checked. In all cases, it will test whether the
+given value is within the given container.  The <code>not in</code> operator
+does what you might expect: The exact opposite of the <code>in</code> operator.
+The following are some examples of how the <code>in</code> operator will be
+interpreted in different contexts:</p>
+
+
+
+<mws-Demo demotype="minipreview"
+ttitle="String"
+text='
+<template>
+    {% if "B.C.E." in state.era %}
+        This appears since "B.C.E." is a substring of "{{ state.era }}"
+    {% endif %}
+</template>
+
+<state
+  era="3rd Century B.C.E. (Macedonia)"
+></state>
+'
+
+ttitle2="Array"
+text2='
+<template>
+    {% if state.word in state.greetings %}
+        "{{ state.word }}" was found in: {{ state.greetings|join:", " }}
+    {% endif %}
+</template>
+
+<state
+  word="hello"
+  greetings:=&apos;[
+    "hallo",
+    "hello",
+    "hola",
+    "óla"
+  ]&apos;
+></state>'
+
+ttitle3="Object"
+text3='
+<template>
+    {% if "author" in state.article %}
+        Author was specified: {{ state.article.author }}
+    {% endif %}
+</template>
+
+<state
+  article:=&apos;{
+    "author": "Albert Einstein",
+    "year": 1949,
+    "month": "May",
+    "publication": "Monthly Review",
+    "title": "Why Socialism?"
+  }&apos;
+></state>
+'></mws-Demo>
+
+<p>Note that in these examples, some use hardcoded strings in places (e.g.
+<code>"B.C.E"</code>), while others use variables in the same place (e.g.
+<code>state.word</code>). As with every if-statement operator, you can either
+hardcoded values and variables are interchangeable.</p>
+
+<h4>Filters</h4>
+
+<p>You can also use filters in combination with operators within an if tag. For
+example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {% if state.athletes|length gt 2 %}
+        <p>There are more than 2 athletes!</p>
+    {% endif %}
+</template>
+
+<state
+    athletes:=&apos;[
+        {"name": "Devante Adams"},
+        {"name": "Steph Curry"},
+        {"name": "Megan Rapinoe"}
+    ]&apos;
+></state>
+'></mws-Demo>
+
+
+<mws-Section name="script">Built-in Template Filters</mws-Section>
 
 
 </x-Page>

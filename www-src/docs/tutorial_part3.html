@@ -154,7 +154,13 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
 
 
 
-<h3>Types of state data</h3>
+<mws-Section name="state">2. Directives</mws-Section>
+
+<p>We'll get to more practice with the <em>State</em> CPart in a moment, but
+first we need to take a little detour and learn about a few important built-in
+Modulo directives.</p>
+
+<h3>Data prop directive (:=)</h3>
 
 <blockquote> <p><strong>Why don't we use "strings" for numbers?</strong> Using
 strings of digits (e.g. in quotes) instead of the numbers themselves means that
@@ -175,19 +181,28 @@ do the following:</p>
     color="blue"
 &gt;&lt;/state&gt;</pre>
 
-<p>This is called a <em>data prop</em>. The <em>data prop</em> is technically a
-type of attribute <em>directive</em>, which refers to special instructions that
-are embedded within attribute names. In the case of <em>data prop</em>
-(<code>:=</code>), we suffix the attribute name with a colon right before the
-equal, like this: <code>attributeName:=value</code>.</p>
+<p>This is called a <em>data prop</em>. The <em>data prop</em> is a type of
+attribute <em>directive</em>, which refers to special instructions that are
+embedded within attribute names. You can recognize <em>directives</em> by their
+having certain characters. In the case of the <em>data prop</em> directive
+(<code>:=</code>), the attribute name is suffixed with a colon right before the
+equal sign , resulting in a  <em>directive</em> the attribute name with a colon
+right before the equal, like this: <code>attributeName:=value</code>.</p>
 
-<p>Let's take a look at another directive next: <code>[state.bind]</code></p>
+<p>All directives are "provided" by a CPart. That is, including CParts in your
+component definition may "enable" more directives in your HTML. Data-prop is a
+built-in feature of <em>Components</em>, which means it's always available.
+To learn more, including how to author your own directives, <a
+href="/docs/directives.html">see the section on <em>Lifecycle &
+Directives</em></a>. However, most component developers will have no need to
+use directives outside of the built-in directives that come with Modulo, one
+of which we'll explore next: <code>[state.bind]</code></p>
 
 
-<h3>Binding state data with [state.bind]</h3>
+<h3>Binding state data with [state.bind] directive</h3>
 
 
-<blockquote> <p><strong>State and predictability</strong>
+<blockquote><p><strong>State and predictability</strong>
 The purpose of <em>State</em> is to separate out everything that changes
 about a component into it's an isolated data structure. It should be the case
 that for a well-written component, if anything changes visually, that "visual"
@@ -200,15 +215,17 @@ way every time.</p></blockquote>
 
 
 <p>State comes with a directive that helps "bind" it to form data.  What does
-this mean? The most common thing to change about components are form inputs: As
-people type new characters appear, thus representing a visual change, and thus
-also needing a state change to keep that predictable structure. The
-<code>[state.bind]</code> directive should be attached to each
-<code>&lt;input&gt;</code> and "syncs up" the input with the state after every
-keystroke. The binding is "two-way" or goes in both directions: The input gets
-the initial state value, and if the state ever changes, the input will be
-updated to reflect that, and if the input ever changes, the state gets
-updated.</p>
+this mean? You can attach a <code>[state.bind]</code> directive to any
+<code>&lt;input&gt;</code>, and the <em>State</em> CPart will "sync up" the
+input with the state after every keystroke. The binding is "two-way", or it
+goes in both directions: The input gets the initial state value, and if the
+state ever changes, the input will be updated to reflect that, and if the input
+ever changes, the state gets updated..</p>
+
+<p>It's best practice to bind all of your form inputs that are in components to
+state variables. This is because in order to get the benefits of separating out
+state, <em>all</em> visual changes, including something as simple as typing a
+single character in an input, should be reflected in state changes.</p>
 
 <p>To bind an input to state, use something like the following:</p>
 
@@ -221,7 +238,8 @@ updated.</p>
 
 
 <p>It's important that you always include a "name" attribute when binding. This
-is the variable that state will keep in sync with that input.</p>
+should contain the name of the <em>State</em> variable to be kept in sync with
+that input.</p>
 
 
 
@@ -237,9 +255,6 @@ is the variable that state will keep in sync with that input.</p>
         <em>Part 1</em> of this tutorial)</p>
     </ol>
 
-    <!-- TODO: Can do "validation"
-         template with filters -->
-
     <mws-Demo
         demotype="minipreview"
         fromlibrary="Tutorial_P3_state_bind"
@@ -248,27 +263,29 @@ is the variable that state will keep in sync with that input.</p>
 </section>
 
 
+<h3>Final notes on directives</h3>
 
-<h3>Final notes on data props & state</h3>
-
-<p>Finally, a few things to note about <em>data props</em>:</p>
 
 <ol>
-    <li>Note that <em>data props</em> are not the same as the <em>Props</em>
-    CPart.  They are, however, related, in that the <em>Props</em> CPart looks
-    for both regular attributes and data props: You can in fact set any
-    <em>Props</em> attributes with the <code>:=</code> syntax.</li>
+    <li>If you are still scratching your head over the use of
+    <code>[state.bind]</code> but are familiar with vanilla JS, it's
+    all about reducing the need to "manually reach" into the DOM. It
+    simplifies code like this <code>var inputData =
+    document.getElementsByName('myinput')[0].value</code> (or the similar
+    <code>$('[name=myinput]').val()</code> in jQuery), with more readable code
+    like <code>state.myinput</code>, and similarly untangles code for
+    validation, API requests, etc.</li>
 
-    <li>The state data is a JavaScript object, and thus can store anything that
-    JavaScript can store. While there is no technical limitations on what can
-    be stored in state, it is recommended you keep it to simple JSON-style data
-    types: Strings, Numbers, true/false/null, along with Objects and Arrays
-    that combine the above types. Initial values must only be JSON-supported
-    types.</li>
+    <li>Keep in mind that <em>data props</em> are not the same as the
+    <em>Props</em> CPart.  They are, however, related, in that the
+    <em>Props</em> CPart looks for both regular attributes and data props: You
+    can in fact set any <em>Props</em> attributes with the <code>:=</code>
+    syntax for direct data assignment.</li>
 
-    <li>Technically, <em>data props</em> can have double quotes just like
-    normal String-based attributes. However, as a stylistic convention, you may
-    omit the double quotes for any one-word value. For complex types, such as
+    <li><em>Data props</em> support any JSON literal type. Technically,
+    <em>data props</em> values can have double quotes just like normal
+    String-based attributes. However, as a stylistic convention, you may omit
+    the double quotes for any one-word value, and for complex types, such as
     JSON-formatted Arrays or Objects, use single quotes. See below for
     stylistic examples of data props with different types:
 
@@ -291,15 +308,14 @@ text='
 ></state>
 '
 ></mws-Demo>
-
 </li>
 
 
+<mws-Section name="script">3. Script</mws-Section>
 
-<pre>&lt;state
-    count="1"
-    color="blue"
-&gt;&lt;/state&gt;</pre>
+
+<p>To be continued!</p>
+
 
 
 

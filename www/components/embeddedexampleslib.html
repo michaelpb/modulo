@@ -265,7 +265,7 @@ to {{ state.count }} {{ state.noun }}s.
     <test>
         <template>
             <p>Nonsense poem:</p>
-            <pre> Professor Toot who tooted a kazoo, taught tooting in the City
+            <pre>Professor Toot who tooted a kazoo, taught tooting in the City
             of Kazoo, to two kazoos. </pre>
         </template>
     </test>
@@ -287,7 +287,7 @@ to {{ state.count }} {{ state.noun }}s.
 
     <h5 style="
             opacity: {{ state.opacity }};
-            color: {{ state.color|allow:"green,blue"|default:"red" }};
+            color: {{ state.color|allow:'green,blue'|default:'red' }};
         ">
         {{ state.username|lower }}
     </h5>
@@ -301,24 +301,9 @@ to {{ state.count }} {{ state.noun }}s.
     username="Testing_Username"
 ></state>
 
-<testsuite>
-    <test>
-        <template name="Ensure state from search box renders" test-values>
-            <input [state.bind] name="username" value="michaelpb" />
-            <label>Color: <input [state.bind] name="color" value="blue" />
-                (valid options "green" or "blue")</label>
-            <input [state.bind]
-                name="opacity"
-                type="number" min="0" max="1" step="0.1" />
-            <h4 style="
-                    opacity: {{ state.opacity }};
-                    color: {{ state.color|allow:"green,blue"|default:"red" }};
-                ">
-                {{ state.username|lower }}
-            </h4>
-        </template>
-    </test>
-</testsuite>
+<testsuite
+    src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
+></testsuite>
 
 </component>
 
@@ -332,6 +317,7 @@ to {{ state.count }} {{ state.noun }}s.
 
 <!-- The remaining components are only being used for adding more tests for
 examples to the Modulo framework, not as a examples themselves -->
+<!-- TODO: Remove, and move to tests/ -->
 <component name="TestBtn">
     <props
         myclicky

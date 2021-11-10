@@ -1,4 +1,4 @@
-// modulo build 1v3igne
+// modulo build -1bhbc6p
 'use strict';
 
 // # Introduction
@@ -1094,6 +1094,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         escapejs: s => JSON.stringify(s),
         first: s => s[0],
         last: s => s[s.length - 1],
+        reversed: s => Array.from(s).reverse(),
         length: s => s.length,
         //trim: s => s.trim(), // TODO: improve interface to be more useful
         join: (s, arg) => s.join(arg),
@@ -2516,7 +2517,7 @@ h3 {
 
 `,// (ends: /components/examplelib.html) 
 
-  "/components/embeddedexampleslib.html": // (382 lines)
+  "/components/embeddedexampleslib.html": // (368 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
@@ -2784,7 +2785,7 @@ to {{ state.count }} {{ state.noun }}s.
     <test>
         <template>
             <p>Nonsense poem:</p>
-            <pre> Professor Toot who tooted a kazoo, taught tooting in the City
+            <pre>Professor Toot who tooted a kazoo, taught tooting in the City
             of Kazoo, to two kazoos. </pre>
         </template>
     </test>
@@ -2806,7 +2807,7 @@ to {{ state.count }} {{ state.noun }}s.
 
     <h5 style="
             opacity: {{ state.opacity }};
-            color: {{ state.color|allow:"green,blue"|default:"red" }};
+            color: {{ state.color|allow:'green,blue'|default:'red' }};
         ">
         {{ state.username|lower }}
     </h5>
@@ -2820,24 +2821,9 @@ to {{ state.count }} {{ state.noun }}s.
     username="Testing_Username"
 ></state>
 
-<testsuite>
-    <test>
-        <template name="Ensure state from search box renders" test-values>
-            <input [state.bind] name="username" value="michaelpb" />
-            <label>Color: <input [state.bind] name="color" value="blue" />
-                (valid options "green" or "blue")</label>
-            <input [state.bind]
-                name="opacity"
-                type="number" min="0" max="1" step="0.1" />
-            <h4 style="
-                    opacity: {{ state.opacity }};
-                    color: {{ state.color|allow:"green,blue"|default:"red" }};
-                ">
-                {{ state.username|lower }}
-            </h4>
-        </template>
-    </test>
-</testsuite>
+<testsuite
+    src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
+></testsuite>
 
 </component>
 
@@ -2851,6 +2837,7 @@ to {{ state.count }} {{ state.noun }}s.
 
 <!-- The remaining components are only being used for adding more tests for
 examples to the Modulo framework, not as a examples themselves -->
+<!-- TODO: Remove, and move to tests/ -->
 <component name="TestBtn">
     <props
         myclicky
@@ -2900,7 +2887,7 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/embeddedexampleslib.html) 
 
-  "/components/modulowebsite.html": // (479 lines)
+  "/components/modulowebsite.html": // (485 lines)
 `<component name="Section">
     <props
         name
@@ -2937,8 +2924,14 @@ examples to the Modulo framework, not as a examples themselves -->
 
 
 <component name="Demo">
+    <!-- TODO: Refactor the following to take variable length props instead of 2, 3, etc-->
     <props
         text
+        text2
+        text3
+        ttitle
+        ttitle2
+        ttitle3
         demotype
         fromlibrary
     ></props>
@@ -3049,9 +3042,9 @@ examples to the Modulo framework, not as a examples themselves -->
             label: 'Tutorial',
             filename: '/docs/tutorial_part1.html',
             children: [
-                _child('Part 1: Components, CParts, Loaders', '/docs/tutorial_part1.html', ['cdn', 'module-embed']),
-                _child('Part 2: Props and Templating', '/docs/tutorial_part2.html', ['cparts', 'props', 'basic templating']),
-                _child('Part 3: State and Script', '/docs/tutorial_part3.html', ['state', 'basic scripting']),
+                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
+                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
+                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
             ],
         },
 
@@ -3117,8 +3110,8 @@ examples to the Modulo framework, not as a examples themselves -->
             label: 'Template Reference',
             filename: '/docs/templating-reference.html',
             children: [
-                _child('Built-in Filters', 'filters'),
                 _child('Built-in Template Tags', 'tags'),
+                _child('Built-in Filters', 'filters'),
                 _child('Custom Filters', 'customfilters'),
                 _child('Custom Template Tags', 'customtags'),
             ],
@@ -3572,45 +3565,6 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/API-tests.html) 
 
-  "/components/examplelib-tests/PrimeSieve-tests.html": // (37 lines)
-`<test name="renders with search data">
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" whole ">2</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" number whole ">64</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" ">3</div>
-    </template>
-
-    <script>
-        // 20 is effectively 21 (since starts at 2)
-        event: mouseover div:nth-child(20)
-    </script>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" whole ">3</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" whole ">7</div>
-    </template>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" number whole ">21</div>
-    </template>
-
-    <script>
-        // 46 is effectively 47 (since starts at 2)
-        event: mouseover div:nth-child(46)
-    </script>
-    <template name="Ensure substrings of render" string-count=1>
-        <div @mouseover:="script.setNum" class=" number whole ">47</div>
-    </template>
-
-    <template name="Ensure only one whole number (since prime)"
-        string-count=1>whole</template>
-</test>
-`,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
-
   "/components/examplelib-tests/SearchBox-tests.html": // (119 lines)
 `<test name="Renders based on state">
     <template name="Ensure initial render is correct" test-values>
@@ -3731,6 +3685,45 @@ examples to the Modulo framework, not as a examples themselves -->
 
 
 `,// (ends: /components/examplelib-tests/SearchBox-tests.html) 
+
+  "/components/examplelib-tests/PrimeSieve-tests.html": // (37 lines)
+`<test name="renders with search data">
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" whole ">2</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" number whole ">64</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" ">3</div>
+    </template>
+
+    <script>
+        // 20 is effectively 21 (since starts at 2)
+        event: mouseover div:nth-child(20)
+    </script>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" whole ">3</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" whole ">7</div>
+    </template>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" number whole ">21</div>
+    </template>
+
+    <script>
+        // 46 is effectively 47 (since starts at 2)
+        event: mouseover div:nth-child(46)
+    </script>
+    <template name="Ensure substrings of render" string-count=1>
+        <div @mouseover:="script.setNum" class=" number whole ">47</div>
+    </template>
+
+    <template name="Ensure only one whole number (since prime)"
+        string-count=1>whole</template>
+</test>
+`,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
 
   "/components/examplelib-tests/MemoryGame-tests.html": // (152 lines)
 `<test name="starts a game">
@@ -3886,6 +3879,69 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
 
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
+
+  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (47 lines)
+`<test name="Behaves as expected">
+    <template name="Ensure initial inputs are bound so render is as expected" test-values>
+        <div>
+            <input [state.bind] name="username" value="Testing_Username" />
+            <label>Color: <input [state.bind] name="color" value="blue" />
+                (valid options "green" or "blue")</label>
+            <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" />
+            <h5 style="
+                    opacity: 0.5;
+                    color: blue;
+                ">
+                testing_username
+            </h5>
+        </div>
+    </template>
+
+    <script>
+        element.querySelector('input[name="username"]').value = 'tEsT2'
+        event: keyup input[name="username"]
+    </script>
+
+    <script>
+        element.querySelector('input[name="color"]').value = 'green'
+        event: keyup input[name="color"]
+    </script>
+
+    <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
+        <div>
+            <input [state.bind] name="username" value="tEsT2" />
+            <label>Color: <input [state.bind] name="color" value="green" />
+                (valid options "green" or "blue")</label>
+            <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" />
+            <h5 style="
+                    opacity: 0.5;
+                    color: green;
+                ">
+                test2
+            </h5>
+        </div>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
+
   "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
 `
 <!-- Due to bug with the test runner or testing framework, including this
@@ -4031,21 +4087,7 @@ test will cause other tests to fail, but running it separately it succeeds. -->
 
 `,// (ends: /components/modulowebsite/demo.html) 
 
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
-  "/components/modulowebsite/demo.js": // (263 lines)
+  "/components/modulowebsite/demo.js": // (275 lines)
 `let componentTexts = null;
 let componentTexts2 = null;
 let exCounter = 0; // global variable
@@ -4179,8 +4221,20 @@ function initializedCallback({ el }) {
             }
         }
     } else if (props.text) {
+        let title = props.ttitle || 'Example';
         text = props.text.trim();
-        state.tabs.push({title: 'Example', text});
+        state.tabs.push({title, text});
+        // hack -v
+        if (props.text2) {
+            title = props.ttitle2 || 'Example';
+            text = props.text2.trim();
+            state.tabs.push({title, text});
+        }
+        if (props.text3) {
+            title = props.ttitle3 || 'Example';
+            text = props.text3.trim();
+            state.tabs.push({title, text});
+        }
     }
 
     const demoType = props.demotype || 'snippet';
