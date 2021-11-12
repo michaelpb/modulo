@@ -8,10 +8,10 @@
 
 
 <p>Modulo's templating language comes with a standard library of filters and
-template-tags, modeled closely on the behavior of Django's templating language
-library. Although Django's has considerably more features, some Django
+template-tags, modeled to be similar to the behavior of Django's templating language
+library. Although in general Django's has more features, some Django
 templates will work as Modulo templates without modification (just include it
-with "src="!). In fact, there's such large overlap that much of this very
+with "src="!). In fact, there's such large overlap that some of this very
 documentation was <a
 href="https://docs.djangoproject.com/en/3.2/ref/templates/language/">copied and
 arranged just like Django's own</a>, to be instantly more familiar to
@@ -438,6 +438,158 @@ text='
 
 
 <mws-Section name="script">Built-in Template Filters</mws-Section>
+
+
+<h4>add</h4>
+
+<p>Adds the argument to the value. Example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {{ state.value|add:7 }} hacks <br />
+    {{ state.value|add:state.another }} hz
+</template>
+
+<state
+    value:=1330
+    another:=1270
+></state>
+'></mws-Demo>
+
+
+
+
+<h4>allow</h4>
+
+<blockquote><p><strong>Input validation?</strong> It's not recommended to use
+this for security (do in backend instead) or for front-end validation of user
+inputs (use <code>pattern=</code> instead).</p></blockquote>
+
+<p>Given an "allowed list" of comma separated strings, only permit values that
+exist exactly the "allowed list". If the value does not exist within the
+allowed list, it will produce an empty string (<code>""</code>).
+The fact that empty strings are "falsy" means you can chain together this
+filter with the default filter in order to provide a fallback as well, which is
+demonstrated in the third example. Examples:</p>
+
+<br style="clear: both" />
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    Valid: {{ state.value|allow:"orange,apple,pear" }} <br />
+    Invalid: {{ state.value|allow:"a,b,c" }} <br />
+    Invalid + default: {{ state.value|allow:"a,b,c"|default:"Oops!" }}
+</template>
+
+<state
+    value="apple"
+></state>
+'></mws-Demo>
+
+
+
+
+<h4>capfirst</h4>
+
+
+<p>Output given string with the first letter capitalized.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    The {{ state.value|capfirst }} framework is my favorite
+</template>
+
+<state
+    value="modulo.js"
+></state>
+'></mws-Demo>
+
+
+<h4>default</h4>
+
+<p>If the given value is <a
+href="https://developer.mozilla.org/en-US/docs/Glossary/Falsy">Falsy</a>, use
+the given default. Otherwise, use the value.</p>
+
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    Fave snack: {{ state.snack|default:"icecream" }} <br />
+    Snack count: {{ state.count|default:"none" }} <br />
+    Fave soda: {{ state.soda|default:"Cola" }}
+</template>
+<state
+    snack=""
+    count:=0
+    soda="guarana"
+></state>
+'></mws-Demo>
+
+
+
+<h4>divisibleby</h4>
+
+<p>Returns <code>true</code> if the value is evenly divisible by the given argument.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    Can {{ state.value }} divide by 3? <br />
+    {{ state.value|divisibleby:3 }} <br />
+    {% if state.value|divisibleby:2 %}
+        {{ state.value }} is even
+    {% endif %}
+</template>
+<state
+    value:=4
+></state>
+'></mws-Demo>
+
+
+<h4>escapejs</h4>
+
+<p>Escape special characters in a given string using JavaScript (specifically,
+JSON) escaping rules. If you have a string like <code>"Hello\nWorld!"</code>
+(where <code>\n</code> is a single new-line character), it will output
+<code>Hello\nWorld!</code> (that is, as "backslash-n" or two characters).  Note
+that this is unrelated to the
+<a href="/docs/templating.html#escaping">HTML autoescaping</a>, meaning you may
+need to mark as <code>|safe</code> if do not want it turning <code>&lt;</code>
+into <code>&amp;lt;</code>, etc. as well.
+JSON if it were to be surrounded with double quotes were</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    Result: {{ state.value|escapejs }} <br />
+</template>
+
+<state
+    value="Just
+trying
+stuff
+out"
+></state>
+'></mws-Demo>
+
+1104         first: s => s[0],
+1105         join: (s, arg) => s.join(arg),
+1106         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
+1107         last: s => s[s.length - 1],
+1108         length: s => s.length,
+1109         lower: s => s.toLowerCase(),
+1110         number: (s) => Number(s),
+1111         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+1112         subtract: (s, arg) => s - arg,
+1113         truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
+1114         renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
+1115         reversed: s => Array.from(s).reverse(),
+1116         upper: s => s.toUpperCase(),
+
 
 
 </x-Page>

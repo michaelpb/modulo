@@ -1,3 +1,9 @@
+# Misc notes:
+
+- Right now, manually setting which one CPart is active is effectively creatinq
+  a new type of state
+- We want some way to "choose" or bind based on actual state
+- "static getCurrentCPartCallback" could be a solution to cpart spares
 
 # Next refactor:
 

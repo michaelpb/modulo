@@ -231,6 +231,7 @@ class ModuloNode {
         if (this.fetchPrefix) {
             src = this.fetchPrefix + '/' + src;
         }
+        console.log('this is src', src);
         return new Promise((resolve, reject) => {
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {
@@ -267,7 +268,7 @@ class ModuloNode {
             // support either text or json modes
             const text = () => readFilePromise(false);
             const json = () => readFilePromise(true);
-            resolve({text, json});
+            resolve({ text, json });
         });
     }
 

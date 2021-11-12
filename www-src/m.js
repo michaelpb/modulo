@@ -1,4 +1,4 @@
-// modulo build -1bhbc6p
+// modulo build -n8om5m
 'use strict';
 
 // # Introduction
@@ -369,7 +369,6 @@ Modulo.ComponentFactory = class ComponentFactory {
         Modulo.factoryInstances[instance.fullName] = instance;
 
         const lcName = instance.name.toLowerCase();
-        console.log('registering', lcName);
         if (instance.isModule) {
             // TODO: Dead-ish feature: not Sure how useful this is, or if only
             // "local" modules are typically used. Ideally this should be based
@@ -952,7 +951,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
-        this.opAliases['not in'] = `!(${this.opAliases['in']})`;
+        // this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.renderFunc = this.compile(text);
     }
 
@@ -987,7 +986,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         // TODO: Store a list of variables / paths, so there can be warnings or
         // errors when variables are unspecified
         const filters = text.split('|');
-        let results = this.parseVal(filters.shift());
+        let results = this.parseVal(filters.shift()); // Get left-most val
         for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
             const argList = arg ? ',' + this.parseVal(arg) : '';
             results = `G.filters["${fName}"](${results}${argList})`;
@@ -1037,7 +1036,10 @@ Modulo.templating.defaultOptions = {
         //'and': 'X && Y',
         //'or': 'X || Y',
         'not': '!(Y)',
-        'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
+        // TODO:  Fix this, this is actually broken
+        //'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
+        'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
+        'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
     },
 };
 
@@ -1087,38 +1089,40 @@ Modulo.templating.defaultOptions.filters = (function () {
     }
     const safe = s => Object.assign(new String(s), {safe: true});
 
+    //trim: s => s.trim(), // TODO: improve interface to be more useful
+    //invoke: (s, arg) => s(arg),
+    //getAttribute: (s, arg) => s.getAttribute(arg),
+    //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+    // {% for rowData in table %}
+    //    {{ rowData|renderas:template.row }}
+    // {% endfor %}
+    // Idea: Generalized "matches" filter that gets registered like such:
+    //     defaultOptions.filters.matches = {name: //ig}
+    // Then we could configure "named" RegExps in Script that get used in
+    // template
+
     const filters = {
-        upper: s => s.toUpperCase(),
-        lower: s => s.toLowerCase(),
+        add: (s, arg) => s + arg,
+        // color|allow:"red,blue"|default:"blue"
+        allow: (s, arg) => arg.split(',').includes(s) ? s : '',
         capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
-        escapejs: s => JSON.stringify(s),
+        concat: (s, arg) => s.concat ? s.concat(arg) : s + arg,
+        default: (s, arg) => s || arg,
+        divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+        escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
-        last: s => s[s.length - 1],
-        reversed: s => Array.from(s).reverse(),
-        length: s => s.length,
-        //trim: s => s.trim(), // TODO: improve interface to be more useful
         join: (s, arg) => s.join(arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
-        pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
-        allow: (s, arg) => arg.split(',').includes(s) ? s : '', // color|allow:"red,blue"|default:"blue"
-        add: (s, arg) => s + arg,
-        subtract: (s, arg) => s - arg,
-        default: (s, arg) => s || arg,
+        last: s => s[s.length - 1],
+        length: s => s.length,
+        lower: s => s.toLowerCase(),
         number: (s) => Number(s),
-        //invoke: (s, arg) => s(arg),
-        //getAttribute: (s, arg) => s.getAttribute(arg),
-        includes: (s, arg) => s.includes(arg),
-        truncate: (s, arg) => ((s.length > arg*1) ?
-                                (s.substr(0, arg-1) + '…') : s),
-        divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
-        //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
-        // {% for rowData in table %}
-        //    {{ rowData|renderas:template.row }}
-        // {% endfor %}
-
-        //Object.assign(new String(
-        //                ), {safe: true}),
+        pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        subtract: (s, arg) => s - arg,
+        truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
         renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
+        reversed: s => Array.from(s).reverse(),
+        upper: s => s.toUpperCase(),
     };
     return Object.assign(filters, { get, jsobj, safe });
 })();
@@ -1728,8 +1732,8 @@ Modulo.defineAll();
 Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
 {% for path in preload %}
 //  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
-Modulo.globalLoader.loadString(Modulo.fetchQ.data[{{ path|escapejs|safe }}],
-                               {{ path|escapejs|safe }});
+Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
+                               "{{ path|escapejs|safe }}");
 {% endfor %}`);
 
 Modulo.CommandMenu = class CommandMenu {
@@ -1895,7 +1899,7 @@ Modulo.fetchQ.data = {
 
 `,// (ends: /components/layouts.html) 
 
-  "/components/examplelib.html": // (620 lines)
+  "/components/examplelib.html": // (622 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
@@ -1943,7 +1947,8 @@ Modulo.fetchQ.data = {
 <template>
     <button @click:=script.countUp>Hello {{ state.num }}</button>
 </template>
-<state num:=42
+<state
+    num:=42
 ></state>
 <script>
     function countUp() {
@@ -1963,19 +1968,20 @@ Modulo.fetchQ.data = {
 <component name="Simple">
 
 <template>
-    Components can use <strong>any</strong> number
-    of <em title="Component Parts">CParts</em>.
+    Components can use any number of <strong>CParts</strong>.
+    Here we use only <em>Style</em> and <em>Template</em>.
 </template>
+
 <style>
-    em { color: darkblue; }
+    em { color: darkgreen; }
     * { text-decoration: underline; }
 </style>
 
 <testsuite>
     <test name="Initially renders">
         <template>
-            Components can use <strong>any</strong> number
-            of <em title="Component Parts">CParts</em>.
+            Components can use any number of <strong>CParts</strong>.
+            Here we use only <em>Style</em> and <em>Template</em>.
         </template>
     </test>
 </testsuite>
@@ -2287,7 +2293,7 @@ div.whole ~ div.number::after { opacity: 0; }
         {# Use "key=" to speed up DOM reconciler #}
         <div key="c{{ card.id }}"
             class="card
-            {% if state.revealed|includes:card.id %}
+            {% if card.id in state.revealed %}
                 flipped
             {% endif %}
             "
@@ -2299,7 +2305,7 @@ div.whole ~ div.number::after { opacity: 0; }
             "
             @click:=script.flip
             click.payload="{{ card.id }}">
-            {% if state.revealed|includes:card.id %}
+            {% if card.id in state.revealed %}
                 {{ card.symbol }}
             {% endif %}
         </div>
@@ -4635,6 +4641,6 @@ element.previewSpot.appendChild(component);
 
 };
 
-//  Preloading page: "/components/layouts.html" 
+//  Preloading page: /components/layouts.html 
 Modulo.globalLoader.loadString(Modulo.fetchQ.data["/components/layouts.html"],
                                "/components/layouts.html");

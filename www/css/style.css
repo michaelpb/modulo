@@ -415,13 +415,21 @@ a:visited {
     font-size: 1.3rem;
     margin-top: 10px;
 }
-.Main > h3 {
-    margin-top: 30px;
-}
 .Main h4 {
     font-weight: bold;
     font-size: 1.1rem;
     margin-top: 5px;
+}
+
+/* Adding some top margin for the top-level h3/h4s */
+.Main > * > h3 {
+    margin-top: 40px;
+}
+.Main > * > h4 {
+    margin-top: 20px;
+}
+.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {
+    margin-bottom: 60px;
 }
 
 .Main blockquote {

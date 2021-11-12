@@ -165,7 +165,7 @@ Modulo directives.</p>
 <blockquote> <p><strong>Why don't we use "strings" for numbers?</strong> Using
 strings of digits (e.g. in quotes) instead of the numbers themselves means that
 things like arithmetic won't work as intended. Example: If state variable
-<code>count="1"</code>, then <code>{{&nbsp;state.count|add:10&nbsp;}}</code>
+<code>count="1"</code>, then <code>state.count + 10</code>
 will result in <code>"110"</code> instead of the desired <code>11</code>, since
 it's a string of digits, so <code>"1" + "10" = "110"</code></p></blockquote>
 

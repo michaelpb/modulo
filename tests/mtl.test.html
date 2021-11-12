@@ -3,12 +3,8 @@
 <test name="ensure MTL is defined">
     <script>
         const { MTL } = Modulo.templating;
-        Modulo.makeTest = (templateText, context, expected) => {
-            const template = new MTL(templateText);
-            const result = template.render(context);
-            return result === expected;
-        };
-        Modulo._r = (templateText, context) => new MTL(templateText).render(context);
+        // Attach simple helper function used below
+        Modulo._r = (tText, context) => new MTL(tText).render(context);
         assert: MTL
     </script>
 </test>
@@ -197,7 +193,7 @@
     </script>
 
 
-    <script name="If operations">
+    <script name="If operators (1)">
         const template =    [
                 '{% if test == "tester" %}0{% endif %}',
                 '{% if test != "tester" %}a{% endif %}',
@@ -228,6 +224,83 @@
         assert: result === expected
     </script>
 
+    <script name="If operators (2) - in">
+        const context = {
+            varA: 'a',
+            var1: 1,
+            arr: ['a', 'b', 'c'],
+            arr2: [1], // try numeric types in arrays
+            obj: { 'a': 'b', 'c': 'd' },
+            str: 'abc',
+            str2: '1',
+        };
+        const template = (`
+            {% if "a" in arr %}A{% endif %}
+            {% if varA in arr %}B{% endif %}
+            {% if var1 in arr2 %}C{% endif %}
+            {% if "c" in arr %}D{% endif %}
+            {% if var1 in arr %}(err1){% endif %}
+            {% if var1 in obj %}(err2){% endif %}
+            {% if varA in arr2 %}(err3){% endif %}
+            {% if 'a' in arr2 %}(err4){% endif %}
+            {% if 'd' in arr %}(err5){% endif %}
+
+            {% if "c" in obj %}E{% endif %}
+            {% if varA in obj %}F{% endif %}
+            {% if "b" in obj %}(err6){% endif %}
+            {% if var1 in obj %}(err7){% endif %}
+            {% if "d" in obj %}(err8){% endif %}
+
+            {% if "c" in str %}H{% endif %}
+            {% if varA in str %}I{% endif %}
+            {% if var1 in str %}(err9){% endif %}
+            {% if var1 in str2 %}J{% endif %}
+        `).replace(/[\s\n\r]+/g, ' ')
+        const expected = 'A B C D E F H I J';
+        let result = Modulo._r(template, context).trim().replace(/\s+/g, ' ');
+
+        assert: result === expected
+    </script>
+
+
+    <script name="If operators (3) - not in">
+        // Same as previous test, only flipped
+        const context = {
+            varA: 'a',
+            var1: 1,
+            arr: ['a', 'b', 'c'],
+            arr2: [1],
+            obj: { 'a': 'b', 'c': 'd' },
+            str: 'abc',
+            str2: '1',
+        };
+        const template = (`
+            {% if "a" not in arr %}(e1){% endif %}
+            {% if varA not in arr %}(e2){% endif %}
+            {% if var1 not in arr2 %}(e3){% endif %}
+            {% if "c" not in arr %}(e4){% endif %}
+            {% if var1 not in arr %}A{% endif %}
+            {% if var1 not in obj %}B{% endif %}
+            {% if varA not in arr2 %}C{% endif %}
+            {% if 'a' not in arr2 %}D{% endif %}
+            {% if 'd' not in arr %}E{% endif %}
+
+            {% if "c" not in obj %}(e5){% endif %}
+            {% if varA not in obj %}(e6){% endif %}
+            {% if "b" not in obj %}F{% endif %}
+            {% if var1 not in obj %}H{% endif %}
+            {% if "d" not in obj %}I{% endif %}
+
+            {% if "c" not in str %}(e7){% endif %}
+            {% if varA not in str %}(e8){% endif %}
+            {% if var1 not in str %}J{% endif %}
+            {% if var1 not in str2 %}(e9){% endif %}
+        `).replace(/[\s\n\r]+/g, ' ')
+        const expected = 'A B C D E F H I J';
+        let result = Modulo._r(template, context).trim().replace(/\s+/g, ' ');
+
+        assert: result === expected
+    </script>
 
     <script name="Single argument ifs">
         const template =    [
@@ -407,11 +480,20 @@
     </script>
 </test>
 
+<test name="Built-in operators">
+</test>
+
+
 <!--
 /*
 // TODO bug-ish: when variables have portions of things in them, or lead with
 // quoted reserved words. Need to "consume" as opposed to just blindly split
 test("Reserved word in quotes BREAKING",
+    Modulo.makeTest = (templateText, context, expected) => {
+        const template = new MTL(templateText);
+        const result = template.render(context);
+        return result === expected;
+    };
     makeTest([
         '{% if " is not " != "not in" %}0{% endif %}',
         '{% if is == "in" %}1{% endif %}',

@@ -45,7 +45,8 @@
 <template>
     <button @click:=script.countUp>Hello {{ state.num }}</button>
 </template>
-<state num:=42
+<state
+    num:=42
 ></state>
 <script>
     function countUp() {
@@ -65,19 +66,20 @@
 <component name="Simple">
 
 <template>
-    Components can use <strong>any</strong> number
-    of <em title="Component Parts">CParts</em>.
+    Components can use any number of <strong>CParts</strong>.
+    Here we use only <em>Style</em> and <em>Template</em>.
 </template>
+
 <style>
-    em { color: darkblue; }
+    em { color: darkgreen; }
     * { text-decoration: underline; }
 </style>
 
 <testsuite>
     <test name="Initially renders">
         <template>
-            Components can use <strong>any</strong> number
-            of <em title="Component Parts">CParts</em>.
+            Components can use any number of <strong>CParts</strong>.
+            Here we use only <em>Style</em> and <em>Template</em>.
         </template>
     </test>
 </testsuite>
@@ -389,7 +391,7 @@ div.whole ~ div.number::after { opacity: 0; }
         {# Use "key=" to speed up DOM reconciler #}
         <div key="c{{ card.id }}"
             class="card
-            {% if state.revealed|includes:card.id %}
+            {% if card.id in state.revealed %}
                 flipped
             {% endif %}
             "
@@ -401,7 +403,7 @@ div.whole ~ div.number::after { opacity: 0; }
             "
             @click:=script.flip
             click.payload="{{ card.id }}">
-            {% if state.revealed|includes:card.id %}
+            {% if card.id in state.revealed %}
                 {{ card.symbol }}
             {% endif %}
         </div>
