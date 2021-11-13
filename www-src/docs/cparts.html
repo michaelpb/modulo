@@ -59,7 +59,7 @@ text='
 <script>
     // swap: Set the active cpart by searching through the spare
     // array and selecting the one with a name matching payload:
-    function swap(ev, payload) {
+    function swap(payload) {
         element.cparts.template = element.cpartSpares.template
             .find(({attrs}) => attrs.name === payload);
     }

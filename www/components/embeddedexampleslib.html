@@ -278,12 +278,13 @@ to {{ state.count }} {{ state.noun }}s.
 <template>
 
 <div>
-    <input [state.bind] name="username" />
-    <label>Color: <input [state.bind] name="color" />
-        (valid options "green" or "blue")</label>
-    <input [state.bind]
+    <label>Username:
+        <input [state.bind] name="username" /></label>
+    <label>Color ("green" or "blue"):
+        <input [state.bind] name="color" /></label>
+    <label>Opacity: <input [state.bind]
         name="opacity"
-        type="number" min="0" max="1" step="0.1" />
+        type="number" min="0" max="1" step="0.1" /></label>
 
     <h5 style="
             opacity: {{ state.opacity }};

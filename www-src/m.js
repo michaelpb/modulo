@@ -1,22 +1,25 @@
-// modulo build -n8om5m
+// modulo build -lqiohl
 'use strict';
 
 // # Introduction
 // Welcome to the Modulo.js source code.
 
-// WIP: Unlike most code files, this one is arranged in a very deliberate way.
-// It's arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
+// ## Note
+// Earlier versions of Modulo.js's source code were written with literate
+// programming (an explanation is contained in the next comment paragraph).
+// Most of this documentation has been deleted, but will be rewritten once the
+// public API is settled. Until then, the code is riddled with TODO's: It's not
+// "literate" and aspires to much better comments, formatting, complexity, etc.
+
+// ## Literate
+// Unlike most code files, this one is arranged in a very deliberate way. It's
+// arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
 // component, such that the earlier and more important code is at the top, and
 // later and less important code is at the bottom. You can read it like a
 // linear "story" of how Modulo works. Modulo employs [literate
 // programming](https://en.wikipedia.org/wiki/Literate_programming), or
 // interweaving Markdown-formatted comments on to tell this story, and uses a
 // tool (docco) to extract all these comments for easy reading.
-
-// ## Code standards
-// - SLOC limit: 1000 lines
-// - Line limit: 80 chars
-// - Indentation: 4 spaces
 
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -2523,7 +2526,7 @@ h3 {
 
 `,// (ends: /components/examplelib.html) 
 
-  "/components/embeddedexampleslib.html": // (368 lines)
+  "/components/embeddedexampleslib.html": // (369 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
@@ -2804,12 +2807,13 @@ to {{ state.count }} {{ state.noun }}s.
 <template>
 
 <div>
-    <input [state.bind] name="username" />
-    <label>Color: <input [state.bind] name="color" />
-        (valid options "green" or "blue")</label>
-    <input [state.bind]
+    <label>Username:
+        <input [state.bind] name="username" /></label>
+    <label>Color ("green" or "blue"):
+        <input [state.bind] name="color" /></label>
+    <label>Opacity: <input [state.bind]
         name="opacity"
-        type="number" min="0" max="1" step="0.1" />
+        type="number" min="0" max="1" step="0.1" /></label>
 
     <h5 style="
             opacity: {{ state.opacity }};

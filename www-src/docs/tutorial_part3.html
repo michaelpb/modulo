@@ -132,19 +132,18 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
 
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>
-    <ol>
-        <li>Practice modifying the <strong>State</strong> CPart
-        (<code>&lt;state&gt;</code>) to see how that affects the
-        output. No need to mess with the template for now.</li>
-        <li>Practice incorporating these CParts into your own components on
-        a real page by copying the code here and pasting it within your
-        component definition (that is, the one that you created in the
-        <em>Part 1</em> of this tutorial)</p>
-    </ol>
-
     <!-- TODO: Add a better thing here, should be just a few basic "state"
          variables and rendering them in template with filters -->
 
+    <ol>
+        <li>Practice modifying the <strong>State</strong> CPart
+        (<code>&lt;state&gt;</code>) to see how that affects the output. No
+        need to mess with the template for now.</li>
+        <li>Practice incorporating these CParts into your own components on a
+        real page by copying the code here and pasting it within your component
+        definition (that is, the one that you created in the <em>Part 1</em> of
+        this tutorial)</li>
+    </ol>
     <mws-Demo
         demotype="minipreview"
         fromlibrary="Templating_1"
@@ -246,19 +245,41 @@ that input.</p>
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>
     <ol>
-        <li>Practice modifying the <strong>State</strong> CPart
-        (<code>&lt;state&gt;</code>) to see how that affects the
-        output. No need to mess with the template for now.</li>
-        <li>Practice incorporating these CParts into your own components on
-        a real page by copying the code here and pasting it within your
-        component definition (that is, the one that you created in the
-        <em>Part 1</em> of this tutorial)</p>
+        <li>Try modifying the "Username" input box in the preview below. Do you
+        see how it "quickly reacts" or re-renders the username text in
+        lower-case as you type?</li>
+        <li>Try also adjusting the "Opacity" input to see how it updates the
+        transparency of the text, and the "Color" input, which only supports
+        "blue" or "green" (anything else turns red).</li>
+        <li>Examine the code in the <em>Template</em> CPart. Examine each
+        input, and how it uses the <code>[state.bind]</code> directive to keep
+        it in-sync with state. The <code>name="username"</code>,
+        <code>name="color"</code>, and <code>name="opacity"</code> attributes
+        are what the State CPart uses to figure out which state variable should
+        be "linked".</li>
+        <li>Now, practice the link in "the other way": That is, see how
+        <em>State</em> populates the inputs' values. You can do this by
+        changing the initial values of <em>State</em> and then re-running the
+        program. See how by changing the initial values of <em>State</em> it
+        will also update the initial values of the linked inputs?</li>
     </ol>
+
 
     <mws-Demo
         demotype="minipreview"
         fromlibrary="Tutorial_P3_state_bind"
     ></mws-Demo>
+
+    <p>Clarification: The other attributes, (e.g. <code>name</code>, along with
+    <code>type</code>, <code>max</code>, <code>min</code>, and
+    <code>step</code>), are <em>not</em> Modulo directives, but are instead
+    plain HTML attributes. The State CPart reuses <code>name</code>, but will
+    ignore the others.</p>
+
+    <p><strong>Further practice:</strong> Practice incorporating these CParts
+    into your own components on a real page by copying the code here and
+    pasting it within your component definition (that is, the one that you
+    created in the <em>Part 1</em> of this tutorial)</p>
 
 </section>
 
@@ -276,11 +297,11 @@ that input.</p>
     like <code>state.myinput</code>, and similarly untangles code for
     validation, API requests, etc.</li>
 
-    <li>Keep in mind that <em>data props</em> are not the same as the
-    <em>Props</em> CPart.  They are, however, related, in that the
+    <li>Keep in mind that <em>data props</em> directives are not the same as
+    the <em>Props</em> CPart.  They are, however, related, in that the
     <em>Props</em> CPart looks for both regular attributes and data props: You
     can in fact set any <em>Props</em> attributes with the <code>:=</code>
-    syntax for direct data assignment.</li>
+    syntax for data other than Strings.</li>
 
     <li><em>Data props</em> support any JSON literal type. Technically,
     <em>data props</em> values can have double quotes just like normal
