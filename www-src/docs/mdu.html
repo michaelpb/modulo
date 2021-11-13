@@ -12,7 +12,10 @@
 <code>%</code> symbol, the remaining letters are <code>mdu</code>. This can be
 backformed then into an acronym: Modulo Developer Utilities&mdash;or, if you
 prefer, it can be "Modulo Developer <em>Universe</em>", to make the acronym
-similar to that of a popular movie franchise.</p>
+similar to that of a popular movie franchise. Obviously none of this was
+planned, but given that naming things is one of the (tongue-in-cheek)
+<em>hardest problems in computer science</em>, this naive solution should be
+sufficient. Take that, hardest problem!</p>
 
 <p>There are several goals of the MDU project. The first is to develop a
 command-line utility (as <code>modulocli</code>) to aid in Modulo development.
@@ -44,10 +47,11 @@ GraphQL APIs directly to state) and legacy code (e.g. a "jQuery" CPart that
 will make it easier to embed old jQuery plug-ins as though they were Modulo
 components).</p>
 
-<p>Of the 3 goals, the only that is documented here is <code>modulocli</code>.
-<strong>The documentation below is on experimental features for Modulo.
-Experimental features may have incomplete documentation or an API that might
-change drastically in the future.</strong></p>
+<p>Of the 3 goals, only <code>modulocli</code> and the <em>TestSuite</em> CPart
+(which may get included later, in some reduced form, in Modulo.js base) have
+any documentation.  <strong>The documentation below is on experimental features
+for Modulo.  Experimental features may have incomplete documentation or an API
+that might change drastically in the future.</strong></p>
 
 
 
@@ -296,6 +300,88 @@ Example: modulocli ssg --input ./src/ --output ./public/
     </li>
 </ul>
 
+<mws-Section>MDU CPart Library</mws-Section>
+
+<h3>Test suites</h3>
+
+<p>Modulo comes with a unit testing framework, specifically for testing
+components. Note that without any extra add-ons or modifications, Modulo's
+testing framework is focused on components unit tests only, and thus is
+strictly synchronous. This means its incapable of integration testing with HTTP
+API's, or asynchronous code. That said, through proper mocking, state, and
+props manipulation, you should be more than equipped to test component behavior
+in most scenarios, without actually issuing the request itself.</p>
+
+<p>A test suite is a collection of tests. Test suites can be embedded in
+Component definitions. In this case, the test suite will be applied to the
+component definition that it exists inside.</p>
+
+<p>For an overview of what the Modulo test suite framework is capable of, see
+the below example:</p>
+
+<mws-Demo
+text='
+<testsuite>
+    <test name="ensure fine">
+        <!-- SETUP -->
+        <!-- Using Props and State we can setup the component for testing -->
+        <props text="Hi"></props>
+        <state
+            search="the lord of the rings"
+            loading:=true
+        ></state>
+
+        <!-- ASSERTIONS -->
+        <!-- run arbitrary scripts, if ends in "assert: " it will then be a test -->
+        <!-- If the assertion fails, the test runner will attempt to expose the
+            values of any variable in the "assert:" line. For better debugging,
+            keep the "assert:" line one simple expression with variables -->
+        <script name="ensure no longer loading">
+            const words = state.search.split(" ");
+            const firstWord = words[0];
+            assert: firstWord === "the"
+        </script>
+
+        <!-- Style lets us test CSS. Here we ensure all li elements are blue
+            (no matter how they were colored that way, e.g. even if inline or
+            inherited) -->
+        <!-- TODO: Not implemented yet -->
+        <style name="blue is cool">
+            li { color: blue; }
+        </style>
+
+        <!-- Most powerful assertion of all, the template: Check if the
+             contents of the component match the given DOM. This compares as DOM
+             (not string), so excess whitespace, etc is ignored.
+        -->
+        <template>
+            <p>Hello 3 world!</p>
+            <h1>I have 5 bananas</h1>
+        </template>
+
+        <!-- We can use "test-values" to expose the values of inputs: -->
+        <template test-values>
+            <input [state.bind] name="bananas" value="5" />
+            <h1>I have 5 bananas</h1>
+        </template>
+
+        <!-- Fuzzy DOM match, default (eg, can actual DOM be
+              transformed into this DOM, by only doing "delete"?) -->
+        <!-- TODO: Not implemented yet -->
+        <template subdom>
+            <p>Hello 3 world!</p>
+        </template>
+
+        <!-- Can check for exact string occurrences within innerHTML, with any
+        count (including 0 to "ban" a string from occurring) -->
+        <template string-count=1>
+            name="bananas"
+        </template>
+    </test>
+</testsuite>
+
+
+'></mws-Demo>
 
 
 </x-Page>
