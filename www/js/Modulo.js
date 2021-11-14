@@ -762,7 +762,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
-            obj[template.name || 'default'] = template;
+            obj[template.attrs.name || 'default'] = template;
+            //obj[template.name || 'default'] = template;
         }
         return obj;
     }
@@ -1113,10 +1114,10 @@ Modulo.templating.defaultOptions.filters = (function () {
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
-        join: (s, arg) => s.join(arg),
+        join: (s, arg) => s.join(arg === undefined ? ", " : arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
         last: s => s[s.length - 1],
-        length: s => s.length,
+        length: s => s.length !== undefined ? s.length : Object.keys(s).length,
         lower: s => s.toLowerCase(),
         number: (s) => Number(s),
         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],

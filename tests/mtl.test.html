@@ -58,6 +58,19 @@
         assert: result === expected
     </script>
 
+
+    <script name="Filter arguments test 3">
+        const context = {
+            obj: {a: 'b', c: 'd'},
+            testing: { instance: { render: arg => arg.c } },
+        };
+        const template = '{{ obj|renderas:testing }}';
+        const expected = 'd';
+        const result = Modulo._r(template, context);
+
+        assert: result === expected
+    </script>
+
     <script name="Char test">
         const context = {'test': 'tester'};
         const template = [

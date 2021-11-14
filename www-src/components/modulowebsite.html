@@ -162,13 +162,13 @@
             label: 'CParts',
             filename: '/docs/cparts.html',
             children: [
-                _child('Component'),
                 _child('Props'),
                 _child('Template'),
                 _child('State'),
                 _child('Script'),
                 _child('Style'),
-                _child('Custom CParts API', 'custom'),
+                _child('Component'),
+                _child('Module'),
             ],
         },
 
@@ -186,15 +186,23 @@
         },
 
         {
-            label: 'Testing & Debugging',
-            filename: '/docs/testing.html',
+            label: 'Template Reference',
+            filename: '/docs/templating-reference.html',
             children: [
-                _child('Debugger'),
-                _child('Test Suites'),
-                _child('Test Setup'),
-                _child('Assertions'),
+                _child('Built-in Template Tags', 'templatetags', [
+                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
+                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
+                    'comparison', 'control-flow',
+                ]),
+                _child('Built-in Filters', 'filters', [
+                    'add', 'allow', 'capfirst', 'concat', 'default',
+                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
+                    'length', 'lower', 'number', 'pluralize', 'subtract',
+                    'truncate', 'renderas', 'reversed', 'upper',
+                ]),
             ],
         },
+
         {
             label: 'Lifecycle & Directives',
             filename: '/docs/directives.html',
@@ -217,13 +225,17 @@
         },
 
         {
-            label: 'Template Reference',
-            filename: '/docs/templating-reference.html',
+            label: 'API & Extension',
+            filename: '/docs/api.html',
             children: [
-                _child('Built-in Template Tags', 'tags'),
-                _child('Built-in Filters', 'filters'),
+                _child('Custom CParts', 'cparts'),
+                _child('CPart Spares', 'spares'),
+                _child('Custom Templating', 'template'),
                 _child('Custom Filters', 'customfilters'),
                 _child('Custom Template Tags', 'customtags'),
+                _child('Custom Template Syntax', 'customtags'),
+                _child('ModRec', 'modrec'),
+                _child('DOMCursor', 'cursor'),
             ],
         },
 

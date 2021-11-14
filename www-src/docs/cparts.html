@@ -11,96 +11,33 @@ it is so central, saying <em>Component Parts</em> over and over gets tiresome,
 so it's typically shortened to <em>CParts</em>.</p>
 
 <p>Every component definition consists of configuring one or more CPart
-definitions. In fact, the <em>Component</em> CPart
+definitions. In fact, the <em>Component</em> CPart</p>
+
+<mws-Section name="props">Props</mws-Section>
+<p>TODO</p>
+
+<mws-Section name="template">Template</mws-Section>
+<p>TODO</p>
 
 
-
-<mws-Section name="spares">CPart Spares</mws-Section>
-
-<p>If you have extra car parts lying around, you call them <em>spare
-parts</em>, or just "spares". In Modulo, extra or inactive CParts are also
-called Spares.</p>
+<mws-Section name="state">State</mws-Section>
+<p>TODO</p>
 
 
-<h3>Mechanics of Spares</h3>
-
-<p>The use for this might be to have more than one <em>Template</em> that can
-be switched out depending on what data model is being used, more than one
-<em>State</em> to allow for both private and shared data between components, or
-more than one <em>Script</em> to be swapped to quickly change behavior based on
-if the user is logged in or out. Many of these things might be doable without
-CPart spares, such as with if-statements, but spares provide a paradigm for
-working comfortably with multiple CParts.</p>
-
-<p>When you have duplicate CParts of the same type in a component, <em>only
-one</em> CPart a time of each type is the "active" CPart, accessible in the
-<code>element.cparts</code> object. That is to say, there can never be more
-than one active CPart.  Both the active and extra (spare) CParts are available
-in <code>element.cpartSpares</code>. Simply by assigning a property of
-<code>element.cparts</code> you can select which one is active.</p>
-
-<p>By default, the last CPart defined will be the active CPart.</p>
-
-<p>For a concrete example, examine how the following behaves:</p>
-
-<mws-Demo
-demotype="minipreview"
-text='
-<template name="shop">
-    <nav>Shop|<a @click:=script.swap payload="home">Home</a></nav>
-    <h1>Shop</h1>
-    <p>$10 - A banana</p>
-</template>
-<template name="home">
-    <nav><a @click:=script.swap payload="shop">Shop</a>|Home</nav>
-    <h1>Home</h1>
-    <p>Welcome to my banana stand!</p>
-</template>
-<script>
-    // swap: Set the active cpart by searching through the spare
-    // array and selecting the one with a name matching payload:
-    function swap(payload) {
-        element.cparts.template = element.cpartSpares.template
-            .find(({attrs}) => attrs.name === payload);
-    }
-</script>
-
-<!-- some basic styling -->
-<style>
-nav {
-    background: black;
-    color: gray;
-    padding: 3px;
-}
-a {
-    color: lightblue;
-    text-decoration: underline;
-    cursor: pointer;
-}
-</style>
-'></mws-Demo>
+<mws-Section name="script">Script</mws-Section>
+<p>TODO</p>
 
 
-<p><strong>Note:</strong> Swapping templates should <em>not</em> be a suitable
-replacement for real links or an adequate frontend routing system. In other
-words, consider swapping templates as a technique only for things like
-alternate themes, filter views, logged-in vs logged-out, and other such
-scenarios, but not for general page navigation. This is because they break
-many web standards, confuse search bots crawling for SEO, and ruin user
-experience by not looking like links for accessibility purposes, having no URL,
-and no effect on browser history.</p>
+<mws-Section name="style">Style</mws-Section>
+<p>TODO</p>
 
 
-<h3>CPart spares and renderObj</h3>
+<mws-Section name="component">Component</mws-Section>
+<p>TODO</p>
 
-<p>CPart spares (inactive CParts) can still influence your component, even if
-they are never activated.
-Specifically, they still get the <code>loadCallback</code> and
-<code>factoryCallback</code> invoked, meaning they still contribute to the
-<code>loadObj</code> and the <code>baseRenderObj</code> like any other CPart of
-their type (<a href="/docs/directives.html#renderobj">see relevant docs on
-these renderObj</a>). For some types of spares, this effectively causes them to
-be "squashed" into a single renderObj.</p>
+
+<mws-Section name="module">Module</mws-Section>
+<p>TODO</p>
 
 
 </x-Page>

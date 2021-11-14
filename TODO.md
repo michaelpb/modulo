@@ -1,9 +1,39 @@
 # Misc notes:
 
-- Right now, manually setting which one CPart is active is effectively creatinq
-  a new type of state
-- We want some way to "choose" or bind based on actual state
-- "static getCurrentCPartCallback" could be a solution to cpart spares
+- Massive performance bug:
+    - http://localhost:8081/docs/templating-reference.html
+    - Currently, it's doing renderas 88 times!
+    - currently, it rerenders EVERY SINGLE one each time one loads, causing
+      exponentially slow algos
+    - Likely a bug with mws-Demo, or could be some script / scoping issue with
+      Modulo
+
+- CPart "Spares" is broken!
+    - Right now, manually setting which one CPart is active is effectively
+      creatinq a new type of state
+    - We want some way to "choose" or bind based on actual state
+    - Solution #1: "static getCurrentCPartCallback" on each CPart type
+    - Solution #2: Something like "active-if:=script.shouldShow"
+        - Or, make it a normal lifecycle method, e.g. "pick CPart"?
+        - E.g. something like "templateSelectCallback"?
+    - Solution #3: Feature of state
+        - Don't change much (e.g. have spares), but leave manually swapping
+          spares as a "bad practice"
+        - E.g. '<template [state.choose] name="shop">'
+            - By default will use state variable "template"
+        - Like bind, except 1 direction, swaps spares on state change
+        - Directive only can be used on CParts
+    - Solution #4: Make it internally CPart-handled (?)
+        - Each CPart can be either a "squasher" or a "stacker"
+    - Solution #5: Remove documentation on swapping spares
+        - Possibly combine above
+        - Is there really any use for swapping templates, as spares are already
+          used by |renderas?
+
+- MTL: Support for "or" and "and" operators in if statements, and better
+    error messages if encountering unknown conditional operators
+        - Another idea: Have {% and %} and {% or %} be tags that modify the
+          previous token
 
 # Next refactor:
 
@@ -121,8 +151,6 @@
         - (DONE) "settingProps" as a means to squirrel away data during ssg
     - Do immediately prefixing components
     - (DONE) Work on Modulo Router
-    - MTL: Support for "or" and "and" operators in if statements, and better
-      error messages if encountering unknown conditional operators
     - Fix key=
     - Linting Rules!!
     - (DONE) component.innerHTML = ... is what does reconcile! ({component: {innerHTML: ..})

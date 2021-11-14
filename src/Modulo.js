@@ -86,9 +86,8 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
 
 Modulo.ComponentPart = class ComponentPart {
     static loadCallback(node, loader) {
-        // TODO refactor TEMPLATe etc to be
-        // less hardcoded, more configured on a cpart basis
         const attrs = Modulo.utils.mergeAttrs(node);
+        // TODO is this still useful? --v
         const content = node.tagName.startsWith('TE') ? node.innerHTML
                                                       : node.textContent;
         return {attrs, content, dependencies: attrs.src || null};
@@ -762,7 +761,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
-            obj[template.name || 'default'] = template;
+            obj[template.attrs.name || 'default'] = template;
+            //obj[template.name || 'default'] = template;
         }
         return obj;
     }
@@ -966,18 +966,18 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 
     compile(text) {
         this.stack = []; // Template tag stack
-        let output = 'var OUT=[];'; // Variable used to accumulate code
+        this.output = 'var OUT=[];'; // Variable used to accumulate code
         let mode = 'text'; // Start in text mode
         for (const token of this.tokenizeText(text)) {
             if (mode) { // if in a "mode" (text or token), then call mode func
                 const result = this.modes[mode](token, this, this.stack);
-                output += result || '';
+                this.output += result || '';
             }
             // FSM for mode: ('text' -> null) (null -> token) (* -> 'text')
             mode = (mode === 'text') ? null : (mode ? 'text' : token);
         }
-        // console.log('this is the rsulting template code', output.replace(/([;\}\{])/g, '$1\n'));
-        return new Function('CTX,G', output + ';return OUT.join("");');
+        // console.log('this is the rsulting template code', this.output.replace(/([;\}\{])/g, '$1\n'));
+        return new Function('CTX,G', this.output + ';return OUT.join("");');
     }
 
     render(renderObj) {
@@ -1038,8 +1038,6 @@ Modulo.templating.defaultOptions = {
         //'and': 'X && Y',
         //'or': 'X || Y',
         'not': '!(Y)',
-        // TODO:  Fix this, this is actually broken
-        //'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
         'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
         'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
     },
@@ -1056,7 +1054,7 @@ Modulo.templating.defaultOptions.modes = {
         } // Normal opening tag
         const result = tagFunc(text.slice(tTag.length + 1), tmplt);
         if (result.end) { // Not self-closing, push to stack
-            stack.push({close: `end${tTag}`, ...result});
+            stack.push({ close: `end${tTag}`, ...result });
         }
         return result.start || result;
     },
@@ -1113,10 +1111,10 @@ Modulo.templating.defaultOptions.filters = (function () {
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
-        join: (s, arg) => s.join(arg),
+        join: (s, arg) => s.join(arg === undefined ? ", " : arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
         last: s => s[s.length - 1],
-        length: s => s.length,
+        length: s => s.length !== undefined ? s.length : Object.keys(s).length,
         lower: s => s.toLowerCase(),
         number: (s) => Number(s),
         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
@@ -1131,13 +1129,18 @@ Modulo.templating.defaultOptions.filters = (function () {
 
 Modulo.templating.defaultOptions.tags = {
     'if': (text, tmplt) => {
-        // TODO: for arbitrary expressions, loop here, don't limit to 3 (L/O/R)
+        // Limit to 3 (L/O/R)
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
         const condition = condStructure.replace(/([XY])/g,
             (k, m) => tmplt.parseExpr(m === 'X' ? lHand : rHand));
         const start = `if (${condition}) {`;
         return {start, end: '}'};
+    },
+    'and': (text, tmplt) => {
+        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
+        // tmplt.output[tmplt.output.length - 1].replace(') {', ' && ' + condition + ') {')
+        return '';
     },
     'else': () => '} else {',
     'elif': (s, tmplt) => '} else ' + tmplt.tags['if'](s, tmplt).start,
@@ -1146,7 +1149,7 @@ Modulo.templating.defaultOptions.tags = {
         // Make variable name be based on nested-ness of tag stack
         const { cleanWord } = Modulo.utils;
         const arrName = 'ARR' + tmplt.stack.length;
-        const [varExp, arrExp] = text.split(' in ');
+        const [ varExp, arrExp ] = text.split(' in ');
         let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
         // TODO: Upgrade to of (after good testing), since probably
         // no need to support for..in
@@ -1177,10 +1180,10 @@ Modulo.templating.defaultOptions.tags = {
 };
 
 
-        // TODO: New idea for how to refactor reconciler directives, and clean
-        // up this mess, while allowing another level to "slice" into:
-        //  - Then, implement [component.key] and [component.ignore]
-        //  - Possibly: Use this to then do granular patches (directiveMount etc)
+// TODO: New idea for how to refactor reconciler directives, and clean
+// up this mess, while allowing another level to "slice" into:
+//  - Then, implement [component.key] and [component.ignore]
+//  - Possibly: Use this to then do granular patches (directiveMount etc)
 Modulo.reconcilers.Cursor = class Cursor {
     constructor(parentNode, parentRival) {
         this.initialize(parentNode, parentRival);

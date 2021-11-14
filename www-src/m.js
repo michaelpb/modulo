@@ -1,4 +1,4 @@
-// modulo build -lqiohl
+// modulo build 1g10ksm
 'use strict';
 
 // # Introduction
@@ -763,7 +763,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
-            obj[template.name || 'default'] = template;
+            obj[template.attrs.name || 'default'] = template;
+            //obj[template.name || 'default'] = template;
         }
         return obj;
     }
@@ -1114,10 +1115,10 @@ Modulo.templating.defaultOptions.filters = (function () {
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
-        join: (s, arg) => s.join(arg),
+        join: (s, arg) => s.join(arg === undefined ? ", " : arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
         last: s => s[s.length - 1],
-        length: s => s.length,
+        length: s => s.length !== undefined ? s.length : Object.keys(s).length,
         lower: s => s.toLowerCase(),
         number: (s) => Number(s),
         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
@@ -2897,7 +2898,7 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/embeddedexampleslib.html) 
 
-  "/components/modulowebsite.html": // (485 lines)
+  "/components/modulowebsite.html": // (497 lines)
 `<component name="Section">
     <props
         name
@@ -3062,13 +3063,13 @@ examples to the Modulo framework, not as a examples themselves -->
             label: 'CParts',
             filename: '/docs/cparts.html',
             children: [
-                _child('Component'),
                 _child('Props'),
                 _child('Template'),
                 _child('State'),
                 _child('Script'),
                 _child('Style'),
-                _child('Custom CParts API', 'custom'),
+                _child('Component'),
+                _child('Module'),
             ],
         },
 
@@ -3086,15 +3087,23 @@ examples to the Modulo framework, not as a examples themselves -->
         },
 
         {
-            label: 'Testing & Debugging',
-            filename: '/docs/testing.html',
+            label: 'Template Reference',
+            filename: '/docs/templating-reference.html',
             children: [
-                _child('Debugger'),
-                _child('Test Suites'),
-                _child('Test Setup'),
-                _child('Assertions'),
+                _child('Built-in Template Tags', 'templatetags', [
+                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
+                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
+                    'comparison', 'control-flow',
+                ]),
+                _child('Built-in Filters', 'filters', [
+                    'add', 'allow', 'capfirst', 'concat', 'default',
+                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
+                    'length', 'lower', 'number', 'pluralize', 'subtract',
+                    'truncate', 'renderas', 'reversed', 'upper',
+                ]),
             ],
         },
+
         {
             label: 'Lifecycle & Directives',
             filename: '/docs/directives.html',
@@ -3117,13 +3126,17 @@ examples to the Modulo framework, not as a examples themselves -->
         },
 
         {
-            label: 'Template Reference',
-            filename: '/docs/templating-reference.html',
+            label: 'API & Extension',
+            filename: '/docs/api.html',
             children: [
-                _child('Built-in Template Tags', 'tags'),
-                _child('Built-in Filters', 'filters'),
+                _child('Custom CParts', 'cparts'),
+                _child('CPart Spares', 'spares'),
+                _child('Custom Templating', 'template'),
                 _child('Custom Filters', 'customfilters'),
                 _child('Custom Template Tags', 'customtags'),
+                _child('Custom Template Syntax', 'customtags'),
+                _child('ModRec', 'modrec'),
+                _child('DOMCursor', 'cursor'),
             ],
         },
 
@@ -3903,16 +3916,17 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
 
-  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (47 lines)
+  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (49 lines)
 `<test name="Behaves as expected">
     <template name="Ensure initial inputs are bound so render is as expected" test-values>
         <div>
-            <input [state.bind] name="username" value="Testing_Username" />
-            <label>Color: <input [state.bind] name="color" value="blue" />
-                (valid options "green" or "blue")</label>
-            <input [state.bind]
+            <label>Username:
+                <input [state.bind] name="username" value="Testing_Username" /></label>
+            <label>Color ("green" or "blue"):
+                <input [state.bind] name="color" value="blue" /></label>
+            <label>Opacity: <input [state.bind]
                 name="opacity"
-                type="number" min="0" max="1" step="0.1" value="0.5" />
+                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
             <h5 style="
                     opacity: 0.5;
                     color: blue;
@@ -3934,12 +3948,13 @@ examples to the Modulo framework, not as a examples themselves -->
 
     <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
         <div>
-            <input [state.bind] name="username" value="tEsT2" />
-            <label>Color: <input [state.bind] name="color" value="green" />
-                (valid options "green" or "blue")</label>
-            <input [state.bind]
+            <label>Username:
+                <input [state.bind] name="username" value="tEsT2" /></label>
+            <label>Color ("green" or "blue"):
+                <input [state.bind] name="color" value="green" /></label>
+            <label>Opacity: <input [state.bind]
                 name="opacity"
-                type="number" min="0" max="1" step="0.1" value="0.5" />
+                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
             <h5 style="
                     opacity: 0.5;
                     color: green;

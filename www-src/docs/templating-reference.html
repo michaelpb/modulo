@@ -19,7 +19,7 @@ developers. Thanks, Django!</p>
 
 
 
-<mws-Section name="script">Built-in Template Tags</mws-Section>
+<mws-Section name="templatetags">Built-in Template Tags</mws-Section>
 
 
 <h3>comment</h3>
@@ -437,7 +437,7 @@ text='
 '></mws-Demo>
 
 
-<mws-Section name="script">Built-in Template Filters</mws-Section>
+<mws-Section name="filters">Built-in Template Filters</mws-Section>
 
 
 <h4>add</h4>
@@ -576,19 +576,283 @@ out"
 ></state>
 '></mws-Demo>
 
-1104         first: s => s[0],
-1105         join: (s, arg) => s.join(arg),
-1106         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
-1107         last: s => s[s.length - 1],
-1108         length: s => s.length,
-1109         lower: s => s.toLowerCase(),
-1110         number: (s) => Number(s),
-1111         pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
-1112         subtract: (s, arg) => s - arg,
-1113         truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
-1114         renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
-1115         reversed: s => Array.from(s).reverse(),
-1116         upper: s => s.toUpperCase(),
+<h4>first</h4>
+
+<p>Retrieve the first item in an Array:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>{{ state.athletes|first }}</p>
+</template>
+
+<state
+  athletes:=&apos;["Neymar", "Maradona"]&apos;
+></state>
+'></mws-Demo>
+
+
+<h4>join</h4>
+
+<p>Formats an array to be comma-separated. Optionally, a different separator
+can be specified as an argument.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>{{ state.athletes|join }}</p>
+    <p>{{ state.athletes|join:" + " }}</p>
+</template>
+
+<state
+  athletes:=&apos;["Neymar", "Maradona"]&apos;
+></state>
+'></mws-Demo>
+
+
+<h4>json</h4>
+
+<p>Formats given data as a JSON string. It takes one optional argument, that if
+specified, will cause indentation by the given amount.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <pre>{{ state.athletes|json }}</pre>
+    <pre>{{ state.athletes|json:2 }}</pre>
+</template>
+
+<state
+    athletes:=&apos;[
+        {"name": "Devante Adams"},
+        {"name": "Steph Curry"},
+        {"name": "Megan Rapinoe"}
+    ]&apos;
+></state>
+
+'></mws-Demo>
+
+
+
+<h4>last</h4>
+
+<p>Retrieve the last item in an Array:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>{{ state.athletes|last }}</p>
+</template>
+
+<state
+  athletes:=&apos;["Neymar", "Maradona"]&apos;
+></state>
+'></mws-Demo>
+
+
+
+<h4>length</h4>
+
+<p>Determine the length of the given value. This supports Strings, Arrays, and
+Objects. For Objects, it will return the number of properties on the object.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>Sentence length: {{ state.sentence|length }}</p>
+    <p>Flowers length: {{ state.flowers|length }}</p>
+    <p>Flights length: {{ state.flights|length }}</p>
+</template>
+
+<state
+    sentence="The sweat wis lashing oafay Sick Boy; he wis trembling."
+    flowers:=&apos;["Marigolds", "Sunflowers"]&apos;
+    flights:=&apos;{"SFO": "LAX", "BAI": "MEX", "MEX": "MVD"}&apos;
+></state>
+'></mws-Demo>
+
+
+
+<h4>lower</h4>
+
+<p>Display the given string in all lowercase letters.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>Without: {{ state.word }}</p>
+    <p>Lower: {{ state.word|lower }}</p>
+</template>
+
+<state
+    word="rAndOm cAPitalS"
+></state>
+'></mws-Demo>
+
+
+<h4>pluralize</h4>
+
+<p>Allows for convenient pluralization in many human languages. This is for
+words in languages where a plural form is used when there is "0" or "2+" items,
+and a singular form for exactly 1 item. The majority of words in English,
+Spanish, Portuguese, and many others follow these rules. To use, give it a
+number (typically, the length of a list), and a comma separated version of two
+forms of a word. If that number is exactly "1" it will output the second form
+(or nothing at all, if the second form is not specified), otherwise it will
+output the first form.</p>
+
+<p>Below are some examples. Note that in the second example, it does not
+specify a singular form, but instead only specifies an "s" to append to the
+word "flower" to make it's plural "flowers".</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    We visited {{ state.citynames|length}} 
+    {{ state.citynames|length|pluralize:"cities,city" }}
+
+    and picked {{ state.flowers|length}} 
+    flower{{ state.flowers|length|pluralize:"s" }}
+</template>
+
+<state
+    flowers:=&apos;["Marigolds", "Sunflowers"]&apos;
+    citynames:=&apos;["Oakland", "Berkeley", "Richmond", "Concord"]&apos;
+></state>
+'></mws-Demo>
+
+
+
+
+<h4>subtract</h4>
+
+<p>Subtracts the argument from the value. Example:</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    {{ state.value|subtract:3 }} hacks <br />
+    {{ state.value|subtract:state.another }} is the answer
+</template>
+
+<state
+    value:=1340
+    another:=1298
+></state>
+'></mws-Demo>
+
+
+
+
+<h4>truncate</h4>
+
+<p>Cut off the given string after a number of characters specified by the
+argument. If it has to cut off the string, it will append an "ellipsis"
+character.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>Long sentence: {{ state.sentence|truncate:20 }}</p>
+    <p>Short word: {{ state.word|truncate:20 }}</p>
+</template>
+
+<state
+    sentence="The sweat wis lashing oafay Sick Boy; he wis trembling."
+    word="Bird."
+></state>
+'></mws-Demo>
+
+
+
+<h4>renderas</h4>
+
+<p>A highly useful filter that allows use of re-usable template snippets.</p>
+
+<p>Typically in the format of
+<code>{{ state.data|renderas:template.tableRow }}</code>,
+where <code>state.data</code> is some Object, and there exists a template like
+with the name "tableRow" that renders that object.  The typical usage of this
+is refactoring templates to conveniently render complex data. This allows you
+to take complicated bits of template code and refactor it into another smaller,
+helper, "child" template that is then used within the main template.</p>
+
+<p>The "input" to renderas should always be an Object. The keys and values of
+that object will populate the template variables for that template, meaning you
+can access them directly with <code>{{ varName }}</code> style syntax within
+that child template. Note that the child template will be isolated or
+"sandboxed" to <em>only</em> have access to properties of the specified
+object (state, props, etc will not be accessible).</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template name="trow">
+    <tr><td>{{ name }}</td> <td>{{ type }}</td> <td>{{ level }}</td></tr>
+</template>
+
+<template>
+    <table>
+        <thead><tr><th>Name</th> <th>Type</th> <th>Level</th></thead>
+        <tbody>
+            {% for info in state.pokemon %}
+                {{ info|renderas:template.trow }}
+            {% endfor %}
+        </tbody>
+    </table>
+</template>
+
+<state
+    pokemon:=&apos;[
+        {"name": "Jigglypuff", "type": "Normal", "level": 13},
+        {"name": "Pikachu", "type": "Electric", "level": 10},
+        {"name": "Ghastly", "type": "Ghost", "level": 8}
+    ]&apos;
+></state>
+'></mws-Demo>
+
+
+
+
+<h4>reversed</h4>
+
+<p>Reverses the given input. Typically, this is used to reverse Arrays, such as
+when you want to iterate over an Array in the opposite direction using a
+<code>{% for %}</code> template-tag. If the input is a String or another data
+type, it will attempt to first convert to an Array.</p>
+
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>{{ state.flowers|reversed|join }}</p>
+    {% for city in state.cities|reversed %}
+        <p>{{ city }}</p>
+    {% endfor %}
+</template>
+
+<state
+    flowers:=&apos;["Marigolds", "Sunflowers"]&apos;
+    cities:=&apos;["Oakland", "Berkeley", "Richmond", "Concord"]&apos;
+></state>
+'></mws-Demo>
+
+
+
+<h4>upper</h4>
+
+<p>Display the given string in all uppercase letters.</p>
+
+<mws-Demo demotype="minipreview"
+text='
+<template>
+    <p>Without: {{ state.word }}</p>
+    <p>Upper: {{ state.word|upper }}</p>
+</template>
+
+<state
+    word="rAndOm cAPitalS"
+></state>
+'></mws-Demo>
 
 
 
