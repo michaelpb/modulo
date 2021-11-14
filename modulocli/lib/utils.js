@@ -270,7 +270,9 @@ function doGenerate(config, modulo, text, outputFile, callback) {
         verbose,
         inputFile,
     } = config;
+
     modulo.fetchPrefix = config.input;
+
     if (newGlobalsBeforeGenerate) {
         // TODO force reload Modulo.js & run main('generate', ...)
         throw new Error('newGlobalsBeforeGenerate: Not implemented yet');
