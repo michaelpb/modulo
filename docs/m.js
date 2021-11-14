@@ -1,4 +1,4 @@
-// modulo build 31e
+// modulo build -gdorh5
 'use strict';
 
 // # Introduction
@@ -34,7 +34,9 @@ var Modulo = {
 // "activate" all of Modulo by defining the "mod-load" web component. This
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
-    Modulo.fetchQ = new Modulo.FetchQueue();
+    if (!Modulo.fetchQ) {
+        Modulo.fetchQ = new Modulo.FetchQueue();
+    }
     Modulo.globals.customElements.define('mod-load', Modulo.DOMLoader);
 
     // Then, looks for embedded modulo components, found in <template modulo>
@@ -42,7 +44,12 @@ Modulo.defineAll = function defineAll() {
     // their contents into a global loader with namespace 'x'.
     const opts = {options: {namespace: 'x'}};
     Modulo.globalLoader = new Modulo.Loader(null, opts);
-    Modulo.globalLoader.loadModules(Modulo.globals.document);
+
+    const query = 'template[modulo-embed],script[type="modulo/embed"]';
+    for (const embedElem of Modulo.globals.document.querySelectorAll(query)) {
+        // TODO: Should be elem.content if tag===TEMPLATE
+        Modulo.globalLoader.loadString(embedElem.innerHTML);
+    }
     Modulo.CommandMenu.setup();
 };
 
@@ -128,11 +135,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
             //Modulo.fetchQ.wait(() => this.defineComponent(this.namespace, modLoadObj));
             this.modFactory = this.defineComponent(this.namespace, modLoadObj);
         }
-        const query = 'template[modulo-embed],script[type="modulo/embed"]';
-        for (const embeddedModule of elem.querySelectorAll(query)) {
-            // TODO: Should be elem.content if tag===TEMPLATE
-            this.loadString(embeddedModule.innerHTML);
-        }
     }
 
     // ## Loader: loadString
@@ -148,6 +150,9 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
           <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
           </(state|props|template)> -> </script>
         */
+        if (this.src) {
+            Modulo.fetchQ.basePath = this.src;
+        }
         const frag = new Modulo.globals.DocumentFragment();
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = text;
@@ -175,8 +180,10 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         // ### Step 1: Config
         // Get any custom component configuration (e.g. attributes `name=` or
         // `extends=`)
+
+        // TODO: Rewrite this to be just a normal cpart load, with "hasSubParts = true"
         const attrs = Modulo.utils.parseAttrs(elem);
-        const name = attrs.modComponent || attrs.name;
+        attrs.name = attrs.modComponent || attrs.name;
 
         // ### Step 2: Set-up `loadObj`
         // Modulo often uses plain objects to "pass around" during the lifecycle
@@ -194,7 +201,9 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         //     ...etc
         // }
         // ```
-        const loadObj = {component: [{name}]}; // Everything gets implicit Component CPart
+
+        // Everything gets implicit Component CPart -v
+        const loadObj = {component: [{options: attrs}]};
 
         // ### Step 3: define CParts
         // Loop through each CPart DOM definition within the component (e.g.
@@ -219,7 +228,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
                 Modulo.fetchQ.enqueue(data.dependencies, cb, this.src);
             }
         }
-        return [name, array || loadObj];
+        return [attrs.name, array || loadObj];
     }
 
     // ## Loader: defineComponent
@@ -534,11 +543,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.lifecycle(['initialized'])
         this.rerender();
         this.isMounted = true;
-
-        // Finally, check for vanishAfterMount
-        if (this.getAttribute('modulossg-vanish') || this.vanishAfterMount) {
-            this.replaceWith(...this.childNodes); // and remove
-        }
     }
 }
 
@@ -629,13 +633,11 @@ Modulo.cparts.component = class Component extends Modulo.ComponentPart {
     }
 
     updatedCallback(renderObj) {
-        if (!this.isMounted) { // First time initialized
-            const {attrs} = this;
-            if (attrs) {
-                const {vanish} = attrs;
-                if (this.element.getAttribute('modulo-vanish') || vanish) {
-                    this.element.replaceWith(...this.element.childNodes); // Delete self
-                }
+        if (!this.element.isMounted) { // First time initialized
+            const mode = this.attrs ? this.attrs.mode : 'default';
+            // Other options: shadow, default
+            if (mode === 'vanish') {
+                this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
     }
@@ -1163,35 +1165,57 @@ Modulo.templating.defaultOptions.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-Modulo.templating.defaultOptions.filters = {
-    upper: s => s.toUpperCase(),
-    lower: s => s.toLowerCase(),
-    escapejs: s => JSON.stringify(s),
-    first: s => s[0],
-    last: s => s[s.length - 1],
-    length: s => s.length,
-    safe: s => Object.assign(new String(s), {safe: true}),
-    join: (s, arg) => s.join(arg),
-    json: (s, arg) => JSON.stringify(s, null, arg || undefined),
-    pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
-    add: (s, arg) => s + arg,
-    subtract: (s, arg) => s - arg,
-    default: (s, arg) => s || arg,
-    number: (s) => Number(s),
-    //invoke: (s, arg) => s(arg),
-    //getAttribute: (s, arg) => s.getAttribute(arg),
-    get: (s, arg) => s[arg],
-    includes: (s, arg) => s.includes(arg),
-    truncate: (s, arg) => ((s.length > arg*1) ?
-                            (s.substr(0, arg-1) + '…') : s),
-    divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
-    //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
-    // {% for rowData in table %}
-    //    {{ rowData|renderas:template.row }}
-    // {% endfor %}
-    renderas: (renderCtx, template) => Object.assign(new String(
-                    template.instance.render(renderCtx)), {safe: true}),
-};
+Modulo.templating.defaultOptions.filters = (function () {
+    function jsobj(obj, arg) {
+        let s = '{\n';
+        for (const [key, value] of Object.entries(obj)) {
+            s += '  ' + JSON.stringify(key) + ': ';
+            if (typeof value === 'string') {
+                s += '// (' + value.split('\n').length + ' lines)\n`';
+                s += value.replace(/\\/g , '\\\\')
+                          .replace(/`/g, '\\`').replace(/\$/g, '\\$');
+                s += '`,// (ends: ' + key + ') \n\n';
+            } else {
+                s += JSON.stringify(value, null, 4) + ',\n';
+            }
+        }
+        return s + '}';
+    }
+    const safe = s => Object.assign(new String(s), {safe: true});
+
+    const filters = {
+        upper: s => s.toUpperCase(),
+        lower: s => s.toLowerCase(),
+        escapejs: s => JSON.stringify(s),
+        first: s => s[0],
+        last: s => s[s.length - 1],
+        length: s => s.length,
+        //trim: s => s.trim(), // TODO: improve interface to be more useful
+        join: (s, arg) => s.join(arg),
+        json: (s, arg) => JSON.stringify(s, null, arg || undefined),
+        pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        add: (s, arg) => s + arg,
+        subtract: (s, arg) => s - arg,
+        default: (s, arg) => s || arg,
+        number: (s) => Number(s),
+        //invoke: (s, arg) => s(arg),
+        //getAttribute: (s, arg) => s.getAttribute(arg),
+        get: (s, arg) => s[arg],
+        includes: (s, arg) => s.includes(arg),
+        truncate: (s, arg) => ((s.length > arg*1) ?
+                                (s.substr(0, arg-1) + '…') : s),
+        divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+        //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+        // {% for rowData in table %}
+        //    {{ rowData|renderas:template.row }}
+        // {% endfor %}
+
+        //Object.assign(new String(
+        //                ), {safe: true}),
+        renderas: (renderCtx, template) => safe(template.instance.render(renderCtx)),
+    };
+    return Object.assign(filters, {jsobj, safe});
+})();
 
 Modulo.templating.defaultOptions.tags = {
     'if': (text, tmplt) => {
@@ -1554,15 +1578,15 @@ Modulo.FetchQueue = class FetchQueue {
         this.waitCallbacks = [];
         this.finallyCallbacks = [];
     }
-    enqueue(queueObj, callback, basePath, opts, responseCb) {
+    enqueue(queueObj, callback, opts, responseCb) {
         opts = opts || this.defaultOpts || {};
         responseCb = responseCb || (response => response.text());
         queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
         for (let [label, src] of Object.entries(queueObj)) {
             // TODO remove! ------------------------------------v
             if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
-                // TODO: should this need to invoke utils.dirname?
-                src = src.replace('.', this.basePath);
+                src = src.replace('.', Modulo.utils.dirname(this.basePath));
+                src = src.replace(/\/\//, '/'); // remove double slashes
             }
             if (src in this.data) {
                 callback(this.data[src], label);
@@ -1612,16 +1636,15 @@ Modulo.assert = function assert(value, ...info) {
     }
 }
 
-Modulo.buildTemplate = new Modulo.templating.MTL(
-`// modulo build {{ hash }}
+Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
-Modulo.fetchQ = {{ fetchQ.data|json:1|safe }};
-{% for path, text in preloadData %}
-//  Preload: {{ path }}
-Modulo.globalLoader.loadString({{ text|escapejs|safe }});
-{% endfor %}
 Modulo.defineAll();
-`);
+Modulo.fetchQ.data = {{ allData|jsobj|safe }};
+{% for path, text in preloadData %}
+//  Preloading page: {{ path|escapejs|safe }} {# Simulates loading page #}
+Modulo.fetchQ.basePath = {{ path|escapejs|safe }};
+Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);
+{% endfor %}`);
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
@@ -1694,8 +1717,139 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
+
+// And that's the end of the Modulo source code story. This means it's where
+// your own Modulo story begins!
+
+// No, really, your story will begin right here. When Modulo is compiled,
+// whatever code exists below this point is user-created code.
+
+// So... keep on reading for the latest Modulo project:
+// ------------------------------------------------------------------
 ;
 
-Modulo.fetchQ = {};
-
 Modulo.defineAll();
+Modulo.fetchQ.data = {
+  "/components/layouts.html": // (116 lines)
+`<component name="Page" mode="vanish">
+    <props
+        navbar
+        showsplash
+        showdocbar
+        pagetitle
+    ></props>
+    <template src="./layouts/base.html"></template>
+
+    <script>
+        function initializedCallback() {
+            if (Modulo.isBackend) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                console.log('Warning: Couldnt get global info');
+            }
+        }
+    </script>
+</component>
+
+
+<!--<script src="/components/layouts/globalUtils.js"></script>-->
+<module>
+    <script>
+        let txt;
+
+        function sloccount() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            return Modulo.require('sloc')(txt, 'js').source;
+        }
+
+        function checksum() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            const CryptoJS = Modulo.require("crypto-js");
+            const hash = CryptoJS['SHA384'](txt);
+            return hash.toString(CryptoJS.enc.Base64);
+            //const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
+
+            //shaObj.update(txt);
+            //const hash = shaObj.getHash("B64");
+            //return hash;
+        }
+
+        function getGlobalInfo() {
+            /*
+            // Only do once to speed up SSG
+            //console.log('this is Modulo', Object.keys(Modulo));
+            if (!Modulo.ssgStore.versionInfo) {
+                const bytes = Modulo.require('fs').readFileSync('./package.json');
+                const data = JSON.parse(bytes);
+                Modulo.ssgStore.versionInfo = {
+                    version: data.version,
+                    sloc: sloccount(),
+                    checksum: checksum(),
+                };
+            }
+            return Modulo.ssgStore.versionInfo;
+            */
+            return {};
+        }
+
+        // https://stackoverflow.com/questions/400212/
+        const {document, navigator} = Modulo.globals;
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    </script>
+
+</module>
+
+`,// (ends: /components/layouts.html) 
+
+};
+
+//  Preloading page: "/components/layouts.html" 
+Modulo.fetchQ.basePath = "/components/layouts.html";
+Modulo.globalLoader.loadString(Modulo.fetchQ.data[Modulo.fetchQ.basePath]);

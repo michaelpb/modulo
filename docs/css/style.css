@@ -2,12 +2,6 @@
     --highlight-color: #B90183;
 }
 
-.CodeMirror *,
-textarea {
-  font-family: monospace;
-  font-size: 14px;
-}
-
 code {
   font-family: monospace;
   border-bottom: 1px dotted var(--highlight-color);
@@ -84,17 +78,6 @@ img {
     box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
 }
 
-
-.Docs-squareInfo {
-    padding: 5px;
-    padding-top: 10px;
-}
-.Docs-squareInfo > h2 {
-    padding: 0;
-    margin: 0;
-    margin-bottom: 10px;
-}
-
 nav.Navbar {
     padding-top: 10px;
     background: white;
@@ -103,7 +86,7 @@ nav.Navbar {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 7; /* code mirror scrollbars are 6 */
     height: 100px;
 }
 
@@ -161,39 +144,42 @@ nav.Navbar .Navbar-rightInfo {
     padding: 5px;
 }
 
-main {
-    max-width: 800px;
+main.Main {
+    max-width: 820px;
     margin: auto;
     clear: both;
-}
-main.Main--fluid {
-    max-width: 98%;
-    padding-left: 20px;
-    padding-right: 20px;
+    box-sizing: border-box;
 }
 
-section {
+main.Main--fluid {
+    width: 98%;
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 100vw;
+}
+
+section.SideBySide {
     display: flex;
 }
 
-aside strong {
+section.SideBySide aside strong {
     color: #B90183;
 }
 
-aside h3 {
+section.SideBySide aside h3 {
     font-size: 30px;
 }
 
-aside h3 span {
+section.SideBySide aside h3 span {
     font-size: 80px;
     font-weight: bold;
     color: #B90183;
 }
 
-aside.TitleAside {
+section.SideBySide aside.TitleAside {
     text-align: right;
 }
-aside.TitleAside a {
+section.SideBySide aside.TitleAside a {
     font-size: 18px;
 }
 
@@ -237,10 +223,6 @@ a:visited {
 }
 
 @media (max-width: 992px) {
-    .Hero img:last-child {
-        margin-left: -20x;
-        max-height: 128px;
-    }
     nav.Navbar li {
         font-size: 24px;
         margin-left: 20px;
@@ -249,50 +231,6 @@ a:visited {
         flex-wrap: wrap;
         justify-content: flex-start;
     }
-
-}
-
-
-
-
-.Hero {
-    /*background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);*/
-    /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-    /*background-size: 600% 600%;*/
-    background: linear-gradient(131deg, #B90183, rgba(255, 255, 255, 0)),
-        url('https://github.com/atlemo/SubtlePatterns/blob/gh-pages/cubes.png?raw=true');
-    animation: BGAnimTwo 10s linear infinite;
-    text-align: center;
-    box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-    height: 50vh;
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.Hero .dsiabled {
-    background: linear-gradient(131deg, #57E617, #BEE617, #83D401, #B90183, #E6178F);
-    /*background: linear-gradient(131deg, #B90183, #E6178F);*/
-    background-size: 600% 600%;
-    animation: BGAnimation 20s ease infinite;
-    text-align: center;
-    box-shadow: 0 -10px 10px inset rgba(0, 0, 0, 0.1);
-}
-
-
-@keyframes BGAnimTwo {
-    0%{background-position:0% 0%}
-    100%{background-position: 0% 100%}
-}
-
-@keyframes BGAnimation {
-    0%{background-position:0% 0%}
-    30%{background-position: 0% 100%}
-    60%{background-position: 100% 0%}
-    80%{background-position: 100% 100%}
-    100%{background-position:0% 0%}
 }
 
 
@@ -304,7 +242,7 @@ nav.Navbar {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 7;
     /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/
     border-bottom: 1px solid black;
 }
@@ -320,12 +258,12 @@ div.IndexWrapper {
     min-height: calc(100vh - 100px);
 }
 
-div.IndexWrapper mdu-TabSet {
+div.IndexWrapper mws-Demo {
   margin-top: 10px;
 }
 
 @media (min-height: 768px) {
-    div.IndexWrapper mdu-TabSet {
+    div.IndexWrapper mws-Demo {
         margin-top: 100px;
     }
 }
@@ -420,21 +358,26 @@ a:visited {
     color: #666;
 }
 
-.Docs p {
+.Main p {
     margin-top: 5px;
     margin-bottom: 20px;
 }
 
-.Docs p:last-of-type {
+.Main p:last-of-type {
     margin-bottom: 0;
 }
 
-.Docs ul li {
+.Main ul li {
     list-style: disc;
     margin-left: 40px;
 }
 
-.Docs .InfoBox {
+.Main nav:not(.TitleAside-navigation) ul li {
+    list-style: none;
+    margin-left: 0;
+}
+
+.Main .InfoBox {
     border: 1px solid var(--highlight-color);
     padding: 20px;
     display: block;
@@ -443,12 +386,12 @@ a:visited {
     font-size: 0.95rem;
 }
 
-.Docs hr {
+.Main hr {
     border: 1px solid #888;
     width: 80%;
 }
 
-.Docs .InfoBox > h2 {
+.Main .InfoBox > h2 {
     color: var(--highlight-color);
     font-weight: bold;
     text-transform: uppercase;
@@ -457,9 +400,9 @@ a:visited {
     letter-spacing: 1px;
 }
 
-.Docs > h2,
-.Docs > * > h2,
-.Docs > * > * > h2 {
+.Main > h2,
+.Main > * > h2,
+.Main > * > * > h2 {
     /*border-top: 1px solid #888;*/
     /*padding-top: 10px;*/
     width: 80%;
@@ -468,18 +411,29 @@ a:visited {
     font-size: 1.6rem;
 }
 
-.Docs h3 {
+.Main h3 {
     font-weight: bold;
     font-size: 1.3rem;
     margin-top: 10px;
 }
-.Docs h4 {
+.Main h4 {
     font-weight: bold;
     font-size: 1.1rem;
     margin-top: 5px;
 }
 
-.Docs blockquote {
+/* Adding some top margin for the top-level h3/h4s */
+.Main > * > h3 {
+    margin-top: 40px;
+}
+.Main > * > h4 {
+    margin-top: 20px;
+}
+.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {
+    margin-bottom: 60px;
+}
+
+.Main blockquote {
     max-width: 30%;
     float: right;
     border: 1px solid black;
@@ -490,27 +444,27 @@ a:visited {
     font-size: 0.98rem;
 }
 @media (max-width: 992px) {
-    .Docs blockquote {
+    .Main blockquote {
         max-width: none;
         float: none;
         clear: both;
     }
 }
 
-.Docs blockquote > p {
+.Main blockquote > p {
     margin-top: 5px;
     margin-bottom: 0;
 }
-.Docs blockquote > p:first-child {
+.Main blockquote > p:first-child {
     margin-top: 0;
 }
 
-.Docs blockquote strong {
+.Main blockquote strong {
     color: var(--highlight-color);
     font-size: 1.1rem;
 }
 
-.Docs blockquote strong:first-child::before {
+.Main blockquote strong:first-child::before {
     content: '%   ';
 }
 
@@ -535,40 +489,23 @@ a:visited {
     letter-spacing: 1px;
 }
 
-.Docs ol > li {
+.Main ol > li {
     list-style: decimal;
     margin-left: 40px;
 }
 
-.Docs > h2 {
-    counter-increment: h2counter;
-    counter-reset: h3counter;
-}
-.Docs > h2:before {
-    content: counter(h2counter) ".\0000a0\0000a0";
-}
-.Docs > h3 {
-    counter-increment: h3counter;
-}
-.Docs > h3:before {
-    content: counter(h2counter) "." counter(h3counter) ".\0000a0\0000a0";
-}
-
-.Docs {
+.Main--withSidebar {
     display: grid;
     grid-template-columns: 350px 1fr;
 }
+
+
+
 @media (max-width: 992px) {
-    .Docs { display: block; }
+    .Main { display: block; }
 }
 
 @media (max-width: 992px) {
-
-    .Hero img:last-child {
-        margin-left: -20x;
-        max-height: 128px;
-        margin-bottom: -50px;
-    }
     nav.Navbar li {
         font-size: 24px;
         margin-left: 20px;
@@ -594,3 +531,4 @@ footer {
     margin-top: 50px;
     text-align: center;
 }
+

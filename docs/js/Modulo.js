@@ -3,7 +3,15 @@
 // # Introduction
 // Welcome to the Modulo.js source code.
 
-// Unlike most code files, this one is arranged in a very deliberate way.  It's
+// ## Note
+// Earlier versions of Modulo.js's source code were written with literate
+// programming (an explanation is contained in the next comment paragraph).
+// Most of this documentation has been deleted, but will be rewritten once the
+// public API is settled. Until then, the code is riddled with TODO's: It's not
+// "literate" and aspires to much better comments, formatting, complexity, etc.
+
+// ## Literate
+// Unlike most code files, this one is arranged in a very deliberate way. It's
 // arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
 // component, such that the earlier and more important code is at the top, and
 // later and less important code is at the bottom. You can read it like a
@@ -12,39 +20,47 @@
 // interweaving Markdown-formatted comments on to tell this story, and uses a
 // tool (docco) to extract all these comments for easy reading.
 
-// ## Code standards
-// - SLOC limit: 1000 lines
-// - Line limit: 80 chars
-// - Indentation: 4 spaces
-
-
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
+
 var Modulo = {
-    globals: {HTMLElement}, // globals is window in Browser, an obj in Node.js
+    globals: { HTMLElement }, // globals is window in Browser, an obj in Node.js
     reconcilers: {}, // used later, for custom DOM Reconciler classes
     cparts: {}, // used later, for custom CPart classes
     templating: {}, // used later, for custom Templating languages
 };
+
 
 // ## Modulo.defineAll()
 // Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
 // "activate" all of Modulo by defining the "mod-load" web component. This
 // constructs a Loader object for every `<mod-load ...>` tag it encounters.
 Modulo.defineAll = function defineAll() {
-    Modulo.fetchQ = new Modulo.FetchQueue();
-    Modulo.globals.customElements.define('mod-load', Modulo.DOMLoader);
+    if (!Modulo.fetchQ) {
+        Modulo.fetchQ = new Modulo.FetchQueue();
+    }
+    //Modulo.globals.customElements.define('mod-load', Modulo.DOMLoader);
 
     // Then, looks for embedded modulo components, found in <template modulo>
     // tags or <script type="modulo/embed" tags>. For each of these, it loads
     // their contents into a global loader with namespace 'x'.
-    const opts = {options: {namespace: 'x'}};
-    Modulo.globalLoader = new Modulo.Loader(null, opts);
-    Modulo.globalLoader.loadModules(Modulo.globals.document);
+    const attrs = { namespace: 'x', src: '/' };
+    if (!Modulo.globalLoader) {
+        Modulo.globalLoader = new Modulo.Loader(null, { attrs });
+    }
+
     Modulo.CommandMenu.setup();
+    Modulo.fetchQ.wait(() => {
+        const query = 'template[modulo-embed],modulo,m-module';
+        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+            // TODO: Should be elem.content if tag===TEMPLATE
+            Modulo.globalLoader.loadString(elem.innerHTML);
+        }
+    });
 };
 
+/*
 Modulo.DOMLoader = class DOMLoader extends HTMLElement {
     // TODO: Delete DOMLoader
     // The Web Components specifies the use of a "connectedCallback" function.
@@ -52,26 +68,29 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
     // with a `<mod-load>` tag in it.
     connectedCallback() {
         if (this.loader) {
-            console.log('Warning: Duplicate connected?', this.loader.attrs);
+            console.log('Error: Duplicate connected?', this.loader.attrs);
+            //this.loader.doFetch();
+        } else {
+            this.initialize();
         }
-        this.initialize();
     }
     initialize() {
         const src = this.getAttribute('src');
         const namespace = this.getAttribute('namespace');
-        const opts = {options: {namespace, src}};
+        const opts = {attrs: {namespace, src}};
         this.loader = new Modulo.Loader(null, opts);
         this.loader.doFetch();
     }
 }
+*/
 
 Modulo.ComponentPart = class ComponentPart {
-    static loadCallback(node, loader, loadObj) {
-        // TODO rename "options" to "attrs", refactor this mess
-        const options = Modulo.utils.parseAttrs(node);
-        const content = node.tagName === 'TEMPLATE' ? node.innerHTML
-                                                    : node.textContent;
-        return {options, content, dependencies: options.src || null};
+    static loadCallback(node, loader) {
+        const attrs = Modulo.utils.mergeAttrs(node);
+        // TODO is this still useful? --v
+        const content = node.tagName.startsWith('TE') ? node.innerHTML
+                                                      : node.textContent;
+        return {attrs, content, dependencies: attrs.src || null};
     }
 
     static loadedCallback(data, content) {
@@ -81,156 +100,97 @@ Modulo.ComponentPart = class ComponentPart {
     static factoryCallback() {}
 
     constructor(element, options) {
-        this.component = element; // TODO: Remove
         this.element = element;
         this.content = options.content;
-        this.options = options.options; // TODO: Remove
-        this.attrs = options.options;
+        this.attrs = options.attrs;
     }
 }
 
 // # Modulo.Loader
 // Once registered by `defineAll()`, the `Modulo.Loader` will do the rest of
 // the heavy lifting of fetching & registering Modulo components.
-Modulo.Loader = class Loader extends Modulo.ComponentPart {
+Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove component part extension, unused
     // ## Loader: connectedCallback()
-    constructor(element=null, options={options: {}}) { // TODO: refactor
+    constructor(element = null, options = { attrs: {} }, parentLoader = null) {
         super(element, options);
         this.src = this.attrs.src;
+
+        // TODO: "Namespace", should be "global-namespace"?
+        // If loader.namespace = null, cause defaulting to hash.
         this.namespace = this.attrs.namespace;
-        this.factoryData = [];
+        this.localNameMap = {};
+        this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
+    /*
     // factoryCallback() could be the new connectdCallback for <module><load>
     // syntax!
-    doFetch(element, options) {
-        Modulo.assert(this.src, 'Loader: Invalid src= attribute');
-        Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute');
+    doFetch(element, attrs) {
+        Modulo.assert(this.src, 'Loader: Invalid src= attribute:', this.src);
+        Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute:', this.namespace);
 
         // After initializing data, send a new request to the URL specified by
         // the src attribute. When the response is received, load the text as a
         // Modulo component module definition.
         Modulo.fetchQ.enqueue(this.src, text => this.loadString(text));
     }
-
-    loadModules(elem) {
-        // TODO: Decide whether loadModules goes above or below
-        // because otherwise what if it accidentally picks up on a <load src="?
-        // ACTUALLY, it won't! Because that only happens AFTER. So, i have
-        // to figure out if it should drain queue sooner or later.
-        this.mod = {};
-        const mod = elem.querySelector('module');
-        if (mod) {
-            const [modName, modLoadObj] = this.loadFromDOMElement(mod);
-            this.mod = modLoadObj;
-            // TODO need to wait before we defineComponent here
-            //Modulo.fetchQ.wait(() => this.defineComponent(this.namespace, modLoadObj));
-            this.modFactory = this.defineComponent(this.namespace, modLoadObj);
-        }
-        const query = 'template[modulo-embed],script[type="modulo/embed"]';
-        for (const embeddedModule of elem.querySelectorAll(query)) {
-            // TODO: Should be elem.content if tag===TEMPLATE
-            this.loadString(embeddedModule.innerHTML);
-        }
-    }
+    */
 
     // ## Loader: loadString
     // The main loading method. This will take a string with the source code to
     // a module as an argument and loop through all `<component ...>` style
     // definitions. Then, it uses `Loader.loadFromDOMElement` to create a
     // `ComponentFactory` instance for each component definition.
-    loadString(text) {
-        /* TODO - Maybe use DOMParser here instead */
-        /* TODO - Recurse into other sub-loaders, applying namespace */
-        /* TODO: Do <script  / etc preprocessing here:
-          <state -> <script type="modulo/state"
-          <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
-          </(state|props|template)> -> </script>
-        */
-        const frag = new Modulo.globals.DocumentFragment();
-        const div = Modulo.globals.document.createElement('div');
-        div.innerHTML = text;
-        frag.append(div);
-        const factoryData = [];
-        this.factoryData = factoryData; // for testing
-
-        this.loadModules(div); // In case we are just loading an embedded component
-        for (const tag of div.querySelectorAll('[mod-component],component')) {
-            const [name, loadObj] = this.loadFromDOMElement(tag);
-            this.factoryData.push([name, loadObj]);
+    loadString(text, newSrc = null) {
+        Modulo.assert(text, 'Text must be a non-empty string, not', text)
+        if (newSrc) {
+            this.src = newSrc;
         }
-        Modulo.fetchQ.wait(() => this.defineComponents(factoryData));
-    }
-
-    defineComponents(factoryData) {
-        for (const [name, loadObj] of factoryData) {
-            this.defineComponent(name, loadObj);
-        }
+        //this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text));
+        this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text, true));
+        this.hash = Modulo.utils.hash(this.hash + text); // update hash
     }
 
     // ## Loader: loadFromDOMElement
     // Create a ComponentFactory instance from a given `<component>` definition.
-    loadFromDOMElement(elem, array=null) {
-        // ### Step 1: Config
-        // Get any custom component configuration (e.g. attributes `name=` or
-        // `extends=`)
-        const attrs = Modulo.utils.parseAttrs(elem);
-        const name = attrs.modComponent || attrs.name;
+    loadFromDOMElement(elem) {
 
-        // ### Step 2: Set-up `loadObj`
-        // Modulo often uses plain objects to "pass around" during the lifecycle
-        // of each component. At this stage, we set up `loadObj`.
-
-        // At the end of this method, the loadObj will be populated with a
-        // complete, parsed, component definition -- enough information to
-        // instantiate a "factory" for this component -- in the following
-        // structure:
-
-        // ```javascript
-        // loadObj = {
-        //     template: [...], // array of parsed objects for "Template" CPart
-        //     state: [...], // array of parsed objects for "State" CPart
-        //     ...etc
-        // }
-        // ```
-        const loadObj = {component: [{name}]}; // Everything gets implicit Component CPart
-
-        // ### Step 3: define CParts
+        // ### define CParts
         // Loop through each CPart DOM definition within the component (e.g.
         // `<state>`), invoking the `loadCallback` on each definition (e.g.
         // `Modulo.cparts.state.loadCallback` will get invoked for each
         // `<state>`). This `loadCallback` in turn will do any pre-processing
         // necessary to transform the attributes of the DOM element into the
         // data necessary to define this CPart.
-        for (const {cPartName, node} of this.getCPartNamesFromDOM(elem)) {
-            if (!(cPartName in loadObj)) {
-                loadObj[cPartName] = [];
+        const array = [];
+        const nodes = elem.content ? elem.content.childNodes : elem.children;
+        for (const node of nodes) {
+            const cPartName = this.getNodeCPartName(node);
+            if (!cPartName) {
+                continue;
             }
-            const {loadCallback, loadedCallback} = Modulo.cparts[cPartName];
-            const data = loadCallback(node, this, loadObj);
-            loadObj[cPartName].push(data);
-            if (array) {
-                array.push([cPartName, data]);
-            }
-            if (data.dependencies) {
-                const cb = (text, label) =>
-                    loadedCallback(data, text, label, this, loadObj);
-                Modulo.fetchQ.enqueue(data.dependencies, cb, this.src);
-            }
-        }
-        return [name, array || loadObj];
-    }
+            const cpartClass = Modulo.cparts[cPartName]
+            const data = cpartClass.loadCallback(node, this, array);
+            array.push([cPartName, data]);
 
-    // ## Loader: defineComponent
-    // Helper function that constructs a new ComponentFactory for a component,
-    // based on a loadObj data structure.
-    defineComponent(name, loadObj) {
-        const factory = new Modulo.ComponentFactory(this, name, loadObj);
-        factory.register();
-        if (Modulo.globals.defineComponentCallback) {
-            Modulo.globals.defineComponentCallback(factory); // TODO rm when possible
+            if (data.dependencies) {
+                // Ensure any CPart dependencies are loaded (relative to src)
+                const basePath = Modulo.utils.resolvePath(this.src, '..');
+                //console.log('this is basePath', basePath);
+                const loadCb = cpartClass.loadedCallback.bind(cpartClass);
+                const cb = (text, label, src) => loadCb(data, text, label, this, src);
+                Modulo.fetchQ.enqueue(data.dependencies, cb, basePath);
+            }
+
+            if (cpartClass.childrenLoadedCallback) { // a factory type
+                data.children = this.loadFromDOMElement(node);
+                const cb = cpartClass.childrenLoadedCallback.bind(cpartClass);
+
+                // Wait for enqueued loads (side-effect of loadFromDOMElement)
+                Modulo.fetchQ.wait(() => cb(data.children, this, data));
+            }
         }
-        return factory;
+        return array;
     }
 
     // ## Loader.getNodeCPartName
@@ -244,7 +204,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
         if (nodeType !== 1) {
             // Text nodes, comment nodes, etc
             if (nodeType === 3 && textContent && textContent.trim()) {
-                console.error('Unexpected text in component def:', textContent);
+                console.error('Modulo.Loader: Unexpected text:', textContent);
             }
             return null;
         }
@@ -257,29 +217,21 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart {
             cPartName = splitType[1];
         }
         if (!(cPartName in Modulo.cparts)) {
-            console.error('Unknown CPart in component def:', tagName);
+            console.error('Modulo.Loader: Unknown CPart def:', tagName);
             return null;
         }
         return cPartName;
     }
+}
 
-    // ## Loader.getCPartNamesFromDOM
-    // Helper function that loops through a component definitions children,
-    // generating an array of objects containing the node and CPart name.
-    getCPartNamesFromDOM(elem) {
-        /* TODO: rewrite this */
-        const arr = [];
-        const nodes = elem.content ? elem.content.childNodes : elem.children;
-        for (const node of nodes) {
-            const cPartName = this.getNodeCPartName(node);
-            if (cPartName) {
-                arr.push({node, cPartName});
-            }
-        }
-        return arr;
+Modulo.cparts.load = class Load extends Modulo.ComponentPart {
+    static loadedCallback(data, content, label, loader, src) {
+        // idea: make namespace ALWAYS required, no default? 'x' is only for local/global?
+        const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
+        data.loader = new Modulo.Loader(null, { attrs }, loader);
+        data.loader.loadString(content);
     }
 }
-Modulo.cparts.load = Modulo.Loader;
 
 // # Modulo.ComponentFactory
 
@@ -297,15 +249,17 @@ Modulo.ComponentFactory = class ComponentFactory {
     // When a ComponentFactory gets constructed (that is, by the Loader), it in
     // turn sets up expected properties, and then invokes its methods
     // createClass and runFactoryLifeCycle explained next.
-    constructor(loader, name, options) {
+    constructor(loader, name, childrenLoadObj) {
         this.loader = loader;
-        this.options = options;
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
+
+        this.isModule = this.loader.namespace === name; // if name = namespace
         Modulo.ComponentFactory.registerInstance(this);
+
         this.componentClass = this.createClass();
-        this.baseRenderObj = this.runFactoryLifecycle(options);
-        //if (!skipFactory) { }
+        this.childrenLoadObj = childrenLoadObj;
+        this.baseRenderObj = this.runFactoryLifecycle(this.childrenLoadObj);
     }
 
     // ## ComponentFactory: Factory lifecycle
@@ -341,12 +295,9 @@ Modulo.ComponentFactory = class ComponentFactory {
     // ```
     runFactoryLifecycle(cPartOpts) {
         const baseRenderObj = {};
-        for (const [cPartName, partOptionsArr] of Object.entries(cPartOpts)) {
+        for (let [cPartName, data] of cPartOpts) {
             const cpCls = Modulo.cparts[cPartName];
-            let data = {};
-            for (data of partOptionsArr) {
-                data = cpCls.factoryCallback(data, this, baseRenderObj) || data;
-            }
+            data = cpCls.factoryCallback(data, this, baseRenderObj) || data;
             baseRenderObj[cPartName] = data;
         }
         return baseRenderObj;
@@ -354,21 +305,14 @@ Modulo.ComponentFactory = class ComponentFactory {
 
     // ## ComponentFactory: createClass
     // Finally, we are ready to create the class that the browser will use to
-    // actually instantiate each Component. At this stage, we set up the
-    // reconciliation engine, since that's a component-wide option, create a
-    // "back reference" to the factory from the component, and then return a
-    // brand-new class definition.
+    // actually instantiate each Component, with a "back reference" to the fac.
     createClass() {
-        const {fullName} = this;
-        const {reconciliationEngine = 'SetDom'} = this.options;
-        const engine = new Modulo.reconcilers[reconciliationEngine]();
-        const func = (component, html) => engine.reconcile(component, html);
+        const { fullName } = this;
         return class CustomElement extends Modulo.Element {
-            get factory() {
+            factory() {
                 /* Gets current registered component factory (for hot-reloading) */
                 return Modulo.factoryInstances[fullName];
             }
-            get reconcile() { return func; }
         };
     }
 
@@ -376,39 +320,31 @@ Modulo.ComponentFactory = class ComponentFactory {
     // This function does the heavy lifting of actually constructing a
     // component, and is invoked when the component is mounted to the page.
     buildCParts(element) {
-        const oldCParts = element.cparts || {};
         element.cparts = {element}; // Include "element", for lifecycle methods
         element.cpartSpares = {}; // no need to include, since only 1 element
 
         // It loops through the parsed array of objects that define the
         // Component Parts for this component, checking for errors.
-        for (const [name, partOptionsArr] of Object.entries(this.options)) {
+        for (const [name, partOptions] of this.childrenLoadObj) {
             Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
-            element.cpartSpares[name] = [];
-
-            for (const partOptions of partOptionsArr) {
-                const instance = new Modulo.cparts[name](element, partOptions);
-                element.cpartSpares[name].push(instance);
-                element.cparts[name] = instance;
-
-                /* // (NOTE: Untested after refactor) 
-                *  // If this component was already mounted and is getting
-                *  // "rebuilt" due to the definition changing, it also triggers
-                *  // any callbacks, to allow for hot-reloading without losing
-                *  // state.
-                if (cparts[name].reloadCallback && name in oldCParts) {
-                    cparts[name].reloadCallback(oldCParts[name]);
-                }*/
+            if (!(name in element.cpartSpares)) {
+                element.cpartSpares[name] = [];
             }
+            const instance = new Modulo.cparts[name](element, partOptions);
+            element.cpartSpares[name].push(instance);
+            element.cparts[name] = instance;
         }
     }
 
     createTestElement() {
-        console.log('REAL createTestElement');
         const element = new this.componentClass();
         delete element.cparts.testsuite; // for testing, never include testsuite
         element.connectedCallback(); // ensure this is called
         return element;
+    }
+
+    doTestRerender(elem, testInfo) {
+        elem.rerender(); // presently no other steps
     }
 
     // ## ComponentFactory: register & registerInstance
@@ -416,15 +352,47 @@ Modulo.ComponentFactory = class ComponentFactory {
     // the second keeps a central location of all component factories defined.
     register() {
         const tagName = this.fullName.toLowerCase();
-        Modulo.globals.customElements.define(tagName, this.componentClass);
+
+        // TODO: This is actually the "biggest" try-catch. When I work on err
+        // messages, this might be the spot (e.g. use other try-catches further
+        // down, that annotate the Error with extra info that then gets nicely
+        // formatted here).
+        try {
+            //console.log('registering ', tagName, this.componentClass);
+            Modulo.globals.customElements.define(tagName, this.componentClass);
+        } catch (err) {
+            console.log('Modulo: Error with new component:', err);
+        }
     }
+
     static registerInstance(instance) {
         if (!Modulo.factoryInstances) {
             Modulo.factoryInstances = {};
         }
         Modulo.factoryInstances[instance.fullName] = instance;
+
+        const lcName = instance.name.toLowerCase();
+        if (instance.isModule) {
+            // TODO: Dead-ish feature: not Sure how useful this is, or if only
+            // "local" modules are typically used. Ideally this should be based
+            // on local module names / localNameMap, not global namespaces.
+            if (!Modulo.modules) {
+                Modulo.modules = {};
+            }
+            Modulo.modules[lcName] = instance.baseRenderObj;
+        } else {
+            // "Register" local name with loader, and instance in general
+            // TODO: Have localNameMap propagate up, as long as there is no
+            // "namespace" attribute (namespace rename is TBD). That way,
+            // localNameMap "dumps" into the upper one.
+            instance.loader.localNameMap[lcName] = instance.fullName;
+        }
     }
 }
+
+// TODO: Abstract away all cpart logic into CPartCollection which is "owned" by
+// whichever CPart is the parent CPart. Element becomes a thin helper for
+// Component.
 
 Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
@@ -435,100 +403,108 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     initialize() {
         this.cparts = {};
         this.isMounted = false;
-
-        this.originalHTML = this.innerHTML;
+        this.originalHTML = null;
         this.originalChildren = [];
-        //console.log('originalChildren!', this.originalChildren);
-        //console.log('originalInnerHTML!', this.innerHTML);
-        if (this.hasChildNodes()) {
-            const dupedChildren = Array.from(this.childNodes); // necessary
-            for (const child of dupedChildren) {
-                //this.originalChildren.push(this.removeChild(child)); // TODO: should i remove children?
-                this.originalChildren.push(child);
-            }
-            //console.log('originalChildren has child nodes!', this.originalChildren);
+        this.fullName = this.factory().fullName;
+        this.initRenderObj = Object.assign({}, this.factory().baseRenderObj);
+        /*
+        if (this.fullName === 'x-Page') {
+            console.log('x page');
+            console.log('getting initialized!', this.originalHTML);
+            console.log('getting initialized!', this.originalChildren, this);
+            debugger;
         }
-        this.fullName = this.factory.fullName;
-        this.initRenderObj = Object.assign({}, this.factory.baseRenderObj);
+        */
     }
 
     setupCParts() {
-        this.factory.buildCParts(this);
+        this.factory().buildCParts(this);
     }
 
-    applyDirectives(directives) {
-        for (const args of directives) {
-            const {setUp, tearDown, el, rawName, hasRun, value, dName} = args;
-            if (!setUp) {
-                console.error('TMP Skipping:', dName, rawName, value);
-                continue;
-            }
-            args.resolutionContext = this; // TODO fix this with truly predictable context
-            if (hasRun) {
-                if (!tearDown) {
-                    console.error('TMP NO TEAR DOWN ERR:', rawName);
-                }
-                tearDown(args);
-            }
-            args.hasRun = true;
-            setUp(args);
-            /*
-            if (setUp) {
-                el.onload = setUp.bind(thisContext, [args]);
-            }
-            if (tearDown) {
-                el.onunload = tearDown.bind(thisContext, [args]);
-            }
-            */
-        }
+    directiveMount(args) {
+        // TODO: Add a check to ensure one of Mount, Unmount or Change exists
+        args.element = this;
+        this._invokeCPart(args.directiveName, 'Mount', args);
+    }
+    directiveUnmount(args) {
+        args.element = this;
+        this._invokeCPart(args.directiveName, 'Unmount', args);
+    }
+    directiveChange(args) {
+        args.element = this;
+        this._invokeCPart(args.directiveName, 'Change', args);
     }
 
     rerender() {
+        // IDEA: Render-path micro-optimization idea:
+        // - Push prebound func to list, to "pre-compute" render loop
+        // - .rerender() thus is just looping through list of funcs running each
         this.lifecycle(['prepare', 'render', 'update', 'updated']);
     }
 
     lifecycle(lifecycleNames, rObj={}) {
-        // NEW CODE: This is a quick re-implementation of lifecycle
         this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
-        // todo: maybe sort cparts ahead of time based on lifecycles?
-        for (const lcName of lifecycleNames) {
-            for (const [cPartName, cPart] of Object.entries(this.cparts)) {
-                const method = cPart[lcName + 'Callback'];
-                if (method) {
-                    const results = method.call(cPart, this.renderObj);
-                    if (results) {
-                        this.renderObj[cPartName] = results;
-                    }
-                }
+        for (const lc of lifecycleNames) {
+            for (const cName of Object.keys(this.cparts)) {
+                this._invokeCPart(cName, lc + 'Callback');
+            }
+            if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
+                  (this.fullName + '|' + lc) in Modulo.breakpoints)) {
+                // DEADCODE, finish or delete
+                debugger;
             }
         }
-        /* TODO: should probably be nulling this after */
-        //this.renderObj = null; // rendering is over, set to null
+        //this.renderObj = null; // ?rendering is over, set to null
     }
 
     getCurrentRenderObj() {
-        //console.log('this is initRenderObj', this.initRenderObj);
-        //console.log('this is renderObj', this.renderObj);
-        //console.log('this is eventRenderObj', this.eventRenderObj);
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
     }
 
-    resolveValue(key) {
-        //const hackName = this.factory.name;
-        //console.log(`   ${hackName} -- GET   ${key}`, rObj);
-        //console.log(`   ${hackName} -- VALUE ${key} <<${result}>>`);
-        const rObj = this.getCurrentRenderObj();
-        const result = key.split('.').reduce((o, name) => o[name], rObj);
+    _invokeCPart(cpartName, methodName, dirMountArg) {
+        // Two valid invocation styles:
+        //  _invokeCPart('state.bind', 'Mount', {...})
+        //  _invokeCPart('state', 'bindMount')
+        const argument = dirMountArg || this.renderObj;
+        const splitKey = cpartName.split('.');
+        if (splitKey.length === 2) {         // "state.bind"
+            cpartName = splitKey[0];         // "state.
+            methodName = splitKey[1] + methodName; // .bindMount"
+        }
+        const method = this.cparts[cpartName][methodName];
+        let result;
+        if (method) {
+            result = method.call(this.cparts[cpartName], argument);
+        }
+        if (!dirMountArg && result) {
+            this.renderObj[cpartName] = result;
+        }
         return result;
     }
 
     connectedCallback() {
-        /*
-        Note: For testability, setupCParts is invoked on first mount, before
-        initialize.  This is so the hacky "fake-upgrade" for custom components
-        works for the automated tests. Logically, it should probably be invoked
-        in the constructor.
-        */
+        if (this.isMounted) {
+            return; // TODO: possibly just return?
+        }
+
+        if (Modulo.isBackend) {
+            this.parsedCallback(); // ensure synchronous
+        } else {
+            // TODO Consider putting all async into single queue / loop
+            setTimeout(this.parsedCallback.bind(this), 0);
+        }
+    }
+
+
+    parsedCallback() {
+        // HACK delete
+        if (!this.isMounted) { // or is necessary?
+            this.originalHTML = this.innerHTML;
+            this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
+            //console.log('getting original chidlren', this.originalHTML, this.originalChildren);
+        }
+        // HACK delete
+
         this.setupCParts();
         this.lifecycle(['initialized'])
         this.rerender();
@@ -536,260 +512,203 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 }
 
-// IDEA (2021-10-05): Call Collect directives during "update" phase, and return
-// a trimmed version of its structure in the component CPart data in renderObj.
-// Then call applyDirectives in the "updated" phase.  This is what the
-// documentation says happens (IRL, right now both happen in "update")
-Modulo.collectDirectives = function collectDirectives(component, el, arr) {
-    if (!arr) {
-        arr = []; // HACK for testability
-    }
-    /* TODO: for "pre-load" directives, possibly just pass in "Loader" as
-       "component" so we can have load-time directives */
-    for (const rawName of el.getAttributeNames()) {
-        // todo: optimize skipping most elements or attributes
-        let name = rawName;
-        for (const [regexp, dir] of Modulo.directiveShortcuts) {
-            if (rawName.match(regexp)) {
-                name = `[${dir}]` + name.replace(regexp, '');
-            }
+Modulo.directiveShortcuts = [[/^@/, 'component.event'],
+                             [/:$/, 'component.dataProp']];
+
+                             // TODO delete this--v ? maybe not the best way?
+Modulo.directiveUniques = { 'component.children': true }; // DEAD CODE - TODO: Autogenerate key from this?
+
+Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
+    static childrenLoadedCallback(childrenLoadObj, loader, data) {
+        //console.log('children loaded callback', childrenLoadObj);
+        const partName = this.name.toLowerCase();
+        let name = partName === 'module' ? loader.namespace : data.attrs.name;
+        if (data.attrs.hackname) {
+            name = data.attrs.hackname;
         }
-        if (!name.startsWith('[')) {
-            continue; // There are no directives, skip
-        }
-        const value = el.getAttribute(rawName);
-        const attrName = cleanWord((name.match(/\][^\]]+$/) || [''])[0]);
-        for (const dName of name.split(']').map(cleanWord)) {
-            if (dName === attrName) {
-                continue; // Skip bare name
-            }
-            const setUp = component.resolveValue(dName + 'Mount');
-            const tearDown = component.resolveValue(dName + 'Unmount');
-            //console.log('dName', dName, attrName, component);
-            if (dName !== 'script.codemirror') { // TODO HACK UGH NO
-                Modulo.assert(setUp || tearDown, `Unknown directive "${dName}" `, el);
-            }
-            arr.push({el, value, attrName, rawName, setUp, tearDown, dName})
-        }
+        childrenLoadObj.push([partName, data]); // Add "myself" in as component data
+        Modulo.fetchQ.wait(() => { // Wait for all dependencies to finish resolving
+            const factory = new Modulo.ComponentFactory(loader, name, childrenLoadObj);
+            factory.register();
+        });
     }
-    for (const child of el.children) {
-        // tail recursion into children
-        Modulo.collectDirectives(component, child, arr);
-    }
-    return arr; // HACK for testability
 }
 
-Modulo.directiveShortcuts = [[/^@/, 'component.event'],
-                             [/:$/, 'component.resolve'] ];
+Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
-Modulo.cparts.component = class Component extends Modulo.ComponentPart {
+Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
+    initializedCallback(renderObj) {
+        const { engine = 'ModRec' } = this.attrs;
+        this.reconciler = new Modulo.reconcilers[engine]({ makePatchSet: true });
+    }
+
     prepareCallback() {
-        return {
-            innerHTML: null,
-            // TODO shouldn't have to do this ---v
-            eventMount: this.eventMount.bind(this),
-            eventUnmount: this.eventUnmount.bind(this),
-            resolveMount: this.resolveMount.bind(this),
-            resolveUnmount: this.resolveUnmount.bind(this),
-            childrenMount: this.childrenMount.bind(this),
-            childrenUnmount: this.childrenUnmount.bind(this),
-        };
+        const { originalHTML } = this.element;
+        return { originalHTML, innerHTML: null, patches: null };
     }
 
     updateCallback(renderObj) {
-        if (renderObj.component.innerHTML !== null) {
-            let newContents = renderObj.component.innerHTML || '';
-            // TODO: move reconcile to this class
-            //console.log('element reconcile:', this.element, newContents);
-            this.element.reconcile(this.element, newContents);
+        let { innerHTML, patches } = renderObj.component;
+        if (innerHTML !== null) {
+            if (!this.reconciler) {
+                // XXX (Delete this, only needed for SSG)
+                const { engine = 'ModRec' } = this.attrs;
+                this.reconciler = new Modulo.reconcilers[engine]({ makePatchSet: true });
+            }
+            const { localNameMap } = this.element.factory().loader;
+            patches = this.reconciler.reconcile(this.element, innerHTML || '', localNameMap);
+        }
+        return { patches, innerHTML }; // TODO remove innerHTML from here
+    }
 
-            if (newContents.includes('Shop')) {
-                // TODO: extremely broken hack, remove after new reconciler is
-                // developed
-                if (this.directives) {
-                    this.directives.forEach(args => {
-                        if (args.tearDown) {
-                            args.tearDown(args)
-                        }
-                    });
+    updatedCallback(renderObj) {
+        const { patches, innerHTML } = renderObj.component;
+        if (patches) {
+            /*
+            if (innerHTML.includes('class="TitleAside')) {
+                // TODO: rm, this is for debugging "vanish" and "children" interactions
+                console.log('-----------------------------')
+                const s = 'const elementIH = `' +
+                      this.element.innerHTML.replace(/`/g, '\`') + '`;\n' +
+                      'const componentIH = `' +
+                      innerHTML.replace(/`/g, '\`') + '`;\n';
+                console.log(s);
+                console.log('-----------------------------')
+            }
+            */
+            this.reconciler.applyPatches(patches);
+        }
+
+        if (!this.element.isMounted) { // First time initialized
+            const mode = this.attrs ? (this.attrs.mode || 'default') : 'default';
+            if (mode === 'vanish' || mode === 'vanish-allow-script') {
+                // TODO: switch with slightly cleaner "vanish-into-document"
+                // which 1) looks for body, copies to body, then 2) looks for
+                // head, copies to head
+                if (mode === 'vanish-allow-script') {
+                    for (const oldScr of this.element.querySelectorAll('script')) {
+                        // TODO: should copy over all attributes, eg async
+                        const newScript = Modulo.globals.document.createElement('script');
+                        newScript.src = oldScr.src;
+                        oldScr.remove(); // delete old element & move to head
+                        Modulo.globals.document.head.appendChild(newScript);
+                    }
                 }
-                this.directives = [];
-                for (const child of this.element.children) {
-                    Modulo.collectDirectives(this.element, child, this.directives);
-                }
-                this.element.applyDirectives(this.directives);
+
+                this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
     }
 
-    handleEvent(func, ev, payload) {
-        this.element.lifecycle(['event'], {_eventFunction: func});
-        func.call(null, ev, payload); // todo: bind to array.push etc, or get autobinding in resolveValue
-        this.element.lifecycle(['eventCleanup']); // todo: should this go below rerender()?
-        // TODO: Add if (!this.component.options.controlledRender)
-        this.element.rerender(); // always rerender after events
+    handleEvent(func, payload, ev) {
+        this.element.lifecycle([ 'event' ], { _eventFunction: func });
+        const { value } = (ev.target || {}); // Get value if is <INPUT>, etc
+        func.call(null, payload === undefined ? value : payload, ev);
+        this.element.lifecycle([ 'eventCleanup' ]); // todo: should this go below rerender()?
+        if (this.attrs.rerender !== 'manual') {
+            this.element.rerender(); // always rerender after events
+        }
     }
 
     childrenMount({el}) {
+        // IDEA: Have value be querySelector, eg [component.children]="div"
         el.append(...this.element.originalChildren);
-        //this.element.originalChildren = [];
+        //el.setAttribute('modulo-ignore', 'modulo-ignore');
     }
 
-    childrenUnmount() {
-        //this.element.innerHTML = '';
+    childrenUnmount({el}) {
+        el.innerHTML = '';
+        //console.log('childrenUnmount!', el);
+        //el.removeAttribute('modulo-ignore');
     }
 
-    eventMount(info) {
-        const {el, value, attrName, rawName} = info;
-        const getAttr = getGetAttr(el);
-        //console.log('this is eventMount', info);
-        const listener = (ev) => {
-            //window.C = this;
-            //console.log('this is rawName', rawName, value);
-            const func = getAttr(attrName, getAttr(rawName));
-            Modulo.assert(func, `Bad ${attrName}, ${value} is ${func}`);
-            const payload = getAttr(`${attrName}.payload`,
-                                      getAttr('payload', el.value));
-            //console.log('this is payload', `${attrName}.payload`, payload);
-            this.handleEvent(func, ev, payload);
-        };
-        info.listener = listener;
-        el.addEventListener(attrName, listener);
+    eventMount({el, value, attrName, rawName}) {
+        // TODO: Make it @click.payload, and then have this see if '.' exists
+        // in attrName and attach as payload if so
+        const { resolveDataProp } = Modulo.utils;
+        const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
+        const func = get(attrName);
+        Modulo.assert(func, `Bad @${attrName} event: ${value} is falsy`);
+        if (!el.moduloEvents) {
+            el.moduloEvents = {};
+        }
+        const plName = attrName + '.payload';
+        const listen = ev => this.handleEvent(func, get(plName, 'payload'), ev);
+        el.moduloEvents[value] = listen;
+        el.addEventListener(attrName, listen);
     }
 
-    eventUnmount({el, attrName, listener}) {
-        el.removeEventListener(attrName, listener);
+    eventChange(info) {
+        // TODO: test this, or replace Change with Unmount -> Mount as default
+        this.eventUnmount(info);
+        this.eventMount(info);
     }
 
-    resolveMount({el, value, attrName, resolutionContext}) {
-        //console.log('this is it', resolutionContext);
-        //console.log('this is resolve mount', attrName, value);
-        const resolvedValue = resolutionContext.resolveValue(value);
-        el.attrs = Object.assign(el.attrs || {}, {[attrName]: resolvedValue});
-        el.getAttr = (n, def) => {
-            let val;
-            if (n in el.attrs) {
-                val = el.attrs[n];
-            } else {
-                val = el.getAttribute(n) || def;
-            }
-            //console.log('-------------------', n, val);
-            return val;
-        };
+    eventUnmount({el, attrName}) {
+        const listen = el.moduloEvents[attrName];
+        el.removeEventListener(attrName, listen);
+        delete el.moduloEvents[attrName];
     }
-    resolveUnmount({el, attrName}) {
-        delete el.attrs[attrName];
+
+    dataPropMount({el, value, attrName, element}) {
+        const { get } = Modulo.utils;
+        // Resolve the given value and attach to dataProps
+        if (!el.dataProps) {
+            el.dataProps = {};
+        }
+        const val = get(element.getCurrentRenderObj(), value);
+        const index = attrName.lastIndexOf('.') + 1;
+        const key = attrName.slice(index);
+        const path = attrName.slice(0, index);
+        const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
+        dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
+    }
+    dataPropUnmount({el, attrName}) {
+        delete el.dataProps[attrName];
     }
 }
 
 Modulo.cparts.props = class Props extends Modulo.ComponentPart {
-    static factoryCallback({options}, {componentClass}, renderObj) {
+    static factoryCallback({attrs}, {componentClass}, renderObj) {
         /* untested / daedcode ---v */
-        componentClass.observedAttributes = Object.keys(options);
+        componentClass.observedAttributes = Object.keys(attrs);
     }
     initializedCallback(renderObj) {
         const props = {};
-        const getAttr = getGetAttr(this.element);
-        for (let propName of Object.keys(this.options)) {
+        const { resolveDataProp } = Modulo.utils;
+        for (let [propName, def] of Object.entries(this.attrs)) {
             propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
-            props[propName] = getAttr(propName);
+            props[propName] = resolveDataProp(propName, this.element, def);
         }
-        //console.log('this is props', props);
         return props;
     }
 }
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
-    static loadCallback(node, loader, loadObj) {
-        const cName = loadObj.component[0].name;
-        const tests = [];
-        for (const testNode of node.children) {
-            tests.push(loader.loadFromDOMElement(testNode, []));
-        }
-        return {name: loader.namespace + '-' + cName + '-testsuite', tests};
-    }
-    static runTests(testsuiteData, factory) {
-        const element = factory.createTestElement();
-
-        // could be implied first test?
-        Modulo.assert(element.isMounted, 'Successfully mounted element');
-
-        console.log('TESTSUITE', testsuiteData.name);
-        for (const [testName, stepArray] of testsuiteData.tests) {
-            console.log('BEGINNING TEST', testName);
-            //console.log('results', cf.baseRenderObj);
-            const testObj = {};
-            //console.log('this is element', element);
-            const results = [];
-            for (let [sName, data] of stepArray) {
-                const options = {content: data.content, options: data};
-                if (sName === 'state') { // assign state data
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    const initData = cpart.initializedCallback({[sName]: data});
-                    Object.assign(element.cparts.state.data, initData);
-                } else if (sName === 'props') { // assign props data
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    const initData = cpart.initializedCallback({[sName]: data});
-                    element.initRenderObj.props = initData;
-                /*} else if (sName === 'style') {
-                    console.log('this is content', data.content);
-                    const content = data.content.replace(/\*\/.*?\*\//ig, '');
-                    // To prefix the selectors, we loop through them,
-                    // with this RegExp that looks for { chars
-                    content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, (selector, data) => {
-                        console.log('selector', selector);
-                        console.log('data', data);
-                    });*/
-                } else if (sName === 'template') {
-                    const cpart = new Modulo.cparts[sName](element, options);
-                    element.rerender(); // ensure re-rendered before checking 
-                    const text = cpart.instance.render(options);
-                    //console.log('this is element status', element.innerHTML);
-                    // TODO: Write subtree algo, possibly based on reconciler
-                    const result = String(element.innerHTML).includes(text);
-                    if ('snapshot' in options) {
-                        result = String(element.innerHTML).trim() === text.trim();
-                    }
-                    results.push([data.name || sName, result]);
-                }
-                /*
-                else if (sName === 'script') {
-                    const cpCls = Modulo.cparts.script;
-                    element.rerender(); // ensure re-rendered before checking 
-                    data.content = data.content.replace('assert:', 'script.exports =');
-                    const renderObj = element.getCurrentRenderObj();
-                    // TODO: need to make wrapScript it's own thing, and do that instead
-                    const r = cpCls.factoryCallback(data, testFac, element.initRenderObj);
-                    console.log('result of r', r.exports);
-                    results.push([data.name || sName, r.exports]);
-                }*/
-            }
-            for (const [name, result] of results) {
-                if (!result) {
-                    console.log('Failed:', name, result);
-                } else {
-                    console.log('Success:', name, result);
-                }
-            }
-        }
+    static factoryCallback() {
+        console.count('Ignored test-suite');
+        return {}; // wipe contents
     }
 }
 
-
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
-        const {fullName} = factory;
+        const {prefixAllSelectors} = Modulo.cparts.style;
+        const {document} = Modulo.globals;
+        const {loader, name, fullName} = factory;
+        content = prefixAllSelectors(loader.namespace, name, content);
         const id = `${fullName}_style`;
-        let elem = Modulo.globals.document.getElementById(id);
+        let elem = document.getElementById(id);
         if (!elem) {
-            elem = Modulo.globals.document.createElement('style');
+            elem = document.createElement('style');
             elem.id = id;
-            Modulo.globals.document.head.append(elem)
+            document.head.append(elem)
         }
         elem.textContent = content;
     }
 
     static prefixAllSelectors(namespace, name, text='') {
+        // TODO - Refactor this into a helper (has old tests that can be resurrected)
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
 
@@ -805,8 +724,13 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
                 return selector;
             }
 
-            // Upgrade the "bare" component name to be the full name
-            selector = selector.replace(new RegExp(name, 'ig'), fullName);
+            // Upgrade the ":host" pseudoselector to be the full name (since
+            // this is not a Shadow DOM style-sheet)
+            selector = selector.replace(new RegExp(/:host(\([^)]*\))?/, 'g'), hostClause => {
+                // TODO: this needs thorough testing
+                const notBare = (hostClause && hostClause !== ':host');
+                return fullName + (notBare ? `:is(${hostClause})` : '');
+            });
 
             // If it is not prefixed at this point, then be sure to prefix
             if (!selector.startsWith(fullName)) {
@@ -816,64 +740,48 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
         });
         return content;
     }
-
-    static loadCallback(node, loader, loadObj) {
-        let data = super.loadCallback(node, loader, loadObj);
-        const {name} = loadObj.component[0];
-        // TODO: Move prefixing to factoryCallback (?)
-        data.content = Modulo.cparts.style.prefixAllSelectors(
-                          loader.namespace, name, data.content);
-        return data;
-    }
 }
 
 
 Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, loadObj) {
         const tagPref = '$1' + factory.loader.namespace + '-';
-
-        // TODO: Need to do '<x-' -> '<xa3d2af-' for private components, and do
-        // '<x-' -> '<tagPref-' for public components
-        // (and remove '<my-')
-        //const content = (opts.content || '').replace(/(<\/?)x-/ig, tagPref);
-        let content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
-        // TODO -v prefered
-        //content = content.replace(/(<\/?)x-/g, tagPref);
-        let instance = null;
-        if (content.includes('txt="Click me! :)"')) {
-            // TODO: need to remove this, very broken work around for
-            // a particular test
-            instance = new Modulo.templating.MTL(content);
-        }
-        return {content, instance};
+        return {content: (opts.content || '').replace(/(<\/?)my-/ig, tagPref)};
     }
 
     constructor(element, options) {
         super(element, options);
         const engineClass = Modulo.templating[this.attrs.engine || 'MTL'];
+        // TODO: Do not put here! Move to factoryCallback, since otherwise
+        // it will compile every time (unless we cache templates)
         this.instance = new engineClass(this.content, this.attrs);
     }
 
-    renderCallback(renderObj) {
-        if (renderObj.template.instance) {
-            // TODO: broken
-            renderObj.component.innerHTML = renderObj.template.instance.render(renderObj);
-        } else {
-            renderObj.component.innerHTML = this.instance.render(renderObj);
+    prepareCallback(renderObj) {
+        // Exposes templates in render context, so stuff like
+        // "|renderas:template.row" works
+        // (todo: untested, needs unit testing, iirc?)
+        const obj = {};
+        for (const template of this.element.cpartSpares.template) {
+            obj[template.attrs.name || 'default'] = template;
+            //obj[template.name || 'default'] = template;
         }
+        return obj;
+    }
+
+    renderCallback(renderObj) {
+        renderObj.component.innerHTML = this.instance.render(renderObj);
     }
 }
 
 
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static getSymbolsAsObjectAssignment(contents) {
-        // TODO: Need to check for reserved words in capture group:
-        // filter away things like "// function for games"
-        // (which generates a syntax error with "typeof for")
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
         const matches = contents.match(regexpG) || [];
         return matches.map(s => s.match(regexp2)[1])
+            .filter(s => s && !Modulo.INVALID_WORDS.has(s))
             .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
             .join('');
     }
@@ -884,9 +792,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const localVarsIfs = localVars
           .map(n => `if (name === '${n}') ${n} = value;`).join('\n');
 
+
         return `'use strict';
             var ${localVarsLet};
-            var script = {exports: {}};
+            var script = { exports: {} };
             function __set(name, value) { ${localVarsIfs} }
             ${contents}
             return { ${symbolsString} setLocalVariable: __set, exports: script.exports};
@@ -894,15 +803,21 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     }
 
     static factoryCallback(partOptions, factory, renderObj) {
+        // TODO: Much better idea:
+        // Put into IFFE (with same arguments as here) and then put into script
+        // tag into page.  Only do "just in time, e.g. before first time
+        // mounting this on this page. Just like with style.  That way we'll
+        // get full traceback, etc. Would maybe increase speed by preloading
+        // scripts too.
         const code = partOptions.content || '';
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
-        // localVars.push('parent'); // add in access to previous versions of renderObj (DEAD CODE)
         localVars.push('cparts');
-        // TODO: shouldn't use "this" in static
+        // TODO: shouldn't use "this" in static (?)
         const wrappedJS = this.wrapJavaScriptContext(code, localVars);
-        const module = factory.loader.modFactory ?
-                       factory.loader.modFactory.baseRenderObj : null;
+        const ns = factory.loader.namespace;
+        const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
+        const module = moduleFac ? moduleFac.baseRenderObj : null;
         const results = (new Function('Modulo, factory, module', wrappedJS))
                            .call(null, Modulo, factory, module);
         results.localVars = localVars;
@@ -922,15 +837,17 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         super(element, options);
 
         // Attach callbacks from script to this, to hook into lifecycle.
-        const {script} = element.initRenderObj;
+        const { script } = element.initRenderObj;
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
         for (const cbName of cbs) {
-            this[cbName] = renderObj => {
+            this[cbName] = (arg) => {
+                // NOTE: renderObj is passed in for Callback, but not Mount
+                const renderObj = this.element.getCurrentRenderObj();
                 this.prepLocalVars(renderObj); // always prep (for event CB)
-                if (cbName in script) {
-                    script[cbName](renderObj);
+                if (cbName in script) { // if we also have this
+                    script[cbName](arg);
                 }
             };
         }
@@ -951,6 +868,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     // This is important: It's what enables us to avoid using the "this"
     // context, since the current element is set before any custom code is run.
     prepLocalVars(renderObj) {
+        if (!renderObj.script) {
+            console.error('ERROR: Script CPart missing from renderObj:', renderObj);
+            return false;
+        }
         const {setLocalVariable, localVars} = renderObj.script;
         setLocalVariable('element', this.element);
         setLocalVariable('cparts', this.element.cparts);
@@ -963,50 +884,44 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.state = class State extends Modulo.ComponentPart {
-    static debugGhost = true;
-    get debugGhost() { return true; }
     initializedCallback(renderObj) {
-        this.rawDefaults = renderObj.state.options || {};
+        this.rawDefaults = renderObj.state.attrs || {};
         this.boundElements = {};
         if (!this.data) {
             this.data = Modulo.utils.simplifyResolvedLiterals(this.rawDefaults);
         }
-
-        // TODO ---v delete these
-        this.data.bindMount = this.bindMount.bind(this);// Ugh hack
-        this.data.bindUnmount = this.bindUnmount.bind(this);// Ugh hack
         return this.data;
     }
 
-    bindMount({el}) {
-        el.getAttr = el.getAttr || el.getAttribute;
-        const name = el.getAttr('name');
-        Modulo.assert(name in this.data, `[state.bind]: no "${name}" in state`);
-        const func = () => {
-            let {value, type, checked} = el;
+    bindMount({ el, attrName, value }) {
+        const { assert } = Modulo;
+        const name = el.getAttribute('name') || attrName;
+        assert(name in this.data, `[state.bind]: key "${name}" not in state`);
+        assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
+        const listen = () => {
+            // TODO: redo
+            let { value, type, checked } = el;
             if (type && type === 'checkbox') {
                 value === !!checked;
             }
             this.set(name, value);
-        }
-        // eventually customizable, eg [state.bind]mouseover=mouseY (event
-        // name, el property name, and/or state propery name etc)
+        };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
-        const evName = isText ? 'keyup' : 'change';
-        this.boundElements[name] = [el, evName, func];
+        const evName = value ? value : (isText ? 'keyup' : 'change');
+        this.boundElements[name] = [ el, evName, listen ];
         el.value = this.data[name];
-        el.addEventListener(evName, func);
+        el.addEventListener(evName, listen);
     }
 
-    bindUnmount({elem}) {
-        const name = elem.getAttr('name');
-        const [el, func, evName] = this.boundElements[name];
+    bindUnmount({ el, attrName }) {
+        const name = el.getAttribute('name') || attrName;
+        const [ el2, evName, listen ] = this.boundElements[name];
         delete this.boundElements[name];
-        el.removeEventListener(evName, func);
+        el2.removeEventListener(evName, listen);
     }
 
     reloadCallback(oldPart) {
-        // Used for hot-reloading: Merge data with oldPart's data
+        // DEAD CODE: Used for hot-reloading: Merge data with oldPart's data
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
@@ -1021,16 +936,14 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
     eventCleanupCallback() {
         for (const name of Object.keys(this.data)) {
-            const msg = `Tried to assign to "state.${name}"`;
-            Modulo.assert(name in this._oldData, msg);
-            if (name in this.boundElements) {
-                if (this.data[name] !== this._oldData[name]) {
-                    const [el, func, evName] = this.boundElements[name];
-                    if (el.type === 'checkbox') {
-                        el.checked = !!this.data[name];
-                    } else {
-                        el.value = this.data[name];
-                    }
+            Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
+            const val = this.data[name];
+            if (name in this.boundElements && val !== this._oldData[name]) {
+                const [el, listen, evName] = this.boundElements[name];
+                if (el.type === 'checkbox') {
+                    el.checked = !!val;
+                } else {
+                    el.value = val;
                 }
             }
         }
@@ -1040,11 +953,10 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
 // ModuloTemplate
 Modulo.templating.MTL = class ModuloTemplateLanguage {
-    constructor(text, options, getAltTemplate) {
+    constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
-        this.opAliases['not in'] = `!(${this.opAliases['in']})`;
+        // this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.renderFunc = this.compile(text);
-        //this.getAltTemplate = getAltTemplate || (() => {});
     }
 
     tokenizeText(text) {
@@ -1056,27 +968,29 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 
     compile(text) {
         this.stack = []; // Template tag stack
-        let output = 'var OUT=[];';
+        this.output = 'var OUT=[];'; // Variable used to accumulate code
         let mode = 'text'; // Start in text mode
         for (const token of this.tokenizeText(text)) {
             if (mode) { // if in a "mode" (text or token), then call mode func
                 const result = this.modes[mode](token, this, this.stack);
-                output += result || '';
+                this.output += result || '';
             }
             // FSM for mode: ('text' -> null) (null -> token) (* -> 'text')
             mode = (mode === 'text') ? null : (mode ? 'text' : token);
         }
-        // console.log('this is the rsulting template code', output.replace(/([;\}\{])/g, '$1\n'));
-        return new Function('CTX,G', output + ';return OUT.join("");');
+        // console.log('this is the rsulting template code', this.output.replace(/([;\}\{])/g, '$1\n'));
+        return new Function('CTX,G', this.output + ';return OUT.join("");');
     }
 
-    render(renderContext) {
-        return this.renderFunc(Object.assign({}, renderContext), this);
+    render(renderObj) {
+        return this.renderFunc(Object.assign({renderObj}, renderObj), this);
     }
 
     parseExpr(text) {
+        // TODO: Store a list of variables / paths, so there can be warnings or
+        // errors when variables are unspecified
         const filters = text.split('|');
-        let results = this.parseVal(filters.shift());
+        let results = this.parseVal(filters.shift()); // Get left-most val
         for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
             const argList = arg ? ',' + this.parseVal(arg) : '';
             results = `G.filters["${fName}"](${results}${argList})`;
@@ -1084,14 +998,18 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         return results;
     }
 
-    parseCondExpr(text) {
-        const reText = ` (${this.opTokens.split(',').join('|')}) `;
-        //console.log(text.split(RegExp(reText)));
-        return text.split(RegExp(reText));
+    parseCondExpr(string) {
+        // This RegExp splits around the tokens, with spaces added
+        const regExpText = ` (${this.opTokens.split(',').join('|')}) `;
+        //console.log(string.split(RegExp(regExpText)));
+        return string.split(RegExp(regExpText));
     }
 
-    parseVal(s) {
-        s = s.trim();
+    parseVal(string) {
+        // Parses string literals, de-escaping as needed, numbers, and context
+        // variables
+        const { cleanWord } = Modulo.utils;
+        const s = string.trim();
         if (s.match(/^('.*'|".*")$/)) { // String literal
             return JSON.stringify(s.substr(1, s.length - 2));
         }
@@ -1122,7 +1040,8 @@ Modulo.templating.defaultOptions = {
         //'and': 'X && Y',
         //'or': 'X || Y',
         'not': '!(Y)',
-        'in': 'typeof Y[X] !== "undefined" || Y.indexOf && Y.indexOf(X) != -1',
+        'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
+        'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
     },
 };
 
@@ -1137,7 +1056,7 @@ Modulo.templating.defaultOptions.modes = {
         } // Normal opening tag
         const result = tagFunc(text.slice(tTag.length + 1), tmplt);
         if (result.end) { // Not self-closing, push to stack
-            stack.push({close: `end${tTag}`, ...result});
+            stack.push({ close: `end${tTag}`, ...result });
         }
         return result.start || result;
     },
@@ -1146,32 +1065,73 @@ Modulo.templating.defaultOptions.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-Modulo.templating.defaultOptions.filters = {
-    upper: s => s.toUpperCase(),
-    lower: s => s.toLowerCase(),
-    escapejs: s => JSON.stringify(s),
-    first: s => s[0],
-    last: s => s[s.length - 1],
-    length: s => s.length,
-    safe: s => Object.assign(new String(s), {safe: true}),
-    join: (s, arg) => s.join(arg),
-    json: (s) => JSON.stringify(s),
-    pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
-    add: (s, arg) => s + arg,
-    subtract: (s, arg) => s - arg,
-    default: (s, arg) => s || arg,
-    number: (s) => Number(s),
+Modulo.templating.defaultOptions.filters = (function () {
+    //const { get } = Modulo.utils; // TODO, fix this code duplciation
+    function get(obj, key) {
+        return obj[key];
+    }
+
+    // TODO: Once we get unit tests for build, replace jsobj with actual loop
+    // in build template (and just backtick escape as filter). Make sure keys
+    // are alphabetical (stable).
+    function jsobj(obj, arg) {
+        let s = '{\n';
+        for (const [key, value] of Object.entries(obj)) {
+            s += '  ' + JSON.stringify(key) + ': ';
+            if (typeof value === 'string') {
+                s += '// (' + value.split('\n').length + ' lines)\n`';
+                s += value.replace(/\\/g , '\\\\')
+                          .replace(/`/g, '\\`').replace(/\$/g, '\\$');
+                s += '`,// (ends: ' + key + ') \n\n';
+            } else {
+                s += JSON.stringify(value, null, 4) + ',\n';
+            }
+        }
+        return s + '}';
+    }
+    const safe = s => Object.assign(new String(s), {safe: true});
+
+    //trim: s => s.trim(), // TODO: improve interface to be more useful
     //invoke: (s, arg) => s(arg),
     //getAttribute: (s, arg) => s.getAttribute(arg),
-    get: (s, arg) => s[arg],
-    includes: (s, arg) => s.includes(arg),
-    truncate: (s, arg) => ((s.length > arg*1) ?
-                            (s.substr(0, arg-1) + '…') : s),
-    divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
-};
+    //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+    // {% for rowData in table %}
+    //    {{ rowData|renderas:template.row }}
+    // {% endfor %}
+    // Idea: Generalized "matches" filter that gets registered like such:
+    //     defaultOptions.filters.matches = {name: //ig}
+    // Then we could configure "named" RegExps in Script that get used in
+    // template
+
+    const filters = {
+        add: (s, arg) => s + arg,
+        // color|allow:"red,blue"|default:"blue"
+        allow: (s, arg) => arg.split(',').includes(s) ? s : '',
+        capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
+        concat: (s, arg) => s.concat ? s.concat(arg) : s + arg,
+        default: (s, arg) => s || arg,
+        divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+        escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
+        first: s => s[0],
+        join: (s, arg) => s.join(arg === undefined ? ", " : arg),
+        json: (s, arg) => JSON.stringify(s, null, arg || undefined),
+        last: s => s[s.length - 1],
+        length: s => s.length !== undefined ? s.length : Object.keys(s).length,
+        lower: s => s.toLowerCase(),
+        number: (s) => Number(s),
+        pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        subtract: (s, arg) => s - arg,
+        truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
+        renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
+        reversed: s => Array.from(s).reverse(),
+        upper: s => s.toUpperCase(),
+    };
+    return Object.assign(filters, { get, jsobj, safe });
+})();
 
 Modulo.templating.defaultOptions.tags = {
     'if': (text, tmplt) => {
+        // Limit to 3 (L/O/R)
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
         const condition = condStructure.replace(/([XY])/g,
@@ -1179,14 +1139,22 @@ Modulo.templating.defaultOptions.tags = {
         const start = `if (${condition}) {`;
         return {start, end: '}'};
     },
+    'and': (text, tmplt) => {
+        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
+        // tmplt.output[tmplt.output.length - 1].replace(') {', ' && ' + condition + ') {')
+        return '';
+    },
     'else': () => '} else {',
     'elif': (s, tmplt) => '} else ' + tmplt.tags['if'](s, tmplt).start,
     'comment': () => ({ start: "/*", end: "*/"}),
     'for': (text, tmplt) => {
         // Make variable name be based on nested-ness of tag stack
+        const { cleanWord } = Modulo.utils;
         const arrName = 'ARR' + tmplt.stack.length;
-        const [varExp, arrExp] = text.split(' in ');
+        const [ varExp, arrExp ] = text.split(' in ');
         let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
+        // TODO: Upgrade to of (after good testing), since probably
+        // no need to support for..in
         start += `for (var KEY in ${arrName}) {`;
         const [keyVar, valVar] = varExp.split(',').map(cleanWord);
         if (valVar) {
@@ -1204,12 +1172,6 @@ Modulo.templating.defaultOptions.tags = {
         return {start, end, close: 'endfor'};
     },
     /*
-    'include': (text, tmplt) => {
-        const template = `G.getAltTemplate(${tmplt.parseExpr(text)})`;
-        return {start: `G.OUT.push(${template}.render(CTX));`};
-    },
-    */
-    /*
     // Should complete, very useful template tag: Basically the ... splat
     // operator.
     'attrs': (text, tmplt) {
@@ -1219,262 +1181,316 @@ Modulo.templating.defaultOptions.tags = {
     */
 };
 
-// SetDomReconciler ------------------
-Modulo.reconcilers.SetDom = class SetDomReconciler {
-    constructor() {
-        this.KEY = 'key'
-        this.IGNORE = 'modulo-ignore'
-        this.CHECKSUM = 'modulo-checksum'
-        this.KEY_PREFIX = '_set-dom-'
-        this.mockBody = Modulo.globals.document.implementation
-                        .createHTMLDocument('').body;
+
+// TODO: New idea for how to refactor reconciler directives, and clean
+// up this mess, while allowing another level to "slice" into:
+//  - Then, implement [component.key] and [component.ignore]
+//  - Possibly: Use this to then do granular patches (directiveMount etc)
+Modulo.reconcilers.Cursor = class Cursor {
+    constructor(parentNode, parentRival) {
+        this.initialize(parentNode, parentRival);
+    }
+    initialize(parentNode, parentRival) {
+        this.nextChild = parentNode.firstChild;
+        this.nextRival = parentRival.firstChild;
+        this.keyedChildren = {};
+        this.keyedRivals = {};
+        this.parentNodeQueue = [];
+        this.keyedChildrenArr = null;
+        this.keyedRivalsArr = null;
     }
 
-    reconcile(element, newHTML) {
-        //console.log('this is element', typeof element);
-        //Modulo.assert(element && element.tagName, 'Invalid element');
-        this.elemCtx = element;
-        if (!element.isMounted) {
-            element.innerHTML = newHTML;
-            this.findAndApplyDirectives(element);
-        } else {
-            this.mockBody.innerHTML = `<div>${newHTML}</div>`;
-            this.setChildNodes(element, this.mockBody.firstChild);
+    pushDescent(parentNode, parentRival) {
+        // DEADCODE
+        this.parentNodeQueue.push([parentNode, parentRival]);
+    }
+
+    popDescent() {
+        // DEADCODE
+        if (this.parentNodeQueue.length < 1) {
+            return false;
         }
-        this.elemCtx = null;
+        const result = this.parentNodeQueue.shift();
+        console.log('this is reuslt', result);
+        this.initialize(...result);
+        return true;
     }
 
-    findAndApplyDirectives(element) {
-        const directives = [];
-        if (!element.children) {
-            //console.log('this is element', element); // NOT sure why text nodes get here
+    hasNext() {
+        if (this.nextChild || this.nextRival) {
+            return true; // Is pointing at another node
+        }
+
+        // Convert objects into arrays so we can pop
+        if (!this.keyedChildrenArr) {
+            this.keyedChildrenArr = Object.values(this.keyedChildren);
+        }
+        if (!this.keyedRivalsArr) {
+            this.keyedRivalsArr = Object.values(this.keyedRivals);
+        }
+
+        if (this.keyedRivalsArr.length || this.keyedChildrenArr.length) {
+            return true; // We have queued up nodes from keyed values
+        }
+        // DEADCODE -v
+        return this.popDescent();
+    }
+
+    next() {
+        let child = this.nextChild;
+        let rival = this.nextRival;
+        if (!this.nextChild && !this.nextRival) {
+            if (!this.keyedRivalsArr) {
+                return [null, null];
+            }
+            return this.keyedRivalsArr.length ?
+                  [null, this.keyedRivalsArr.pop()] :
+                  [this.keyedChildrenArr.pop(), null];
+        }
+
+        // Handle keys
+        this.nextChild = child ? child.nextSibling : null;
+        this.nextRival = rival ? rival.nextSibling : null;
+
+        let matchedRival = this.getMatchedNode(child, this.keyedChildren, this.keyedRivals);
+        let matchedChild = this.getMatchedNode(rival, this.keyedRivals, this.keyedChildren);
+        // TODO refactor this
+        if (matchedRival === false) {
+            // Child has a key, but does not match rival, so SKIP on child
+            child = this.nextChild;
+            this.nextChild = child ? child.nextSibling : null;
+        } else if (matchedChild === false) {
+            // Rival has a key, but does not match child, so SKIP on rival
+            rival = this.nextRival;
+            this.nextRival = rival ? rival.nextSibling : null;
+        }
+        const keyWasFound = matchedRival !== null || matchedChild !== null;
+        const matchFound = matchedChild !== child && keyWasFound
+        if (matchFound && matchedChild) {
+            // Rival matches, but not with child. Swap in child.
+            this.nextChild = child;
+            child = matchedChild;
+        }
+
+        if (matchFound && matchedRival) {
+            // Child matches, but not with rival. Swap in rival.
+            Modulo.assert(matchedRival !== rival, 'Dupe!'); // (We know this due to ordering)
+            this.nextRival = rival;
+            rival = matchedRival;
+        }
+
+        return [ child, rival ];
+    }
+
+    getMatchedNode(elem, keyedElems, keyedOthers) {
+        const key = elem && elem.getAttribute && elem.getAttribute('key');
+        if (!key) {
+            return null;
+        }
+        if (key in keyedOthers) {
+            const matched = keyedOthers[key];
+            delete keyedOthers[key];
+            return matched;
+        } else {
+            if (key in keyedElems) {
+                console.error('MODULO WARNING: Duplicate key:', key);
+            }
+            keyedElems[key] = elem;
+            return false;
+        }
+    }
+
+}
+
+Modulo.reconcilers.ModRec = class ModuloReconciler {
+    constructor(opts) {
+        // Discontinue this?
+        this.shouldNotApplyPatches = opts && opts.makePatchSet;
+        this.shouldNotDescend = opts && opts.doNotDescend;
+        this.elementCtx = opts ? opts.elementCtx : undefined;
+    }
+
+    reconcile(node, rivalHTML, tagTransforms) {
+        // Note: Always attempts to reconcile (even on first mount), in case
+        // it's been pre-rendered
+        // TODO: should normalize <!DOCTYPE html>
+        this.patches = [];
+        if (!this.elementCtx) {
+            this.elementCtx = node; // element context
+        }
+        const rival = Modulo.utils.makeDiv(rivalHTML, true);
+        this.applyTagTransforms(rival, tagTransforms);
+        this.markRecDirectives(rival);
+        this.reconcileChildren(node, rival);
+        this.cleanRecDirectiveMarks(node);
+        if (!this.shouldNotApplyPatches) {
+            this.applyPatches(this.patches);
+        }
+        return this.patches;
+    }
+
+    applyTagTransforms(elem, tagTransforms) {
+        const sel = Object.keys(tagTransforms || { X: 0 }).join(',');
+        for (const node of elem.querySelectorAll(sel)) {
+            const newTag = tagTransforms[node.tagName.toLowerCase()];
+            if (newTag) {
+                Modulo.utils.transformTag(node, newTag);
+            }
+        }
+    }
+
+    markRecDirectives(elem) {
+        // Mark all children of modulo-ignore with mm-ignore
+        for (const node of elem.querySelectorAll('[modulo-ignore] *')) {
+            // TODO: Very important: also mark to ignore children that are
+            // custom!
+            node.setAttribute('mm-ignore', 'mm-ignore');
+        }
+    }
+
+    cleanRecDirectiveMarks(elem) {
+        // Remove all mm-ignores
+        for (const node of elem.querySelectorAll('[mm-ignore]')) {
+            node.removeAttribute('mm-ignore');
+        }
+    }
+
+    applyPatches(patches) {
+        patches.forEach(patch => this.applyPatch.apply(this, patch));
+    }
+
+    reconcileChildren(node, rivalParent) {
+        // Nonstandard nomenclature: "The rival" is the node we wish to match
+        const cursor = new Modulo.reconcilers.Cursor(node, rivalParent);
+        while (cursor.hasNext()) {
+            const [ child, rival ] = cursor.next();
+
+            // Does this node to be swapped out? Swap if exist but mismatched
+            const needReplace = child && rival && (
+                child.nodeType !== rival.nodeType ||
+                child.nodeName !== rival.nodeName
+            );
+
+            if ((child && !rival) || needReplace) { // we have more rival, delete child
+                this.patchAndDescendants(child, 'Unmount');
+                this.patch(node, 'removeChild', child);
+            }
+
+            if (needReplace) { // do swap with insertBefore
+                this.patch(node, 'insertBefore', rival, child.nextSibling);
+                this.patchAndDescendants(rival, 'Mount');
+            }
+
+            if (!child && rival) { // we have less than rival, take rival
+                this.patch(node, 'appendChild', rival);
+                this.patchAndDescendants(rival, 'Mount');
+            }
+
+            if (child && rival && !needReplace) {
+                // Both exist and are of same type, let's reconcile nodes
+                this.reconcileMatchedNodes(child, rival, cursor);
+            }
+        }
+    }
+
+    reconcileMatchedNodes(child, rival, cursor) {
+        if (child.nodeType !== 1) { // text or comment node
+            if (child.nodeValue !== rival.nodeValue) { // update
+                this.patch(child, 'node-value', rival.nodeValue);
+            }
+        } else if (!child.isEqualNode(rival)) { // sync if not equal
+            this.reconcileAttributes(child, rival);
+            if (rival.hasAttribute('modulo-ignore')) {
+                //console.log('Skipping ignored node');
+            } else if (!this.shouldNotDescend) {
+                // NOTE: Cannot do pushDescent (which would be BFS, then) since
+                // presently only works with DFS, for some reason.
+                //cursor.pushDescent(child, rival);
+                this.reconcileChildren(child, rival);
+            }
+        }
+    }
+
+    patch(node, method, arg, arg2 = null) {
+        this.patches.push([node, method, arg, arg2]);
+    }
+
+    applyPatch(node, method, arg, arg2) { // take that, rule of 3!
+        if (method === 'node-value') {
+            node.nodeValue = arg;
+        } else if (method === 'insertBefore') {
+            node.insertBefore(arg, arg2); // Needs 2 arguments
+        } else {
+            node[method].call(node, arg); // invoke method
+        }
+    }
+
+    patchDirectives(el, rawName, suffix) {
+        const callbackName = 'directive' + suffix;
+        const directives = Modulo.utils.parseDirectives(rawName);
+        if (directives) {
+            const value = el.getAttribute(rawName);
+            for (const directive of directives) {
+                Object.assign(directive, { value, el,  callbackName});
+                this.patch(this.elementCtx, callbackName, directive);
+                //const result = this.elementCtx.directiveCallback(directive, suffix);
+                //if (result) {
+                //    this.patch(this.elementCtx, callbackName, directive);
+                //}
+            }
+        }
+    }
+
+    reconcileAttributes(node, rival) {
+        const myAttrs = new Set(node ? node.getAttributeNames() : []);
+        const rivalAttributes = new Set(rival.getAttributeNames());
+
+        // Check for new and changed attributes
+        for (const rawName of rivalAttributes) {
+            const attr = rival.getAttributeNode(rawName);
+            if (myAttrs.has(rawName) && node.getAttribute(rawName) === attr.value) {
+                continue; // Already matches, on to next
+            }
+            const suffix = myAttrs.has(rawName) ? 'Change' : 'Mount';
+            this.patchDirectives(rival, rawName, suffix);
+            this.patch(node, 'setAttributeNode', attr.cloneNode(true));
+        }
+
+        // Check for old attributes that were removed
+        for (const rawName of myAttrs) {
+            if (!rivalAttributes.has(rawName)) {
+                this.patchDirectives(node, rawName, 'Unmount');
+                this.patch(node, 'removeAttribute', rawName);
+            }
+        }
+    }
+
+    patchAndDescendants(parentNode, actionSuffix) {
+        if (parentNode.nodeType !== 1) { // cannot have descendants
             return;
         }
-        for (const child of element.children) {
-            Modulo.collectDirectives(this.elemCtx, child, directives);
+        let nodes = [parentNode]; // also, patch self (but last)
+        if (!this.shouldNotDescend) {
+            nodes = Array.from(parentNode.querySelectorAll('*')).concat(nodes);
         }
-        this.elemCtx.applyDirectives(directives);
-    }
+        for (let rival of nodes) { // loop through nodes to patch
+            if (rival.hasAttribute('mm-ignore')) {
+                // Skip any marked to ignore
+                continue;
+            }
 
-    /**
-    * @private
-    * @description
-    * Updates a specific htmlNode and does whatever it takes to convert it to
-      another one.
-    *
-    * @param {Node} oldNode - The previous HTMLNode.
-    * @param {Node} newNode - The updated HTMLNode.
-    */
-    setNode(oldNode, newNode) {
-        if (oldNode.nodeType !== newNode.nodeType ||
-                oldNode.nodeName !== newNode.nodeName) {
-            // We have to fully replace the node --- the tag/type doesn't match
-            //this.dismount(oldNode);
-            oldNode.parentNode.replaceChild(newNode, oldNode)
-            this.mount(newNode);
-        } else if (oldNode.nodeType !== 1) { // 1 === ELEMENT_TYPE
-            // Handle other types of node updates (text/comments/etc).
-            // TODO: Is this if statement even a useful optimization..?
-            //if (oldNode.nodeValue !== newNode.nodeValue) {
-            //}
-            oldNode.nodeValue = newNode.nodeValue;
-        } else if (!this.isEqualNode(oldNode, newNode)) {
-            // Update children & attributes
-            this.setChildNodes(oldNode, newNode);
-            this.setAttributes(oldNode.attributes, newNode.attributes);
-            // TODO: do dismounts as necessary
+            for (const rawName of rival.getAttributeNames()) {
+                // Loop through each attribute patching directives as necessary
+                this.patchDirectives(rival, rawName, actionSuffix);
+            }
         }
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility that will update one list of attributes to match another.
-    *
-    * @param {NamedNodeMap} oldAttributes - The previous attributes.
-    * @param {NamedNodeMap} newAttributes - The updated attributes.
-    */
-    setAttributes (oldAttributes, newAttributes) {
-      let i, a, b, ns, name
-
-      // Remove old attributes.
-      for (i = oldAttributes.length; i--;) {
-        a = oldAttributes[i]
-        ns = a.namespaceURI
-        name = a.localName
-        b = newAttributes.getNamedItemNS(ns, name)
-        if (!b) oldAttributes.removeNamedItemNS(ns, name)
-      }
-
-      // Set new attributes.
-      for (i = newAttributes.length; i--;) {
-        a = newAttributes[i]
-        ns = a.namespaceURI
-        name = a.localName
-        b = oldAttributes.getNamedItemNS(ns, name)
-        if (!b) {
-          // Add a new attribute.
-          newAttributes.removeNamedItemNS(ns, name)
-          oldAttributes.setNamedItemNS(a)
-        } else if (b.value !== a.value) {
-          // Update existing attribute.
-          b.value = a.value
-        }
-      }
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility that will nodes childern to match another nodes children.
-    *
-    * @param {Node} oldParent - The existing parent node.
-    * @param {Node} newParent - The new parent node.
-    */
-    setChildNodes (oldParent, newParent) {
-      const keyedNodes = {};
-      let checkOld, oldKey, checkNew, newKey, foundNode
-      let oldNode = oldParent.firstChild
-      let newNode = newParent.firstChild
-      let extra = 0
-
-      // Extract keyed nodes from previous children and keep track of total
-      // count.
-      while (oldNode) {
-          extra++
-          checkOld = oldNode
-          oldKey = this.getKey(checkOld)
-          oldNode = oldNode.nextSibling
-          if (oldKey) {
-              keyedNodes[oldKey] = checkOld
-          }
-      }
-
-      // Loop over new nodes and perform updates.
-      oldNode = oldParent.firstChild
-      while (newNode) {
-          extra--
-          checkNew = newNode
-          newNode = newNode.nextSibling
-
-          const newKey = this.getKey(checkNew);
-          const foundNode = newKey ? keyedNodes[newKey] : null;
-          if (foundNode) {
-              delete keyedNodes[newKey]
-              // If we have a key and it existed before we move the previous
-              // node to the new position if needed and diff it.
-              if (foundNode !== oldNode) {
-                  oldParent.insertBefore(foundNode, oldNode)
-              } else {
-                  oldNode = oldNode.nextSibling
-              }
-
-              this.setNode(foundNode, checkNew)
-          } else if (oldNode) {
-              checkOld = oldNode
-              oldNode = oldNode.nextSibling
-              if (this.getKey(checkOld)) {
-                  // If the old child had a key we skip over it until the end.
-                  oldParent.insertBefore(checkNew, checkOld)
-                  this.mount(checkNew)
-              } else {
-                  // Otherwise we diff the two non-keyed nodes.
-                  this.setNode(checkOld, checkNew)
-              }
-          } else {
-              // Finally if there was no old node we add the new node.
-              oldParent.appendChild(checkNew)
-              if (checkNew.nodeType === 1) { // 1 === ELEMENT_TYPE
-                  this.mount(checkNew)
-              }
-          }
-      }
-
-      // Remove old keyed nodes.
-      for (oldKey in keyedNodes) {
-        extra--
-        oldParent.removeChild(this.dismount(keyedNodes[oldKey]))
-      }
-
-      // If we have any remaining unkeyed nodes remove them from the end.
-      while (--extra >= 0) {
-        oldParent.removeChild(this.dismount(oldParent.lastChild))
-      }
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility to try to pull a key out of an element.
-    * Uses 'data-key' if possible and falls back to 'id'.
-    *
-    * @param {Node} node - The node to get the key for.
-    * @return {string|void}
-    */
-    getKey (node) {
-      if (node.nodeType !== 1) return // 1 === ELEMENT_TYPE
-      let key = node.getAttribute(this.KEY) || node.id
-      if (key) return this.KEY_PREFIX + key
-    }
-
-    /**
-    * Checks if nodes are equal using the following by checking if
-    * they are both ignored, have the same checksum, or have the
-    * same contents.
-    *
-    * @param {Node} a - One of the nodes to compare.
-    * @param {Node} b - Another node to compare.
-    */
-    isEqualNode (a, b) {
-      return (
-        // Check if both nodes are ignored.
-        (this.isIgnored(a) && this.isIgnored(b)) ||
-        // Check if both nodes have the same checksum.
-        (this.getCheckSum(a) === this.getCheckSum(b)) ||
-        // Fall back to native isEqualNode check.
-        a.isEqualNode(b)
-      )
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility to try to pull a checksum attribute from an element.
-    * Uses 'data-checksum' or user specified checksum property.
-    *
-    * @param {Node} node - The node to get the checksum for.
-    * @return {string|NaN}
-    */
-    getCheckSum (node) {
-      return node.getAttribute(this.CHECKSUM) || NaN
-    }
-
-    /**
-    * @private
-    * @description
-    * Utility to try to check if an element should be ignored by the algorithm.
-    * Uses 'data-ignore' or user specified ignore property.
-    *
-    * @param {Node} node - The node to check if it should be ignored.
-    * @return {boolean}
-    */
-    isIgnored (node) {
-      return node.getAttribute(this.IGNORE) != null
-    }
-
-    mount (node) {
-        this.findAndApplyDirectives(node);
-        return node;
-    }
-    dismount(node) {
-        return node;
     }
 }
-// /setDOM ------------------
 
 
 Modulo.utils = class utils {
     static simplifyResolvedLiterals(attrs) {
+        // TODO: rm, this will be obsolte once dataProps is done to load stage
         const obj = {};
         for (let [name, value] of Object.entries(attrs)) {
             name = name.replace(/-([a-z])/g, g => g[1].toUpperCase());
@@ -1488,6 +1504,11 @@ Modulo.utils = class utils {
         return obj;
     }
 
+    static mergeAttrs(elem) {
+        const {parseAttrs} = Modulo.utils;
+        return Object.assign(parseAttrs(elem), elem.dataProps || {});
+    }
+
     static parseAttrs(elem) {
         const obj = {};
         for (let name of elem.getAttributeNames()) {
@@ -1498,78 +1519,192 @@ Modulo.utils = class utils {
         return obj;
     }
 
+    static resolveDataProp(key, elem, defaultVal) {
+        if (elem.dataProps && key in elem.dataProps) {
+            return elem.dataProps[key];
+        }
+        return elem.hasAttribute(key) ? elem.getAttribute(key) : defaultVal;
+    }
+
+    static makeDiv(html, inFrag=false) {
+        /* TODO: Have an options for doing <script  / etc preprocessing here:
+          <state -> <script type="modulo/state"
+          <\s*(state|props|template)([\s>]) -> <script type="modulo/\1"\2
+          </(state|props|template)> -> </script>*/
+        const div = Modulo.globals.document.createElement('div');
+        div.innerHTML = html;
+        if (inFrag) { // TODO: Don't think there's a reason for frags, actually
+            const frag = new Modulo.globals.DocumentFragment();
+            frag.appendChild(div);
+        }
+        return div;
+    }
+
+    static normalize(html) {
+        // Normalize space to ' ' & trim around tags
+        return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2').trim();
+    }
+
+    static loadNodeData(node) {
+        // DEAD CODE
+        const {parseAttrs} = Modulo.utils;
+        const {tagName, dataProps} = node;
+        const attrs = Object.assign(parseAttrs(node), dataProps);
+        const {name} = attrs;
+        let type = tagName.toLowerCase();
+        const splitType = (node.getAttribute('type') || '').split('/');
+        const content = tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
+        if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
+            type = splitType[1];
+        }
+        return {attrs, type, name, content};
+    }
+
     static get(obj, key) {
         return key.split('.').reduce((o, name) => o[name], obj);
     }
+
     static dirname(path) {
         return (path || '').match(/.*\//);
     }
+
+    static resolvePath(workingDir, relPath) {
+        if (!workingDir) {
+            console.log('Warning: Blank workingDir:', workingDir);
+        }
+        workingDir = workingDir || '';
+        // Similar to Node's path.resolve()
+        const combinedPath = workingDir + '/' + relPath;
+        const newPath = [];
+        for (const pathPart of combinedPath.split('/')) {
+            //console.log('this is path part', pathPart);
+            if (pathPart === '..') {
+                newPath.pop();
+            } else if (pathPart === '.') {
+                // No-op
+            } else if (pathPart.trim()) {
+                newPath.push(pathPart);
+            }
+        }
+        const prefix = workingDir.startsWith('/') ? '/' : '';
+        return prefix + newPath.join('/').replace(RegExp('//', 'g'), '/');
+    }
+
     static hash(str) {
-        // Simple, insecure, hashing function, returns hex hash
-        for(let i = 0, h = 0; i < str.length; i++) {
+        // Simple, insecure, hashing function, returns base32 hash
+        let h = 0;
+        let hashChunks = [];
+        for(let i = 0; i < str.length; i++) {
+            /*
+            if (i % (str.length / hashChunkSize) === 0) {
+                hashChunks.push(h); // for hashChunkSize count chunks
+                h = 0;
+            }
+            */
             h = Math.imul(31, h) + str.charCodeAt(i) | 0;
         }
-        return (h || 0xabc123).toString(16); // empty string is abc123
+        return (h || 0).toString(32);
+    }
+
+    static cleanWord(text) {
+        return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
+    }
+
+    static transformTag(n1, tag2) {
+        // Transforms given element n1 into an identical n2 with given tag2
+        const n2 = Modulo.globals.document.createElement(tag2);
+        n2.append(...(n1.childNodes || []));
+        for (const name of n1.getAttributeNames()) {
+            n2.setAttributeNode(n1.getAttributeNode(name).cloneNode(true));
+        }
+        return n1.replaceWith(n2) || n2;
+    }
+
+    static rpartition(s, seperator) {
+        // DEAD CODE
+        const index = s.lastIndexOf(separator) + 1;
+        return [s.slice(0, index - 1), s.slice(index)];
+        //return [index ? s.slice(0, index - 1) : s, s.slice(index)];
+    }
+
+    static parseDirectives(rawName) {
+        if (/^[a-z0-9-]$/i.test(rawName)) {
+            return null; // if alpha-only, stop right away
+        }
+
+        // "Expand" shortcuts into their full versions
+        let name = rawName;
+        for (const [regexp, directive] of Modulo.directiveShortcuts) {
+            if (rawName.match(regexp)) {
+                name = `[${directive}]` + name.replace(regexp, '');
+            }
+        }
+        if (!name.startsWith('[')) {
+            return null; // There are no directives, regular attribute, skip
+        }
+
+        // There are directives... time to resolve them
+        const { cleanWord } = Modulo.utils;
+        const arr = [];
+        const attrName = cleanWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
+        for (const directiveName of name.split(']').map(cleanWord)) {
+            if (directiveName !== attrName) { // Skip the bare name itself
+                arr.push({ attrName, rawName, directiveName, name })
+            }
+        }
+        return arr;
     }
 }
 
 Modulo.FetchQueue = class FetchQueue {
-    /*
-
-    this.cacheKey = `Modulo.Loader:cache:${this.namespace}:${this.src}`;
-    const cachedData = Modulo.globals.localStorage.getItem(this.cacheKey);
-
-    // TODO: Finish cache feature, maybe fold into hot reload, eg it always
-    // first loads from cache, then it tries hotreloading from origin.
-    // This would make "never-cache" less important, but "always-cache"
-    // would be useful and be the inverse.
-    const skipCache = true || this.hasAttribute('never-cache') || Modulo.require;
-    if (!skipCache && cachedData && cachedData.length > 2) {
-        for (const [name, loadObj] of JSON.parse(cachedData)) {
-            this.defineComponent(name, loadObj);
-        }
-    } else {
-    }
-    */
-
     constructor() {
         this.queue = {};
         this.data = {};
         this.waitCallbacks = [];
+        this.finallyCallbacks = [];
     }
-    enqueue(queueObj, callback, basePath, opts, responseCb) {
-        opts = opts || this.defaultOpts || {};
-        responseCb = responseCb || (response => response.text());
-        queueObj = typeof queueObj === 'string' ? {':)': queueObj} : queueObj;
-        for (let [label, src] of Object.entries(queueObj)) {
-            // TODO remove! ------------------------------------v
-            if (src.startsWith('.') && this.basePath && this.basePath !== 'null') {
-                // TODO: should this need to invoke utils.dirname?
-                src = src.replace('.', this.basePath);
-            }
-            if (src in this.data) {
-                callback(this.data[src], label);
-            } else if (!(src in this.queue)) {
-                this.queue[src] = [callback];
-                Modulo.globals.fetch(src, opts).then(responseCb)
-                    .then(text => this.receiveData(text, label, src))
-                    // v- uncomment after switch to new BE
-                    //.catch(err => console.error('Modulo Load ERR', src, err));
-            } else {
-                this.queue[src].push(callback);
-            }
+
+    enqueue(fetchObj, callback, basePath = null) {
+        this.basePath = basePath ? basePath : this.basePath;
+        fetchObj = typeof fetchObj === 'string' ? { fetchObj } : fetchObj;
+        for (let [ label, src ] of Object.entries(fetchObj)) {
+            this._enqueue(src, label, callback);
         }
     }
+
+    _enqueue(src, label, callback) {
+        if (this.basePath && !this.basePath.endsWith('/')) {
+            // <-- TODO rm & straighten this stuff out
+            this.basePath = this.basePath + '/'; // make sure trails '/'
+        }
+        src = Modulo.utils.resolvePath(this.basePath || '', src);
+        if (src in this.data) {
+            callback(this.data[src], label); // Synchronous route
+        } else if (!(src in this.queue)) {
+            this.queue[src] = [callback];
+            // TODO: Think about if cache:no-store
+            Modulo.globals.fetch(src, {cache: 'no-store'})
+                .then(response => response.text())
+                .then(text => this.receiveData(text, label, src))
+                // v- uncomment after switch to new BE
+                //.catch(err => console.error('Modulo Load ERR', src, err));
+        } else {
+            this.queue[src].push(callback); // add to end of src queue
+        }
+    }
+
     receiveData(text, label, src) {
-        this.data[src] = text;
+        this.data[src] = text; // load data
         this.queue[src].forEach(func => func(text, label, src));
-        delete this.queue[src];
+        delete this.queue[src]; // remove queue
         this.checkWait();
     }
+
     wait(callback) {
-        this.waitCallbacks.push(callback);
-        this.checkWait();
+        this.waitCallbacks.push(callback); // add to end of queue
+        this.checkWait(); // attempt to consume wait queue
     }
+
     checkWait() {
         if (Object.keys(this.queue).length === 0) {
             while (this.waitCallbacks.length > 0) {
@@ -1579,6 +1714,16 @@ Modulo.FetchQueue = class FetchQueue {
     }
 }
 
+
+Modulo.INVALID_WORDS = new Set((`
+    break case  catch class  const continue debugger default delete  do  else
+    enum  export extends finally  for if implements  import  in instanceof
+    interface new null  package  private protected  public return static  super
+    switch throw  try typeof var  void  while with await async
+`).split());
+
+//Modulo.RESERVED_WORDS = ['true', 'false', 'this'] // ? void
+
 Modulo.assert = function assert(value, ...info) {
     if (!value) {
         console.error(...info);
@@ -1586,70 +1731,39 @@ Modulo.assert = function assert(value, ...info) {
     }
 }
 
+// TODO: Probably should do this on an onload event or similar
+//Modulo.globals.onload = () => Modulo.defineAll();
+Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
+{{ source|safe }};\n
+Modulo.defineAll();
+Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
+{% for path in preload %}
+//  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
+Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
+                               "{{ path|escapejs|safe }}");
+{% endfor %}`);
+
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
-        /*
-        const propObj = {};
-        Object.entries(Modulo.CommandMenu).forEach(([key, value]) => {
-            if (key.startsWith('cmd_') {
-                propObj[key.slice(4)] = { get: value };
-            }
-        });
-        Modulo.cmd = Object.create(Modulo.CommandMenu, propObj);
-        */
         Modulo.cmd = new Modulo.CommandMenu();
         Modulo.globals.m = Modulo.cmd;
     }
-    constructor() {
-        this.clear;
-    }
-    clear() {
-        this.targeted = [];
-    }
     target(elem) {
-        this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
-    }
-    test() {
-        console.table(this.targeted);
-        const {runTests} = Modulo.cparts.testsuite;
-        for (const [name, factory] of Object.entries(Modulo.factoryInstances)) {
-            const {testsuite} = factory.baseRenderObj;
-            if (testsuite) {
-                const info = ' ' + (testsuite.name || '');
-                console.group(['%'], 'TestSuite: ' + name + info);
-                runTests(testsuite, factory);
-            }
+        if (!this.targeted) {
+            this.targeted = [];
         }
+        this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
     build() {
         const {document, console} = Modulo.globals;
         console.group('BUILD');
         const {src} = document.querySelector('script[src*="/Modulo.js"]');
-        Modulo.fetchQ.enqueue(src, source => {
-            const dataStr = JSON.stringify(Modulo.fetchQ); // is stable?
-            const dataHash = Modulo.utils.hash(dataStr);
-            this.fileContent = `// Modulo.cmd.build ${dataHash}\n` + source +
-                `Modulo.fetchQ = JSON.parse(${dataStr})`;
+        const {fetchQ} = Modulo;
+        fetchQ.enqueue(src, source => {
+            //const js = Modulo.buildTemplate.render({hash, fetchQ, source});
+            // TODO: finish, offer to download, also build CSS
         });
     }
-}
-
-/*
-# HACKY FUNCTIONS
-Pls ignore all
-*/
-function getGetAttr(element) {
-    // HACK
-    const myElement = element;
-    if (myElement.getAttr) {
-        return (...args) => myElement.getAttr(...args);
-    } else {
-        return (...args) => myElement.getAttribute(...args);
-    }
-}
-
-function cleanWord(text) {
-    return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
 }
 
 if (typeof module !== 'undefined') { // Node
@@ -1658,3 +1772,6 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
+
+// End of Modulo.js source code. Below is the latest Modulo project:
+// ------------------------------------------------------------------

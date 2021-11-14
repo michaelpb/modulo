@@ -1,274 +1,58 @@
-<!DOCTYPE HTML><head>
+<!DOCTYPE HTML>
+<head>
+</head><body>
+
+
     <meta charset="utf8">
-    <title>Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <title>Templating - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
-    <script src="/js/Modulo.js"></script>
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <style id="mdu-Section_style">
-mdu-Section {
-            position: relative;
-        }
-mdu-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mdu-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mdu-Section:hover .mdu-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
+    
 
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mdu-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mdu-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mdu-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mdu-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mdu-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mdu-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mdu-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mdu-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
-        }
-    </style><style id="mdu-CodeSnippet_style">
-mdu-CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mdu-CodeSnippet .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
-eg-Simple * { text-decoration: underline; }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    color: #ccc;
-    font-weight: bold;
-}
-eg-Prime .grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-eg-Prime div.whole {
-    color: white;
-    background: #B90183;
-}
-eg-Prime div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
-</style><style id="eg-MemoryGame_style">
-eg-MemoryGame h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-eg-MemoryGame .board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-eg-MemoryGame .board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-eg-MemoryGame .board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-eg-MemoryGame .board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-eg-MemoryGame .board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style><style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
-    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
-    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+    <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html">Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1001,&quot;checksum&quot;:&quot;Yo+CUqTB88EuRNOi/xcSOY7c4DyILqCL0BrYEKh63Bac6t7AEhCv9j4fNjnLXl7X&quot;}">
-        <nav class="Navbar">
-            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li>
-                    <a href="/index.html#below">About</a>
-                </li>
-                <li>
-                    <a href="/start.html">Start</a>
-                </li>
-                <li>
-                    <a href="/docs.html" class="Navbar--selected">Docs</a>
-                </li>
-                <li>
-                    <a href="/literate/src/Modulo.html">Source</a>
-                </li>
-            </ul>
-
-            <div class="Navbar-rightInfo">
-                v: 0.0.1<br>
-                SLOC: 1001 lines<br>
-                <a href="https://github.com/michaelpb/modulo/">github</a> | 
-                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-            </div>
-        </nav>
-    </mdu-navbar>
+    <div class="Navbar-rightInfo">
+        v: undefined<br>
+        SLOC: undefined lines<br>
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
 
 
-<main class="Main--fluid Docs">
-    <aside class="TitleAside TitleAside--navBar">
-        <h3><span alt="Lower-case delta">%</span></h3>
-        <nav class="TitleAside-navigation">
-            <h3>Documentation</h3>
-            <tutorial-docsidebar path="docs/docs/templating.html">
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar">
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-docsidebar path="/templating.html">
 <ul>
     
         <li class="
             
-            "><a href="/docs.html">Table of Contents</a>
+            "><a href="/docs/">Table of Contents</a>
             
         </li>
     
@@ -276,7 +60,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/tutorial.html">Tutorial</a>
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
             
         </li>
     
@@ -297,20 +81,40 @@ tutorial-DocSidebar li.ginactive > a::before {
                 
                     <ul>
                     
-                        <li><a href="/docs/templating.html#templates">Templates</a></li>
+                        <li><a href="/docs/templating.html#templates">Templates</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#variables">Variables</a></li>
+                        <li><a href="/docs/templating.html#variables">Variables</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#filters">Filters</a></li>
+                        <li><a href="/docs/templating.html#filters">Filters</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#tags">Tags</a></li>
+                        <li><a href="/docs/templating.html#tags">Tags</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#comments">Comments</a></li>
+                        <li><a href="/docs/templating.html#comments">Comments</a>
+                        
+                        </li>
                     
-                        <li><a href="/docs/templating.html#escaping">Escaping</a></li>
+                        <li><a href="/docs/templating.html#escaping">Escaping</a>
+                        
+                        </li>
                     
                     </ul>
                 
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -326,7 +130,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/template_reference.html">Template Reference</a>
+            "><a href="/docs/api.html">API &amp; Extension</a>
             
         </li>
     
@@ -334,40 +138,46 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/example_library.html">Example Library</a>
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
             
         </li>
     
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li>
-                <a href="/literate/src/Modulo.html">Literate source</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
-</tutorial-docsidebar>
-        </nav>
-    </aside>
-    <aside style="border: none">
-        <mdu-routeindex></mdu-routeindex>
+</mws-docsidebar>
+            </nav>
+        </aside>
+        <aside style="border: none">
+            
 
-        <mdu-route name="tutorial" src="./_docs/tutorial.html"></mdu-route>
+<h1>Modulo Templating Language</h1>
 
-        <mdu-route name="cparts" src="./_docs/cparts.html"></mdu-route>
-
-        <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
-
-        <mdu-route name="templating" src="./_docs/templating.html"><h1>Modulo Templating Language</h1>
-
-<p>This document explains the language syntax of the Modulo template system.</p>
+<p>This document explains the language syntax and functionality of the included
+Modulo template system.</p>
 
 <p>Modulo's templating language is designed to strike a balance between power
 and ease. It's designed to feel comfortable to those only used to working with
@@ -410,7 +220,10 @@ templates.  Thanks, Django!</p>
     in general (such as Ruby, Python, or PHP developers).</p>
 </div>
 
-<mdu-section name="templates">Templates</mdu-section>
+<mws-section name="templates">
+        <a class="secanchor" title="Click to focus on this section." id="templates" name="templates" href="#templates">#</a>
+        <h2>Templates</h2>
+    </mws-section>
 
 <p>A "template" is the text within a Template CPart. Most Components defined
 within Modulo will also define a Template CPart in order to render their
@@ -423,43 +236,46 @@ template is evaluated, and tags, which control the logic of the template.</p>
 be explained later in this document.</p>
 
 
-<mdu-codeexample vsize="255" text="
-<template>
-<p>There are <em>{{ state.count }}
-  {{ state.count|pluralize:&quot;articles,article&quot; }}</em>
-  on {{ script.exports.title }}.</p>
+<mws-demo demotype="minipreview" fromlibrary="Templating_1"><div class="demo-wrapper
+        
+        
+        
+        
+    ">
+    
 
-{# Show the articles #}
-{% for article in state.articles %}
-    <h4 style=&quot;color: blue&quot;>{{ article.headline|upper }}</h4>
-    {% if article.tease %}
-      <p>{{ article.tease|truncate:30 }}</p>
-    {% endif %}
-{% endfor %}
-</template>
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
 
+        
 
+        
 
-<!-- The data below was used to render the template above -->
-<state
-    count:=42
-    articles:='[
-      {&quot;headline&quot;: &quot;Modulo released!&quot;,
-       &quot;tease&quot;: &quot;The most exciting news of the century.&quot;},
-      {&quot;headline&quot;: &quot;Can JS be fun again?&quot;},
-      {&quot;headline&quot;: &quot;MTL considered harmful&quot;,
-       &quot;tease&quot;: &quot;Why constructing JS is risky business.&quot;}
-    ]'
-></state>
-<script>
-    script.exports.title = &quot;ModuloNews&quot;;
-</script>
-"></mdu-codeexample>
+    </div>
 
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
 
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
-<mdu-section name="variables">Variables</mdu-section>
+
+
+<mws-section name="variables">
+        <a class="secanchor" title="Click to focus on this section." id="variables" name="variables" href="#variables">#</a>
+        <h2>Variables</h2>
+    </mws-section>
 
 <p>Variables look like this: <code>{{ variable }}</code>. When the template
 engine encounters a variable, it evaluates that variable and replaces it with
@@ -535,10 +351,46 @@ variable with useful data:</p>
 <p>We'll go over template-tags later, but some template-tags can add variables
 into the mix as well. As a sneak-peak, examine the following code:</p>
 
-<pre>{% for athlete in state.athletes %}
-    &lt;p&gt;{{ athlete.name }}&lt;/p&gt;
+<mws-demo text="
+{% for athlete in state.athletes %}
+    <p>{{ athlete.name }}</p>
 {% endfor %}
-</pre>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>Note how <code>athlete</code> declares a new variable, which can be reused
 in <code>{{ athlete.name }}</code>. For more on for-loops, see the 
@@ -547,7 +399,10 @@ template-tag reference.</a></p>
 
 
 
-<mdu-section name="filters">Filters</mdu-section>
+<mws-section name="filters">
+        <a class="secanchor" title="Click to focus on this section." id="filters" name="filters" href="#filters">#</a>
+        <h2>Filters</h2>
+    </mws-section>
 
 <p>You can modify variables for display by using filters.</p>
 
@@ -606,7 +461,10 @@ for the complete list.</p>
 tags and filters.</p>
 
 
-<mdu-section name="tags">Tags</mdu-section>
+<mws-section name="tags">
+        <a class="secanchor" title="Click to focus on this section." id="tags" name="tags" href="#tags">#</a>
+        <h2>Tags</h2>
+    </mws-section>
 
 <p>Tags look like this: <code>{% tag %}</code>. Tags are more complex than
 variables: Some create text in the output, some control flow by performing
@@ -627,36 +485,144 @@ them in the <a href="/docs/template_reference.html#filters">built-in template-ta
 <h4>for</h4>
 <p>Duplicate a block of HTML code for every item in a collection of items (e.g.
 an array). This allows a HTML code to be repeated while looping over each item
-in an array. For example, to display a list of athletes provided in
-<code>state.athletes</code>:</p>
+in an array. For example, to display a list of athletes, assuming one was
+stored as an array of objects within <code>state.athletes</code>:</p>
 
-<pre>&lt;ul&gt;
+<mws-demo text="
+<ul>
     {% for athlete in state.athletes %}
-        &lt;li&gt;{{ athlete.name }}&lt;/li&gt;
+        <li>{{ athlete.name }}</li>
     {% endfor %}
-&lt;/ul&gt;
-</pre>
+</ul>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <h4>if</h4>
 <p>Evaluates a variable, and if that variable is "true" the contents of the
 block are displayed:</p>
 
-<pre>{% if state.athletes %}
+<mws-demo text="
+{% if state.athletes %}
     Number of athletes: {{ state.athletes|length }}
 {% endif %}
-</pre>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>In the above, if state.athletes is not empty, the number of athletes will be
 displayed by the {{ state.athletes|length }} variable.</p>
 
 <p>You can also use filters and various operators in the if tag:</p>
 
-<pre>{% if state.athletes|length gt 1 %}
+<mws-demo text="
+{% if state.athletes|length gt 1 %}
    Team: {% for athlete in state.athletes %} ... {% endfor %}
 {% else %}
    Athlete: {{ state.athletes|first }}
 {% endif %}
-</pre>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 </div>
 
 
@@ -681,7 +647,10 @@ work as you expect. <code>|length</code> is an exception. You can use
 tags; see <a href="/docs/template_reference.html">Template Reference</a>.</p>
 
 
-<mdu-section name="comments">Comments</mdu-section>
+<mws-section name="comments">
+        <a class="secanchor" title="Click to focus on this section." id="comments" name="comments" href="#comments">#</a>
+        <h2>Comments</h2>
+    </mws-section>
 
 <p>To comment-out part of a line in a template, use the comment syntax:
 <code>{# text in here is ignored #}</code>. This syntax should only be used for
@@ -694,18 +663,44 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
 
 <p>Examples of both are below:</p>
 
-<mdu-codeexample text="
-<template>
-    <h1>hello {# greeting #}</h1>
-    {% comment %}
-      {% if a %}<div>{{ b }}</div>{% endif %}
-      <h3>{{ state.items|first }}</h3>
-    {% endcomment %}
-    <p>Below the greeting...</p>
-</template>
-"></mdu-codeexample>
+<mws-demo demotype="minipreview" fromlibrary="Templating_Comments"><div class="demo-wrapper
+        
+        
+        
+        
+    ">
+    
 
-<mdu-section name="escaping">Escaping</mdu-section>
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+
+<mws-section name="escaping">
+        <a class="secanchor" title="Click to focus on this section." id="escaping" name="escaping" href="#escaping">#</a>
+        <h2>Escaping</h2>
+    </mws-section>
 
 <p>By default in Modulo, every template automatically escapes the output of
 every variable value. Specifically, these five characters are escaped:</p>
@@ -764,51 +759,61 @@ This will not be escaped: &lt;b&gt;
 </pre>
 
 <p>Keep in mind that you should only mark trusted data as <code>|safe</code>.
-You don't want anyone trying to slip in malicious JS behavior!  Examine the
-code below for a concrete example of how this escaping behaves:</p>
+You don't want anyone trying to slip in malicious JS behavior! How to validate
+if a bit of HTML is safe to include verbatim (e.g. with <code>|safe</code>) is
+outside the scope of this document, but generally you should only trust HTML
+that has been validated on the backend or database, whitelisting only certain
+features of HTML and checking for "red flags" like embedded JavaScript code, or
+if it's a "staff-only" feature like a team blog, and thus the content generated
+is only editable by a trusted source (e.g. yourself or a member of your team).
+Examine the code below for a concrete example of how this escaping behaves:</p>
 
-<mdu-codeexample text="
-<template>
-<p>User &quot;<em>{{ state.username }}</em>&quot; sent a message:</p>
-<div class=&quot;msgcontent&quot;>
-    {{ state.content|safe }}
+
+<mws-demo demotype="minipreview" fromlibrary="Templating_Escaping"><div class="demo-wrapper
+        
+        
+        
+        
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
 </div>
-</template>
 
-<state
-    username=&quot;Little <Bobby> <Drop> &amp;tables&quot;
-    content='
-        I <i>love</i> the classic <a target=&quot;_blank&quot;
-        href=&quot;https://xkcd.com/327/&quot;>xkcd #327</a> on
-        the risk of trusting <b>user inputed data</b>
-    '
-></state>
-<style>
-    .msgcontent {
-        background: #999;
-        padding: 10px;
-        margin: 10px;
-    }
-</style>
-"></mdu-codeexample>
+</mws-demo>
 
-</mdu-route>
 
-        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
-
-        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
-
-        <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
-    </aside>
-</main>
-
-<script>Modulo.defineAll()</script>
+        </aside>
+    </main>
 
 
 <footer>
-    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
 </footer>
 
 
 
-</body>
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>

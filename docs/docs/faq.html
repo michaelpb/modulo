@@ -1,326 +1,58 @@
-<!DOCTYPE HTML><head>
+<!DOCTYPE HTML>
+<head>
+</head><body>
+
+
     <meta charset="utf8">
-    <title>Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <title>FAQ - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
-    <script src="/js/Modulo.js"></script>
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <style id="mdu-Section_style">
-mdu-Section {
-            position: relative;
-        }
-mdu-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mdu-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mdu-Section:hover .mdu-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
+    
 
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mdu-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mdu-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mdu-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mdu-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mdu-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mdu-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mdu-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mdu-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
-        }
-    </style><style id="mdu-CodeSnippet_style">
-mdu-CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mdu-CodeSnippet .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
-eg-Simple * { text-decoration: underline; }
-</style><style id="eg-SearchBox_style">
-eg-SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-eg-SearchBox input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-eg-SearchBox input::after {
-        content: '\1F50E';
-    }
-eg-SearchBox .results-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-eg-SearchBox .results {
-        position: absolute;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        display: block;
-        border: 2px solid coral;
-        border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
-        background: white;
-    }
-eg-SearchBox .results.visible {
-        height: 200px;
-        width: 200px;
-    }
-eg-SearchBox .result {
-        padding: 10px;
-        width: 80px;
-        position: relative;
-    }
-eg-SearchBox .result label {
-        position: absolute;
-        width: 80px;
-        background: rgba(255, 255, 255, 0.5);
-        font-size: 0.7rem;
-        top: 0;
-        left: 0;
-    }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    color: #ccc;
-    font-weight: bold;
-}
-eg-Prime .grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-eg-Prime div.whole {
-    color: white;
-    background: #B90183;
-}
-eg-Prime div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
-</style><style id="eg-MemoryGame_style">
-eg-MemoryGame h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-eg-MemoryGame .board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-eg-MemoryGame .board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-eg-MemoryGame .board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-eg-MemoryGame .board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-eg-MemoryGame .board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style><style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
-    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
-    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+    <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html">Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1086,&quot;checksum&quot;:&quot;NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;}">
-        <nav class="Navbar">
-            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li>
-                    <a href="/index.html#below">About</a>
-                </li>
-                <li>
-                    <a href="/start.html">Start</a>
-                </li>
-                <li>
-                    <a href="/docs.html" class="Navbar--selected">Docs</a>
-                </li>
-                <!--
-                <li>
-                    <a href="/literate/src/Modulo.html" >Source</a>
-                </li>
-                -->
-            </ul>
-
-            <div class="Navbar-rightInfo">
-                v: 0.0.1<br>
-                SLOC: 1086 lines<br>
-                <a href="https://github.com/michaelpb/modulo/">github</a> | 
-                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-            </div>
-        </nav>
-    </mdu-navbar>
+    <div class="Navbar-rightInfo">
+        v: undefined<br>
+        SLOC: undefined lines<br>
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
 
 
-<main class="Main--fluid Docs">
-    <aside class="TitleAside TitleAside--navBar">
-        <h3><span alt="Lower-case delta">%</span></h3>
-        <nav class="TitleAside-navigation">
-            <h3>Documentation</h3>
-            <tutorial-docsidebar path="docs/docs/faq.html">
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar">
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-docsidebar path="faq.html">
 <ul>
     
         <li class="
             
-            "><a href="/docs.html">Table of Contents</a>
+            "><a href="/docs/">Table of Contents</a>
             
         </li>
     
@@ -328,7 +60,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/tutorial.html">Tutorial</a>
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
             
         </li>
     
@@ -352,7 +84,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -368,7 +100,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/template_reference.html">Template Reference</a>
+            "><a href="/docs/api.html">API &amp; Extension</a>
             
         </li>
     
@@ -376,76 +108,57 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/example_library.html">Example Library</a>
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
             
         </li>
     
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-                Literate Source*<br><em>* Coming soon!</em>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
-</tutorial-docsidebar>
-        </nav>
-    </aside>
-    <aside style="border: none">
-        <mdu-routeindex></mdu-routeindex>
-
-        <mdu-route name="tutorial" src="./_docs/tutorial.html"></mdu-route>
-
-        <mdu-route name="cparts" src="./_docs/cparts.html"></mdu-route>
-
-        <mdu-route name="directives" src="./_docs/directives.html"></mdu-route>
-
-        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
-
-        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
-
-        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
-
-        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
-
-        <mdu-route name="faq" src="./_docs/faq.html">
+</mws-docsidebar>
+            </nav>
+        </aside>
+        <aside style="border: none">
+            
 
 <h3><span alt="Question mark">?</span></h3>
+
 <h3>FAQ</h3>
 
-<p><strong>Q: Why call it Modulo?</strong></p>
-<p>A: From Wikipeda: “In mathematics, the term modulo is often used to
-assert that two distinct mathematical objects can be regarded as equivalent if
-their difference is accounted for by an additional factor.” Basically,
-it's math jargon to say two things are equivalent in a given condition or
-context.</p>
+<p>This FAQ, like every FAQ, is an imaginary conversation between the creator
+(myself) of Modulo and imaginary people who apparently are invested in Modulo
+enough to ask probing questions about it. That said, if you are a non-imaginary
+person (I should hope so!) with questions about Modulo, they are welcome even
+more: Contact via email, submit a pull request to this page, or add an issue to
+the project on GitHub.</p>
 
-<p>So, maybe the goal of Modulo is provide that context, making a natural way
-to integrate the new and the old! Or maybe it sounded cool. Maybe that!</p>
+<p>By reading this FAQ, you will get a better understanding of the motivation
+of building Modulo and it's design philosophy.</p>
 
 <hr>
-<p><strong>Q: Isn't <em>Modulo</em> already a thing in
-JavaScript?</strong></p>
-<p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
-Instead, it uses the percent sign as a <em>remainder operator</em>,
-which behaves similarly for some numbers, but differs for negative
-numbers. So, while Modulo.js is not the first thing to be called
-<abbr title="At the time of picking the name, there were a couple
-similarly named projects, though none seem to be in active use or
-development for years.">"Modulo" in JS</abbr> it <em>is not</em>
-named after the <code>%</code> operator in JavaScript, making both
-the logo and name are a bit of a tongue-in-cheek jab at our
-favorite (but often deficient) computer language.</p>
-<!--You can think of it as the missing modulo! (Except not at all.)-->
-
 
 <p><strong>Q: Why yet another JavaScript framework?</strong></p>
 <p>A: To me, the very idea of writing YET ANOTHER JavaScript framework
@@ -506,19 +219,34 @@ web component standard). In this case, adding anything more would constitute
 over-engineering.</p>
 
 <hr>
+<p><strong>Q: Can't you have both, however? Maybe not as a solo project, but
+can't you have a big, extensive framework with big and extensive
+documentation?</strong></p>
+
+<p>Sure, it's possible, in some cases situations better, and you can use always
+that too.  Modulo plays well with others! However, Modulo takes a different approach.
+See <a href="#philosophy">the design philosophy "thought experiment"</a> below for
+for further and more thorough discussion of Modulo's approach and it's
+motivation.</p>
+
+<hr>
 <p><strong>Q: 80 char line limit? 4 space indentation? Imperative
 coding? What is this, the 90's?</strong></p>
 
-<p>A: Another motivating factor for developing Modulo was dismay at the code
-quality of many JavaScript libraries that I use. This is not a slight on any
-particular library, nor is it a claim that I write better code—in fact,
-outside of Modulo.js itself, all the tooling code in this repo is a mess!
-However, for Modulo.js itself, I invested most of the development time in
-refactoring it over and over, until the code and logical flow was as simple as
-possible. My goal is to make the code readable and be a good example for novice
-coders.  I want engineers of all skill levels to be able to understand
-<em>why</em> the framework behaves the way it does by simply reading the code
-that powers certain features.</p>
+<p>A: Another motivating factor for developing Modulo was how much I
+appreciates libraries such as Django that maintain high quality docs and code,
+and have an easy-to-follow codebase that you can always go to to understand
+exact ordering or behavior of certain operations or steps. This is contrasted
+with other libraries which seem to be designed first and foremost to go fast
+and pass tests, but not for thorough documentation, or self-documenting code.
+This is not a slight on any particular library, nor is it a claim that I write
+better code—in fact, outside of Modulo.js itself, all the tooling code in
+this repo is a mess!  However, for Modulo.js itself, I invested most of the
+development time in refactoring it over and over (and over and over), until the
+code and logical flow was as simple as possible. My goal is to make the code
+readable and be a good example for novice coders. I want engineers of all skill
+levels to be able to understand <em>why</em> the framework behaves the way it
+does by simply reading the code that powers certain features.</p>
 
 <p>That's where the coding standard comes in. Shorter line length and "more
 intense" indentation requirements naturally causes simpler, less convoluted
@@ -528,18 +256,282 @@ is written once and read 1000 times. Modulo code was written to be easily read,
 not easily written.</p>
 
 
-</mdu-route>
 
-    </aside>
-</main>
+<hr>
+<p><strong>Q: Why call it Modulo?</strong></p>
+<p>A: From Wikipeda: “In mathematics, the term modulo is often used to
+assert that two distinct mathematical objects can be regarded as equivalent if
+their difference is accounted for by an additional factor.” Basically,
+it's math jargon to say two things are equivalent in a given condition or
+context.</p>
 
-<script>Modulo.defineAll()</script>
+<p>So, maybe the goal of Modulo is provide that context, making a natural way
+to integrate the new and the old! Or maybe it sounded cool. Maybe that!</p>
+
+<hr>
+<p><strong>Q: Isn't <em>Modulo</em> already a thing in
+JavaScript?</strong>
+</p><p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
+Instead, it uses the percent sign as a <em>remainder operator</em>,
+which behaves similarly for some numbers, but differs for negative
+numbers. So, while Modulo.js is not the first thing to be called
+<abbr title="At the time of picking the name, there were a couple
+similarly named projects, though none seem to be in active use or
+development for years.">"Modulo" in JS</abbr> it <em>is not</em>
+named after the <code>%</code> operator in JavaScript, making both
+the logo and name are a bit of a tongue-in-cheek jab at our
+favorite (but often deficient) computer language.</p>
+
+
+<hr>
+
+<mws-section name="philosophy">
+        <a class="secanchor" title="Click to focus on this section." id="philosophy" name="philosophy" href="#philosophy">#</a>
+        <h2>Thought experiment on framework philosophy</h2>
+    </mws-section>
+
+<p>In this section, I'll give some of my design philosophy and opinions on what
+makes a good framework.</p>
+
+<p>Let's do a thought experiment. Imagine the most minimalist framework. Let's
+call it "Zen" (probably already a thing, but bare with me), by Tux the
+Penguin (because hey, why not?). Here is the complete code for the "Zen"
+framework:</p>
+
+<mws-demo text="
+<script>
+// Zen Framework - (C) 2091 - Tux the Penguin
+function Zen(el, key, value) {
+    el.state = el.state || JSON.parse(el.getAttribute(&quot;x-state&quot;) || &quot;{}&quot;)
+    el.state[key] = value;
+    el.innerHTML = el.innerHTML.replace(/\$\{([^\)]+)?\}/g, (a, b) => el.state[b]);
+}
+</script>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<p>Now, Tux could just publish this by itself, and no one would ever want to
+use it, since it it's just several lines of useless, undocumented code. People
+copy &amp; paste far more code from Stack Overflow just for simple tasks!</p>
+
+<p>However, now imagine Tux wrote documentation for it. Imagine Tux wrote a
+massive recipe book of hundreds of examples, ranging from API usage to common
+UI tasks.  For an example, skim this "excerpt" of the imaginary "Zen"
+documentation:</p>
+
+<mws-demo text="
+<!-- Zen Framework - Documentation -->
+
+<!-- BEGINNER EXAMPLE: BUTTON -->
+<!-- Look how easy it is to make a button that counts: -->
+<button
+        onClick='Zen(this, &quot;count&quot;, this.state.count++)'
+        x-state='{&quot;count&quot;: 3}'>
+    <p>I ate {count} delicious herrings</p>
+</button>
+
+<!-- Okay, lets break it down:
+        - By using the x-state directive, the core directive of Zen (see
+          Chapter 2 on directives and how to create your own), we can set the
+          initial state of an element.
+        - What is state? An object that you can mutate to affect how your
+          elements are displayed. Use it to store data from the DB, or
+          elsewhere.
+-->
+
+<!-- ADVANCED EXAMPLE: API -->
+<!-- Lets see another example of state, this time with API: -->
+<div x-state='{&quot;search&quot;: &quot;&quot;}'>
+    <p>Information about account found: Their name is {name}</p>
+    <input onChange='Zen(this.parentNode, &quot;search&quot;, this.value)'
+        placholder=&quot;Type in a GitHub username...&quot;
+    />
+    <button onClick='
+        fetch(`https://api.github.com/users/${this.parentNode.state.search}`)
+            .then(response => response.json())
+            .then(({name}) => Zen(this.parentNode, &quot;name&quot;, name))
+        '>Search GitHub</button>
+</div>
+
+<!-- Okay, lets break it down:
+        - In this example, you can see how ........... (- snip -) -->
+
+
+
+<!-- UI TOOLKIT EXAMPLE: ACCORDIAN TOGGLE -->
+<!-- Or, look how you can make toggle accordians elements just by using .... -->
+<nav x-state='{}'>
+    <li onClick='Zen(this.parentNode, &quot;info_class&quot;, &quot;visible&quot;)'>
+        Show Info
+    </li>
+    <li onClick='Zen(this.parentNode, &quot;contact_class&quot;, &quot;visible&quot;)'>
+        Show Contact
+    </li>
+    <li onClick='Zen(this.parentNode, &quot;blog_class&quot;, &quot;visible&quot;)'>
+        Show Blog
+    </li>
+    <div class=&quot;{info_active}&quot;>Hi, this is info about my website...</div>
+    <div class=&quot;{contact_class}&quot;>I live in Antarctica and write free software...</div>
+    <div class=&quot;{blog_class}&quot;>Thoughts on fish: Why fish is actually...</div>
+</nav>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<p>Now this is looking more and more like a complete framework! The missing
+ingredient was documentation and examples. In fact, that was even more
+important than the original code: The original code could be anything, just
+setting up a stack, checking up some attributes, whatever, but without the
+patterns  of usage around the original code it is meaningless nonsense.</p>
+
+<p>In other words, when people think of a framework, they don't think of how
+it's coded, they think what they can do with it. Thus, a framework can be
+better thought of as a bundle of best practices and workflow, or a recipe book.
+The "code" of the framework is immaterial, as long as the documented examples
+work. In this case, the code was only a few lines long, yet the examples showed
+that it could be used for a myriad of tasks.  In fact, these sorts of snippets
+in the documentation can be thought of as being as much part of the framework
+as anything else: That is how "best practices" and "common patterns" are
+established.</p>
+
+<p>In my view, non-opinionated frameworks are incomplete to the extent they
+don't have opinions. That's not to say they are bad or useless, "unopinionated"
+has it's time and place, but it's just to acknowledge that they are BYO ("bring
+your own") for anything that the documentation doesn't explicitly establish
+patterns of usage.  Just look at the dozens of ways that Redux is implemented
+in the industry, for an example. Just saying that you use "Redux" tells little
+about the code structure or practices, or the myriad of middleware that is
+typically incorporated to handle various common use-patterns. Redux Toolkit
+projects can look entirely different than other Redux projects! Once you "bring
+your own" patterns to fill in these gaps, only then the framework is "truly
+complete" (using the nomenclature I'm using in this document, at least). One
+Redux setup might be so different than another due to patterns of usage, that
+the lines defining them are a bit fuzzier, and they might as well be a
+different framework.</p>
+
+<p>With any project, very quickly the "userland" (e.g. developer's)
+code eclipses the framework code in size and performance impact, which means
+these best practices and pattern recipes can have a much bigger impact on the
+resulting product than internal implementations. If the documentation shows
+many slow performing examples, or if it doesn't suggest anything at all and
+developers tend to go for slow implementations, I think it's perfectly fair to
+say that the framework is "slow", regardless of the internal operations.</p>
+
+<p>Modulo's goal is short code and long docs. It's basically "Zen", but
+multiplied times 250. It's as though Tux continued hacking away, bringing it
+from 5 lines to about 1000 lines, and then kept on hacking away at docs,
+examples, and best-practices, keeping them still proportionally much
+longer.</p>
+
+<p>Coincidentally, this is actually somewhat how various parts of Modulo
+originally were developed.  Modulo itself had an earlier incarnation called
+MoEdCo (Modular Editor Components), which was a Web Components framework in
+less than 500 lines for Electron.js. That, in turn, evolved out of a demo that
+I live coded for a class I was teaching on React JavaScript back in 2017. The
+in-class demo was a "React-like" in just a few dozen lines of code, to explain
+the core philosophy and patterns used by React without the extra baggage of the
+new syntax and complicated build environment. Similarly, the Modulo Template
+Language evolved out of <a href="https://www.npmjs.com/package/tinytiny">TinyTiny</a>, which was an
+expanded version of an even shorter "codegolf" challenge that I had done for
+fun (now about a decade ago).</p>
+
+<hr>
+
+<p>Summary: A framework isn't just code, it's an entire workflow and way of
+doing things. The code is important, but less important than the other
+aspects.</p>
+
+<p>Also, for clarity's sake: The "Zen" code above is untested, incomplete, and
+probably has some bugs, but possibly could work in principle with a tweak or
+two and proper supporting CSS. It doesn't matter either way for our purposes.
+Also, I'm very far from the first person to approach framework development this
+way — in fact, the increasingly popular Alpine.js follows a similar
+principle! It also happens to resemble my silly "Zen" example, but is actually
+real, so if you want a neat-o real-life version of this,
+<a href="https://alpinejs.dev/">check it out</a>.</p>
+
+
+
+
+
+        </aside>
+    </main>
 
 
 <footer>
-    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
 </footer>
 
 
 
-</body>
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>

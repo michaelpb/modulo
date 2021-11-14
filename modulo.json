@@ -1,6 +1,6 @@
 {
     "preload": ["www-src/components/layouts.html"],
-    "output": "www",
+    "output": "docs",
     "testLog": true,
     "domEngine": "jsdom",
     "testLogPath": "modulo.testlog.json",

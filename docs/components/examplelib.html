@@ -1,22 +1,13 @@
 <module>
     <script>
-        script.exports.frontpage = [
-            "Hello",
-            "Simple",
-            "ToDo",
-            "API",
-            "Prime",
-            "MemoryGame",
-        ];
-        //console.log('this is factory', factory.loader.src);
-        //console.log('this is DATA', Modulo.fetchQ.data);
-        //console.log('this is mah text', myText);
-        const myText = Modulo.fetchQ.data[factory.loader.src];
-        //const componentNames = [];
+        // Splits up own source-code to get source for each example
+        const mySrc = '/components/examplelib.html';
+        const myText = Modulo.fetchQ.data[mySrc];
         const componentTexts = {};
         if (myText) {
             let name = '';
             let currentComponent = '';
+            let inTestSuite = false;
             for (const line of myText.split('\n')) {
                 if (line.startsWith('</component>')) {
                     componentTexts[name] = currentComponent;
@@ -24,44 +15,78 @@
                     name = null;
                 } else if (line.startsWith('<component')) {
                     name = line.split(' name="')[1].split('"')[0];
-                    //componentNames.push(name);
-                } else if (name) {
+                } else if (line.startsWith('<testsuite')) {
+                    inTestSuite = true;
+                } else if (line.includes('</testsuite>')) {
+                    inTestSuite = false;
+                } else if (name && !inTestSuite) {
                     currentComponent += line + '\n';
                 }
             }
         }
-        //script.exports.componentNames = componentNames;
         script.exports.componentTexts = componentTexts;
     </script>
 </module>
 
-
+<!--
+/*} else if (sName === 'style') {
+    console.log('this is content', data.content);
+    const content = data.content.replace(/\*\/.*?\*\//ig, '');
+    // To prefix the selectors, we loop through them,
+    // with this RegExp that looks for { chars
+    content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, (selector, data) => {
+        console.log('selector', selector);
+        console.log('data', data);
+    });*/
+-->
 
 <component name="Hello">
 
 <template>
     <button @click:=script.countUp>Hello {{ state.num }}</button>
 </template>
-<state num:=42
+<state
+    num:=42
 ></state>
 <script>
     function countUp() {
         state.num++;
     }
 </script>
+
+<testsuite
+    src="./examplelib-tests/Hello-tests.html"
+></testsuite>
+
 </component>
+
+
+
 
 <component name="Simple">
 
 <template>
-    Components can use <strong>any</strong> number
-    of <em title="Component Parts">CParts</em>.
+    Components can use any number of <strong>CParts</strong>.
+    Here we use only <em>Style</em> and <em>Template</em>.
 </template>
+
 <style>
-    em { color: darkblue; }
+    em { color: darkgreen; }
     * { text-decoration: underline; }
 </style>
+
+<testsuite>
+    <test name="Initially renders">
+        <template>
+            Components can use any number of <strong>CParts</strong>.
+            Here we use only <em>Style</em> and <em>Template</em>.
+        </template>
+    </test>
+</testsuite>
+
 </component>
+
+
 
 
 <component name="ToDo">
@@ -78,7 +103,7 @@
 </template>
 
 <state
-    list:=&#39;["Milk", "Bread", "Candy"]&#39;
+    list:='["Milk", "Bread", "Candy"]'
     text="Beer"
 ></state>
 
@@ -88,7 +113,15 @@
         state.text = ""; // clear input
     }
 </script>
+
+<testsuite
+    src="./examplelib-tests/ToDo-tests.html"
+></testsuite>
+
 </component>
+
+<!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
+
 
 <component name="API">
 <template>
@@ -122,7 +155,15 @@
         element.rerender();
     }
 </script>
+
+<testsuite
+    src="./examplelib-tests/API-tests.html"
+></testsuite>
+
 </component>
+
+
+
 
 
 <component name="SearchBox">
@@ -162,7 +203,7 @@ lord of the rings&rdquo;)</p>
     // static variable global to all instances of this class (though,
     // thankfully, not global in general -- it's still in an "IFFE")
     // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state)
+    // needed to attach it to state in the initializedCallback)
     let _globalDebounceTimeout = null;
     function _globalDebounce(func) {
         if (_globalDebounceTimeout) {
@@ -247,6 +288,9 @@ lord of the rings&rdquo;)</p>
     }
 </style>
 
+<testsuite
+    src="./examplelib-tests/SearchBox-tests.html"
+></testsuite>
 
 </component>
 
@@ -255,7 +299,9 @@ lord of the rings&rdquo;)</p>
 
 
 
-<component name="Prime">
+<component name="PrimeSieve">
+<!-- Demos mouseover, template filters, template control flow,
+     and static script exports -->
 <template>
   <div class="grid">
     {% for i in script.exports.range %}
@@ -272,7 +318,7 @@ lord of the rings&rdquo;)</p>
 </template>
 
 <state
-    number:=76
+    number:=64
 ></state>
 
 <script>
@@ -280,8 +326,8 @@ lord of the rings&rdquo;)</p>
     // to export this as a one-time global constant.
     // (Hint: Curious how it calculates prime? See CSS!)
     script.exports.range = 
-        Array.from({length: 75}, (x, i) => i + 2);
-    function setNum(ev) {
+        Array.from({length: 63}, (x, i) => i + 2);
+    function setNum(payload, ev) {
         state.number = Number(ev.target.textContent);
     }
 </script>
@@ -289,9 +335,11 @@ lord of the rings&rdquo;)</p>
 <style>
 .grid {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     color: #ccc;
     font-weight: bold;
+    width: 100%;
+    margin: -5px;
 }
 .grid > div {
     border: 1px solid #ccc;
@@ -311,11 +359,19 @@ div.hidden {
 div.number { background: green; }
 div.number::after { content: "*"; }
 /* Check for whole factors (an adjacent div.whole).
-   If found, then hide asterisk and green. */
+   If found, then hide asterisk and green */
 div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
 </style>
+
+<testsuite
+    src="./examplelib-tests/PrimeSieve-tests.html"
+></testsuite>
+
 </component>
+
+
+
 
 
 <component name="MemoryGame">
@@ -332,10 +388,10 @@ div.whole ~ div.number::after { opacity: 0; }
         {% if state.cards.length > 16 %}hard{% endif %}">
     {# Loop through each card in the "deck" (state.cards) #}
     {% for card in state.cards %}
-        {# Using "key=" to speed up DOM reconciler #}
+        {# Use "key=" to speed up DOM reconciler #}
         <div key="c{{ card.id }}"
             class="card
-            {% if state.revealed|includes:card.id %}
+            {% if card.id in state.revealed %}
                 flipped
             {% endif %}
             "
@@ -347,7 +403,7 @@ div.whole ~ div.number::after { opacity: 0; }
             "
             @click:=script.flip
             click.payload="{{ card.id }}">
-            {% if state.revealed|includes:card.id %}
+            {% if card.id in state.revealed %}
                 {{ card.symbol }}
             {% endif %}
         </div>
@@ -370,7 +426,7 @@ div.whole ~ div.number::after { opacity: 0; }
 
 <script>
 const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
-function setup(ev, payload) {
+function setup(payload) {
     const count = Number(payload);
     let symbols = symbolsStr.substr(0, count/2).split("");
     symbols = symbols.concat(symbols); // duplicate cards
@@ -384,7 +440,7 @@ function setup(ev, payload) {
     }
 }
 
-function failedFlipCallback(ev) {
+function failedFlipCallback() {
     // Remove both from revealed array & set to null
     state.revealed = state.revealed.filter(
             id => id !== state.failedflip
@@ -395,7 +451,7 @@ function failedFlipCallback(ev) {
     element.rerender();
 }
 
-function flip(ev, id) {
+function flip(id) {
     if (state.failedflip !== null) {
         return;
     }
@@ -477,6 +533,11 @@ h3 {
     to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
 </style>
+
+<testsuite
+    src="./examplelib-tests/MemoryGame-tests.html"
+></testsuite>
+
 </component>
 
 
@@ -555,4 +616,6 @@ h3 {
 </script>
 
 </component>
+
+<!-- idea: Conways game of life? -->
 

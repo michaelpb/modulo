@@ -1,326 +1,58 @@
-<!DOCTYPE HTML><head>
+<!DOCTYPE HTML>
+<head>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script></head><body>
+
+
     <meta charset="utf8">
-    <title>Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
+    <title>Templating Reference - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
-    <script src="/js/Modulo.js"></script>
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <style id="mdu-Section_style">
-mdu-Section {
-            position: relative;
-        }
-mdu-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mdu-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mdu-Section:hover .mdu-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
+    
 
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mdu-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mdu-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mdu-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mdu-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mdu-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mdu-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mdu-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mdu-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
-        }
-    </style><style id="mdu-CodeSnippet_style">
-mdu-CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mdu-CodeSnippet .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
-eg-Simple * { text-decoration: underline; }
-</style><style id="eg-SearchBox_style">
-eg-SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-eg-SearchBox input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-eg-SearchBox input::after {
-        content: '\1F50E';
-    }
-eg-SearchBox .results-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-eg-SearchBox .results {
-        position: absolute;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        display: block;
-        border: 2px solid coral;
-        border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
-        background: white;
-    }
-eg-SearchBox .results.visible {
-        height: 200px;
-        width: 200px;
-    }
-eg-SearchBox .result {
-        padding: 10px;
-        width: 80px;
-        position: relative;
-    }
-eg-SearchBox .result label {
-        position: absolute;
-        width: 80px;
-        background: rgba(255, 255, 255, 0.5);
-        font-size: 0.7rem;
-        top: 0;
-        left: 0;
-    }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    color: #ccc;
-    font-weight: bold;
-}
-eg-Prime .grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-eg-Prime div.whole {
-    color: white;
-    background: #B90183;
-}
-eg-Prime div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
-</style><style id="eg-MemoryGame_style">
-eg-MemoryGame h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-eg-MemoryGame .board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-eg-MemoryGame .board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-eg-MemoryGame .board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-eg-MemoryGame .board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-eg-MemoryGame .board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style><style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
-    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
-    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
+    <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html">Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
 
-<mdu-navbar selected="docs" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1086,&quot;checksum&quot;:&quot;NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;}">
-        <nav class="Navbar">
-            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li>
-                    <a href="/index.html#below">About</a>
-                </li>
-                <li>
-                    <a href="/start.html">Start</a>
-                </li>
-                <li>
-                    <a href="/docs.html" class="Navbar--selected">Docs</a>
-                </li>
-                <!--
-                <li>
-                    <a href="/literate/src/Modulo.html" >Source</a>
-                </li>
-                -->
-            </ul>
-
-            <div class="Navbar-rightInfo">
-                v: 0.0.1<br>
-                SLOC: 1086 lines<br>
-                <a href="https://github.com/michaelpb/modulo/">github</a> | 
-                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-            </div>
-        </nav>
-    </mdu-navbar>
+    <div class="Navbar-rightInfo">
+        v: undefined<br>
+        SLOC: undefined lines<br>
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
 
 
-<main class="Main--fluid Docs">
-    <aside class="TitleAside TitleAside--navBar">
-        <h3><span alt="Lower-case delta">%</span></h3>
-        <nav class="TitleAside-navigation">
-            <h3>Documentation</h3>
-            <tutorial-docsidebar path="docs/docs/directives.html">
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar">
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-docsidebar path="directives.html">
 <ul>
     
         <li class="
             
-            "><a href="/docs.html">Table of Contents</a>
+            "><a href="/docs/">Table of Contents</a>
             
         </li>
     
@@ -328,7 +60,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/tutorial.html">Tutorial</a>
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
             
         </li>
     
@@ -352,7 +84,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -386,7 +118,7 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/template_reference.html">Template Reference</a>
+            "><a href="/docs/api.html">API &amp; Extension</a>
             
         </li>
     
@@ -394,40 +126,49 @@ tutorial-DocSidebar li.ginactive > a::before {
             
                 ginactive
             
-            "><a href="/docs/example_library.html">Example Library</a>
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
             
         </li>
     
 
 
+    <!--
     <li>
         Other resources:
 
         <ul>
             <li>
                 <a href="/docs/faq.html">FAQ</a>
-            </li><li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-                Literate Source*<br><em>* Coming soon!</em>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
             </li>
         </ul>
 
     </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
 </ul>
-</tutorial-docsidebar>
-        </nav>
-    </aside>
-    <aside style="border: none">
-        <mdu-routeindex></mdu-routeindex>
+</mws-docsidebar>
+            </nav>
+        </aside>
+        <aside style="border: none">
+            
 
-        <mdu-route name="tutorial" src="./_docs/tutorial.html"></mdu-route>
-
-        <mdu-route name="cparts" src="./_docs/cparts.html"></mdu-route>
-
-        <mdu-route name="directives" src="./_docs/directives.html"><h1>Lifecycle &amp; Directives</h1>
+<h1>Lifecycle &amp; Directives</h1>
 
 
-<mdu-section name="lifecycle">Lifecycle</mdu-section>
+<mws-section name="lifecycle">
+        <a class="secanchor" title="Click to focus on this section." id="lifecycle" name="lifecycle" href="#lifecycle">#</a>
+        <h2>Lifecycle</h2>
+    </mws-section>
 
 <p>Every Modulo Component goes through a certain "lifecycle". Here's an
 analogy: If CParts are the stage-hands and actors who put on a play, then the
@@ -497,10 +238,11 @@ you don't have a <em>Template</em> CPart defined, although without a
     <li><code>prepare</code> - Gather data needed before rendering (e.g. gather
     variables for template)</li>
     <li><code>render</code> - Use the Template to render HTML code</li>
-    <li><code>update</code> - Updates the DOM to reflect the newly generated
-    HTML code, while collecting directives.</li>
-    <li><code>updated</code> - Perform any clean-up tasks after DOM update, and
-    invoke the directive methods collected in the previous step.</li>
+    <li><code>reconcile</code> - Compares the new rendered HTML to the DOM, and
+    generates a "patch-set" or array of operations necessary to reconcile the
+    DOM to the new HTML</li>
+    <li><code>update</code> - Applies the "patches" generated in the previous
+    step, actually modifying the DOM and invoking directives</li>
 </ul>
 
 
@@ -544,7 +286,7 @@ in a later section</a>.</p>
 
 <p><strong>Try it out below:</strong></p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 Hello <strong>Modulo</strong> World!
 Open your browser dev console to see messages...
@@ -584,14 +326,68 @@ Open your browser dev console to see messages...
         console.log(&quot;(the button got clicked)&quot;);
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e9g1-example mm-ignore="mm-ignore">
+Hello <strong>Modulo</strong> World!
+Open your browser dev console to see messages...
+<button @click:="script.gotClicked">Click me to generate an event</button>
+</e9g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
 
 
 
-<mdu-section name="renderobj">renderObj</mdu-section>
+<mws-section name="renderobj">
+        <a class="secanchor" title="Click to focus on this section." id="renderobj" name="renderobj" href="#renderobj">#</a>
+        <h2>renderObj</h2>
+    </mws-section>
 
 <blockquote>
 <p><strong>renderObj is like "req" </strong> -
@@ -662,7 +458,7 @@ following example to see what information is available or modified at each
 step:</p>
 
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 <label>
 <input [state.bind] name=&quot;enabled&quot; type=&quot;checkbox&quot; />
@@ -676,8 +472,8 @@ Show messages in console</label>
 <script>
     function _logInfo(message, renderObj) {
         // Little helper function to do messages in console
-        const formattedOutput = JSON.stringify(renderObj, null, 2);
         if (state.enabled) {
+            const formattedOutput = JSON.stringify(renderObj, null, 2);
             console.log(message, formattedOutput);
         }
     }
@@ -698,10 +494,64 @@ Show messages in console</label>
         _logInfo(&quot;updatedCallback:&quot;, renderObj);
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e10g1-example mm-ignore="mm-ignore">
+<label>
+<input [state.bind]="" name="enabled" type="checkbox" value="false">
+Show messages in console</label>
+</e10g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
-<mdu-section name="directives">Directives</mdu-section>
+<mws-section name="directives">
+        <a class="secanchor" title="Click to focus on this section." id="directives" name="directives" href="#directives">#</a>
+        <h2>Directives</h2>
+    </mws-section>
 
 <blockquote><p><strong>Directives are like "refs"</strong> - Directives have
 the same uses as Refs in <a href="https://reactjs.org/docs/refs-and-the-dom.html" target="_blank">React</a>: “Managing focus, text selection, or media
@@ -744,7 +594,7 @@ run into the limits of what Modulo is capable of doing.</p>
 
 <p><strong>Example custom directives:</strong></p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
 {# [script.myinput] is a custom directive, defined below #}
 <input [script.myinput] />
@@ -766,9 +616,64 @@ run into the limits of what Modulo is capable of doing.</p>
         element.inputRef.focus();
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
 
-<!--<mdu-Section name="builtin">Built-in directives</mdu-Section>-->
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e11g1-example mm-ignore="mm-ignore">
+
+<input [script.myinput]="">
+
+
+<button [component.event]click:="script.showInfo">
+    Click me
+</button>
+</e11g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<!--<mws-Section name="builtin">Built-in directives</mws-Section>-->
 
 <h3>Built-in directives</h3>
 
@@ -779,14 +684,21 @@ run into the limits of what Modulo is capable of doing.</p>
     <li><code>[state.bind]</code> - Two-way binding with <em>State</em>
     data, with the key determined by the <code>name=</code> property of
     whatever it is attached to.</li>
+
     <li><code>[component.children]</code> - Reattach the original child
     elements that this component had when it was first mounted to a new DOM
-    element.</li>
+    element. (For React users, this is similar to doing
+    <code>{this.props.children}</code>.)</li>
+
     <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
-    Attach event listeners to DOM elements</li>
-    <li><code>[component.resolve]</code> (<em>shortcut:</em> <code>:</code>) -
-    Directly pass <code>renderObj</code> values as <em>Props</em> or
-    events.</li>
+    Attach event listeners to DOM elements, and remove them when the DOM
+    elements are removed. (For jQuery users, this is used for similar purposes
+    as "live" (delegated) events, but is faster.)</li>
+
+    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
+    Attach data to a DOM element's `.dataProp` object, which can be used to
+    directly pass <code>renderObj</code> values as <em>Props</em> or
+    events</li>
 </ul>
 
 <h3>Directives vs templates</h3>
@@ -811,55 +723,123 @@ stricter structure.</p>
     <p>Never attempt to mix <em>Template</em> CPart variables with directives.
     Directives cannot access template variables, since directives are only are
     applied after the template is fully rendered and all template variables are
-    already forgotten.  As an example, consider the following code:</p>
+    already forgotten. As an example, consider the following code:</p>
 
-<mdu-codesnippet text="
+<mws-demo text="
 <template>
     {% for athlete in state.team %}
-        {# Broken, will not work: #}   <a href:=athlete.url>{{ athlete.name }}</a>
-        {# Correct, will work: #}      <a href=&quot;{{ athlete.url }}&quot;>{{ athlete.name }}</a>
+        {# (HTML Attributes) #}
+        {# Broken, will not work: #}
+        <a href:=athlete.url>{{ athlete.name }}</a>
 
-
-        {# Also broken, will not work: #}
-        <button @click:=athlete.myClickCallback>{{ athlete.name }}</button>
         {# Correct, will work: #}
-        <button @click:=script.selectOne click.payload=&quot;{{ athlete.id }}&quot;>{{ athlete.name }}</button>
+        <a href=&quot;{{ athlete.url }}&quot;>{{ athlete.name }}</a>
+
+        {# (Events) #}
+        {# Also broken, will not work: #}
+        <button @click:=athlete.myClickCallback>
+            {{ athlete.name }}</button>
+
+        {# Correct, will work: #}
+        <button @click:=script.selectOne payload=&quot;{{ athlete.id }}&quot;>
+            {{ athlete.name }}</button>
     {% endfor %}
 </template>
-"></mdu-codesnippet>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
 
-    <p>The first attempt uses a directive (<code>[component.resolve]</code>, in
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<blockquote>
+    <p><strong>Why "payload"?</strong> Why does Modulo take this approach, vs
+    something like React, that allows direct attachment of anonymous JavaScript
+    functions? As any React developer knows by now, there are a lot of
+    "footguns" (common mistakes) with attaching events like this, specifically
+    because complexities with "this" context, anonymous functions, and bound
+    functions with arguments can make introspection (e.g. interactive
+    debugging) hard.</p>
+
+    <p>The Modulo approach is always "DOM determines behavior".  Just by using
+    "Inspect" in your browser's Developer Tools, you can examine or even modify
+    the "payload" attribute while debugging event behavior. In other words,
+    Modulo <em>tends to treat the DOM as the "source of truth"</em>, and thus
+    derives it's behavior from properties on DOM elements.</p>
+</blockquote>
+
+    <p>The first attempt (HTML Attributes) uses a directive (<code>[component.dataProp]</code>, in
     this case using the colon <code>:</code> shortcut), in an attempt to "directly"
     attach the URL to href. The second attempt correctly uses the template variable
     with double curly braces to embed it as an actual HTML property.  The first
     attempt will fail because it fails to take into account that the directives
     will happen <em>after</em> rendering the template. That is, the resulting HTML
-    will resemble something like this:
+    will literally resemble something like this:
     “<code>&lt;a href:=athlete.url&gt;Steph Curry &lt;/a&gt;
     &lt;a href:=athlete.url&gt;Megan Rapinoe&lt;/a&gt;
-    &lt;a href:=athlete.url&gt;Aaron Rogers&lt;/a&gt;</code>”.
+    &lt;a href:=athlete.url&gt;Devante Adams&lt;/a&gt;</code>”.
 
-    </p><p>In other words, the "athlete" variable <em>is a Template variable in the for
-    loop</em> and will only be resolved at the templating step. Since directives
-    happen after templating, there is no way to resolve the variable from the for
-    loop.</p>
+    </p><p>In other words, the "athlete" variable <em>is a temporary Template
+    variable in the for loop</em> (that is to say, not a variable in the
+    <em>renderObj</em>), and will only be used at the templating step, and
+    forgotten immediately after. Since directives are only invoked once
+    templating is fully completed, there is no way to resolve the variable from
+    the for loop.</p>
 
-    <p>What is the proper use of the <code>[component.resolve]</code>
-    directive, you might ask? The proper use is for direct assignment or attachment
-    of values that are not strings or numbers <em>at the top level of the
-    renderObj</em>. Basically, anything that can't be conveniently serialized
-    into a string attribute. The common usage is passing down nested data types
-    as <code>Props</code> (i.e. without having to waste memory with a massive
-    JSON object serialized as an attribute), or for attaching callbacks from
-    the renderObj.</p>
 
-    <p>We see such correct usage in the second "correct" example: It
-    references <code>script.selectAthlete</code> which is at the global level,
-    and then attaches an ID to the DOM element as a "payload" so that the
-    callback function knows which athlete was selected. This is the correct
-    approach: It keeps the DOM clean and predictable in behavior, with no
-    "hidden" values getting attached.</p>
+    <p>What is the proper use of the <code>[component.dataProp]</code>
+    directive, you might ask? The proper use is for direct assignment or
+    attachment of values that are not strings or numbers <em>at the top level
+    of the renderObj</em>. Basically, anything that can't be conveniently
+    serialized into a string attribute. The common usage is passing down
+    complex nested data types as <code>Props</code> (i.e. without having to
+    clutter the DOM and waste memory with a massive JSON object serialized as
+    an attribute), or for attaching callbacks from the renderObj.</p>
+
+    <p>We see such correct usage in the second (Events) "correct" example: It
+    references <code>script.selectAthlete</code> which is at the global level.
+    We can tell that it's at the global renderObj level since it starts with
+    <code>script.</code>, referencing the contribution to the renderObj that
+    was provided by the Script CPart. The issue with this, however, is that we
+    won't know <em>which</em> button was clicked, since it references one
+    universal <code>selectAthlete</code> function.
+    This is solved by attaching some sort of ID reference to the DOM element as
+    a "payload" so that the callback function knows which athlete was selected.
+    This is the correct approach: It uses the DOM as a "source of truth" and is
+    predictable in behavior, with no "hidden" functions getting attached.</p>
+
 </div>
+
 
 <h3>Registering CPart directives with shortcuts</h3>
 
@@ -871,7 +851,7 @@ custom directives used (which should be avoided to begin with).</p>
 
 <p>See below for an example:</p>
 
-<mdu-codeexample text="
+<mws-demo demotype="minipreview" text="
 <template>
     Game Shop: 31 moneys<br />
     Avg Movie Creeps: 10 moneys<br />
@@ -910,34 +890,82 @@ custom directives used (which should be avoided to begin with).</p>
         state.show = !state.show;
     }
 </script>
-"></mdu-codeexample>
+"><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e12g1-example mm-ignore="mm-ignore">
+    Game Shop: 31 moneys<br>
+    Avg Movie Creeps: 10 moneys<br>
+    <button @click:="script.toggle">
+        
+        Hide controls (and trigger unmount callbacks)
+        
+    </button> <br>
+    
+</e12g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
 example simple, we are demonstrating it's use within a script tag in a
 component, but in general shortcuts are only intended for CPart directives, not
 custom script tag directives.</p>
-</mdu-route>
 
-        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
 
-        <mdu-route name="testing" src="./_docs/testing.html"></mdu-route>
 
-        <mdu-route name="template_reference" src="./_docs/template_reference.html"></mdu-route>
-
-        <mdu-route name="example_library" src="./_docs/example_library.html"></mdu-route>
-
-        <mdu-route name="faq" src="./_docs/faq.html"></mdu-route>
-
-    </aside>
-</main>
-
-<script>Modulo.defineAll()</script>
+        </aside>
+    </main>
 
 
 <footer>
-    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
 </footer>
 
 
 
-</body>
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>

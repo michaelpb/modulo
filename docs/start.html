@@ -1,35 +1,10 @@
 <!DOCTYPE HTML>
-<head>
-    <meta charset="utf8">
-    <title>Start - Modulo.js</title>
-    <link rel="stylesheet" href="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/png" href="/img/mono_logo.png">
-    <script src="/js/Modulo.js"></script>
-    <script src="/js/thirdparty/codemirror_5.63.0/codemirror_bundled.js"></script>
-
-    <style id="tutorial-DocSidebar_style">
-tutorial-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-tutorial-DocSidebar li.ginactive > ul::before,
-tutorial-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-tutorial-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="tutorial-DocExampleLib_style">
-</style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
+<head><script src="/js/Modulo.js"></script>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><style id="eg-Simple_style">
+eg-Simple em { color: darkgreen; }
 eg-Simple * { text-decoration: underline; }
 </style><style id="eg-SearchBox_style">
-eg-SearchBox {
+eg-SearchBox SearchBox {
         position: relative;
         display: block;
         width: 300px;
@@ -78,34 +53,36 @@ eg-SearchBox .result label {
         top: 0;
         left: 0;
     }
-</style><style id="eg-Prime_style">
-eg-Prime .grid {
+</style><style id="eg-PrimeSieve_style">
+eg-PrimeSieve .grid {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     color: #ccc;
     font-weight: bold;
+    width: 100%;
+    margin: -5px;
 }
-eg-Prime .grid > div {
+eg-PrimeSieve .grid > div {
     border: 1px solid #ccc;
     cursor: crosshair;
     transition: 0.2s;
 }
-eg-Prime div.whole {
+eg-PrimeSieve div.whole {
     color: white;
     background: #B90183;
 }
-eg-Prime div.hidden {
+eg-PrimeSieve div.hidden {
     background: #ccc;
     color: #ccc;
 }
 
 /* Color green and add asterisk */
-eg-Prime div.number { background: green; }
-eg-Prime div.number::after { content: "*"; }
+eg-PrimeSieve div.number { background: green; }
+eg-PrimeSieve div.number::after { content: "*"; }
 /* Check for whole factors (an adjacent div.whole).
-eg-Prime If found, then hide asterisk and green. */
-eg-Prime div.whole ~ div.number { background: #B90183; }
-eg-Prime div.whole ~ div.number::after { opacity: 0; }
+eg-PrimeSieve If found, then hide asterisk and green */
+eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
+eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
 </style><style id="eg-MemoryGame_style">
 eg-MemoryGame h3 {
     background: #B90183;
@@ -154,73 +131,336 @@ eg-MemoryGame .board > .card.flipped {
 from { transform: scaleX(-1.1); background: #B90183; }
 to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
-</style><style id="mdu-Section_style">
-mdu-Section {
+</style><style id="docseg-Templating_Escaping_style">
+docseg-Templating_Escaping .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style><style id="docseg-Tutorial_P1_style">
+/* ...and any CSS here! */
+docseg-Tutorial_P1 strong {
+    color: blue;
+}
+docseg-Tutorial_P1 .neat {
+    font-variant: small-caps;
+}
+docseg-Tutorial_P1 { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style><style id="docseg-Tutorial_P3_state_demo_style">
+docseg-Tutorial_P3_state_demo {
+        font-size: 0.8rem;
+    }
+</style><style id="mws-Section_style">
+mws-Section Section {
             position: relative;
         }
-mdu-Section h2 {
+mws-Section h2 {
             font-weight: bold;
             color: var(--highlight-color);
             margin-bottom: 0;
         }
-mdu-Section a.secanchor {
+mws-Section a.secanchor {
             padding-top: 100px;
             color: var(--highlight-color);
             opacity: 0.3;
             display: block;
         }
-mdu-Section:hover .mdu-Section-helper {
+mws-Section Section:hover .Section-helper {
             opacity: 1.0;
         }
-    </style><style id="mdu-TabSet_style">
-mdu-TabSet {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /*border: 1px dotted var(--highlight-color);*/
-            /*border-top: 1px dotted black;*/
-        }
-mdu-TabSet .tab-nav {
-            /*border-bottom: 1px dotted var(--highlight-color);*/
-            width: 100%;
-        }
-mdu-TabSet .tab-nav > ul {
-            width: 100%;
-            display: flex;
-        }
-mdu-TabSet .tab-nav_title {
-            border: 2px solid black;
-            border-top-width: 4px;
-            border-bottom-width: 0;
-            border-radius: 8px 8px 0 0;
-            background: white;
-            min-width: 10%;
-        }
+    </style><style id="mws-Demo_style">mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    height: 200px;
+}
 
-mdu-TabSet .tab-nav_title a,
-mdu-TabSet .tab-nav_title a:visited,
-mdu-TabSet .tab-nav_title a:active {
-            text-decoration: none;
-            color: black;
-            display: block;
-            padding: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror {
+    height: auto;
+}
 
-mdu-TabSet .tab-nav_title__selected {
-            background: var(--highlight-color);
-            box-shadow: 0 0 0 5px var(--highlight-color);
-            padding-top: 3px;
-            border-top-width: 1px;
-            border-radius: 1px;
-        }
-    </style><style id="mdu-CodeExample_style">
-mdu-CodeExample .toolbar {
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
+    height: 87vh;
+}
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+mws-Demo .demo-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
+    /* Make look better in Docs */
+    max-width: 900px;
+}
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {
+    /* ...except if full screen */
+    max-width: 100vw;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+    position: absolute;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 20px;
+    background: white;
+}
+
+/* No tabs sitch: */
+mws-Demo .demo-wrapper__notabs .editor-minipreview {
+    margin-top: 40px;
+    margin-left: 5px;
+    border: 1px solid #999;
+    height: 160px;
+}
+
+mws-Demo .demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {
+    margin-top: 65px;
+}
+
+mws-Demo .editor-toolbar {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    width: auto;
+    /*right: -70px;*/
+    right: 30px;
+    top: 0;
+    height: 35px;
+    padding: 2px;
+    border: #ddd 1px solid;
+}
+
+
+
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+    height: 60px;
+    padding: 10px;
+}
+
+
+mws-Demo .demo-wrapper__minipreview  .editor-wrapper {
+    width: 78%;
+    border: 1px solid black;
+}
+mws-Demo .Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
+    border: 1px dotted #ddd;
+    width: 100%;
+}
+
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .editor-minipreview {
+    border: 1px solid black;
+    border-radius: 1px;
+    background: #eee;
+    padding: 5px;
+    border-left: none;
+    width: 200px;
+    height: 200px;
+    overflow-y: auto;
+}
+mws-Demo .editor-minipreview > div > * > input {
+  max-width: 175px;
+}
+
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+    width: 30vw;
+    height: auto;
+    border: 1px solid black;
+    margin: 20px;
+    padding: 30px;
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .side-by-side-panes {
+    display: flex;
+    justify-content: space-between;
+}
+
+mws-Demo .TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+
+
+mws-Demo .TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+
+mws-Demo .TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    /*border-bottom-width: 0;*/
+    margin-bottom: -2px;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
+}
+
+mws-Demo .TabNav-title a,
+mws-Demo .TabNav-title a:visited,
+mws-Demo .TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+mws-Demo .TabNav-title:hover {
+    border-color: var(--highlight-color);
+}
+
+mws-Demo .TabNav-title--selected {
+    border-color: var(--highlight-color);
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
+}
+mws-Demo .TabNav-title--selected a {
+    color: white !important;
+}
+
+
+@media (max-width: 992px) {
+mws-Demo .TabNav > ul {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+@media (max-width: 768px) {
+mws-Demo .TabNav-title {
+        padding: 7px;
+    }
+}
+
+
+
+@media (max-width: 768px) {
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: auto;
+        z-index: 1;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-toolbar {
+        position: static;
+        padding: 10px;
+        margin: 20px;
+        height: 60px;
+        font-size: 1.1rem;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+        margin: 5px;
+        height: 60px;
+        padding: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .side-by-side-panes {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+mws-Demo .editor-minipreview {
+        width: 100%;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+        width: 90%;
+    }
+}
+
+
+@media (min-width: 768px) {
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+        height: auto;
+        width: 70vw;
+        min-height: 87vh;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-wrapper {
+        width: 100%;
+        border: 1px solid black;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
+        width: 100%;
+    }
+}
+
+</style><style id="mws-DocSidebar_style">
+mws-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+mws-DocSidebar li.ginactive > ul::before,
+mws-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+mws-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style><style id="mws-CodeExample_style">
+mws-CodeExample .toolbar {
             display: flex;
             justify-content: space-between;
         }
-mdu-CodeExample .toolbar > button {
+mws-CodeExample .toolbar > button {
             border: 2px solid black;
             border-top-width: 1px;
             border-bottom-width: 3px;
@@ -229,23 +469,23 @@ mdu-CodeExample .toolbar > button {
             font-weight: lighter;
             text-transform: uppercase;
         }
-mdu-CodeExample .toolbar > button:active {
+mws-CodeExample .toolbar > button:active {
             border-top-width: 3px;
             border-bottom-width: 1px;
         }
-mdu-CodeExample .toolbar > button:hover {
+mws-CodeExample .toolbar > button:hover {
             box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
         }
-mdu-CodeExample .split > div:last-child {
+mws-CodeExample .split > div:last-child {
             padding: 5px;
             background: whiteSmoke;
         }
-mdu-CodeExample .split > div:first-child{
+mws-CodeExample .split > div:first-child{
             border: 1px solid black;
             /*overflow-y: scroll;*/
         }
 
-mdu-CodeExample .preview-wrapper {
+mws-CodeExample .preview-wrapper {
             margin-top: 4px;
             padding: 5px;
             padding-left: 20px;
@@ -253,141 +493,188 @@ mdu-CodeExample .preview-wrapper {
             border: 1px solid black;
         }
 
-mdu-CodeExample .split > div > textarea {
+mws-CodeExample .split > div > textarea {
             width: 100%;
             min-height: 10px;
         }
-mdu-CodeExample .split {
+mws-CodeExample .split {
             display: grid;
             grid-template-columns: 2fr 1fr;
         }
 @media (max-width: 992px) {
-mdu-CodeExample .split { display: block; }
+mws-CodeExample .split { display: block; }
         }
-    </style><style id="mdu-CodeSnippet_style">
-mdu-CodeSnippet {
-            position: relative;
-            display: block;
-        }
-mdu-CodeSnippet .m-Btn {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-            z-index: 10;
-        }
-    </style></head><body><mod-load namespace="mdu" src="/components/core.html"></mod-load>
-    <mod-load namespace="tutorial" src="/components/tutorial.html"></mod-load>
-    <mod-load namespace="eg" src="/components/examplelib.html"></mod-load>
-
-
-
-
-<mdu-navbar selected="start" script-exports="{&quot;version&quot;:&quot;0.0.1&quot;,&quot;sloc&quot;:1086,&quot;checksum&quot;:&quot;NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;}">
-        <nav class="Navbar">
-            <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
-            <ul>
-                <li>
-                    <a href="/index.html#below">About</a>
-                </li>
-                <li>
-                    <a href="/start.html" class="Navbar--selected">Start</a>
-                </li>
-                <li>
-                    <a href="/docs.html">Docs</a>
-                </li>
-                <!--
-                <li>
-                    <a href="/literate/src/Modulo.html" >Source</a>
-                </li>
-                -->
-            </ul>
-
-            <div class="Navbar-rightInfo">
-                v: 0.0.1<br>
-                SLOC: 1086 lines<br>
-                <a href="https://github.com/michaelpb/modulo/">github</a> | 
-                <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-            </div>
-        </nav>
-    </mdu-navbar>
-
-<main class="Docs">
-    <h1>Get started with Modulo</h1>
-    <br>
-
-    <div class="Docs-squareInfo">
-        <section class="Tutorial-tryit">
-            <h4>Brand new?</h4>
-
-            <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
-
-            <p>Modulo is brand new in general, so chances are its brand new to
-            you as well! If you're new, your best bet is to get started with
-            the tutorial.  It walks through the basics of setting up Modulo in
-            a new project, and gives a tour of the "must-know" features.<br>Prerequisite: HTML, CSS.  </p>
-
-            <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
-        </section>
-    </div>
-
-    <div class="Docs-squareInfo">
-        <h2>CDN</h2>
-        <p>Want to get started as quickly as possible? Copy &amp; paste one of
-        the following CDN links:</p>
-
-<mdu-codesnippet text="<!-- Good: Use the latest version, served by GitHub pages -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
-
-<!-- Better: Include integrity checksum: -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;
-    integrity=&quot;sha384-NwoDBqFvIlp7DABzFIgJJDbgF1YJiuLJfn7wV26dG/6GV6Tkwk7TViEsuFfRf/0s&quot;
-    crossorigin=&quot;anonymous&quot;></script>
-
-<!-- Best: COMING SOON: Use a minified version from NPM via Skypack -->
-<!-- (Not yet functioning!) -->
-<script src=&quot;https://cdn.skypack.dev/modulo?min&quot;></script>">
-        <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-            <span alt="Clipboard">📋</span>
-        </button>
-        <div modulo-ignore="">
-            <div [script.codemirror]=""></div>
-        </div>
-    </mdu-codesnippet>
-    </div>
-
-    <div class="Docs-squareInfo">
-        <h2>NPM</h2>
-        <p>Coming soon!</p>
-    </div>
-
-    <div class="Docs-squareInfo">
-        <h2>Download</h2>
-        <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
-        <span alt="Down arrow">↧</span> Modulo.js
-        <span id="vnum"></span> (Latest)</a>
-
-
-        <p style="margin-top: 20px">Or run the following command:</p>
-
-        <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
-    </div>
-</main>
-
+    </style></head><body><modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo>
 <script>
-    (function () {
-        const {version} = JSON.parse(document.querySelector('mdu-Navbar')
-                                        .getAttribute('script-exports'));
-        document.querySelector('#vnum').textContent = 'v' + version;
-    })();
+Modulo.defineAll()
 </script>
 
 
-<script>Modulo.defineAll();</script>
+
+
+<!--Just for testing purposes:-->
+<!--
+
+-->
+
+
+
+
+    <meta charset="utf8">
+    <title>Start - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    
+
+    <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
+
+
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html" class="Navbar--selected">Start</a>
+        </li>
+        <li>
+            <a href="/docs/">Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        v: undefined<br>
+        SLOC: undefined lines<br>
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
+
+
+    <main class="Main">
+        
+
+<h1>Get started with Modulo</h1>
+<br>
+
+<div class="Docs-squareInfo">
+    <section class="Tutorial-tryit">
+        <h4>Brand new?</h4>
+
+        <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
+
+        <p>Modulo is brand new in general, so chances are its brand new to you
+        as well!  The Modulo tutorial walks through the basics of setting up
+        Modulo in a project and creating components.<br>
+        <em>Prerequisites: HTML, CSS (for part 1 and 2), and
+        JavaScript (for part 3)</em></p>
+
+        <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial_part1.html">Start the Modulo Tutorial »</a>
+    </section>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>CDN</h2>
+    <p>Want to get started as quickly as possible? Copy &amp; paste one of
+    the following CDN links:</p>
+
+<mws-demo text="
+<!-- Use the latest version, served by GitHub pages -->
+<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
+
+
+<!-- COMING SOON: Use a proper CDN, such as Skypack -->
+<!-- Add ?min to the URL to get minified version. -->
+<!-- (Not yet functioning!) -->
+<script src=&quot;https://cdn.skypack.dev/modulo&quot;></script>
+
+<!-- Once included, use defineAll() to activate -->
+<script>Modulo.defineAll()</script>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<!-- Better: Include integrity checksum:
+<script src="https://modulojs.org/js/Modulo.js"
+integrity="sha384-$modulojs_sha384_checksum$"
+crossorigin="anonymous"></script>
+ -->
+
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>NPM</h2>
+    <p>Coming soon!</p>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>Download</h2>
+    <a style="text-transform: none" class="m-Btn" href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
+    <span alt="Down arrow">⌄</span> Modulo.js
+    <span id="vnum"></span> (Latest)</a>
+
+
+    <p style="margin-top: 20px">Or run the following command:</p>
+
+    <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
+</div>
+
+
+
+
+    </main>
+
 
 <footer>
-    (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
 </footer>
 
 
 
-</body>
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>
