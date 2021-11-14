@@ -228,10 +228,19 @@ class ModuloNode {
 
     fetchFile(src, opts) {
         // Similar interface to window.fetch, except using fs.readFile
-        if (this.fetchPrefix) {
+
+        // TODO: This "prefix" stuff is a complete mess and has many bugs (e.g.
+        // can't have nested dirs with same name as prefix!) and needs to be
+        // rewritten so that there is simple, predictable, and similar behavior
+        // in browser vs CLI: E.g., ALWAYS silo to www-src or something similar
+        if (this.fetchPrefix && !src.includes(this.fetchPrefix)) {
             src = this.fetchPrefix + '/' + src;
         }
-        console.log('this is src', src);
+
+        if (src.includes('components/components')) { // TODO delete this
+            src = src.replace('components/components', 'components');
+        }
+
         return new Promise((resolve, reject) => {
             fs.readFile(src, 'utf8', (err, data) => {
                 if (err) {

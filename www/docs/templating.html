@@ -11,9 +11,11 @@
     
 
     <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
@@ -32,8 +34,8 @@
     </ul>
 
     <div class="Navbar-rightInfo">
-        v: 0.0.1<br>
-        SLOC: 1253 lines<br>
+        v: undefined<br>
+        SLOC: undefined lines<br>
         <a href="https://github.com/michaelpb/modulo/">github</a> | 
         <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
     </div>
@@ -58,7 +60,7 @@
             
                 ginactive
             
-            "><a href="/docs/tutorial.html">Tutorial</a>
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
             
         </li>
     
@@ -112,7 +114,7 @@
             
                 ginactive
             
-            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
+            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -128,7 +130,7 @@
             
                 ginactive
             
-            "><a href="/docs/templating-reference.html">Template Reference</a>
+            "><a href="/docs/api.html">API &amp; Extension</a>
             
         </li>
     
@@ -169,7 +171,8 @@
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]="">
+        <aside style="border: none">
+            
 
 <h1>Modulo Templating Language</h1>
 
@@ -219,7 +222,7 @@ templates.  Thanks, Django!</p>
 
 <mws-section name="templates">
         <a class="secanchor" title="Click to focus on this section." id="templates" name="templates" href="#templates">#</a>
-        <h2 [component.children]="">Templates</h2>
+        <h2>Templates</h2>
     </mws-section>
 
 <p>A "template" is the text within a Template CPart. Most Components defined
@@ -234,10 +237,10 @@ be explained later in this document.</p>
 
 
 <mws-demo demotype="minipreview" fromlibrary="Templating_1"><div class="demo-wrapper
-             demo-wrapper__minipreview
         
         
-        demo-wrapper__notabs     
+        
+        
     ">
     
 
@@ -250,16 +253,6 @@ be explained later in this document.</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
-                
-                    <span alt="Go Full Screen">⤧</span>
-                
-            </button>
-            &nbsp;
-            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
-                Run <span alt="Refresh">⟳</span>
-            </button>
-        
 
     </div>
 
@@ -269,32 +262,6 @@ be explained later in this document.</p>
             </div>
         </div>
 
-        
-            <div class="editor-minipreview">
-                <div modulo-ignore="">
-                    <e1g1-example>
-<p>There are <em>42
-  articles</em>
-  on ModuloNews.</p>
-
-
-
-    <h4 style="color: blue">MODULO RELEASED!</h4>
-    
-      <p>The most exciting news of the…</p>
-    
-
-    <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-    
-
-    <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-    
-      <p>Why constructing JS is risky …</p>
-    
-
-</e1g1-example>
-                </div>
-            </div>
         
 
     </div>
@@ -307,7 +274,7 @@ be explained later in this document.</p>
 
 <mws-section name="variables">
         <a class="secanchor" title="Click to focus on this section." id="variables" name="variables" href="#variables">#</a>
-        <h2 [component.children]="">Variables</h2>
+        <h2>Variables</h2>
     </mws-section>
 
 <p>Variables look like this: <code>{{ variable }}</code>. When the template
@@ -384,10 +351,46 @@ variable with useful data:</p>
 <p>We'll go over template-tags later, but some template-tags can add variables
 into the mix as well. As a sneak-peak, examine the following code:</p>
 
-<pre>{% for athlete in state.athletes %}
-    &lt;p&gt;{{ athlete.name }}&lt;/p&gt;
+<mws-demo text="
+{% for athlete in state.athletes %}
+    <p>{{ athlete.name }}</p>
 {% endfor %}
-</pre>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>Note how <code>athlete</code> declares a new variable, which can be reused
 in <code>{{ athlete.name }}</code>. For more on for-loops, see the 
@@ -398,7 +401,7 @@ template-tag reference.</a></p>
 
 <mws-section name="filters">
         <a class="secanchor" title="Click to focus on this section." id="filters" name="filters" href="#filters">#</a>
-        <h2 [component.children]="">Filters</h2>
+        <h2>Filters</h2>
     </mws-section>
 
 <p>You can modify variables for display by using filters.</p>
@@ -460,7 +463,7 @@ tags and filters.</p>
 
 <mws-section name="tags">
         <a class="secanchor" title="Click to focus on this section." id="tags" name="tags" href="#tags">#</a>
-        <h2 [component.children]="">Tags</h2>
+        <h2>Tags</h2>
     </mws-section>
 
 <p>Tags look like this: <code>{% tag %}</code>. Tags are more complex than
@@ -482,36 +485,144 @@ them in the <a href="/docs/template_reference.html#filters">built-in template-ta
 <h4>for</h4>
 <p>Duplicate a block of HTML code for every item in a collection of items (e.g.
 an array). This allows a HTML code to be repeated while looping over each item
-in an array. For example, to display a list of athletes provided in
-<code>state.athletes</code>:</p>
+in an array. For example, to display a list of athletes, assuming one was
+stored as an array of objects within <code>state.athletes</code>:</p>
 
-<pre>&lt;ul&gt;
+<mws-demo text="
+<ul>
     {% for athlete in state.athletes %}
-        &lt;li&gt;{{ athlete.name }}&lt;/li&gt;
+        <li>{{ athlete.name }}</li>
     {% endfor %}
-&lt;/ul&gt;
-</pre>
+</ul>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <h4>if</h4>
 <p>Evaluates a variable, and if that variable is "true" the contents of the
 block are displayed:</p>
 
-<pre>{% if state.athletes %}
+<mws-demo text="
+{% if state.athletes %}
     Number of athletes: {{ state.athletes|length }}
 {% endif %}
-</pre>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>In the above, if state.athletes is not empty, the number of athletes will be
 displayed by the {{ state.athletes|length }} variable.</p>
 
 <p>You can also use filters and various operators in the if tag:</p>
 
-<pre>{% if state.athletes|length gt 1 %}
+<mws-demo text="
+{% if state.athletes|length gt 1 %}
    Team: {% for athlete in state.athletes %} ... {% endfor %}
 {% else %}
    Athlete: {{ state.athletes|first }}
 {% endif %}
-</pre>
+"><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 </div>
 
 
@@ -538,7 +649,7 @@ tags; see <a href="/docs/template_reference.html">Template Reference</a>.</p>
 
 <mws-section name="comments">
         <a class="secanchor" title="Click to focus on this section." id="comments" name="comments" href="#comments">#</a>
-        <h2 [component.children]="">Comments</h2>
+        <h2>Comments</h2>
     </mws-section>
 
 <p>To comment-out part of a line in a template, use the comment syntax:
@@ -552,20 +663,11 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
 
 <p>Examples of both are below:</p>
 
-<mws-demo demotype="minipreview" text="
-<template>
-    <h1>hello {# greeting #}</h1>
-    {% comment %}
-      {% if a %}<div>{{ b }}</div>{% endif %}
-      <h3>{{ state.items|first }}</h3>
-    {% endcomment %}
-    <p>Below the greeting...</p>
-</template>
-"><div class="demo-wrapper
-             demo-wrapper__minipreview
+<mws-demo demotype="minipreview" fromlibrary="Templating_Comments"><div class="demo-wrapper
         
         
-        demo-wrapper__notabs     
+        
+        
     ">
     
 
@@ -578,16 +680,6 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
-                
-                    <span alt="Go Full Screen">⤧</span>
-                
-            </button>
-            &nbsp;
-            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
-                Run <span alt="Refresh">⟳</span>
-            </button>
-        
 
     </div>
 
@@ -598,25 +690,16 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
         </div>
 
         
-            <div class="editor-minipreview">
-                <div modulo-ignore="">
-                    <e2g1-example>
-    <h1>hello </h1>
-    
-    <p>Below the greeting...</p>
-</e2g1-example>
-                </div>
-            </div>
-        
 
     </div>
 </div>
 
 </mws-demo>
 
+
 <mws-section name="escaping">
         <a class="secanchor" title="Click to focus on this section." id="escaping" name="escaping" href="#escaping">#</a>
-        <h2 [component.children]="">Escaping</h2>
+        <h2>Escaping</h2>
     </mws-section>
 
 <p>By default in Modulo, every template automatically escapes the output of
@@ -676,37 +759,21 @@ This will not be escaped: &lt;b&gt;
 </pre>
 
 <p>Keep in mind that you should only mark trusted data as <code>|safe</code>.
-You don't want anyone trying to slip in malicious JS behavior!  Examine the
-code below for a concrete example of how this escaping behaves:</p>
+You don't want anyone trying to slip in malicious JS behavior! How to validate
+if a bit of HTML is safe to include verbatim (e.g. with <code>|safe</code>) is
+outside the scope of this document, but generally you should only trust HTML
+that has been validated on the backend or database, whitelisting only certain
+features of HTML and checking for "red flags" like embedded JavaScript code, or
+if it's a "staff-only" feature like a team blog, and thus the content generated
+is only editable by a trusted source (e.g. yourself or a member of your team).
+Examine the code below for a concrete example of how this escaping behaves:</p>
 
-<mws-demo demotype="minipreview" text="
-<template>
-<p>User &quot;<em>{{ state.username }}</em>&quot; sent a message:</p>
-<div class=&quot;msgcontent&quot;>
-    {{ state.content|safe }}
-</div>
-</template>
 
-<state
-    username=&quot;Little <Bobby> <Drop> &amp;tables&quot;
-    content='
-        I <i>love</i> the classic <a target=&quot;_blank&quot;
-        href=&quot;https://xkcd.com/327/&quot;>xkcd #327</a> on
-        the risk of trusting <b>user inputed data</b>
-    '
-></state>
-<style>
-    .msgcontent {
-        background: #999;
-        padding: 10px;
-        margin: 10px;
-    }
-</style>
-"><div class="demo-wrapper
-             demo-wrapper__minipreview
+<mws-demo demotype="minipreview" fromlibrary="Templating_Escaping"><div class="demo-wrapper
         
         
-        demo-wrapper__notabs     
+        
+        
     ">
     
 
@@ -719,16 +786,6 @@ code below for a concrete example of how this escaping behaves:</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
-                
-                    <span alt="Go Full Screen">⤧</span>
-                
-            </button>
-            &nbsp;
-            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
-                Run <span alt="Refresh">⟳</span>
-            </button>
-        
 
     </div>
 
@@ -739,27 +796,14 @@ code below for a concrete example of how this escaping behaves:</p>
         </div>
 
         
-            <div class="editor-minipreview">
-                <div modulo-ignore="">
-                    <e3g1-example>
-<p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt; &amp;tables</em>" sent a message:</p>
-<div class="msgcontent">
-    
-        I <i>love</i> the classic <a target="_blank" href="https://xkcd.com/327/">xkcd #327</a> on
-        the risk of trusting <b>user inputed data</b>
-    
-</div>
-</e3g1-example>
-                </div>
-            </div>
-        
 
     </div>
 </div>
 
 </mws-demo>
 
-</aside>
+
+        </aside>
     </main>
 
 
@@ -772,4 +816,4 @@ code below for a concrete example of how this escaping behaves:</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10-6d32sv.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>

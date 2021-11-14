@@ -1,11 +1,85 @@
-<head><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script></head><body><meta charset="utf8"><title>Example Library - modulojs.org</title><link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css"><link rel="stylesheet" href="/css/style.css">
+<!DOCTYPE HTML>
+<head><script src="/js/Modulo.js"></script>
+</head><body><modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo>
+<script>
+        window.onload = () => Modulo.defineAll()
+</script>
+
+<template modulo-embed="">
+    <component name="AllExamples">
+        <template>
+            {% for example in script.exports.examples %}
+                <mws-section name="{{ example.name|lower }}">
+                    {{ example.name }}
+                </mws-section>
+                <mws-demo demotype="minipreview" fromlibrary="{{ example.name }}"></mws-demo>
+            {% endfor %}
+        </template>
+
+        <script>
+            console.log('loading AllExamples');
+            script.exports.examples = [];
+            function initializedCallback() {
+                // TODO: make initialized only get called once
+                // TODO: Encapsolate this into a dependency pattern, if proves
+                // useful
+                Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => {
+                    Modulo.fetchQ.wait(() => _setup(text));
+                });
+            }
+            function _setup(text) {
+                let componentTexts;
+                try {
+                    componentTexts = Modulo.factoryInstances['eg-eg']
+                    componentTexts = Modulo.factoryInstances['eg-eg']
+                            .baseRenderObj.script.exports.componentTexts;
+                } catch {
+                    console.log('couldnt get componentTexts (2)', Modulo.factoryInstances);
+                    componentTexts = null;
+                }
+                if (!componentTexts) {
+                    return;
+                }
+
+                script.exports.examples = [];
+                for (const [name, content] of Object.entries(componentTexts)) {
+                    //console.log("dis is conent", content);
+                    script.exports.examples.push({name, content});
+                }
+                element.rerender();
+            }
+        </script>
+    </component>
+</template>
+
+
+<!--
+<script src="/js/Modulo.js"></script>
+<script>Modulo.defineAll()</script>
+<mod-load namespace="x" src="/components/layouts.html"></mod-load>
+
+Just for testing purposes:
+
+-->
+
+
+
+
+    <meta charset="utf8">
+    <title>Example Library - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/img/mono_logo.png">
     
 
     <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
@@ -37,63 +111,118 @@
             <h3><span alt="Lower-case delta">%</span></h3>
             <nav class="TitleAside-navigation">
                 <h3>Documentation</h3>
-                <mws-docsidebar path="example-library.html"></mws-docsidebar>
+                <mws-docsidebar path="example-library.html">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs/">Table of Contents</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating-reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/api.html">API &amp; Extension</a>
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+                
+                    <ul>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
+
+
+    <!--
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
+            </li>
+        </ul>
+
+    </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+</ul>
+</mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]="">
-        
+        <aside style="border: none">
+            
 
 
-    <template modulo-embed="">
-    <component name="AllExamples">
-        <template>
-            {% for example in script.exports.examples %}
-                <mws-section name="{{ example.name|lower }}">
-                    {{ example.name }}
-                </mws-section>
-                <mws-demo demotype="minipreview" fromlibrary="{{ example.name }}"></mws-demo>
-            {% endfor %}
-        </template>
+<h1>Example Library</h1>
 
-        <script>
-            script.exports.examples = [];
-            function initializedCallback() {
-                // TODO: make initialized only get called once
-                // TODO: Encapsolate this into a dependency pattern, if proves
-                // useful
-                Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => {
-                    Modulo.fetchQ.wait(() => _setup(text));
-                });
-            }
-            function _setup(text) {
-                console.log('this is the example library');
-                let componentTexts;
-                try {
-                    componentTexts = Modulo.factoryInstances['eg-eg']
-                            .baseRenderObj.script.exports.componentTexts;
-                } catch {
-                    console.log('couldnt get componentTexts (2)', Modulo.factoryInstances);
-                    componentTexts = null;
-                }
-                if (!componentTexts) {
-                    return;
-                }
-
-                script.exports.examples = [];
-                for (const [name, content] of Object.entries(componentTexts)) {
-                    //console.log("dis is conent", content);
-                    script.exports.examples.push({name, content});
-                }
-                element.rerender();
-            }
-        </script>
-    </component>
-</template>
-    <h1>Example Library</h1>
-    <x-allexamples>
+<x-allexamples>
             
         </x-allexamples>
-    </aside>
+
+
+        </aside>
     </main>
 
 
@@ -107,6 +236,4 @@
 
 
 
-
-<script src="/m.js"></script>
-</body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>

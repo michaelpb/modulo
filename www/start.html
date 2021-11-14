@@ -1,356 +1,10 @@
 <!DOCTYPE HTML>
 <head><script src="/js/Modulo.js"></script>
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><style id="mws-Section_style">
-mws-Section {
-            position: relative;
-        }
-mws-Section h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-mws-Section a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-mws-Section:hover .mws-Section-helper {
-            opacity: 1.0;
-        }
-    </style><style id="mws-Demo_style"> .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
-    height: 200px;
-}
-
-.demo-wrapper.demo-wrapper__clipboard .CodeMirror {
-    height: auto;
-}
-
-.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
-    font-family: monospace;
-    font-size: 1rem;
-}
-
-.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
-    font-family: monospace;
-    font-size: 14px;
-}
-
-.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
-    height: 87vh;
-}
-.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
-    font-family: monospace;
-    font-size: 16px;
-}
-
-.demo-wrapper {
-    position: relative;
-    display: block;
-    width: 100%;
-}
-
-.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
-    /* Make look better in Docs */
-    max-width: 900px;
-}
-
-.demo-wrapper.demo-wrapper__fullscreen {
-    position: absolute;
-    display: block;
-    width: 100vw;
-    max-width: 100vw;
-    height: 100vh;
-    z-index: 100;
-    top: 0;
-    left: 0;
-    box-sizing: border-box;
-    padding: 20px;
-    background: white;
-}
-
-/* No tabs sitch: */
-.demo-wrapper__notabs .editor-minipreview {
-    margin-top: 40px;
-    margin-left: 5px;
-    border: 1px solid #999;
-    height: 160px;
-}
-
-.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {
-    margin-top: 65px;
-}
-
-.editor-toolbar {
-    position: absolute;
-    z-index: 3;
-    display: flex;
-    width: auto;
-    /*right: -70px;*/
-    right: 30px;
-    top: 0;
-    height: 35px;
-    padding: 2px;
-    border: #ddd 1px solid;
-}
-
-
-
-.demo-wrapper__fullscreen .editor-toolbar {
-    height: 60px;
-    padding: 10px;
-}
-
-
-.demo-wrapper__minipreview  .editor-wrapper {
-    width: 78%;
-    border: 1px solid black;
-}
-.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {
-}
-
-.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
-    border: 1px dotted #ddd;
-    width: 100%;
-}
-
-.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
-    border: 5px solid black;
-    border-radius: 1px 8px 1px 8px;
-    border-bottom-width: 1px;
-    border-right-width: 1px;
-}
-
-.editor-minipreview {
-    border: 1px solid black;
-    border-radius: 1px;
-    background: #eee;
-    padding: 5px;
-    border-left: none;
-    width: 200px;
-    height: 200px;
-    overflow-y: auto;
-}
-.editor-minipreview > div > * > input {
-  max-width: 175px;
-}
-
-.demo-wrapper__fullscreen .editor-minipreview {
-    width: 30vw;
-    height: auto;
-    border: 1px solid black;
-    margin: 20px;
-    padding: 30px;
-    border: 5px solid black;
-    border-radius: 1px 8px 1px 8px;
-    border-bottom-width: 1px;
-    border-right-width: 1px;
-}
-
-.side-by-side-panes {
-    display: flex;
-    justify-content: space-between;
-}
-
-.TabNav {
-    /*border-bottom: 1px dotted var(--highlight-color);*/
-    width: 100%;
-}
-
-
-.TabNav > ul {
-    width: 100%;
-    display: flex;
-}
-
-.TabNav-title {
-    border: 2px solid black;
-    border-top-width: 4px;
-    /*border-bottom-width: 0;*/
-    margin-bottom: -2px;
-    border-radius: 8px 8px 0 0;
-    background: white;
-    min-width: 10%;
-    box-shadow: 0 0 0 0 var(--highlight-color);
-    transition: box-shadow 0.3s,
-                border-color 0.2s;
-}
-
-.TabNav-title a,
-.TabNav-title a:visited,
-.TabNav-title a:active {
-    text-decoration: none;
-    color: black;
-    display: block;
-    padding: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1.1rem;
-}
-
-.TabNav-title:hover {
-    border-color: var(--highlight-color);
-}
-
-.TabNav-title--selected {
-    border-color: var(--highlight-color);
-    background: var(--highlight-color);
-    box-shadow: 0 0 0 8px var(--highlight-color);
-    border-radius: 8px 8px 8px 8px;
-}
-.TabNav-title--selected a {
-    color: white !important;
-}
-
-
-@media (max-width: 992px) {
-    .TabNav > ul {
-        flex-wrap: wrap;
-        justify-content: flex-start;
-    }
-}
-@media (max-width: 768px) {
-    .TabNav-title {
-        padding: 7px;
-    }
-}
-
-
-
-@media (max-width: 768px) {
-    .demo-wrapper.demo-wrapper__fullscreen {
-        position: relative;
-        display: block;
-        width: 100vw;
-        height: auto;
-        z-index: 1;
-    }
-}
-
-
-@media (max-width: 768px) {
-    .editor-toolbar {
-        position: static;
-        padding: 10px;
-        margin: 20px;
-        height: 60px;
-        font-size: 1.1rem;
-    }
-    .demo-wrapper__fullscreen .editor-toolbar {
-        margin: 5px;
-        height: 60px;
-        padding: 5px;
-        display: flex;
-        justify-content: flex-end;
-    }
-}
-
-
-@media (max-width: 768px) {
-    .side-by-side-panes {
-        display: block;
-    }
-}
-
-@media (max-width: 768px) {
-    .editor-minipreview {
-        width: 100%;
-    }
-    .demo-wrapper__fullscreen .editor-minipreview {
-        width: 90%;
-    }
-}
-
-
-@media (min-width: 768px) {
-    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
-        height: auto;
-        width: 70vw;
-        min-height: 87vh;
-    }
-}
-
-
-@media (max-width: 768px) {
-    .editor-wrapper {
-        width: 100%;
-        border: 1px solid black;
-    }
-    .demo-wrapper__fullscreen .editor-wrapper {
-        width: 100%;
-    }
-}
-
-</style><style id="mws-DocSidebar_style">
-mws-DocSidebar li {
-      margin-left: 20px;
-  }
-  /*
-mws-DocSidebar li.ginactive > ul::before,
-mws-DocSidebar li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-mws-DocSidebar li.ginactive > a::before {
-      content: '+ ';
-  }
-</style><style id="mws-CodeExample_style">
-mws-CodeExample .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-mws-CodeExample .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-mws-CodeExample .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-mws-CodeExample .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-mws-CodeExample .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-mws-CodeExample .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
-
-mws-CodeExample .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
-        }
-
-mws-CodeExample .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-mws-CodeExample .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-@media (max-width: 992px) {
-mws-CodeExample .split { display: block; }
-        }
-    </style><style id="eg-Simple_style">
-eg-Simple em { color: darkblue; }
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><style id="eg-Simple_style">
+eg-Simple em { color: darkgreen; }
 eg-Simple * { text-decoration: underline; }
 </style><style id="eg-SearchBox_style">
-eg-SearchBox {
+eg-SearchBox SearchBox {
         position: relative;
         display: block;
         width: 300px;
@@ -426,7 +80,7 @@ eg-PrimeSieve div.hidden {
 eg-PrimeSieve div.number { background: green; }
 eg-PrimeSieve div.number::after { content: "*"; }
 /* Check for whole factors (an adjacent div.whole).
-eg-PrimeSieve If found, then hide asterisk and green. */
+eg-PrimeSieve If found, then hide asterisk and green */
 eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
 eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
 </style><style id="eg-MemoryGame_style">
@@ -477,8 +131,388 @@ eg-MemoryGame .board > .card.flipped {
 from { transform: scaleX(-1.1); background: #B90183; }
 to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
-</style></head><body><mod-load namespace="x" src="/components/layouts.html"></mod-load>
-<script>Modulo.defineAll()</script>
+</style><style id="docseg-Templating_Escaping_style">
+docseg-Templating_Escaping .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style><style id="docseg-Tutorial_P1_style">
+/* ...and any CSS here! */
+docseg-Tutorial_P1 strong {
+    color: blue;
+}
+docseg-Tutorial_P1 .neat {
+    font-variant: small-caps;
+}
+docseg-Tutorial_P1 { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style><style id="docseg-Tutorial_P3_state_demo_style">
+docseg-Tutorial_P3_state_demo {
+        font-size: 0.8rem;
+    }
+</style><style id="mws-Section_style">
+mws-Section Section {
+            position: relative;
+        }
+mws-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mws-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mws-Section Section:hover .Section-helper {
+            opacity: 1.0;
+        }
+    </style><style id="mws-Demo_style">mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    height: 200px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror {
+    height: auto;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
+    height: 87vh;
+}
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+mws-Demo .demo-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
+    /* Make look better in Docs */
+    max-width: 900px;
+}
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {
+    /* ...except if full screen */
+    max-width: 100vw;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+    position: absolute;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 20px;
+    background: white;
+}
+
+/* No tabs sitch: */
+mws-Demo .demo-wrapper__notabs .editor-minipreview {
+    margin-top: 40px;
+    margin-left: 5px;
+    border: 1px solid #999;
+    height: 160px;
+}
+
+mws-Demo .demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {
+    margin-top: 65px;
+}
+
+mws-Demo .editor-toolbar {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    width: auto;
+    /*right: -70px;*/
+    right: 30px;
+    top: 0;
+    height: 35px;
+    padding: 2px;
+    border: #ddd 1px solid;
+}
+
+
+
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+    height: 60px;
+    padding: 10px;
+}
+
+
+mws-Demo .demo-wrapper__minipreview  .editor-wrapper {
+    width: 78%;
+    border: 1px solid black;
+}
+mws-Demo .Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
+    border: 1px dotted #ddd;
+    width: 100%;
+}
+
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .editor-minipreview {
+    border: 1px solid black;
+    border-radius: 1px;
+    background: #eee;
+    padding: 5px;
+    border-left: none;
+    width: 200px;
+    height: 200px;
+    overflow-y: auto;
+}
+mws-Demo .editor-minipreview > div > * > input {
+  max-width: 175px;
+}
+
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+    width: 30vw;
+    height: auto;
+    border: 1px solid black;
+    margin: 20px;
+    padding: 30px;
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .side-by-side-panes {
+    display: flex;
+    justify-content: space-between;
+}
+
+mws-Demo .TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+
+
+mws-Demo .TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+
+mws-Demo .TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    /*border-bottom-width: 0;*/
+    margin-bottom: -2px;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
+}
+
+mws-Demo .TabNav-title a,
+mws-Demo .TabNav-title a:visited,
+mws-Demo .TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+mws-Demo .TabNav-title:hover {
+    border-color: var(--highlight-color);
+}
+
+mws-Demo .TabNav-title--selected {
+    border-color: var(--highlight-color);
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
+}
+mws-Demo .TabNav-title--selected a {
+    color: white !important;
+}
+
+
+@media (max-width: 992px) {
+mws-Demo .TabNav > ul {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+@media (max-width: 768px) {
+mws-Demo .TabNav-title {
+        padding: 7px;
+    }
+}
+
+
+
+@media (max-width: 768px) {
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: auto;
+        z-index: 1;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-toolbar {
+        position: static;
+        padding: 10px;
+        margin: 20px;
+        height: 60px;
+        font-size: 1.1rem;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+        margin: 5px;
+        height: 60px;
+        padding: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .side-by-side-panes {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+mws-Demo .editor-minipreview {
+        width: 100%;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+        width: 90%;
+    }
+}
+
+
+@media (min-width: 768px) {
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+        height: auto;
+        width: 70vw;
+        min-height: 87vh;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-wrapper {
+        width: 100%;
+        border: 1px solid black;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
+        width: 100%;
+    }
+}
+
+</style><style id="mws-DocSidebar_style">
+mws-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+mws-DocSidebar li.ginactive > ul::before,
+mws-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+mws-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style><style id="mws-CodeExample_style">
+mws-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mws-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mws-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mws-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mws-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mws-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+mws-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mws-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mws-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mws-CodeExample .split { display: block; }
+        }
+    </style></head><body><modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo>
+<script>
+Modulo.defineAll()
+</script>
+
+
+
 
 <!--Just for testing purposes:-->
 <!--
@@ -496,9 +530,11 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
     
 
     <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
@@ -517,15 +553,16 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
     </ul>
 
     <div class="Navbar-rightInfo">
-        v: 0.0.1<br>
-        SLOC: 1253 lines<br>
+        v: undefined<br>
+        SLOC: undefined lines<br>
         <a href="https://github.com/michaelpb/modulo/">github</a> | 
         <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
     </div>
 </nav>
 
 
-    <main [component.children]="" class="Main">
+    <main class="Main">
+        
 
 <h1>Get started with Modulo</h1>
 <br>
@@ -542,7 +579,7 @@ to {   transform: scaleX(1.0);  background: #FFFFFF; }
         <em>Prerequisites: HTML, CSS (for part 1 and 2), and
         JavaScript (for part 3)</em></p>
 
-        <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial.html">Start the Modulo Tutorial »</a>
+        <a class="m-Btn" style="margin-top: 30px" href="/docs/tutorial_part1.html">Start the Modulo Tutorial »</a>
     </section>
 </div>
 
@@ -627,7 +664,8 @@ crossorigin="anonymous"></script>
 
 
 
-</main>
+
+    </main>
 
 
 <footer>
@@ -639,4 +677,4 @@ crossorigin="anonymous"></script>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10-6d32sv.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>

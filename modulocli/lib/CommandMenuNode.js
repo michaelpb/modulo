@@ -254,7 +254,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
     build(config, modulo, allowEmpty=false, justBuildPath=false) {
         // NOTE: build is synchronous
         // TODO: Watch out, key order might not be stable, affect hash
-        // TODO: Once it has testing, look into using loader hashes for this
+        // TODO: Once it has testing, look into using loader hashes to get hash
         const { fetchQ } = modulo;
         const fetchData = _relativeKeyPath(fetchQ.data, config.input);
         const dataStr = JSON.stringify(fetchData);

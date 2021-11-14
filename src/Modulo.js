@@ -122,6 +122,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
+    /*
     // factoryCallback() could be the new connectdCallback for <module><load>
     // syntax!
     doFetch(element, attrs) {
@@ -133,6 +134,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         // Modulo component module definition.
         Modulo.fetchQ.enqueue(this.src, text => this.loadString(text));
     }
+    */
 
     // ## Loader: loadString
     // The main loading method. This will take a string with the source code to

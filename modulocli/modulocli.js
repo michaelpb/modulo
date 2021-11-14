@@ -103,6 +103,7 @@ function doCommand(cliConfig, args) {
     for (let filePath of preload) {
         let workingDir = null;
         if (filePath === '-') {
+            throw new Error('STDIN unsupported: not implemented yet');
             filePath = 0; // Load from stdin, which has FD=0
         } else {
             workingDir = path.resolve(filePath, '../');

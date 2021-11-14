@@ -11,9 +11,11 @@
     
 
     <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
     <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
     <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
     <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
 
 
 
@@ -32,8 +34,8 @@
     </ul>
 
     <div class="Navbar-rightInfo">
-        v: 0.0.1<br>
-        SLOC: 1253 lines<br>
+        v: undefined<br>
+        SLOC: undefined lines<br>
         <a href="https://github.com/michaelpb/modulo/">github</a> | 
         <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
     </div>
@@ -56,27 +58,9 @@
     
         <li class="
             
-                gactive
+                ginactive
             
-            "><a href="/docs/tutorial.html">Tutorial</a>
-            
-                
-                    <ul>
-                    
-                        <li><a href="/docs/tutorial.html#part1">Part 1: Components, CParts, Loaders</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/tutorial.html#part2">Part 2: Props and Templating</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/tutorial.html#part3">Part 3: State and Script</a>
-                        
-                        </li>
-                    
-                    </ul>
-                
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
             
         </li>
     
@@ -98,31 +82,9 @@
     
         <li class="
             
-                gactive
+                ginactive
             
-            "><a href="/docs/testing.html">Testing &amp; Debugging</a>
-            
-                
-                    <ul>
-                    
-                        <li><a href="/docs/testing.html#debugger">Debugger</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/testing.html#test suites">Test Suites</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/testing.html#test setup">Test Setup</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/testing.html#assertions">Assertions</a>
-                        
-                        </li>
-                    
-                    </ul>
-                
+            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -136,31 +98,9 @@
     
         <li class="
             
-                gactive
+                ginactive
             
-            "><a href="/docs/templating-reference.html">Template Reference</a>
-            
-                
-                    <ul>
-                    
-                        <li><a href="/docs/templating-reference.html#filters">Built-in Filters</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/templating-reference.html#tags">Built-in Template Tags</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/templating-reference.html#customfilters">Custom Filters</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/templating-reference.html#customtags">Custom Template Tags</a>
-                        
-                        </li>
-                    
-                    </ul>
-                
+            "><a href="/docs/api.html">API &amp; Extension</a>
             
         </li>
     
@@ -215,12 +155,13 @@
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]="">
+        <aside style="border: none">
+            
 
 
 <mws-section>
-        <a class="secanchor" title="Click to focus on this section." id="null" name="null" href="#null">#</a>
-        <h2 [component.children]="">FAQ</h2>
+        <a class="secanchor" title="Click to focus on this section." id="" name="" href="#">#</a>
+        <h2>FAQ</h2>
     </mws-section>
 
 <h3><span alt="Question mark">?</span></h3>
@@ -259,16 +200,25 @@ another JavaScript component framework.</p>
 
 <hr>
 <p><strong>Q: Any future plans?</strong></p>
-<p>A: Yes, plenty! The three main ones: SSG, server-side, and MDU.
-Currently, this site is already getting generated with a
-Modulo-based SSG. However, it's undocumented and messy, so it still
-needs work before it's released externally. On a similar note,
-there are plans for a JAMstack-style SSG + server-side combo, with
-live-refresh inspired by Phoenix LiveView. Finally, developing this
-site requires developing some key components, so I also hope to
-have time to document and release "mdu", which will be a standard
-library of Modulo components, including a Router system inspired by
-React Router.</p>
+<p>A: Yes, plenty! The goal of Modulo.js itself is to stabilize the API, polish
+and bug-fix, and then not really change much or grow much after that (keep it
+short and sweet). In addition to that, there is another project that is still
+"experimental", and that is called <a href="/docs/mdu.html">MDU: Modulo
+Developer Utilities</a>. This
+project has two parts: <code>modulocli</code> and <code>mdulib</code>.
+
+<br>
+The modulocli tool is useful for both static-site generation (e.g. this site!),
+and for "JAM stack" live sites. It's also useful as a companion tool for modulo
+development, allows for the running of running test suites and testing of configurations.
+<br>
+However, it's still being documented, and the code quality requires
+refactoring, so it still needs work before it's released externally. This modulocli
+similar note, I have plans for a JAMstack-style SSG + server-side combo, with
+live-refresh inspired by Phoenix LiveView. Finally, the goal of
+<code>mdulib</code> will be to provide a standard library of useful reusable
+Modulo components, CParts, and middleware, written in idiomatic Modulo
+code.</p>
 
 <hr>
 <p><strong>Q: Why do you care so much about short source code
@@ -300,15 +250,15 @@ over-engineering.</p>
 can't you have a big, extensive framework with big and extensive
 documentation?</strong></p>
 
-<p>Sure, it's possible, in some cases situations better, and you can use always
-that too.  Modulo plays well with others! However, Modulo takes a different approach.
-See <a href="#philosophy">the design philosophy "thought experiment"</a> below for
-for further and more thorough discussion of Modulo's approach and it's
-motivation.</p>
+<p>Sure, it's possible, and for many situations a better choice, so you could
+always use such a framework as well.  Modulo plays well with others! However,
+Modulo takes a different approach.  See <a href="#philosophy">the design
+philosophy "thought experiment"</a> below for for further and more thorough
+discussion of Modulo's approach and it's motivation.</p>
 
 <hr>
 <p><strong>Q: 80 char line limit? 4 space indentation? Imperative
-coding? What is this, the 90's?</strong></p>
+coding? What is this, Java code from the 90's?</strong></p>
 
 <p>A: Another motivating factor for developing Modulo was how much I
 appreciates libraries such as Django that maintain high quality docs and code,
@@ -355,30 +305,31 @@ numbers. So, while Modulo.js is not the first thing to be called
 <abbr title="At the time of picking the name, there were a couple
 similarly named projects, though none seem to be in active use or
 development for years.">"Modulo" in JS</abbr> it <em>is not</em>
-named after the <code>%</code> operator in JavaScript, making both
-the logo and name are a bit of a tongue-in-cheek jab at our
-favorite (but often deficient) computer language.</p>
+named after the <code>%</code> operator in JavaScript, making both the logo and
+the name a bit of a pedantic and tongue-in-cheek jab at our favorite (but
+sometimes deficient) computer language.</p>
 
 
 <hr>
 
 <mws-section name="philosophy">
         <a class="secanchor" title="Click to focus on this section." id="philosophy" name="philosophy" href="#philosophy">#</a>
-        <h2 [component.children]="">Framework design philosophy</h2>
+        <h2>Framework design philosophy</h2>
     </mws-section>
 
 <p>In this section, I'll give some of my design philosophy and opinions on what
-makes a good framework.</p>
+makes a good framework. I don't think my opinions are particularly unusual or
+novel, but I thought I'd lay them out here nonetheless.</p>
 
-<p>Let's do a thought experiment. Imagine the most minimalist framework
-possible. Let's call it "Zen" (probably already a thing, but bare with me), by
-Tux the Penguin (because hey, why not?). Here is the complete code for the
-"Zen" framework:</p>
+<p>Let's do a thought experiment. Imagine the most minimalist JS component
+framework possible. Let's call it "Fish" (probably already a thing, but bare
+with me), by Tux the Penguin (because hey, why not?). Here is the complete code
+for the "Fish" framework:</p>
 
 <mws-demo text="
 <script>
-// Zen Framework - (C) 2091 - Tux the Penguin
-function Zen(el, key, value) {
+// Fish Framework - (C) 2091 - Tux the Penguin
+function Fish(el, key, value) {
     el.state = el.state || JSON.parse(el.getAttribute(&quot;x-state&quot;) || &quot;{}&quot;)
     el.state[key] = value;
     el.innerHTML = el.innerHTML.replace(/\$\{([^\)]+)?\}/g, (a, b) => el.state[b]);
@@ -427,40 +378,41 @@ copy &amp; paste far more code from Stack Overflow just for simple tasks!</p>
 
 <p>However, now imagine Tux wrote documentation for it. Imagine Tux wrote a
 massive recipe book of hundreds of examples, ranging from API usage to common
-UI tasks.  For an example, skim this "excerpt" of the imaginary "Zen"
-documentation:</p>
+UI tasks.  For an example, skim (no need to actually thoroughly read) the
+following "excerpt" of the imaginary "Fish" documentation:</p>
 
 <mws-demo text="
-<!-- Zen Framework - Documentation -->
+<!-- Fish Framework - Documentation -->
 
 <!-- BEGINNER EXAMPLE: BUTTON -->
 <!-- Look how easy it is to make a button that counts: -->
 <button
-        onClick='Zen(this, &quot;count&quot;, this.state.count++)'
+        onClick='Fish(this, &quot;count&quot;, this.state.count++)'
         x-state='{&quot;count&quot;: 3}'>
     <p>I ate {count} delicious herrings</p>
 </button>
 
 <!-- Okay, lets break it down:
-        - By using the x-state directive, the core directive of Zen (see
+        - By using the x-state directive, the core directive of Fish (see
           Chapter 2 on directives and how to create your own), we can set the
           initial state of an element.
         - What is state? An object that you can mutate to affect how your
           elements are displayed. Use it to store data from the DB, or
           elsewhere.
+        - ... snip ...
 -->
 
 <!-- ADVANCED EXAMPLE: API -->
 <!-- Lets see another example of state, this time with API: -->
 <div x-state='{&quot;search&quot;: &quot;&quot;}'>
     <p>Information about account found: Their name is {name}</p>
-    <input onChange='Zen(this.parentNode, &quot;search&quot;, this.value)'
+    <input onChange='Fish(this.parentNode, &quot;search&quot;, this.value)'
         placholder=&quot;Type in a GitHub username...&quot;
     />
     <button onClick='
         fetch(`https://api.github.com/users/${this.parentNode.state.search}`)
             .then(response => response.json())
-            .then(({name}) => Zen(this.parentNode, &quot;name&quot;, name))
+            .then(({name}) => Fish(this.parentNode, &quot;name&quot;, name))
         '>Search GitHub</button>
 </div>
 
@@ -472,13 +424,13 @@ documentation:</p>
 <!-- UI TOOLKIT EXAMPLE: ACCORDIAN TOGGLE -->
 <!-- Or, look how you can make toggle accordians elements just by using .... -->
 <nav x-state='{}'>
-    <li onClick='Zen(this.parentNode, &quot;info_class&quot;, &quot;visible&quot;)'>
+    <li onClick='Fish(this.parentNode, &quot;info_class&quot;, &quot;visible&quot;)'>
         Show Info
     </li>
-    <li onClick='Zen(this.parentNode, &quot;contact_class&quot;, &quot;visible&quot;)'>
+    <li onClick='Fish(this.parentNode, &quot;contact_class&quot;, &quot;visible&quot;)'>
         Show Contact
     </li>
-    <li onClick='Zen(this.parentNode, &quot;blog_class&quot;, &quot;visible&quot;)'>
+    <li onClick='Fish(this.parentNode, &quot;blog_class&quot;, &quot;visible&quot;)'>
         Show Blog
     </li>
     <div class=&quot;{info_active}&quot;>Hi, this is info about my website...</div>
@@ -563,7 +515,7 @@ say that the framework is "slow", regardless of the internal operations. (An
 adjective that probably applies to Modulo as well!)</p>
 
 
-<p>Modulo's goal is short code and long docs. It's basically "Zen", but
+<p>Modulo's goal is short code and long docs. It's basically "Fish", but
 multiplied times 250. It's as though Tux continued hacking away, bringing it
 from 5 lines to about 1000 lines, and then kept on hacking away at docs,
 examples, and use-patterns, keeping them still proportionally much longer.</p>
@@ -586,19 +538,20 @@ fun (now about a decade ago).</p>
 doing things. The code is important, but less important than the other
 aspects.</p>
 
-<p>Also, for clarity's sake: The "Zen" code above is untested, incomplete, and
-almost certainly has deal-breaking bugs, but possibly could work in principle
-with a tweak or two and the right context. This doesn't matter either way for
-our purposes.  Also, I'm very far from the first person to approach framework
+<p>Also, for clarity's sake: The "Fish" code above is untested, incomplete, and
+almost certainly has deal-breaking bugs, but could work in principle with a
+tweak or two and the right context. This doesn't matter either way for our
+purposes.  Also, I'm very far from the first person to approach framework
 development this way — in fact, the increasingly popular Alpine.js
-follows a similar principle! It also happens to resemble my silly "Zen"
-example, but is actually real, so if you want a neat-o real-life version of
+follows a similar principle! It also happens to resemble my silly "Fish"
+example, but is actually real, so if you want an actually useful version of
 this, <a href="https://alpinejs.dev/">check it out</a>.</p>
 
 
 
 
-</aside>
+
+        </aside>
     </main>
 
 
@@ -611,4 +564,4 @@ this, <a href="https://alpinejs.dev/">check it out</a>.</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.10-6d32sv.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>
