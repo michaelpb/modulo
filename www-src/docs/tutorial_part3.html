@@ -1,5 +1,4 @@
 <script src="/m.js"></script>
-<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>
 
 <x-Page
     docbarselected="tutorial_part1.html"
@@ -17,7 +16,6 @@ Prerequisites: HTML, CSS, JavaScript, and Part 1 &amp; 2.</p>
 
 
 <mws-Section name="state">State</mws-Section>
-
 
 <p> So far, our components have been static and unchanging. They can't do a
 lot.  They might be useful for refactoring HTML into more DRY, reusable
@@ -76,6 +74,8 @@ one input reaching in and sending data over there, the "state" creates a single
 want changed, you do one thing: <em>Change state &amp; rerender</em>!</p>
 </blockquote>
 
+
+
 <h3>State is private</h3>
 
 <p>State allows each component instance to store data. Each component instance
@@ -97,8 +97,8 @@ state is not shared: Each button is a totally separate instance that keeps it's
 own private state.</p>
 
 
-<h3>Initializing the <em>State</em> CPart</h3>
 
+<h3>Initializing the <em>State</em> CPart</h3>
 
 <p>Let's "peel back the layers" and examine out how these "stateful" or dynamic
 components were written.</p>
@@ -157,7 +157,22 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
 
 <p>We'll get to more practice with the <em>State</em> CPart in a moment, but
 first we need to take a little detour and learn about a few important built-in
-Modulo directives.</p>
+Modulo "directives".</p>
+
+<p>A <em>directive</em> is a type of HTML attribute.  You can recognize
+<em>directive</em> by spotting certain special characters in the attribute
+name.  For example, <code>&lt;input [state.bind] /&gt;</code> is an
+<code>input</code> HTML tag with a <code>[state.bind]</code> directive. Some
+directives will have a square-bracket syntax (e.g. <code>[ ]</code>), while
+others might use other special characters to set them apart from "normal"
+attributes (e.g.  <code>@</code> or <code>:</code>).  While re-rendering,
+Modulo scans the resulting DOM to set-up or "mount" any directives it
+encounters.</p>
+
+<p>Directives are useful for a variety of tasks, ranging connecting CParts to
+each other, to more complicated modifications to DOM elements. We'll learn two
+directives next: <em>data prop</em> and <em>state.bind</em>.</p>
+
 
 <h3>Data prop directive (:=)</h3>
 
@@ -180,35 +195,34 @@ do the following:</p>
     color="blue"
 &gt;&lt;/state&gt;</pre>
 
-<p>This is called a <em>data prop</em>. The <em>data prop</em> is a type of
-attribute <em>directive</em>, which refers to special instructions that are
-embedded within attribute names. You can recognize <em>directives</em> by their
-having certain characters. In the case of the <em>data prop</em> directive
-(<code>:=</code>), the attribute name is suffixed with a colon right before the
-equal sign , resulting in a  <em>directive</em> the attribute name with a colon
-right before the equal, like this: <code>attributeName:=value</code>.</p>
+<p>This is called a <em>data prop</em> directive.  In the case of the <em>data prop</em>
+directive (<code>:=</code>), the attribute name is suffixed with a colon right
+before the equal sign , resulting in a  <em>directive</em> the attribute name
+with a colon right before the equal, like this:
+<code>attributeName:=value</code>.</p>
 
 <p>All directives are "provided" by a CPart. That is, including CParts in your
 component definition may "enable" more directives in your HTML. Data-prop is a
-built-in feature of <em>Components</em>, which means it's always available.
-To learn more, including how to author your own directives, <a
-href="/docs/directives.html">see the section on <em>Lifecycle &
-Directives</em></a>. However, most component developers will have no need to
-use directives outside of the built-in directives that come with Modulo, one
-of which we'll explore next: <code>[state.bind]</code></p>
+built-in feature of <em>Components</em>, which means it's always available
+(technically, the <code>:=</code> syntax is in fact syntactic sugar for it's
+full name, <code>[component.dataProp]</code>).  To learn more, including how to
+author your own directives, <a href="/docs/directives.html">see the section on
+<em>Lifecycle & Directives</em></a>. However, most component developers will
+have no need to use directives outside of the built-in directives that come
+with Modulo, one of which we'll explore next: <code>[state.bind]</code></p>
 
 
 <h3>Binding state data with [state.bind] directive</h3>
 
 
-<blockquote><p><strong>State and predictability</strong>
-The purpose of <em>State</em> is to separate out everything that changes
-about a component into it's an isolated data structure. It should be the case
-that for a well-written component, if anything changes visually, that "visual"
-change should always start with changing state. There should never be a
-"mismatch", or a way for visual changes to occur without state changes. If such
-a thing were possible, it would imply a component that is non-deterministic, or
-renders unpredictably. In other words, given a particular state (and props), a
+<blockquote><p><strong>State and predictability</strong> The purpose of
+<em>State</em> is to separate out everything that changes about a component
+into it's an isolated data structure. It should be the case that for a
+well-written component, if anything changes visually, that "visual" change
+should always start with changing state. There should never be a "mismatch", or
+a way for visual changes to occur without state changes. If such a thing were
+possible, it would imply a component that is non-deterministic, or renders
+unpredictably. In other words, given a particular state (and props), a
 component should be predictable or deterministic in that it renders the same
 way every time.</p></blockquote>
 
@@ -219,7 +233,8 @@ this mean? You can attach a <code>[state.bind]</code> directive to any
 input with the state after every keystroke. The binding is "two-way", or it
 goes in both directions: The input gets the initial state value, and if the
 state ever changes, the input will be updated to reflect that, and if the input
-ever changes, the state gets updated..</p>
+ever changes, the state gets updated.</p>
+
 
 <p>It's best practice to bind all of your form inputs that are in components to
 state variables. This is because in order to get the benefits of separating out

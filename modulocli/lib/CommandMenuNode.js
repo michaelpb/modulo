@@ -434,11 +434,11 @@ class CommandMenuNode extends baseModulo.CommandMenu {
 
             if (this._ssgBuildInProgress) {
                 log(`Build lock detected, ignoring change`);
+                return;
             }
 
-
             modulo.fetchQ.data = {}; // always clear fetchQ data to prevent caching
-            if (evt == 'update') {
+            if (evt === 'update') {
                 // on create or modify
                 const conf = Object.assign({}, config, {inputFile, outputFile});
                 modulo.assert(!config.watchAllowPartialBuilds, 'watchAllowPartialBuilds not implemented yet');
@@ -455,7 +455,7 @@ class CommandMenuNode extends baseModulo.CommandMenu {
                     }
 
                 }
-            } else if (evt == 'remove') {
+            } else if (evt === 'remove') {
                 // on delete
                 modulo.assert(inputFile.startsWith(output)); // prevent mistakes
                 modulo.assert(!config.watchAllowDeletions, 'watchPerformDeletions not implemented yet');

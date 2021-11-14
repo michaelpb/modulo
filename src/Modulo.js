@@ -497,13 +497,15 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
 
     parsedCallback() {
-        // HACK delete
-        if (!this.isMounted) { // or is necessary?
+        // HACKy code here
+        if (this.hasAttribute('modulo-innerhtml')) { // "modulo-innerhtml" directive
+            this.originalHTML = this.getAttribute('modulo-innerhtml')
+        } else if (!this.isMounted) {
             this.originalHTML = this.innerHTML;
             this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
             //console.log('getting original chidlren', this.originalHTML, this.originalChildren);
         }
-        // HACK delete
+        // /HACK
 
         this.setupCParts();
         this.lifecycle(['initialized'])

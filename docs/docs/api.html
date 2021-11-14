@@ -69,7 +69,7 @@ e4g1-Example a {
             <h3><span alt="Lower-case delta">%</span></h3>
             <nav class="TitleAside-navigation">
                 <h3>Documentation</h3>
-                <mws-docsidebar path="api.html">
+                <mws-docsidebar path="api.html" modulo-prerendered="">
 <ul>
     
         <li class="
@@ -219,7 +219,7 @@ API is much more likely to have larger changes before stabilizing. This is
 because it closely follows internal implementations.</p>
 
 
-<mws-section name="cparts">
+<mws-section name="cparts" modulo-prerendered="CParts">
         <a class="secanchor" title="Click to focus on this section." id="cparts" name="cparts" href="#cparts">#</a>
         <h2>CParts</h2>
     </mws-section>
@@ -249,7 +249,7 @@ Modulo.cparts.mycoolpart = MyCoolPart;
 <mycoolpart
     exampleattr=&quot;<h3>Hello CPart World</h3>&quot;
 ></mycoolpart>
-"><div class="demo-wrapper
+" modulo-prerendered=""><div class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -288,7 +288,7 @@ Modulo.cparts.mycoolpart = MyCoolPart;
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e3g1-example mm-ignore="mm-ignore"><h3>Hello CPart World</h3></e3g1-example>
+                    <e3g1-example mm-ignore="mm-ignore" modulo-prerendered=""><h3>Hello CPart World</h3></e3g1-example>
                 </div>
             </div>
         
@@ -304,7 +304,7 @@ same callbacks using the <em>Script</em> CPart. Instead, typically, CParts
 should be written in a separate, ordinary JS file (e.g. not a Modulo HTML
 file), or at the very most in a "module" at the top of a component library.</p>
 
-<mws-section name="spares">
+<mws-section name="spares" modulo-prerendered="CPart Spares">
         <a class="secanchor" title="Click to focus on this section." id="spares" name="spares" href="#spares">#</a>
         <h2>CPart Spares</h2>
     </mws-section>
@@ -368,7 +368,7 @@ a {
     cursor: pointer;
 }
 </style>
-"><div class="demo-wrapper
+" modulo-prerendered=""><div class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -407,7 +407,7 @@ a {
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e4g1-example mm-ignore="mm-ignore">
+                    <e4g1-example mm-ignore="mm-ignore" modulo-prerendered="">
     <nav><a @click:="script.swap" payload="shop">Shop</a>|Home</nav>
     <h1>Home</h1>
     <p>Welcome to my banana stand!</p>

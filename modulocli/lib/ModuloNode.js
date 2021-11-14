@@ -347,6 +347,9 @@ class ModuloNode {
                 new Error('Could not find factory for:', el)
             }
             webComponentsUpgrade(el, instance);
+
+            // XXX HACK -------v
+            el.setAttribute('modulo-innerhtml', el.originalHTML || '');
         }
 
 
