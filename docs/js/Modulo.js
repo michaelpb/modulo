@@ -498,8 +498,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     parsedCallback() {
         // HACKy code here
-        if (this.hasAttribute('modulo-prerendered')) {
-            this.originalHTML = this.getAttribute('modulo-prerendered')
+        if (this.hasAttribute('modulo-innerhtml')) { // "modulo-innerhtml" pseudo-directive
+            this.originalHTML = this.getAttribute('modulo-innerhtml')
         } else if (!this.isMounted) {
             this.originalHTML = this.innerHTML;
             this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
