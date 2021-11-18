@@ -1,4 +1,4 @@
-// modulo build fi5klt
+// modulo build nodn1f
 'use strict';
 
 // # Introduction
@@ -3943,20 +3943,6 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
 
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
   "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (49 lines)
 `<test name="Behaves as expected">
     <template name="Ensure initial inputs are bound so render is as expected" test-values>
@@ -4007,6 +3993,20 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 
 `,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
+
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
 
   "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
 `
@@ -4079,79 +4079,6 @@ test will cause other tests to fail, but running it separately it succeeds. -->
 
 
 `,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
-
-  "/components/modulowebsite/demo.html": // (71 lines)
-`<div class="demo-wrapper
-        {% if state.showpreview %}     demo-wrapper__minipreview{% endif %}
-        {% if state.showclipboard %}   demo-wrapper__clipboard  {% endif %}
-        {% if state.fullscreen %}      demo-wrapper__fullscreen {% endif %}
-        {% if state.tabs.length == 1 %}demo-wrapper__notabs     {% endif %}
-    ">
-    {% if state.tabs.length gt 1 %}
-        <nav class="TabNav">
-            <ul>
-                {% for tab in state.tabs %}
-                    <li class="TabNav-title
-                        {% if tab.title == state.selected %}
-                            TabNav-title--selected
-                        {% endif %}
-                    "><a @click:=script.selectTab
-                            payload="{{ tab.title }}"
-                        >{{ tab.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </nav>
-    {% endif %}
-
-    <div class="editor-toolbar">
-        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
-                    {% if not state.fullscreen %} display: none; {% endif %}">
-            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
-        </p>
-
-        {% if state.showclipboard %}
-            <button class="m-Btn m-Btn--sm m-Btn--faded"
-                    title="Copy this code" @click:=script.doCopy>
-                Copy <span alt="Clipboard">&#128203;</span>
-            </button>
-        {% endif %}
-
-        {% if state.showpreview %}
-            <button class="m-Btn"
-                    title="Toggle full screen view of code" @click:=script.doFullscreen>
-                {% if state.fullscreen %}
-                    <span alt="Shrink">&swarr;</span>
-                {% else %}
-                    <span alt="Go Full Screen">&nearr;</span>
-                {% endif %}
-            </button>
-            &nbsp;
-            <button class="m-Btn"
-                    title="Run a preview of this code" @click:=script.doRun>
-                Run <span alt="Refresh">&#10227;</span>
-            </button>
-        {% endif %}
-
-    </div>
-
-    <div class="side-by-side-panes">
-        <div class="editor-wrapper">
-            <div modulo-ignore>
-            </div>
-        </div>
-
-        {% if state.showpreview %}
-            <div class="editor-minipreview">
-                <div modulo-ignore>
-                    {{ state.preview|safe }}
-                </div>
-            </div>
-        {% endif %}
-
-    </div>
-</div>
-
-`,// (ends: /components/modulowebsite/demo.html) 
 
   "/components/modulowebsite/demo.js": // (275 lines)
 `let componentTexts = null;
@@ -4429,6 +4356,79 @@ element.previewSpot.appendChild(component);
 */
 
 `,// (ends: /components/modulowebsite/demo.js) 
+
+  "/components/modulowebsite/demo.html": // (71 lines)
+`<div class="demo-wrapper
+        {% if state.showpreview %}     demo-wrapper__minipreview{% endif %}
+        {% if state.showclipboard %}   demo-wrapper__clipboard  {% endif %}
+        {% if state.fullscreen %}      demo-wrapper__fullscreen {% endif %}
+        {% if state.tabs.length == 1 %}demo-wrapper__notabs     {% endif %}
+    ">
+    {% if state.tabs.length gt 1 %}
+        <nav class="TabNav">
+            <ul>
+                {% for tab in state.tabs %}
+                    <li class="TabNav-title
+                        {% if tab.title == state.selected %}
+                            TabNav-title--selected
+                        {% endif %}
+                    "><a @click:=script.selectTab
+                            payload="{{ tab.title }}"
+                        >{{ tab.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                    {% if not state.fullscreen %} display: none; {% endif %}">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        {% if state.showclipboard %}
+            <button class="m-Btn m-Btn--sm m-Btn--faded"
+                    title="Copy this code" @click:=script.doCopy>
+                Copy <span alt="Clipboard">&#128203;</span>
+            </button>
+        {% endif %}
+
+        {% if state.showpreview %}
+            <button class="m-Btn"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
+                {% if state.fullscreen %}
+                    <span alt="Shrink">&swarr;</span>
+                {% else %}
+                    <span alt="Go Full Screen">&nearr;</span>
+                {% endif %}
+            </button>
+            &nbsp;
+            <button class="m-Btn"
+                    title="Run a preview of this code" @click:=script.doRun>
+                Run <span alt="Refresh">&#10227;</span>
+            </button>
+        {% endif %}
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore>
+            </div>
+        </div>
+
+        {% if state.showpreview %}
+            <div class="editor-minipreview">
+                <div modulo-ignore>
+                    {{ state.preview|safe }}
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+`,// (ends: /components/modulowebsite/demo.html) 
 
   "/components/modulowebsite/demo.css": // (267 lines)
 `.demo-wrapper.demo-wrapper__minipreview .CodeMirror {
