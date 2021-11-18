@@ -295,7 +295,7 @@ Modulo.ComponentFactory = class ComponentFactory {
     // ```
     runFactoryLifecycle(cPartOpts) {
         const baseRenderObj = {};
-        for (let [ cPartName, data ] of cPartOpts) {
+        for (let [cPartName, data] of cPartOpts) {
             const cpCls = Modulo.cparts[cPartName];
             data = cpCls.factoryCallback(data, this, baseRenderObj) || data;
             baseRenderObj[cPartName] = data;
@@ -320,11 +320,11 @@ Modulo.ComponentFactory = class ComponentFactory {
     // This function does the heavy lifting of actually constructing a
     // component, and is invoked when the component is mounted to the page.
     buildCParts(element) {
-        element.cparts = { element }; // Include "element", for lifecycle method
+        element.cparts = {element}; // Include "element", for lifecycle methods
         element.cpartSpares = {}; // no need to include, since only 1 element
 
-        // Loop through the parsed array of objects that define the Component
-        // Parts for this component, checking for errors.
+        // It loops through the parsed array of objects that define the
+        // Component Parts for this component, checking for errors.
         for (const [name, partOptions] of this.childrenLoadObj) {
             Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
             if (!(name in element.cpartSpares)) {
@@ -353,8 +353,10 @@ Modulo.ComponentFactory = class ComponentFactory {
     register() {
         const tagName = this.fullName.toLowerCase();
 
-        // TODO: This is actually the "biggest" try-catch, catching defining a
-        // new component. Need to work on better error messages here.
+        // TODO: This is actually the "biggest" try-catch. When I work on err
+        // messages, this might be the spot (e.g. use other try-catches further
+        // down, that annotate the Error with extra info that then gets nicely
+        // formatted here).
         try {
             //console.log('registering ', tagName, this.componentClass);
             Modulo.globals.customElements.define(tagName, this.componentClass);
@@ -371,7 +373,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 
         const lcName = instance.name.toLowerCase();
         if (instance.isModule) {
-            // TODO: Dead-ish feature: not sure how useful this is, or if only
+            // TODO: Dead-ish feature: not Sure how useful this is, or if only
             // "local" modules are typically used. Ideally this should be based
             // on local module names / localNameMap, not global namespaces.
             if (!Modulo.modules) {
@@ -539,16 +541,7 @@ Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     initializedCallback(renderObj) {
         const { engine = 'ModRec' } = this.attrs;
-        this.mode = this.attrs.mode || 'default'; // TODO refactor when we get attr defaults
-        if (this.mode === 'shadow') {
-            this.element.attachShadow({ mode: 'open' });
-        }
-        /*const tagTransforms = this.mode !== 'vanish-into-document' ? {} :
-            { 'body': 'modulo-v-body', 'head': 'modulo-v-head' };*/
-        this.reconciler = new Modulo.reconcilers[engine]({
-            makePatchSet: true,
-            //tagTransforms,
-        });
+        this.reconciler = new Modulo.reconcilers[engine]({ makePatchSet: true });
     }
 
     prepareCallback() {
@@ -559,25 +552,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updateCallback(renderObj) {
         let { innerHTML, patches } = renderObj.component;
         if (innerHTML !== null) {
-            let root = this.element;
             if (!this.reconciler) {
                 // XXX (Delete this, only needed for SSG)
                 const { engine = 'ModRec' } = this.attrs;
                 this.reconciler = new Modulo.reconcilers[engine]({ makePatchSet: true });
             }
-            if (this.mode === 'vanish-into-document') {
-                // TODO: Possibly make this a reconciler feature
-                // (Reason can't do for <PrivateComponents>: Requires parsing
-                // HTML, since /[^>]+/ only works since we ignore attributes)
-                const regExp = /<(\/?)(body|head)([^>]*)>/gi;
-                innerHTML = innerHTML.replace(regExp, '<$1modulo-v-$2$3>');
-                //root = Modulo.globals.document.documentElement;
-            } else if (this.mode === 'shadow') {
-                root = this.shadowRoot;
-            }
             const { localNameMap } = this.element.factory().loader;
-            // IDEA #2: Make vanish-into-document just do use documentElement?
-            patches = this.reconciler.reconcile(root, innerHTML || '', localNameMap);
+            patches = this.reconciler.reconcile(this.element, innerHTML || '', localNameMap);
         }
         return { patches, innerHTML }; // TODO remove innerHTML from here
     }
@@ -585,37 +566,38 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updatedCallback(renderObj) {
         const { patches, innerHTML } = renderObj.component;
         if (patches) {
-            // hax XXX
-            /*if (this.mode === 'vanish' || this.mode === 'vanish-into-document') {
-                console.log('this is element.innerHTML2', this.element.innerHTML);
-            }*/
-            // hax XXX
+            /*
+            if (innerHTML.includes('class="TitleAside')) {
+                // TODO: rm, this is for debugging "vanish" and "children" interactions
+                console.log('-----------------------------')
+                const s = 'const elementIH = `' +
+                      this.element.innerHTML.replace(/`/g, '\`') + '`;\n' +
+                      'const componentIH = `' +
+                      innerHTML.replace(/`/g, '\`') + '`;\n';
+                console.log(s);
+                console.log('-----------------------------')
+            }
+            */
             this.reconciler.applyPatches(patches);
         }
 
         if (!this.element.isMounted) { // First time initialized
-            if (this.mode === 'vanish') {
-                this.element.replaceWith(...this.element.childNodes); // Delete self
-            } else if (this.mode === 'vanish-into-document') {
-                for (const oldScr of this.element.querySelectorAll('script')) {
-                    // TODO: should copy over all attributes, eg async
-                    const newScript = Modulo.globals.document.createElement('script');
-                    newScript.src = oldScr.src;
-                    oldScr.remove(); // delete old element & move to head
-                    Modulo.globals.document.head.appendChild(newScript);
+            const mode = this.attrs ? (this.attrs.mode || 'default') : 'default';
+            if (mode === 'vanish' || mode === 'vanish-allow-script') {
+                // TODO: switch with slightly cleaner "vanish-into-document"
+                // which 1) looks for body, copies to body, then 2) looks for
+                // head, copies to head
+                if (mode === 'vanish-allow-script') {
+                    for (const oldScr of this.element.querySelectorAll('script')) {
+                        // TODO: should copy over all attributes, eg async
+                        const newScript = Modulo.globals.document.createElement('script');
+                        newScript.src = oldScr.src;
+                        oldScr.remove(); // delete old element & move to head
+                        Modulo.globals.document.head.appendChild(newScript);
+                    }
                 }
 
-                const _childrenOf = tag => {
-                    const elem = this.element.querySelector('modulo-v-' + tag);
-                    return elem ? Array.from(elem.childNodes) : [];
-                }
-                Modulo.globals.document.head.append(..._childrenOf('head'));
-                Modulo.globals.document.body.append(..._childrenOf('body'));
-                this.element.remove();
-                /*
-                //console.log('this is element.innerHTML', this.element.innerHTML);
-                //throw new Error('what');
-                */
+                this.element.replaceWith(...this.element.childNodes); // Delete self
             }
         }
     }
@@ -971,27 +953,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 }
 
-Modulo.cparts.store = class Store extends Modulo.cparts.state {
-    initializedCallback(renderObj) {
-        const cls = Modulo.cparts.store;
-        if (!('boundElements' in cls)) {
-            cls.storeData = {};
-            cls.boundElements = {};
-        }
-        super.initializedCallback(renderObj);
-
-        if (!(this.attrs.slice in cls.storeData)) {
-            cls.storeData[this.attrs.slice] = {};
-            cls.boundElements[this.attrs.slice] = {};
-        }
-        this.data = cls.storeData[this.attrs.slice];
-        // TODO: Make boundElements support Many to One (probably for state,
-        // why not) so that if one component changes Store, all components
-        // change Store.
-        this.boundElements = cls.boundElements[this.attrs.slice];
-    }
-}
-
 // ModuloTemplate
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
@@ -1280,11 +1241,10 @@ Modulo.reconcilers.Cursor = class Cursor {
     next() {
         let child = this.nextChild;
         let rival = this.nextRival;
-        if (!child && !rival) { // reached the end
+        if (!this.nextChild && !this.nextRival) {
             if (!this.keyedRivalsArr) {
                 return [null, null];
             }
-            // There were excess keyed rivals OR children, pop()
             return this.keyedRivalsArr.length ?
                   [null, this.keyedRivalsArr.pop()] :
                   [this.keyedChildrenArr.pop(), null];
@@ -1350,7 +1310,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         this.shouldNotApplyPatches = opts && opts.makePatchSet;
         this.shouldNotDescend = opts && opts.doNotDescend;
         this.elementCtx = opts ? opts.elementCtx : undefined;
-        this.tagTransforms = opts ? opts.tagTransforms : {};
     }
 
     reconcile(node, rivalHTML, tagTransforms) {
@@ -1362,8 +1321,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             this.elementCtx = node; // element context
         }
         const rival = Modulo.utils.makeDiv(rivalHTML, true);
-        const transforms = Object.assign({}, this.tagTransforms, tagTransforms);
-        this.applyTagTransforms(rival, transforms);
+        this.applyTagTransforms(rival, tagTransforms);
         this.markRecDirectives(rival);
         this.reconcileChildren(node, rival);
         this.cleanRecDirectiveMarks(node);
@@ -1374,8 +1332,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     applyTagTransforms(elem, tagTransforms) {
-        const sel = Object.keys(tagTransforms).join(',');
-        for (const node of elem.querySelectorAll(sel || 'X')) {
+        const sel = Object.keys(tagTransforms || { X: 0 }).join(',');
+        for (const node of elem.querySelectorAll(sel)) {
             const newTag = tagTransforms[node.tagName.toLowerCase()];
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);

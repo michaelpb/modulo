@@ -1,4 +1,648 @@
 <!DOCTYPE HTML>
 <head>
 
-</head><body><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-e18lph.js"></script></body>
+</head><body>
+
+
+    <meta charset="utf8">
+    <title>Part 3 - Tutorial - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    
+
+    <!-- TODO: Switch to <module><load> style syntax -->
+    <!--
+    <mod-load src="/components/modulowebsite.html" namespace="mws"></mod-load>
+    <mod-load src="/components/examplelib.html" namespace="eg"></mod-load>
+    <mod-load src="/components/embeddedexampleslib.html" namespace="docseg"></mod-load>
+    -->
+
+
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html">Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        v: undefined<br>
+        SLOC: undefined lines<br>
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+    </div>
+</nav>
+
+
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar">
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-docsidebar path="tutorial_part1.html" modulo-innerhtml="">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs/">Table of Contents</a>
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/tutorial_part1.html">Part 1: Components, CParts, and Loading</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial_part2.html">Part 2: Props, Templating, and Building</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/tutorial_part3.html">Part 3: State, Directives, and Scripting</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating-reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/api.html">API &amp; Extension</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
+
+
+    <!--
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
+            </li>
+        </ul>
+
+    </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+</ul>
+</mws-docsidebar>
+            </nav>
+        </aside>
+        <aside style="border: none">
+            
+
+<h1>The Modulo Tutorial: Part 3</h1>
+
+
+
+<p>In Part 3 of this tutorial, we'll dig deeper with two new CParts: State,
+which allows individual components to store, modify, and link together data,
+and Script, which allows custom JavaScript with complex behaviors.
+Prerequisites: HTML, CSS, JavaScript, and Part 1 &amp; 2.</p>
+
+
+<mws-section name="state" modulo-innerhtml="State">
+        <a class="secanchor" title="Click to focus on this section." id="state" name="state" href="#state">#</a>
+        <h2>State</h2>
+    </mws-section>
+
+<p> So far, our components have been static and unchanging. They can't do a
+lot.  They might be useful for refactoring HTML into more DRY, reusable
+components, but not much more than that.  They can't validate form data, use
+APIs, or form complete applications. In fact, they can't have any sort of
+<em>interaction</em> whatsoever, or any <em>dynamic</em> or changing
+content.</p>
+
+
+<h3>Examining a memory game's usage of State</h3>
+
+<blockquote>
+    <eg-memorygame modulo-innerhtml="">
+
+    <h3>The Symbolic Memory Game</h3>
+    <p>Choose your difficulty:</p>
+    <button @click:="script.setup" click.payload="8">2x4</button>
+    <button @click:="script.setup" click.payload="16">4x4</button>
+    <button @click:="script.setup" click.payload="36">6x6</button>
+
+</eg-memorygame>
+</blockquote>
+
+<p>Let's put on our "Holmes-style" detective hats and get out our detective
+magnifying glasses, we're about to go sleuthing!
+Examine this "Symbolic Memory Game" in the box here. Just like any other
+component, this was placed on this HTML page here with the following code:
+<code>&lt;eg-MemoryGame&gt;&lt;/eg-MemoryGame&gt;</code></p>
+
+<p>However, this demo component is doing much more than what we have covered in
+the tutorial so far. It is changing, or <em>mutating</em> based on user
+interaction. This is no longer a simple, static component, but a
+<em>dynamic</em> component.</p>
+
+<p>We can deduce two things about this little memory game component. Deduction
+One: It used a <em>State</em> CPart. We know that it used a <em>State</em>
+CPart because it changes or mutates. Without a <em>State</em> CPart, a
+component cannot "change state", or mutate or have dynamic content, and instead
+will be rendered the same way every time (given certain props).
+In other words, if a component needs to have dynamic content or change over
+time, then a <em>State</em> CPart is necessary to store this dynamic content.</p>
+
+<p>Now on to Deduction Two: It used a <em>Script</em> CPart. Script CParts
+allow for complicated interactions and new behavior to be developed. Memory
+game logic is complicated behavior that requires custom JavaScript. We'll get
+to Script later on.</p>
+
+
+<hr>
+
+<blockquote> <p><strong>Why keep State separate?</strong>
+Earlier jQuery-style JS frameworks were more concerned with manipulating the
+DOM directly. Now, the modern approach is to combine templating and/or DOM
+building tools (e.g. JSX, virtual DOM) with "state management" (e.g. Redux,
+useState). This is due to perceived flaws with the original approach of direct
+DOM manipulation: Pretty soon as an app grows, you get a big tangled mess of
+different code reaching in different spots. Frontend frameworks clearly needed
+an "MVC Model"-like structure to "keep stuff separate".</p>
+
+<p>Modulo closely follows this modern approach. This "detangles" the spaghetti
+mess of DOM manipulation: Instead of one button inserting stuff over here, and
+one input reaching in and sending data over there, the "state" creates a single
+"choke-point" that keeps data "flowing" in one direction. No matter what you
+want changed, you do one thing: <em>Change state &amp; rerender</em>!</p>
+</blockquote>
+
+
+
+<h3>State is private</h3>
+
+<p>State allows each component instance to store data. Each component instance
+has a separate state from every other instance. As a demonstration of that,
+examine the following "Hello" counting buttons, once again taken from the demo
+page:</p>
+
+<p> <eg-hello modulo-innerhtml="">
+    <button @click:="script.countUp">Hello 42</button>
+</eg-hello> <eg-hello modulo-innerhtml="">
+    <button @click:="script.countUp">Hello 42</button>
+</eg-hello> <eg-hello modulo-innerhtml="">
+    <button @click:="script.countUp">Hello 42</button>
+</eg-hello> </p>
+
+<p>(Source code:
+<code>&lt;eg-Hello&gt;&lt;/eg-Hello&gt;</code>
+<code>&lt;eg-Hello&gt;&lt;/eg-Hello&gt;</code>
+<code>&lt;eg-Hello&gt;&lt;/eg-Hello&gt;</code>
+)</p>
+
+<p>Once again, we can determine that state is being used, as the text on the
+button changes when that button is clicked. Furthermore, this demonstrates how
+state is not shared: Each button is a totally separate instance that keeps it's
+own private state.</p>
+
+
+
+<h3>Initializing the <em>State</em> CPart</h3>
+
+<p>Let's "peel back the layers" and examine out how these "stateful" or dynamic
+components were written.</p>
+
+
+<p>In order for a component to be able to "modify state", we
+must define a <em>State</em> CPart, conventionally placed after the Template
+but before the Script or Style tags in a component definition (such that the
+order is <em>Props, Template, State, Script, Style</em>). <em>State</em> CParts
+are defined much like <em>Props</em>, except that instead of just listing the
+attribute names, initial values must be provided as defaults.  A <em>State</em>
+CPart might look like this:</p>
+
+<pre>&lt;state
+    count="1"
+    color="blue"
+&gt;&lt;/state&gt;</pre>
+
+
+<p>Here we are defining two <em>state variables</em>: <code>count</code>, which
+we initialize to equal <code>"1"</code>, and <code>color</code>, which we
+initialize to equal <code>blue</code>. We can then use the state variables in
+our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
+
+<pre>&lt;template&gt;
+    &lt;p style="color: {{ state.color }}"&gt;
+        You have {{ state.count }} bananas.
+    &lt;/p&gt;
+&lt;/template&gt;</pre>
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <!-- TODO: Add a better thing here, should be just a few basic "state"
+         variables and rendering them in template with filters -->
+
+    <ol>
+        <li>Practice modifying the <strong>State</strong> CPart
+        (<code>&lt;state&gt;</code>) to see how that affects the output. No
+        need to mess with the template for now.</li>
+        <li>Practice incorporating these CParts into your own components on a
+        real page by copying the code here and pasting it within your component
+        definition (that is, the one that you created in the <em>Part 1</em> of
+        this tutorial)</li>
+    </ol>
+    <mws-demo demotype="minipreview" fromlibrary="Templating_1" modulo-innerhtml=""><div class="demo-wrapper
+        
+        
+        
+        
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+</section>
+
+
+
+<mws-section name="state" modulo-innerhtml="2. Directives">
+        <a class="secanchor" title="Click to focus on this section." id="state" name="state" href="#state">#</a>
+        <h2>2. Directives</h2>
+    </mws-section>
+
+<p>We'll get to more practice with the <em>State</em> CPart in a moment, but
+first we need to take a little detour and learn about a few important built-in
+Modulo "directives".</p>
+
+<p>A <em>directive</em> is a type of HTML attribute.  You can recognize
+<em>directive</em> by spotting certain special characters in the attribute
+name.  For example, <code>&lt;input [state.bind] /&gt;</code> is an
+<code>input</code> HTML tag with a <code>[state.bind]</code> directive. Some
+directives will have a square-bracket syntax (e.g. <code>[ ]</code>), while
+others might use other special characters to set them apart from "normal"
+attributes (e.g.  <code>@</code> or <code>:</code>).  While re-rendering,
+Modulo scans the resulting DOM to set-up or "mount" any directives it
+encounters.</p>
+
+<p>Directives are useful for a variety of tasks, ranging connecting CParts to
+each other, to more complicated modifications to DOM elements. We'll learn two
+directives next: <em>data prop</em> and <em>state.bind</em>.</p>
+
+
+<h3>Data prop directive (:=)</h3>
+
+<blockquote> <p><strong>Why don't we use "strings" for numbers?</strong> Using
+strings of digits (e.g. in quotes) instead of the numbers themselves means that
+things like arithmetic won't work as intended. Example: If state variable
+<code>count="1"</code>, then <code>state.count + 10</code>
+will result in <code>"110"</code> instead of the desired <code>11</code>, since
+it's a string of digits, so <code>"1" + "10" = "110"</code></p></blockquote>
+
+<p>Typically, when we add attributes to anything, whether it is a CPart or even
+just in regular HTML, the attribute value can only be a string. This means when
+we did <code>&lt;state count="1" ... &gt;</code> previously, we made a mistake:
+The <code>count</code> variable didn't get assigned to <code>1</code> the
+<em>Number</em>, but rather <code>"1"</code> the <em>String</em>. To fix it, we
+do the following:</p>
+
+<pre>&lt;state
+    count:=1
+    color="blue"
+&gt;&lt;/state&gt;</pre>
+
+<p>This is called a <em>data prop</em> directive.  In the case of the <em>data prop</em>
+directive (<code>:=</code>), the attribute name is suffixed with a colon right
+before the equal sign , resulting in a  <em>directive</em> the attribute name
+with a colon right before the equal, like this:
+<code>attributeName:=value</code>.</p>
+
+<p>All directives are "provided" by a CPart. That is, including CParts in your
+component definition may "enable" more directives in your HTML. Data-prop is a
+built-in feature of <em>Components</em>, which means it's always available
+(technically, the <code>:=</code> syntax is in fact syntactic sugar for it's
+full name, <code>[component.dataProp]</code>).  To learn more, including how to
+author your own directives, <a href="/docs/directives.html">see the section on
+<em>Lifecycle &amp; Directives</em></a>. However, most component developers will
+have no need to use directives outside of the built-in directives that come
+with Modulo, one of which we'll explore next: <code>[state.bind]</code></p>
+
+
+<h3>Binding state data with [state.bind] directive</h3>
+
+
+<blockquote><p><strong>State and predictability</strong> The purpose of
+<em>State</em> is to separate out everything that changes about a component
+into it's an isolated data structure. It should be the case that for a
+well-written component, if anything changes visually, that "visual" change
+should always start with changing state. There should never be a "mismatch", or
+a way for visual changes to occur without state changes. If such a thing were
+possible, it would imply a component that is non-deterministic, or renders
+unpredictably. In other words, given a particular state (and props), a
+component should be predictable or deterministic in that it renders the same
+way every time.</p></blockquote>
+
+
+<p>State comes with a directive that helps "bind" it to form data.  What does
+this mean? You can attach a <code>[state.bind]</code> directive to any
+<code>&lt;input&gt;</code>, and the <em>State</em> CPart will "sync up" the
+input with the state after every keystroke. The binding is "two-way", or it
+goes in both directions: The input gets the initial state value, and if the
+state ever changes, the input will be updated to reflect that, and if the input
+ever changes, the state gets updated.</p>
+
+
+<p>It's best practice to bind all of your form inputs that are in components to
+state variables. This is because in order to get the benefits of separating out
+state, <em>all</em> visual changes, including something as simple as typing a
+single character in an input, should be reflected in state changes.</p>
+
+<p>To bind an input to state, use something like the following:</p>
+
+<pre>&lt;template&gt;
+    &lt;input [state.bind] name="subject" /&gt;
+&lt;/template&gt;
+&lt;state
+    subject="Testing message..."
+&gt;&lt;/state&gt;</pre>
+
+
+<p>It's important that you always include a "name" attribute when binding. This
+should contain the name of the <em>State</em> variable to be kept in sync with
+that input.</p>
+
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <ol>
+        <li>Try modifying the "Username" input box in the preview below. Do you
+        see how it "quickly reacts" or re-renders the username text in
+        lower-case as you type?</li>
+        <li>Try also adjusting the "Opacity" input to see how it updates the
+        transparency of the text, and the "Color" input, which only supports
+        "blue" or "green" (anything else turns red).</li>
+        <li>Examine the code in the <em>Template</em> CPart. Examine each
+        input, and how it uses the <code>[state.bind]</code> directive to keep
+        it in-sync with state. The <code>name="username"</code>,
+        <code>name="color"</code>, and <code>name="opacity"</code> attributes
+        are what the State CPart uses to figure out which state variable should
+        be "linked".</li>
+        <li>Now, practice the link in "the other way": That is, see how
+        <em>State</em> populates the inputs' values. You can do this by
+        changing the initial values of <em>State</em> and then re-running the
+        program. See how by changing the initial values of <em>State</em> it
+        will also update the initial values of the linked inputs?</li>
+    </ol>
+
+
+    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P3_state_bind" modulo-innerhtml=""><div class="demo-wrapper
+        
+        
+        
+        
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+    <p>Clarification: The other attributes, (e.g. <code>name</code>, along with
+    <code>type</code>, <code>max</code>, <code>min</code>, and
+    <code>step</code>), are <em>not</em> Modulo directives, but are instead
+    plain HTML attributes. The State CPart reuses <code>name</code>, but will
+    ignore the others.</p>
+
+    <p><strong>Further practice:</strong> Practice incorporating these CParts
+    into your own components on a real page by copying the code here and
+    pasting it within your component definition (that is, the one that you
+    created in the <em>Part 1</em> of this tutorial)</p>
+
+</section>
+
+
+<h3>Final notes on directives</h3>
+
+
+<ol>
+    <li>If you are still scratching your head over the use of
+    <code>[state.bind]</code> but are familiar with vanilla JS, it's
+    all about reducing the need to "manually reach" into the DOM. It
+    simplifies code like this <code>var inputData =
+    document.getElementsByName('myinput')[0].value</code> (or the similar
+    <code>$('[name=myinput]').val()</code> in jQuery), with more readable code
+    like <code>state.myinput</code>, and similarly untangles code for
+    validation, API requests, etc.</li>
+
+    <li>Keep in mind that <em>data props</em> directives are not the same as
+    the <em>Props</em> CPart.  They are, however, related, in that the
+    <em>Props</em> CPart looks for both regular attributes and data props: You
+    can in fact set any <em>Props</em> attributes with the <code>:=</code>
+    syntax for data other than Strings.</li>
+
+    <li><em>Data props</em> support any JSON literal type. Technically,
+    <em>data props</em> values can have double quotes just like normal
+    String-based attributes. However, as a stylistic convention, you may omit
+    the double quotes for any one-word value, and for complex types, such as
+    JSON-formatted Arrays or Objects, use single quotes. See below for
+    stylistic examples of data props with different types:
+
+
+<mws-demo text="
+<state
+    color=&quot;blue&quot;      (String)
+    count:=1          (Number)
+    ready:=true       (Boolean)
+    speed:=null       (null value)
+    items:='[         (JSON Array)
+        &quot;abc&quot;,
+        &quot;def&quot;
+    ]'
+    data_obj:='{      (JSON Object)
+        &quot;a&quot;: &quot;b&quot;,
+        &quot;c&quot;: &quot;d&quot;
+    }'
+></state>
+" modulo-innerhtml=""><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+</li>
+
+
+<mws-section name="script" modulo-innerhtml="3. Script">
+        <a class="secanchor" title="Click to focus on this section." id="script" name="script" href="#script">#</a>
+        <h2>3. Script</h2>
+    </mws-section>
+
+
+<p>To be continued!</p>
+
+
+
+
+
+
+
+
+
+
+
+</ol>
+        </aside>
+    </main>
+
+
+<footer>
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
+
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-igivtt.js"></script></body>
