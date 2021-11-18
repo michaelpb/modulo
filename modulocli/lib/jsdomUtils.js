@@ -18,9 +18,8 @@ function addRangeToWindow(globals) {
 // Very simple hacky way to do mocked web-components define for JSDOM
 function webComponentsUpgrade(el, instance) {
 
-    // Both MOD-LOADER and ModuloElement have
-    // "initialize" property, so anything we
-    // upgrade will have that.
+    // Both MOD-LOADER and ModuloElement have "initialize" property, so
+    // anything we upgrade will have that.
     const secondTime = Boolean(el.initialize);
 
     // Manually "upgrading" the JSDOM element with the webcomponent

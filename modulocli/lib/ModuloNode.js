@@ -152,7 +152,10 @@ class ModuloNode {
             let newScript = `<script src="${outPath}"></script>`;
 
             // XXX HACK XXX
+            // XXX HACK XXX
             newScript = '<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>' + newScript;
+            // XXX HACK XXX
+            // XXX HACK XXX
 
             const closingHead = /<\/head>/i;
             const closingBody = /<\/body>/i;

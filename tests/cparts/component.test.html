@@ -1,15 +1,49 @@
-<component name="OrigHtml">
+<component name="VanishIntoDocument" mode="vanish-into-document">
     <template>
-        <div id="a">{{ component.originalHTML|safe }}</div>
+        <head>
+            <link href="whatevs.css" />
+        </head>
+        <body>
+            <h1>Hello World</h1>
+            <div>{{ component.originalHTML|safe }}</div>
+            <script src="stuff.js"></script>
+        </body>
     </template>
 </component>
 
 <component name="ComponentCPartTest">
     <template>
-        <div id="a">{{ component.originalHTML|safe }}</div>
+        <div id="a">
+            <x-VanishIntoDocument><p>Abc</p></x-VanishIntoDocument>
+        </div>
     </template>
-    <script>
-    </script>
+
+    <testsuite solo>
+        <test name="Render mode: vanish-into-document">
+            <template name="Component vanishes correctly">
+                <div id="a"></div>
+            </template>
+            <script>
+                const expectedBody = `
+                    <x-componentcparttest>
+                        <div id="a"></div>
+                    </x-componentcparttest>
+                    <h1>Hello World</h1>
+                    <div><p>Abc</p></div>
+                    <script src="stuff.js"><` + `/script>
+                `;
+                const actual = document.body.innerHTML;
+
+                assert: actual === expectedBody
+            </script>
+            <script>
+                const expectedHead = '<link href="whatevs.css" />';
+                const actual = document.head.innerHTML;
+
+                assert: actual === expectedHead
+            </script>
+        </test>
+    </testsuite>
 </component>
 
 

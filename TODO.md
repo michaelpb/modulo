@@ -1,3 +1,13 @@
+------
+# Misc notes:
+
+- Store vs store
+    - Since MTL and JS are case-sensitive, "Store" could be the class, allowing
+      for Template.tableRow to refer to <Template name="tableRow">
+    - Lowercase "store" is the currently selected CPart instance
+
+
+----
 # Misc notes:
 
 - Massive performance bug:
@@ -66,17 +76,6 @@
       - const { component } = modulo.cpartDef;
       - component`name=""`
       - endcompnent``
-
-- How to show off practicing different props:
-    - Add another "type" of text: Preview text
-    - By default, show as another pane (?)
-        - Maybe to the right of the preview?
-    - By default, do not allow editing
-    - By default, show some other tabs (?) to select
-- Could allow a show-off "auto" mode, for the front-page or other places, where
-  it just cycles through different sets of props, showing the result of each
-  (could look really cool with a transition!!)
-
 # Notes on using ModRec to simplify load / reload:
 
 - ModRec + hooks for load
@@ -92,12 +91,8 @@
   - E.g. change state into < modulo-state /> dom node factory representation
   - Factory loops through it's dom nodes
 
-- getAttr terminology ideas: ":="
-  - Give it a new name: dataProps
-  - The Props CPart will get its data from either dataProps or real attributes
-  - Can be for any JSON value (invalid word symbols, except for true/false/null)
-
 - Idea for "modulocli test" multiprocessing:
+  - Create a SPA "dashboard" with a table of components & their tests
   - Start "test server" -- HTTP server that serves up test results + badges
   - Expose HTTP API to re-run tests (maybe also git pull & rerun?)
   - HTTP API should allow "split" work -- this way it can be used as a primitive worker-queue
@@ -147,7 +142,6 @@
     - (DONE) Do cparts.state vs state conversion
     - (DONE-ish) Work on "Live Code Preview" component for examples
     - (DONE) Misc must have features:
-        - Cache for components in localStorage
         - (DONE) "settingProps" as a means to squirrel away data during ssg
     - Do immediately prefixing components
     - (DONE) Work on Modulo Router
@@ -161,31 +155,24 @@
     - Big TODO: Finish Loading prefixing correctly
         - 1) x- for local, or imported without namespace
         - 2) x328f- get rewritten for imported ones
-    - How to get better stack traces when everything is in an eval? Anyway to
-      catch & throw? (defineComponent is the big try/catch)
-    - Fix resolution issue with [component.children]... (causing x-Page to not show content)
     - CSS bundling
     - An interesting ToDo:
         - Maybe only good for mdu, not this, but with headless browser testing +
           step-based testing, imagine the <style> tag also being for stuff like this:
             - <style user-action>
-                  click button {
+                  click button.extraBtn {
                       color: blue;
                       background: red;
                   }
               </style>
             - Basically, can be used for both triggering events, and checking
               that things are visually identifiable
-            - Could have other filters as well, e.g.  "color: contrast-with(var(background));"
+            - Could have other filters as well, e.g. "color: contrast-with(var(background));"
     - Possibly change directive syntax,
         - Current has bad w3c compliance, not sure if better:
         -  __component.children__
         - ##component.children##
         - _%component.children%_
-
-- Look into replacing JSDom with linkedom: https://github.com/WebReflection/linkedom#readme
-
-- Supposed to be much faster and support customElements out of the box.
 
 --------------
 
@@ -267,18 +254,18 @@
         // TODO -v prefered
         //content = content.replace(/(<\/?)x-/g, tagPref);
 
-            // Possibility matrix:
-            // (Note: It's not symmetric due to side-effect of getMatchedNode,
-            // specifically ordering of checking child first.)
-            // matchedRival    ===  null
-            //                              rival
-            //                                       !== rival
-            // matchedChild                                            false
-            //       ===  null  . normal    .  e   . nr=r,r=MR    .   skip R
-            //           child  . normal    .  e   .  normal      .   normal
-            //       !== child  . c=MC,nc=c .  e   .  skip both   .   r=MR,nr=r...
-            //           false  . skip C    .  e   . c=MC,nc=c... .   skip both
-            //Modulo.assert(matchedRival ? (matchedRival !== rival) : false, 'Repeated key!');
+    // Possibility matrix:
+    // (Note: It's not symmetric due to side-effect of getMatchedNode,
+    // specifically ordering of checking child first.)
+    // matchedRival    ===  null
+    //                              rival
+    //                                       !== rival
+    // matchedChild                                            false
+    //       ===  null  . normal    .  e   . nr=r,r=MR    .   skip R
+    //           child  . normal    .  e   .  normal      .   normal
+    //       !== child  . c=MC,nc=c .  e   .  skip both   .   r=MR,nr=r...
+    //           false  . skip C    .  e   . c=MC,nc=c... .   skip both
+    //Modulo.assert(matchedRival ? (matchedRival !== rival) : false, 'Repeated key!');
 
         // The "Everything is custom component" idea:
         // - Use tagTransforms to convert <state> into <m-state> etc
@@ -296,4 +283,16 @@ Implement another demo type:
       next example snippet
     - The goal is to cycle through showing off different props of the same
       component
+
+- How to show off practicing different props:
+    - Add another "type" of text: Preview text
+    - By default, show as another pane (?)
+        - Maybe to the right of the preview?
+    - By default, do not allow editing
+    - By default, show some other tabs (?) to select
+- Could allow a show-off "auto" mode, for the front-page or other places, where
+  it just cycles through different sets of props, showing the result of each
+  (could look really cool with a transition!!)
+
+
 -->
