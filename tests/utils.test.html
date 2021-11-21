@@ -2,9 +2,11 @@
 
 <test name="utils.parseDirectives">
     <script name="Ensure defined">
+        const dShorts = [[/^@/, 'component.event'],
+                         [/:$/, 'component.dataProp']];
         // helper utility function:
         Modulo.utils.parseDir = function parseDir (rawName) {
-            return JSON.stringify(parseDirectives(rawName), null, 2);
+            return JSON.stringify(parseDirectives(rawName, dShorts), null, 2);
         }
 
         const { parseDirectives } = Modulo.utils;
@@ -74,7 +76,7 @@
 
     <script name="Can detect when no directives">
         const { parseDirectives } = Modulo.utils;
-        const result = parseDirectives('just-a-normal-attribute-folks');
+        const result = parseDirectives('just-a-normal-attribute-folks', []);
         const expected = null;
         assert: result === expected
     </script>
@@ -82,7 +84,7 @@
 
     <script name="Can detect when no directives or shortcuts">
         const { parseDirectives } = Modulo.utils;
-        const result = parseDirectives('just-a$no.b.c:a---i??te-folks');
+        const result = parseDirectives('just-a$no.b.c:a---i??te-folks', []);
         const expected = null;
         assert: result === expected
     </script>

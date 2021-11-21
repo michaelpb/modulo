@@ -6,11 +6,14 @@
 
 <test name="ensure ModRec and MTL are defined">
     <script>
+        const directiveShortcuts = [[/^@/, 'component.event'],
+                                    [/:$/, 'component.dataProp']];
         Modulo.utils.makeMockElement = function reconcile (html)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = makeDiv(html);
             mockElement.applyDirectives = () => {}; // dummy
             mockElement.resolveValue = () => () => {}; // dummy(2)
+            mockElement.directiveLoad = () => {}; // dummy
             mockElement.directiveMount = () => {}; // dummy
             mockElement.directiveUnmount = () => {}; // dummy
             mockElement.directiveChange = () => {}; // dummy
@@ -20,7 +23,7 @@
         Modulo.utils.getRecPatches = function reconcile (oldHTML, newHTML, tagTransforms)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
-            const modRec = new ModRec({makePatchSet: true});
+            const modRec = new ModRec({ makePatchSet: true, directiveShortcuts });
             modRec.reconcile(mockElement, newHTML, tagTransforms);
             return modRec.patches;
         };

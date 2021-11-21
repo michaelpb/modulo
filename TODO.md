@@ -1,10 +1,82 @@
 ------
+
+# Broad idea for increased code re-use around coniguration:
+
+- "Configurable" base class
+    - CPart, Loader, Template, ModRec, Cursor all derive from it
+    - Does not get included into "CPart" lifecycle, but shares some behavior
+      with CPart (can be configured with stackable defaults, has this.element
+      back reference, etc)
+
+------
+
+# Broad idea or approach to detangle various rendering issues:
+
+- Broad idea or approach to detangle various configuration issues:
+    - Use initialized/prepare + renderObj as a simple configuration system
+    - Truly self-configuring
+    - Directive shortcuts should be stored there too
+    - TagDirective shortcuts as well (which in turn get populated by < Load >
+      CPart)
+    - Old todo that's relevant: Add a check somewhere for CParts to "register"
+      a directive that also ensures at least one of Load, Mount, Unmount or
+      Change exists for every "registered" directive
+    - initializedCallback() { renderObj.component.directives.push('compiler.resolve'); }
+    - Speed optimization: To prevent wasted space, need to think of a solution
+      that allows each renderObj to "seem" like it can be separately modified,
+      but it isn't actually (e.g. one of the old "maps", or a hashed registry
+      of cached renderObjs, or something, or a "pushAndFork(arr)" or something)
+
+- Predirectives
+    - Directives that get resolved BEFORE reconciler.reconcile()
+    - Maybe change the interface to support "loadString" then "reconcile"
+    - The loadString step would make a fragment and then apply pre-directives
+    - The predirective would be like: "directiveLoad"
+
+
+- Pre-reconciler modifications
+    - (see "predirectives" for a more concrete version of this)
+    - The reconciler should ALWAYS attempt to reconcile the two DOMs
+    - There should instead be hooks for pre-reconciler modifications to the
+      generated DOM
+    - This would allow [component.children] as a pre-directive: It will attach
+      the "originalChildren" DOM to the fragment DOM, pre-rerender
+    - This could also be used for tag namespace transformations:
+        - [load.tag] could be a reconciler pre-directive
+        - Tag-based directives can be triggered by certain tagnames
+
+
+        - More general concept of "tagTransforms": Transform tagname into
+          directive
+        - This works for [component.ignore] as well:
+
+            ignoreDirectiveLoad(node, key) {
+                //const key = this.reconciler.getKey(node);
+                if (this.isMounted && key in this.ignoredNodes) {
+                    node.replaceWith(this.ignoredNodes[key]);
+                } else {
+                    this.ignoredNodes[key] = node;
+                }
+            }
+
+- Give more thought to the "modulo-" prefix idea:
+    - One simple way to express it is: all cases of "&lt;C" turn into
+      "&lt;modulo-C"
+
+------
 # Misc notes:
 
-- Store vs store
-    - Since MTL and JS are case-sensitive, "Store" could be the class, allowing
+- Template vs template
+    - Since MTL and JS are case-sensitive, "Template" could be the class, allowing
       for Template.tableRow to refer to <Template name="tableRow">
-    - Lowercase "store" is the currently selected CPart instance
+    - Lowercase "template" is the currently selected CPart instance
+
+- Plural vs singular notes:
+    - imagine the following use cases:
+        - We want EVERY <load> CPart to hook onto reconciler directives
+          (e.g. for multiple namespaces)
+    - This is all pointing toward "squashed" callback hooks
+    - This just means looking in spares as well for directive callbacks
 
 
 ----

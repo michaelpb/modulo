@@ -7,11 +7,14 @@
 
 <test name="Successfully sets up mocks and testing data">
     <script>
+        const directiveShortcuts = [[/^@/, 'component.event'],
+                                    [/:$/, 'component.dataProp']];
         Modulo.utils.makeMockElement = function reconcile (html)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = makeDiv(html);
             mockElement.applyDirectives = () => {}; // dummy
             mockElement.resolveValue = () => () => {}; // dummy(2)
+            mockElement.directiveLoad = () => {}; // dummy
             mockElement.directiveMount = () => {}; // dummy
             mockElement.directiveUnmount = () => {}; // dummy
             mockElement.directiveChange = () => {}; // dummy
@@ -26,7 +29,7 @@
             const { makeDiv } = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
             //const modRec = new ModRec({makePatchSet: true});
-            const modRec = new ModRec({makePatchSet: false});
+            const modRec = new ModRec({ makePatchSet: false, directiveShortcuts });
             const patches = modRec.reconcile(mockElement, newHTML);
 
             let dirCount;

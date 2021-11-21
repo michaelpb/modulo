@@ -167,7 +167,33 @@ definition and use of the component.</p>
 
 
 <mws-Section name="template">Template</mws-Section>
-<p>TODO</p>
+
+<p>The <em>Template</em> CPart allow components to render their HTML content
+using a small domain-specific language, called the "templating engine". The
+default engine is the <em>Modulo templating language</em> (aka "MTL"), although
+that can be configured on a per-CPart basis.</p>
+
+<p>Without a <em>Template</em> CPart (or equivalent custom code), the default
+behavior of the <em>Component</em> CPart is to make no attempt to alter their
+contents. However, most components require complicated HTML structures within
+them. This is where Templates come into play: They generate the
+<code>innerHTML</code> of a component.</p>
+
+<p>Templates are not DOM-based, but instead render synchronously to a String
+during the <code>render</code> <a
+href="/docs/directives.html#lifecycle">lifecycle phase</a>, and setting that to
+the <code>renderObj.component.innerHTML</code>. The <em>Component</em>  CPart
+will take whatever is written there during the <code>updated</code> phase and
+then "reconcile", modify it's contents to resemble the target innerHTML. (More
+on this is in <a href="#component">the Component CPart documentation below</a>.)</p>
+
+
+<p>Every time a Component renders, the Template will render using the
+<em>renderObj</em> as a "template context", or, in other words, using the
+various CPart's contributions to the <em>renderObj</em> as Template variables
+that can be inserted into the HTML.  For a more discussion of Template, see
+<a href="/docs/tutorial_part2.html#templating">Tutorial Part 2</a>.</p>
+
 
 
 <mws-Section name="state">State</mws-Section>

@@ -1,9 +1,176 @@
-<script src="/m.js"></script>
+<!DOCTYPE HTML>
+<head>
 
-<x-Page
-    docbarselected="cparts.html"
-    pagetitle="CParts"
-    navbar="docs">
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+    <meta charset="utf8">
+    <title>CParts - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+    
+</head><body>
+
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html">Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        
+            <a href="https://github.com/michaelpb/modulo/">Source Code
+            <br>
+            (on GitHub)
+            </a>
+        
+    </div>
+</nav>
+
+
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar">
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-docsidebar path="cparts.html" modulo-innerhtml="">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs/">Table of Contents</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/cparts.html#props">Props</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#template">Template</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#state">State</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#script">Script</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#style">Style</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#component">Component</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#module">Module</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating-reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/directives.html">Lifecycle &amp; Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/api.html">API &amp; Extension</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
+
+
+    <!--
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
+            </li>
+        </ul>
+
+    </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+</ul>
+</mws-docsidebar>
+            </nav>
+        </aside>
+        <aside style="border: none">
+            
 
 <h1>CParts</h1>
 
@@ -41,7 +208,10 @@ understand or debug the behavior of a Component, while putting Style last as
 it's typically the least important to read.</p>
 
 
-<mws-Section name="props">Props</mws-Section>
+<mws-section name="props" modulo-innerhtml="Props">
+        <a class="secanchor" title="Click to focus on this section." id="props" name="props" href="#props">#</a>
+        <h2>Props</h2>
+    </mws-section>
 
 <blockquote>
 <p><strong>Read-only</strong> Props are read-only within a component, and only
@@ -112,8 +282,7 @@ of 4 ways:</p>
 
 <p>See below for an example of each of the 4 types of Props:</p>
 
-<mws-Demo
-text='
+<mws-demo text="
     <!-- 1. Any type, required -->
     <props
         design
@@ -129,27 +298,62 @@ text='
     <!-- 3. Any type, optional with default -->
     <props
         design
-        design.default="square"
+        design.default=&quot;square&quot;
         data
-        data.default:=&apos;[1, 2, 3]&apos;
+        data.default:='[1, 2, 3]'
     ></props>
 
     <!-- 4. Type-checked, optional with default -->
     <props
         design=String
-        design.default="square"
+        design.default=&quot;square&quot;
         data=Array
-        data.default:=&apos;[1, 2, 3]&apos;
+        data.default:='[1, 2, 3]'
     ></props>
-'></mws-Demo>
+" modulo-innerhtml=""><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
 <h3>renderObj</h3>
 
-<p>Props contributes it's received values to the renderObj. Examples:<p>
+<p>Props contributes it's received values to the renderObj. Examples:</p><p>
 
-<ol>
+</p><ol>
     <li>Prop set like: <code>&lt;x-Btn design="round"&gt;</code> will be
     accessible on the renderObj like <code>renderObj.props.design</code>, and
     in the Script or Template CParts like <code>props.design</code>.</li>
@@ -166,32 +370,88 @@ text='
 definition and use of the component.</p>
 
 
-<mws-Section name="template">Template</mws-Section>
+<mws-section name="template" modulo-innerhtml="Template">
+        <a class="secanchor" title="Click to focus on this section." id="template" name="template" href="#template">#</a>
+        <h2>Template</h2>
+    </mws-section>
+
+
+<p>The <em>Template</em> CPart allow components to render their HTML content
+using a small domain-specific language, called the "templating engine". The
+default engine is the <em>Modulo templating language</em> (aka "MTL").
+
+
+The default behavior of Components is
+to make no attempt to alter their contents.  However, most components require
+complicated HTML structures within them. This
+is where Templates come into play: They generate the <code>innerHTML</code> of
+a component.</p>
+
+<p>Templates are not DOM-based, but instead render synchronously to a String
+during the <code>render</code>
+<a href="/docs/directives.html#lifecycle">lifecycle phase</a>.
+By default, the Template CPart will.</p>
+
+
+<p>Every time a Component renders, the Template will render using the
+<em>renderObj</em> as a "template context", or, in other words, using the
+various CPart's contributions to the <em>renderObj</em> as Template variables
+that can be inserted into the HTML.  For a more discussion of Template, see
+<a href="/docs/tutorial_part2.html#templating">Tutorial Part 2</a>.</p>
+
+
+
+<mws-section name="state" modulo-innerhtml="State">
+        <a class="secanchor" title="Click to focus on this section." id="state" name="state" href="#state">#</a>
+        <h2>State</h2>
+    </mws-section>
 <p>TODO</p>
 
 
-<mws-Section name="state">State</mws-Section>
+<mws-section name="state" modulo-innerhtml="Store">
+        <a class="secanchor" title="Click to focus on this section." id="state" name="state" href="#state">#</a>
+        <h2>Store</h2>
+    </mws-section>
 <p>TODO</p>
 
 
-<mws-Section name="state">Store</mws-Section>
+<mws-section name="script" modulo-innerhtml="Script">
+        <a class="secanchor" title="Click to focus on this section." id="script" name="script" href="#script">#</a>
+        <h2>Script</h2>
+    </mws-section>
 <p>TODO</p>
 
 
-<mws-Section name="script">Script</mws-Section>
+<mws-section name="style" modulo-innerhtml="Style">
+        <a class="secanchor" title="Click to focus on this section." id="style" name="style" href="#style">#</a>
+        <h2>Style</h2>
+    </mws-section>
 <p>TODO</p>
 
 
-<mws-Section name="style">Style</mws-Section>
+<mws-section name="component" modulo-innerhtml="Component">
+        <a class="secanchor" title="Click to focus on this section." id="component" name="component" href="#component">#</a>
+        <h2>Component</h2>
+    </mws-section>
 <p>TODO</p>
 
 
-<mws-Section name="component">Component</mws-Section>
+<mws-section name="module" modulo-innerhtml="Module">
+        <a class="secanchor" title="Click to focus on this section." id="module" name="module" href="#module">#</a>
+        <h2>Module</h2>
+    </mws-section>
 <p>TODO</p>
 
 
-<mws-Section name="module">Module</mws-Section>
-<p>TODO</p>
+
+        </aside>
+    </main>
 
 
-</x-Page>
+<footer>
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--lsdu3p.js"></script></body>
