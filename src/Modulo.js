@@ -402,10 +402,6 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 }
 
-// TODO: Abstract away all cpart logic into CPartCollection which is "owned" by
-// whichever CPart is the parent CPart. Element becomes a thin helper for
-// Component.
-
 Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
@@ -433,30 +429,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.factory().buildCParts(this);
     }
 
-    directiveLoad(args) {
-        //console.log('directive load');
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Load', args);
-    }
-
-    directiveMount(args) {
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Mount', args);
-    }
-    directiveUnmount(args) {
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Unmount', args);
-    }
-    directiveChange(args) {
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Change', args);
-    }
-
     rerender() {
-        // IDEA: Render-path micro-optimization idea:
-        // - Push prebound func to list, to "pre-compute" render loop
-        // - .rerender() thus is just looping through list of funcs running each
-        this.lifecycle(['prepare', 'render', 'update', 'updated']);
+        this.lifecycle([ 'prepare', 'render', 'update', 'updated' ]);
     }
 
     lifecycle(lifecycleNames, rObj={}) {
@@ -566,24 +540,47 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         return { directives, directiveShortcuts, tagDirectives: [] };
     }
 
+    /* Reconciler ElementCtx interface: */
+    /* TODO: Can I refactor into above, e.g. generate a this.elementCtx = {
+    ** directiveLoad: () => ... } as a factory step? */
+    directiveLoad(args) {
+        //console.log('directive load');
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Load', args);
+    }
+
+    directiveMount(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Mount', args);
+    }
+
+    directiveUnmount(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Unmount', args);
+    }
+
+    directiveChange(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Change', args);
+    }
+
     initializedCallback(renderObj) {
         this.localNameMap = this.element.factory().loader.localNameMap;
-        const { engine = 'ModRec' } = this.attrs;
         this.mode = this.attrs.mode || 'default'; // TODO refactor when we get attr defaults
         if (this.mode === 'shadow') {
             this.element.attachShadow({ mode: 'open' });
         }
-        this.newModRec(renderObj);
+        this.newReconciler(renderObj.component);
     }
 
-    newModRec(renderObj) {
+    newReconciler({ directives, directiveShortcuts, tagDirectives }) {
         const { engine = 'ModRec' } = this.attrs;
-        const { directives, directiveShortcuts, tagDirectives } = renderObj.component;
-        const recOptions = { directives, directiveShortcuts, tagDirectives };
         this.reconciler = new Modulo.reconcilers[engine]({
-            ...recOptions,
+            directives,
+            directiveShortcuts,
+            tagDirectives,
             makePatchSet: true,
-            //elementCtx: this, // why is this broken?
+            elementCtx: this,
         });
     }
 
@@ -874,6 +871,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const module = moduleFac ? moduleFac.baseRenderObj : null;
         const results = (new Function('Modulo, factory, module', wrappedJS))
                            .call(null, Modulo, factory, module);
+        if (results.factoryCallback) {
+            //this.prepLocalVars(renderObj); // ?
+            results.factoryCallback(partOptions, factory, renderObj);
+        }
         results.localVars = localVars;
         return results;
     }
@@ -1389,7 +1390,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // TODO: Refactor this, perhaps with some general "opts with defaults"
         // helper functions.
         opts = opts || {};
-        this.shouldNotApplyPatches = !!opts.makePatchSet;
+        this.makePatchSet = !!opts.makePatchSet;
         this.shouldNotDescend = !!opts.doNotDescend;
         this.elementCtx = opts.elementCtx;
         this.tagTransforms = opts.tagTransforms;
@@ -1430,7 +1431,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
         this.reconcileChildren(node, rival);
         this.cleanRecDirectiveMarks(node);
-        if (!this.shouldNotApplyPatches) {
+        if (!this.makePatchSet) { // should ONLY makePatchSet
             this.applyPatches(this.patches);
         }
         return this.patches;
@@ -1548,8 +1549,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     patchDirectives(el, rawName, suffix) {
         const callbackName = 'directive' + suffix;
-        //const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
-        const directives = Modulo.utils.parseDirectives(rawName, Modulo.directiveShortcuts);
+        const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
         if (directives) {
             const value = el.getAttribute(rawName);
             for (const directive of directives) {

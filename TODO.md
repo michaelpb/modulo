@@ -303,6 +303,12 @@
         </style>
 
 
+# -------------------
+
+        // IDEA: Render-path micro-optimization idea:
+        // - Push prebound func to list, to "pre-compute" render loop
+        // - .rerender() thus is just looping through list of funcs running each
+
 
 
 # More notes: 2021

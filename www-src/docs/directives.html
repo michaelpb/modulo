@@ -527,6 +527,12 @@ text='
 
 <script>
     Modulo.directiveShortcuts.push([/^%%%/, "script.example"]);
+    /*
+    // Correct way below:
+    function factoryCallback(partOptions, factory, loadObj)  {
+        loadObj.component.directiveShortcuts.push([/^%%%/, "script.example"]);
+    }
+    */
 
     function exampleMount(info) {
         console.log("Mounting directive:", info);
