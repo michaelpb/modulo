@@ -6,23 +6,11 @@
 
 <test name="ensure ModRec and MTL are defined">
     <script>
-        const directiveShortcuts = [[/^@/, 'component.event'],
-                                    [/:$/, 'component.dataProp']];
-        const directives = [];
-        const tagDirectives = [];
-        const modRecOpts = {
-            makePatchSet: true,
-            directiveShortcuts,
-            directives,
-            tagDirectives,
-        };
-        Modulo.utils.newModRec = () => new ModRec(modRecOpts);
         Modulo.utils.makeMockElement = function reconcile (html)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = makeDiv(html);
             mockElement.applyDirectives = () => {}; // dummy
             mockElement.resolveValue = () => () => {}; // dummy(2)
-            mockElement.directiveLoad = () => {}; // dummy
             mockElement.directiveMount = () => {}; // dummy
             mockElement.directiveUnmount = () => {}; // dummy
             mockElement.directiveChange = () => {}; // dummy
@@ -31,7 +19,7 @@
         Modulo.utils.getRecPatches = function reconcile (oldHTML, newHTML)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
-            const modRec = new ModRec(modRecOpts);
+            const modRec = new ModRec({makePatchSet: true});
             modRec.reconcile(mockElement, newHTML);
             return modRec.patches;
         };
@@ -44,7 +32,7 @@
             const {makeDiv} = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
             //const modRec = new ModRec({makePatchSet: true});
-            const modRec = new ModRec(modRecOpts);
+            const modRec = new ModRec({makePatchSet: false});
             modRec.reconcile(mockElement, newHTML);
 
             let dirCount;
@@ -312,10 +300,10 @@
     </script>
 
     <script name="Patches apply (1)">
-        const {makeMockElement, pToString, newModRec} = Modulo.utils;
+        const {makeMockElement, pToString} = Modulo.utils;
         const {ModRec} = Modulo.reconcilers;
         const {patches, targetStr} = element;
-        const mr = newModRec();
+        const mr = new ModRec({makePatchSet: true});
         mr.elementCtx = patches[0][0]; // get element out of 0th
         patches.map(patch => mr.applyPatch.apply(mr, patch))
         let results = mr.elementCtx.innerHTML.trim();
@@ -324,13 +312,13 @@
 
     <script name="Generates single patch for single-rooted tree (2)">
         const {ModRec} = Modulo.reconcilers;
-        const {makeDiv, makeMockElement, pToString, anchorInTheDeep, newModRec} = Modulo.utils;
+        const {makeDiv, makeMockElement, pToString, anchorInTheDeep} = Modulo.utils;
         element.targetStr2 = anchorInTheDeep(
                     `<div><p id="example1">Hello patching world!</p>
                     <p class="example2">Testing <em>nested</em> levels</p></div>`);
 
         const mockElement = makeMockElement(anchorInTheDeep(''));
-        const modRec = newModRec();
+        const modRec = new ModRec({makePatchSet: true});
         modRec.reconcile(mockElement, element.targetStr2);
         element.patches2 = modRec.patches;
         element.mockElement = modRec.elementCtx; // ensure has element interface
@@ -341,10 +329,10 @@
     </script>
 
     <script name="Patches apply (2)">
-        const {makeMockElement, pToString, newModRec} = Modulo.utils;
+        const {makeMockElement, pToString} = Modulo.utils;
         const {ModRec} = Modulo.reconcilers;
         const {patches2, targetStr2, mockElement} = element;
-        const mr = newModRec();
+        const mr = new ModRec({makePatchSet: true});
         mr.elementCtx = patches2[0][0]; // get element out of 0th
         patches2.map(patch => mr.applyPatch.apply(mr, patch))
 
@@ -502,7 +490,7 @@
     </script>
 
     <script name="Complicated complete replacement (from memory demo)">
-        const { transformDOMCheck } = Modulo.utils;
+        const {transformDOMCheck} = Modulo.utils;
         assert: transformDOMCheck(`
                 <h3>The Symbolic Memory Game</h3>
                 <p>Choose your difficulty:</p>

@@ -1388,18 +1388,22 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor(opts) {
         // TODO: Refactor this, perhaps with some general "opts with defaults"
         // helper functions.
-        this.shouldNotApplyPatches = opts && opts.makePatchSet;
-        this.shouldNotDescend = opts && opts.doNotDescend;
-        this.elementCtx = opts ? opts.elementCtx : undefined;
-        this.tagTransforms = opts ? opts.tagTransforms : {};
+        opts = opts || {};
+        this.shouldNotApplyPatches = !!opts.makePatchSet;
+        this.shouldNotDescend = !!opts.doNotDescend;
+        this.elementCtx = opts.elementCtx;
+        this.tagTransforms = opts.tagTransforms;
 
-        // New configs:
-        this.directives = opts ? opts.directives : [];
-        this.tagDirectives = opts ? opts.tagDirectives : {};
-        this.directiveShortcuts = opts ? (opts.directiveShortcuts || []) : [];
-        if (!this.directiveShortcuts) {
-            console.log('No directive shortcuts:', this.directiveShortcuts);
-        }
+        // New configs --- TODO remove this once ModRec tests are
+        // refactored
+        const EVENT = 'component.event';
+        const DATA_PROP = 'component.dataProp';
+        const defDirShort = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
+        const defDir = [ DATA_PROP, EVENT, 'component.children' ];
+        this.directives = opts.directives || defDir;
+        this.tagDirectives = opts.tagDirectives || {};
+        this.directiveShortcuts = opts.directiveShortcuts || defDirShort;
+        Modulo.assert(this.directiveShortcuts, 'must have shortcuts');
     }
 
     loadString(rivalHTML, tagTransforms) {
