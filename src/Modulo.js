@@ -1536,6 +1536,12 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         } else if (method === 'insertBefore') {
             node.insertBefore(arg, arg2); // Needs 2 arguments
         } else {
+            /*
+            if (!(method in node)) {
+                console.error('Invalid Patchset: ', node, 'has no', method);
+            } else {
+            }
+            */
             node[method].call(node, arg); // invoke method
         }
     }
