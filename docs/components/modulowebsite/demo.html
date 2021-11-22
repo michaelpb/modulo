@@ -1,0 +1,70 @@
+<div class="demo-wrapper
+        {% if state.showpreview %}     demo-wrapper__minipreview{% endif %}
+        {% if state.showclipboard %}   demo-wrapper__clipboard  {% endif %}
+        {% if state.fullscreen %}      demo-wrapper__fullscreen {% endif %}
+        {% if state.tabs.length == 1 %}demo-wrapper__notabs     {% endif %}
+    ">
+    {% if state.tabs.length gt 1 %}
+        <nav class="TabNav">
+            <ul>
+                {% for tab in state.tabs %}
+                    <li class="TabNav-title
+                        {% if tab.title == state.selected %}
+                            TabNav-title--selected
+                        {% endif %}
+                    "><a @click:=script.selectTab
+                            payload="{{ tab.title }}"
+                        >{{ tab.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                    {% if not state.fullscreen %} display: none; {% endif %}">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        {% if state.showclipboard %}
+            <button class="m-Btn m-Btn--sm m-Btn--faded"
+                    title="Copy this code" @click:=script.doCopy>
+                Copy <span alt="Clipboard">&#128203;</span>
+            </button>
+        {% endif %}
+
+        {% if state.showpreview %}
+            <button class="m-Btn"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
+                {% if state.fullscreen %}
+                    <span alt="Shrink">&swarr;</span>
+                {% else %}
+                    <span alt="Go Full Screen">&nearr;</span>
+                {% endif %}
+            </button>
+            &nbsp;
+            <button class="m-Btn"
+                    title="Run a preview of this code" @click:=script.doRun>
+                Run <span alt="Refresh">&#10227;</span>
+            </button>
+        {% endif %}
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore>
+            </div>
+        </div>
+
+        {% if state.showpreview %}
+            <div class="editor-minipreview">
+                <div modulo-ignore>
+                    {{ state.preview|safe }}
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+

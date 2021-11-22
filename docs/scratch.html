@@ -1,0 +1,54 @@
+<script src="/js/Modulo.js"></script>
+<modulo>
+    <load namespace="x" src="/components/layouts.html" ></load>
+    <component name="Test2" mode="vanish-into-document">
+        <props
+            pagetitle
+        ></props>
+        <template>
+            <head>
+                <title>{{ props.pagetitle }}</title>
+                <link rel="stylesheet" href="/css/style.css" />
+                <!--<script src="js/not-exists-head.js"></script>-->
+                <meta charset="utf-8" />
+            </head>
+            <body>
+                <nav>NAVBAR_________</nav>
+                <div style="border: 1px red solid; padding: 50px; margin: 50px;">
+                    <div>
+                        {{ component.originalHTML|safe }}
+                    </div>
+                </div>
+
+                <div style="border: 1px green solid; padding: 50px; margin: 50px;">
+                    <div [component.children] name="slotties">
+                    </div>
+                </div>
+
+                <div style="border: 1px orange solid; padding: 50px; margin: 50px;">
+                    <div [component.children]>
+                    </div>
+                </div>
+
+
+                <footer>- (footer) -</footer>
+                <!--<script src="js/not-exists-body.js"></script>-->
+            </body>
+        </template>
+    </component>
+</modulo>
+<script> Modulo.defineAll() </script>
+
+<x-Test2
+    pagetitle="Testing testing"
+    navbar="lol">
+
+    <eg-Hello></eg-Hello>
+
+    <h1>testing page</h1>
+
+    <div slot="slotties">
+        <h1>testing page below mod</h1>
+    </div>
+
+</x-Test2>

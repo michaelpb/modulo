@@ -1,0 +1,87 @@
+<!--
+<script src="/m.js"></script>
+-->
+
+<!--Just for testing purposes:-->
+<script src="/js/Modulo.js"></script>
+<modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo>
+<script>
+Modulo.defineAll()
+</script>
+
+<x-Page
+    pagetitle="Start"
+    navbar="start">
+
+<h1>Get started with Modulo</h1>
+<br />
+
+<div class="Docs-squareInfo">
+    <section class="Tutorial-tryit">
+        <h4>Brand new?</h4>
+
+        <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
+
+        <p>Modulo is brand new in general, so chances are its brand new to you
+        as well!  The Modulo tutorial walks through the basics of setting up
+        Modulo in a project and creating components.<br />
+        <em>Prerequisites: HTML, CSS (for part 1 and 2), and
+        JavaScript (for part 3)</em></p>
+
+        <a class="m-Btn" style="margin-top: 30px"
+            href="/docs/tutorial_part1.html">Start the Modulo Tutorial &#187;</a>
+    </section>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>CDN</h2>
+    <p>Want to get started as quickly as possible? Copy &amp; paste one of
+    the following CDN links:</p>
+
+<mws-Demo
+text='
+<!-- Use the latest version, served by GitHub pages -->
+<script src="https://modulojs.org/js/Modulo.js"></script>
+
+
+<!-- COMING SOON: Use a proper CDN, such as Skypack -->
+<!-- Add ?min to the URL to get minified version. -->
+<!-- (Not yet functioning!) -->
+<script src="https://cdn.skypack.dev/modulo"></script>
+
+<!-- Once included, use defineAll() to activate -->
+<script>Modulo.defineAll()</script>
+'></mws-Demo>
+
+<!-- Better: Include integrity checksum:
+<script src="https://modulojs.org/js/Modulo.js"
+integrity="sha384-$modulojs_sha384_checksum$"
+crossorigin="anonymous"></script>
+ -->
+
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>NPM</h2>
+    <p>Coming soon!</p>
+</div>
+
+<div class="Docs-squareInfo">
+    <h2>Download</h2>
+    <a style="text-transform: none"
+        class="m-Btn"
+        href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
+    <span alt="Down arrow">&#x2304;</span> Modulo.js
+    <span id="vnum"></span> (Latest)</a>
+
+
+    <p style="margin-top: 20px">Or run the following command:</p>
+
+    <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
+</div>
+
+
+
+</x-Page>
