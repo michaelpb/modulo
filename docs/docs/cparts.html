@@ -1,14 +1,16 @@
 <!DOCTYPE HTML>
 <head>
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <meta charset="utf8">
-    <title>CParts - modulojs.org</title>
-    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+<meta charset="utf8"><title>CParts - modulojs.org</title><link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css"><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script></head><body>
+
+
     
-</head><body>
+    
+    
+    
+    
+    
+
 
 
 <nav class="Navbar">
@@ -28,8 +30,8 @@
     <div class="Navbar-rightInfo">
         
             <a href="https://github.com/michaelpb/modulo/">Source Code
-            <br>
-            (on GitHub)
+                <br>
+                (on GitHub)
             </a>
         
     </div>
@@ -55,6 +57,22 @@
                 ginactive
             
             "><a href="/docs/tutorial_part1.html">Tutorial</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -97,22 +115,6 @@
                     
                     </ul>
                 
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/templating.html">Templating</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/templating-reference.html">Template Reference</a>
             
         </li>
     
@@ -375,22 +377,23 @@ definition and use of the component.</p>
         <h2>Template</h2>
     </mws-section>
 
-
 <p>The <em>Template</em> CPart allow components to render their HTML content
 using a small domain-specific language, called the "templating engine". The
-default engine is the <em>Modulo templating language</em> (aka "MTL").
+default engine is the <em>Modulo templating language</em> (aka "MTL"), although
+that can be configured on a per-CPart basis.</p>
 
-
-The default behavior of Components is
-to make no attempt to alter their contents.  However, most components require
-complicated HTML structures within them. This
-is where Templates come into play: They generate the <code>innerHTML</code> of
-a component.</p>
+<p>Without a <em>Template</em> CPart (or equivalent custom code), the default
+behavior of the <em>Component</em> CPart is to make no attempt to alter their
+contents. However, most components require complicated HTML structures within
+them. This is where Templates come into play: They generate the
+<code>innerHTML</code> of a component.</p>
 
 <p>Templates are not DOM-based, but instead render synchronously to a String
-during the <code>render</code>
-<a href="/docs/directives.html#lifecycle">lifecycle phase</a>.
-By default, the Template CPart will.</p>
+during the <code>render</code> <a href="/docs/directives.html#lifecycle">lifecycle phase</a>, and setting that to
+the <code>renderObj.component.innerHTML</code>. The <em>Component</em>  CPart
+will take whatever is written there during the <code>updated</code> phase and
+then "reconcile", modify it's contents to resemble the target innerHTML. (More
+on this is in <a href="#component">the Component CPart documentation below</a>.)</p>
 
 
 <p>Every time a Component renders, the Template will render using the
@@ -436,6 +439,95 @@ that can be inserted into the HTML.  For a more discussion of Template, see
 <p>TODO</p>
 
 
+
+<h3>attrs</h3>
+
+<p>Components CParts use their attributes to set several configuration options.
+They take the following attributes:</p>
+
+<ul>
+    <li><code>engine</code> - <em>default is <code>engine="ModRec"</code></em> -
+    The Reconciler Engine selected. By default, ModRec, the built-in Modulo
+    Reconciler engine, is enabled. If you want to experiment with other
+    reconciliation engines, such as ones that might be faster or take into
+    account unusual scenarios, set this equal to another property of
+    <code>Modulo.reconcilers</code>.</li>
+
+    <li><code>rerender</code> - <em>default is <code>rerender="event"</code></em>.
+    Specify mode to change the render mode of this component. This allows you
+    to isolate outside CSS from your component using "shadow", do one-time
+    renders only with "vanish", or make your component replace the entire
+    document with "vanish-into-document". A detailed discussion of valid
+    options are below:
+        <ul>
+            <li><code>rerender="event"</code> - The default behavior, where the
+            the component will rerender after ever event it handles (e.g. after
+            every user interaction).</li>
+
+            <li><code>rerender="manual"</code> - Set this to only rerender when
+            this.rerender() is invoked. This is useful if there are many events
+            that don't cause changes (e.g. mouse movement), but the extra
+            rerenders, even if things aren't changing, impact performance. Note
+            that if this is set, you will have to manually rerender, such as in
+            a <em>Script</em> CPart.</li>
+        </ul>
+    </li>
+
+    <li><code>mode</code> - <em>default is <code>mode="regular"</code></em>.
+    Specify mode to change the render mode of this component. This allows you
+    to isolate outside CSS from your component using "shadow", do one-time
+    renders only with "vanish", or make your component replace the entire
+    document with "vanish-into-document". A detailed discussion of valid
+    options are below:
+        <ul>
+            <li><code>mode="regular"</code> - The default behavior, where the
+            content generated by this the element will be attached to the
+            regular DOM, as the element itself. This means that CSS stylesheets
+            attached the normal way (e.g. with a "link" tag) will affect the
+            contents of this component (however, <em>Style</em> CParts are
+            still automatically scoped).</li>
+
+            <li><code>mode="shadow"</code> - Use the so-called "shadow DOM" to
+            render the content generated by this component. While the
+            <em>shadow DOM</em> may sound like a sci-fi villain, it's a
+            mechanism browsers provide for custom elements to isolate their
+            contents from CSS selectors or other JavaScript libraries. This
+            isolation means means that CSS stylesheets attached the normal way
+            (e.g. with a "link" tag) <em>will not</em> affect the contents of
+            this element.  Note that other than the isolation provided, the
+            shadow mode should work exactly the same as regular. That said,
+            <em>Style</em> CParts will still be automatically scoped to the
+            component, but will use the shadowDOM feature to more strictly
+            enforce that scoping, although theoretically this shouldn't change
+            behavior.</li>
+
+            <li><code>mode="vanish"</code> - This less used setting causes the
+            component to "vanish" after rendering, or replace itself with it's
+            children. Setting this will cause the component to remove itself
+            after the first time it renders, effectively using the component as
+            a simple template. This "one-time render" feature was written with
+            SSG-style features in mind</li>
+
+
+            <li><code>mode="vanish-into-document"</code> - This setting is
+            useful in one situation: When you want to create a "page" level
+            component that changes tags that belong in the document head, such
+            as <code>&lt;title&gt;</code>. Like with <code>mode="vanish"</code>
+            described above, setting this will cause the component to remove
+            itself after the first time it renders. However, with
+            vanish-into-document, it will instead replace the entire page.
+            It will also attempt to correctly insert all tags that belong in
+            the document head (meta, title, link, script to be specific),
+            causing link and script tags alike (e.g.
+            <code>&lt;script src=".."&gt;&lt;/script&gt;</code>) to load.
+            Finally, the document will be wiped, and anything else it finds
+            will be put directly into the document's body, for a clean DOM
+            structure that removes itself entirely during this "one-time
+            render".</li>
+        </ul>
+    </li>
+</ul>
+
 <mws-section name="module" modulo-innerhtml="Module">
         <a class="secanchor" title="Click to focus on this section." id="module" name="module" href="#module">#</a>
         <h2>Module</h2>
@@ -454,4 +546,6 @@ that can be inserted into the HTML.  For a more discussion of Template, see
     </main>
 </footer>
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--lsdu3p.js"></script></body>
+
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>

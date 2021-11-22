@@ -21,9 +21,16 @@
                 </div>
 
                 <div style="border: 1px green solid; padding: 50px; margin: 50px;">
+                    <div [component.children] name="slotties">
+                    </div>
+                </div>
+
+                <div style="border: 1px orange solid; padding: 50px; margin: 50px;">
                     <div [component.children]>
                     </div>
                 </div>
+
+
                 <footer>- (footer) -</footer>
                 <!--<script src="js/not-exists-body.js"></script>-->
             </body>
@@ -40,7 +47,8 @@
 
     <h1>testing page</h1>
 
-
-    <h1>testing page below mod</h1>
+    <div slot="slotties">
+        <h1>testing page below mod</h1>
+    </div>
 
 </x-Test2>

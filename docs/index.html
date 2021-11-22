@@ -58,4 +58,149 @@
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--lsdu3p.js"></script></body>
+
+<section class="SideBySide">
+    <aside class="TitleAside">
+        <h3><span alt="Null set">∅</span></h3>
+        <h3>Fewer</h3>
+        <h3>assumptions</h3>
+        <p><a href="start.html">Get started now »</a></p>
+    </aside>
+    <aside>
+        <p><strong>Zero set-up</strong> - Like the "golden age" of jQuery,
+        just drop it into any HTML file.  Unlike jQuery, that 1 file packs
+        in many of the creature-comforts of a modern component framework,
+        without any dependencies or new syntax to learn.</p>
+        <!--
+        a modern component system, a swappable templating language based on
+        Liquid-syntax, DOM resolution, and more.  , a tiny build system to pack
+        your CSS and JS for production, and even debug tools.</p>-->
+
+        <p><strong>A gentler learning curve</strong> - Modulo's declarative,
+        synchronous coding style was designed to be easier for coding
+        newbies to pick-up—in fact, useful components can be
+        developed without writing any JavaScript code!</p>
+
+        <p><strong><strike style="color: gray">Progressive Web Apps</strike>
+        Progressive Enhancement</strong> - Modulo makes few assumptions, and
+        renders components mixed with plain HTML for easier integration into
+        backend apps. JAMStack and PWA's are fine and all, but what about all
+        our existing server-side apps in Ruby on Rails, Python, Go, or that one
+        home-grown PHP monster that will never go away? Sprinkle in some Modulo
+        components to make your "traditional" web apps
+        <em>shine</em>.</p>
+        <!--
+        <abbr title="In fact, Modulo templating language uses a backend-inspired 'Djangolike' or Liquid-style syntax templating language, e.g. {{ example|filter }}">
+        </abbr>
+        -->
+    </aside>
+</section>
+
+<section class="SideBySide">
+    <aside>
+        <p><strong>CParts</strong> - CParts are like "Lego blocks" for your
+        components! Create components by snapping together one or more
+        Component Parts or <em>CParts</em>. Mix Script, Style, State, Props,
+        and Templates to make components that have one or all, or even
+        multiples, of these features. Reusing CParts between components
+        provides a powerful system of "composition-based" inheritance.</p>
+
+        <p><strong>Everything is swappable</strong> - Components configure
+        themselves, meaning you can create custom CParts, "mix and match" your
+        favorite JS templating languages, or fine-tune DOM-resolution behavior
+        on a per-component basis.</p>
+
+        <p><strong>Lifecycle hooks and directives</strong> - Hook your own code
+        into the rendering process, either through lifecycle callbacks, or by
+        defining custom attribute-based directives.</p>
+    </aside>
+    <aside>
+        <h3><span alt="Sigma">Σ</span></h3>
+        <h3>More<br>modular</h3>
+        <p><a href="docs.html">Read the docs</a></p>
+    </aside>
+</section>
+
+<section class="SideBySide">
+    <aside class="TitleAside">
+        <h3><span alt="Modulo operator">%</span></h3>
+        <h3>Similar<br>(but&nbsp;simpler)</h3>
+        <p><a href="https://github.com/michaelpb/modulo/blob/main/src/Modulo.js">Read the source</a></p>
+    </aside>
+
+    <aside>
+        <p><strong>"It's like React"</strong> - Modulo is "batteries-included"
+        to function like React.js or Vue.js. You get encapsulated components
+        with state management, two-way data binding, props &amp; types,
+        computed values, DOM resolution, event directives, and more. You even
+        get a simple importing and namespacing system, that can "self-pack"
+        your components into a single JS file!</p>
+
+        <p><strong>Clean &amp; concise</strong> - The code-base of Modulo itself is
+        intentionally kept short &amp; sweet: It hovers around roughly 1000
+        <abbr title="Source Lines of Code - This counts 'physical lines' and thus does not include comments, documentation, blanks, etc">SLOC</abbr>,
+        80 char line limit, 4 spaces of
+        indent, and a <abbr title="Almost all functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
+        imperative style. When something goes wrong (which it probably will
+        since it's new), it's easy to "<tt>git blame</tt>" Modulo.</p>
+
+        <p><strong>A basis for whatever comes next</strong> - Want to write
+        your own component framework? Modulo's core is in only a few hundred
+        lines of code. Read the source code, fork away, and swap the
+        "batteries-included" for your own!</p>
+    </aside>
+</section>
+
+<div id="project_status" style="height: 120px; clear: both; display: block;"></div>
+
+
+<section class="Tutorial-tryit">
+    <h4>Project Status</h4>
+
+    <p><strong>Current status:</strong> <code>prealpha</code></p>
+    <p><em>Prealpha means... shhhhh! This site is not yet ready to be released.</em></p>
+
+    <section class="SideBySide">
+        <aside>
+            <h4>Roadmap:</h4>
+
+            <p><code>alpha</code></p>
+            <p><strong>Completed:</strong> core functionality, under 2000 SLOC,
+            ssg to generate website via JSDOM, partial documentation, unit
+            tests for examples, directives, new DOM resolver</p>
+            <p><strong>Incomplete Features:</strong> Script-tag insertion,
+            Browser builds, CSS bundling, "Modulo" object instantiation and
+            config system</p>
+            <p><strong>Remaining Tasks &amp; Bugs:</strong> debugged SSG, tutorial
+            part 3, documentation (CParts and core API), unit tests for core
+            CParts, some light performance profiling &amp; improvement</p>
+            <br>
+
+            <p><code>beta</code></p>
+            <p><strong>Incomplete:</strong> Nested namespaces, hot-reloading
+            server, under 1000 SLOC (?), fully literate source code, MDU
+            development and documentation, swappable DOM for node.js (linkedom
+            and headless Chromium), SSG refactor, full interactive "cookbook"
+            of recipes, React &amp; jQuery examples, deterministic SSG builds,
+            more performance profiling &amp; improvement</p>
+            <br>
+
+            <p><code>v1.0</code></p>
+            <p><strong>Incomplete:</strong> Fully stabilized API, Full browser
+            testing matrix, generate .map files, several recommended minified
+            and shimmed versions, example rollup and webpack configs, split-off
+            SSG and MDU</p>
+
+        </aside>
+
+        <aside>
+            <h4>News:</h4>
+            <p>Noticias</p>
+        </aside>
+    </section>
+
+</section>
+
+
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>

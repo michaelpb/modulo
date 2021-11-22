@@ -543,6 +543,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             link: HEAD,
             title: HEAD,
             meta: HEAD,
+            // slot: 'component.children',
             script: 'component.script',
         };
         const tagDirectives = (opts.attrs.mode || '') === 'vanish-into-document'
@@ -551,7 +552,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     headTagLoad({ el }) {
-        console.count('headTagLoad');
         el.remove(); // delete old element & move to head
         Modulo.globals.document.head.append(el);
     }
@@ -646,34 +646,9 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             this.reconciler.applyPatches(patches);
         }
 
-        if (!this.element.isMounted) { // First time initialized
-            if (this.mode === 'vanish') {
-                this.element.replaceWith(...this.element.childNodes); // Delete self
-            }
-            if (this.mode.startsWith('vanish')) {
-                this.element.remove();
-            }
-            /*
-            else if (this.mode === 'vanish-into-document') {
-                for (const oldScr of this.element.querySelectorAll('script')) {
-                    // TODO: should copy over all attributes, eg async
-                    const newScript = Modulo.globals.document.createElement('script');
-                    newScript.src = oldScr.src;
-                    oldScr.remove(); // delete old element & move to head
-                    Modulo.globals.document.head.appendChild(newScript);
-                }
-
-                const _childrenOf = tag => {
-                    const elem = this.element.querySelector('modulo-v-' + tag);
-                    return elem ? Array.from(elem.childNodes) : [];
-                }
-                Modulo.globals.document.head.append(..._childrenOf('head'));
-                Modulo.globals.document.body.append(..._childrenOf('body'));
-                this.element.remove();
-                //console.log('this is element.innerHTML', this.element.innerHTML);
-                //throw new Error('what');
-            }
-            */
+        if (!this.element.isMounted && this.mode.startsWith('vanish')) {
+            // First time initialized
+            this.element.replaceWith(...this.element.childNodes); // Replace self
         }
     }
 
@@ -687,8 +662,12 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         }
     }
 
-    childrenLoad({ el }) {
-        el.append(...this.element.originalChildren);
+    childrenLoad({ el, value }) {
+        let chosenSlot = value || el.getAttribute('name') || null;
+        const getSlot = c => c.getAttribute ? c.getAttribute('slot') : null;
+        let childs = this.element.originalChildren;
+        childs = childs.filter(child => getSlot(child) === chosenSlot);
+        el.append(...childs);
     }
 
     eventMount({el, value, attrName, rawName}) {

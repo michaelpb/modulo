@@ -230,6 +230,26 @@ They take the following attributes:</p>
     account unusual scenarios, set this equal to another property of
     <code>Modulo.reconcilers</code>.</li>
 
+    <li><code>rerender</code> - <em>default is <code>rerender="event"</code></em>.
+    Specify mode to change the render mode of this component. This allows you
+    to isolate outside CSS from your component using "shadow", do one-time
+    renders only with "vanish", or make your component replace the entire
+    document with "vanish-into-document". A detailed discussion of valid
+    options are below:
+        <ul>
+            <li><code>rerender="event"</code> - The default behavior, where the
+            the component will rerender after ever event it handles (e.g. after
+            every user interaction).</li>
+
+            <li><code>rerender="manual"</code> - Set this to only rerender when
+            this.rerender() is invoked. This is useful if there are many events
+            that don't cause changes (e.g. mouse movement), but the extra
+            rerenders, even if things aren't changing, impact performance. Note
+            that if this is set, you will have to manually rerender, such as in
+            a <em>Script</em> CPart.</li>
+        </ul>
+    </li>
+
     <li><code>mode</code> - <em>default is <code>mode="regular"</code></em>.
     Specify mode to change the render mode of this component. This allows you
     to isolate outside CSS from your component using "shadow", do one-time

@@ -1,13 +1,15 @@
 <!DOCTYPE HTML>
 <head>
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-    <meta charset="utf8">
-    <title>Templating Reference - modulojs.org</title>
-    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/png" href="/img/mono_logo.png">
+<meta charset="utf8"><title>Templating Reference - modulojs.org</title><link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css"><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script></head><body>
+
+
     
-</head><body>
+    
+    
+    
+    
+    
+
 
 
 <nav class="Navbar">
@@ -27,8 +29,8 @@
     <div class="Navbar-rightInfo">
         
             <a href="https://github.com/michaelpb/modulo/">Source Code
-            <br>
-            (on GitHub)
+                <br>
+                (on GitHub)
             </a>
         
     </div>
@@ -61,14 +63,6 @@
             
                 ginactive
             
-            "><a href="/docs/cparts.html">CParts</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
             "><a href="/docs/templating.html">Templating</a>
             
         </li>
@@ -78,6 +72,14 @@
                 ginactive
             
             "><a href="/docs/templating-reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
             
         </li>
     
@@ -869,6 +871,12 @@ custom directives used (which should be avoided to begin with).</p>
 
 <script>
     Modulo.directiveShortcuts.push([/^%%%/, &quot;script.example&quot;]);
+    /*
+    // Correct way below:
+    function factoryCallback(partOptions, factory, loadObj)  {
+        loadObj.component.directiveShortcuts.push([/^%%%/, &quot;script.example&quot;]);
+    }
+    */
 
     function exampleMount(info) {
         console.log(&quot;Mounting directive:&quot;, info);
@@ -958,4 +966,6 @@ custom script tag directives.</p>
     </main>
 </footer>
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--lsdu3p.js"></script></body>
+
+
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>

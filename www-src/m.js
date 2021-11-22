@@ -1,4 +1,4 @@
-// modulo build -11ndbr1
+// modulo build jq8bof
 'use strict';
 
 // # Introduction
@@ -116,6 +116,9 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         super(element, options);
         this.src = this.attrs.src;
 
+        // TODO: Do some sort of "fork" of cparts Object to allow CPart namespacing
+        this.cparts = Modulo.cparts;
+
         // TODO: "Namespace", should be "global-namespace"?
         // If loader.namespace = null, cause defaulting to hash.
         this.namespace = this.attrs.namespace;
@@ -124,8 +127,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
     }
 
     /*
-    // factoryCallback() could be the new connectdCallback for <module><load>
-    // syntax!
     doFetch(element, attrs) {
         Modulo.assert(this.src, 'Loader: Invalid src= attribute:', this.src);
         Modulo.assert(this.namespace, 'Loader: Invalid namespace= attribute:', this.namespace);
@@ -170,7 +171,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             if (!cPartName) {
                 continue;
             }
-            const cpartClass = Modulo.cparts[cPartName]
+            const cpartClass = this.cparts[cPartName];
             const data = cpartClass.loadCallback(node, this, array);
             array.push([cPartName, data]);
 
@@ -217,7 +218,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
             cPartName = splitType[1];
         }
-        if (!(cPartName in Modulo.cparts)) {
+        if (!(cPartName in this.cparts)) {
             console.error('Modulo.Loader: Unknown CPart def:', tagName);
             return null;
         }
@@ -231,6 +232,18 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
         const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
         data.loader = new Modulo.Loader(null, { attrs }, loader);
         data.loader.loadString(content);
+    }
+
+    initializedCallback(renderObj) {
+        this.localNameMap = this.element.factory().loader.localNameMap;
+    }
+
+    transformTagLoad({ el }) {
+        // dead code, but can come to life
+        const newTag = this.localNameMap[el.tagName.toLowerCase()];
+        if (newTag) {
+            Modulo.utils.transformTag(el, newTag);
+        }
     }
 }
 
@@ -260,6 +273,7 @@ Modulo.ComponentFactory = class ComponentFactory {
 
         this.componentClass = this.createClass();
         this.childrenLoadObj = childrenLoadObj;
+        //console.log('this is childrenLoadObj', childrenLoadObj.map(([a, b]) => a));
         this.baseRenderObj = this.runFactoryLifecycle(this.childrenLoadObj);
     }
 
@@ -389,10 +403,6 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 }
 
-// TODO: Abstract away all cpart logic into CPartCollection which is "owned" by
-// whichever CPart is the parent CPart. Element becomes a thin helper for
-// Component.
-
 Modulo.Element = class ModuloElement extends HTMLElement {
     constructor() {
         super();
@@ -420,25 +430,8 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.factory().buildCParts(this);
     }
 
-    directiveMount(args) {
-        // TODO: Add a check to ensure one of Mount, Unmount or Change exists
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Mount', args);
-    }
-    directiveUnmount(args) {
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Unmount', args);
-    }
-    directiveChange(args) {
-        args.element = this;
-        this._invokeCPart(args.directiveName, 'Change', args);
-    }
-
     rerender() {
-        // IDEA: Render-path micro-optimization idea:
-        // - Push prebound func to list, to "pre-compute" render loop
-        // - .rerender() thus is just looping through list of funcs running each
-        this.lifecycle(['prepare', 'render', 'update', 'updated']);
+        this.lifecycle([ 'prepare', 'render', 'update', 'updated' ]);
     }
 
     lifecycle(lifecycleNames, rObj={}) {
@@ -516,18 +509,17 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 Modulo.directiveShortcuts = [[/^@/, 'component.event'],
                              [/:$/, 'component.dataProp']];
 
-                             // TODO delete this--v ? maybe not the best way?
-Modulo.directiveUniques = { 'component.children': true }; // DEAD CODE - TODO: Autogenerate key from this?
 
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
         //console.log('children loaded callback', childrenLoadObj);
-        const partName = this.name.toLowerCase();
+        const partName = this.name.toLowerCase(); // "this" refers to the class
         let name = partName === 'module' ? loader.namespace : data.attrs.name;
         if (data.attrs.hackname) {
             name = data.attrs.hackname;
         }
-        childrenLoadObj.push([partName, data]); // Add "myself" in as component data
+        //childrenLoadObj.push([partName, data]);
+        childrenLoadObj.unshift([ partName, data ]); // Add "self" as CPart
         Modulo.fetchQ.wait(() => { // Wait for all dependencies to finish resolving
             const factory = new Modulo.ComponentFactory(loader, name, childrenLoadObj);
             factory.register();
@@ -538,17 +530,86 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
 Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
+    static factoryCallback(opts, factory, loadObj) {
+        // Note: Some of this might go into general config stuff.
+        // Also, needs refactor when we get attr defaults.
+        const EVENT = 'component.event';
+        const DATA_PROP = 'component.dataProp';
+        const HEAD = 'component.head';
+        const directiveShortcuts = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
+        const directives = [ DATA_PROP, EVENT, 'component.children' ];
+        /*const tagDirectives = this.mode !== 'vanish-into-document' ? {} :
+            { 'body': 'vanishBody', 'head': 'vanishHead' };*/
+        const vanishDirs = {
+            link: HEAD,
+            title: HEAD,
+            meta: HEAD,
+            // slot: 'component.children',
+            script: 'component.script',
+        };
+        const tagDirectives = (opts.attrs.mode || '') === 'vanish-into-document'
+          ? vanishDirs : { };
+        return { directives, directiveShortcuts, tagDirectives };
+    }
+
+    headTagLoad({ el }) {
+        el.remove(); // delete old element & move to head
+        Modulo.globals.document.head.append(el);
+    }
+
+    scriptTagLoad({ el }) {
+        const newScript = Modulo.globals.document.createElement('script');
+        newScript.src = el.src; // TODO: Possibly copy other attrs
+        el.remove(); // delete old element
+        Modulo.globals.document.head.append(newScript);
+    }
+
+    /* Reconciler ElementCtx interface: */
+    /* TODO: Can I refactor into above, e.g. generate a this.elementCtx = {
+    ** directiveLoad: () => ... } as a factory step? */
+    directiveTagLoad(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'TagLoad', args);
+    }
+
+    directiveLoad(args) {
+        //console.log('directive load');
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Load', args);
+    }
+
+    directiveMount(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Mount', args);
+    }
+
+    directiveUnmount(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Unmount', args);
+    }
+
+    directiveChange(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'Change', args);
+    }
+
     initializedCallback(renderObj) {
-        const { engine = 'ModRec' } = this.attrs;
-        this.mode = this.attrs.mode || 'default'; // TODO refactor when we get attr defaults
+        this.localNameMap = this.element.factory().loader.localNameMap;
+        this.mode = this.attrs.mode || 'regular'; // TODO refactor when we get attr defaults
         if (this.mode === 'shadow') {
             this.element.attachShadow({ mode: 'open' });
         }
-        /*const tagTransforms = this.mode !== 'vanish-into-document' ? {} :
-            { 'body': 'modulo-v-body', 'head': 'modulo-v-head' };*/
+        this.newReconciler(renderObj.component);
+    }
+
+    newReconciler({ directives, directiveShortcuts, tagDirectives }) {
+        const { engine = 'ModRec' } = this.attrs;
         this.reconciler = new Modulo.reconcilers[engine]({
+            directives,
+            directiveShortcuts,
+            tagDirectives,
             makePatchSet: true,
-            //tagTransforms,
+            elementCtx: this,
         });
     }
 
@@ -560,25 +621,17 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updateCallback(renderObj) {
         let { innerHTML, patches } = renderObj.component;
         if (innerHTML !== null) {
-            let root = this.element;
             if (!this.reconciler) {
                 // XXX (Delete this, only needed for SSG)
-                const { engine = 'ModRec' } = this.attrs;
-                this.reconciler = new Modulo.reconcilers[engine]({ makePatchSet: true });
+                this.newModRec(renderObj);
             }
+            let root = this.element; // default, use element as root
             if (this.mode === 'vanish-into-document') {
-                // TODO: Possibly make this a reconciler feature
-                // (Reason can't do for <PrivateComponents>: Requires parsing
-                // HTML, since /[^>]+/ only works since we ignore attributes)
-                const regExp = /<(\/?)(body|head)([^>]*)>/gi;
-                innerHTML = innerHTML.replace(regExp, '<$1modulo-v-$2$3>');
-                //root = Modulo.globals.document.documentElement;
+                root = Modulo.globals.document.body; // render into body
             } else if (this.mode === 'shadow') {
                 root = this.shadowRoot;
             }
-            const { localNameMap } = this.element.factory().loader;
-            // IDEA #2: Make vanish-into-document just do use documentElement?
-            patches = this.reconciler.reconcile(root, innerHTML || '', localNameMap);
+            patches = this.reconciler.reconcile(root, innerHTML || '', this.localNameMap);// rm last arg
         }
         return { patches, innerHTML }; // TODO remove innerHTML from here
     }
@@ -594,30 +647,9 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             this.reconciler.applyPatches(patches);
         }
 
-        if (!this.element.isMounted) { // First time initialized
-            if (this.mode === 'vanish') {
-                this.element.replaceWith(...this.element.childNodes); // Delete self
-            } else if (this.mode === 'vanish-into-document') {
-                for (const oldScr of this.element.querySelectorAll('script')) {
-                    // TODO: should copy over all attributes, eg async
-                    const newScript = Modulo.globals.document.createElement('script');
-                    newScript.src = oldScr.src;
-                    oldScr.remove(); // delete old element & move to head
-                    Modulo.globals.document.head.appendChild(newScript);
-                }
-
-                const _childrenOf = tag => {
-                    const elem = this.element.querySelector('modulo-v-' + tag);
-                    return elem ? Array.from(elem.childNodes) : [];
-                }
-                Modulo.globals.document.head.append(..._childrenOf('head'));
-                Modulo.globals.document.body.append(..._childrenOf('body'));
-                this.element.remove();
-                /*
-                //console.log('this is element.innerHTML', this.element.innerHTML);
-                //throw new Error('what');
-                */
-            }
+        if (!this.element.isMounted && this.mode.startsWith('vanish')) {
+            // First time initialized
+            this.element.replaceWith(...this.element.childNodes); // Replace self
         }
     }
 
@@ -631,16 +663,12 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         }
     }
 
-    childrenMount({el}) {
-        // IDEA: Have value be querySelector, eg [component.children]="div"
-        el.append(...this.element.originalChildren);
-        //el.setAttribute('modulo-ignore', 'modulo-ignore');
-    }
-
-    childrenUnmount({el}) {
-        el.innerHTML = '';
-        //console.log('childrenUnmount!', el);
-        //el.removeAttribute('modulo-ignore');
+    childrenLoad({ el, value }) {
+        let chosenSlot = value || el.getAttribute('name') || null;
+        const getSlot = c => c.getAttribute ? c.getAttribute('slot') : null;
+        let childs = this.element.originalChildren;
+        childs = childs.filter(child => getSlot(child) === chosenSlot);
+        el.append(...childs);
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -690,7 +718,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 }
 
 Modulo.cparts.props = class Props extends Modulo.ComponentPart {
-    static factoryCallback({attrs}, {componentClass}, renderObj) {
+    static factoryCallback({ attrs }, { componentClass }, renderObj) {
         /* untested / daedcode ---v */
         componentClass.observedAttributes = Object.keys(attrs);
     }
@@ -714,16 +742,22 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
-        const {prefixAllSelectors} = Modulo.cparts.style;
-        const {document} = Modulo.globals;
-        const {loader, name, fullName} = factory;
+        const { prefixAllSelectors } = Modulo.cparts.style;
+        const doc = Modulo.globals.document;
+        const { loader, name, fullName } = factory;
         content = prefixAllSelectors(loader.namespace, name, content);
-        const id = `${fullName}_style`;
-        let elem = document.getElementById(id);
+        const id = `${fullName}_Modulo_Style`;
+        let elem = doc.getElementById(id);
         if (!elem) {
-            elem = document.createElement('style');
+            elem = doc.createElement('style');
             elem.id = id;
-            document.head.append(elem)
+            if (doc.head === null) {
+                // NOTE: this is still broken, can still trigger
+                // before head is created!
+                setTimeout(() => doc.head.append(elem), 0);
+            } else {
+                doc.head.append(elem);
+            }
         }
         elem.textContent = content;
     }
@@ -766,6 +800,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
 Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, loadObj) {
+        // TODO: Delete this after we are done with directive-based expansion
         const tagPref = '$1' + factory.loader.namespace + '-';
         return {content: (opts.content || '').replace(/(<\/?)my-/ig, tagPref)};
     }
@@ -784,8 +819,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
-            obj[template.attrs.name || 'default'] = template;
-            //obj[template.name || 'default'] = template;
+            obj[template.attrs.name || 'regular'] = template;
+            //obj[template.name || 'regular'] = template;
         }
         return obj;
     }
@@ -841,6 +876,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const module = moduleFac ? moduleFac.baseRenderObj : null;
         const results = (new Function('Modulo, factory, module', wrappedJS))
                            .call(null, Modulo, factory, module);
+        if (results.factoryCallback) {
+            //this.prepLocalVars(renderObj); // ?
+            results.factoryCallback(partOptions, factory, renderObj);
+        }
         results.localVars = localVars;
         return results;
     }
@@ -905,6 +944,12 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.state = class State extends Modulo.ComponentPart {
+    static factoryCallback(partOptions, factory, loadObj) {
+        if (loadObj.component) {
+            loadObj.component.directives.push('state.bind');
+        }
+    }
+
     initializedCallback(renderObj) {
         this.rawDefaults = renderObj.state.attrs || {};
         this.boundElements = {};
@@ -1244,6 +1289,7 @@ Modulo.reconcilers.Cursor = class Cursor {
 
     pushDescent(parentNode, parentRival) {
         // DEADCODE
+        // (see note on BFS vs DFS)
         this.parentNodeQueue.push([parentNode, parentRival]);
     }
 
@@ -1253,7 +1299,7 @@ Modulo.reconcilers.Cursor = class Cursor {
             return false;
         }
         const result = this.parentNodeQueue.shift();
-        console.log('this is reuslt', result);
+        //console.log('this is reuslt', result);
         this.initialize(...result);
         return true;
     }
@@ -1287,8 +1333,8 @@ Modulo.reconcilers.Cursor = class Cursor {
             }
             // There were excess keyed rivals OR children, pop()
             return this.keyedRivalsArr.length ?
-                  [null, this.keyedRivalsArr.pop()] :
-                  [this.keyedChildrenArr.pop(), null];
+                  [ null, this.keyedRivalsArr.pop() ] :
+                  [ this.keyedChildrenArr.pop(), null ];
         }
 
         // Handle keys
@@ -1326,6 +1372,8 @@ Modulo.reconcilers.Cursor = class Cursor {
     }
 
     getMatchedNode(elem, keyedElems, keyedOthers) {
+        // IDEA: Rewrite keying elements with this trick: - Use LoadTag directive, removed keyed rival from DOM
+        /// - Issue: Cursor is scoped per "layer", and not created yet, so reconciler will need to keep keyed elements
         const key = elem && elem.getAttribute && elem.getAttribute('key');
         if (!key) {
             return null;
@@ -1347,44 +1395,84 @@ Modulo.reconcilers.Cursor = class Cursor {
 
 Modulo.reconcilers.ModRec = class ModuloReconciler {
     constructor(opts) {
-        // Discontinue this?
-        this.shouldNotApplyPatches = opts && opts.makePatchSet;
-        this.shouldNotDescend = opts && opts.doNotDescend;
-        this.elementCtx = opts ? opts.elementCtx : undefined;
-        this.tagTransforms = opts ? opts.tagTransforms : {};
+        // TODO: Refactor this, perhaps with some general "opts with defaults"
+        // helper functions.
+        opts = opts || {};
+        this.makePatchSet = !!opts.makePatchSet;
+        this.shouldNotDescend = !!opts.doNotDescend;
+        this.elementCtx = opts.elementCtx;
+        this.tagTransforms = opts.tagTransforms;
+
+        // New configs --- TODO remove this once ModRec tests are
+        // refactored
+        const EVENT = 'component.event';
+        const DATA_PROP = 'component.dataProp';
+        const defDirShort = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
+        const defDir = [ DATA_PROP, EVENT, 'component.children' ];
+        this.directives = opts.directives || defDir;
+        this.tagDirectives = opts.tagDirectives || {};
+        this.directiveShortcuts = opts.directiveShortcuts || defDirShort;
+        Modulo.assert(this.directiveShortcuts, 'must have shortcuts');
     }
 
-    reconcile(node, rivalHTML, tagTransforms) {
+    loadString(rivalHTML, tagTransforms) {
+        this.patches = [];
+        const rival = Modulo.utils.makeDiv(rivalHTML, true);
+        const transforms = Object.assign({}, this.tagTransforms, tagTransforms);
+        this.applyLoadDirectives(rival, transforms);
+        if (this.patches.length) { // Were patches found?
+            this.applyPatches(this.patches); // They were, apply...
+            this.patches = []; // ...and clear.
+        }
+        return rival;
+    }
+
+    reconcile(node, rival, tagTransforms) {
         // Note: Always attempts to reconcile (even on first mount), in case
         // it's been pre-rendered
         // TODO: should normalize <!DOCTYPE html>
-        this.patches = [];
         if (!this.elementCtx) {
             this.elementCtx = node; // element context
         }
-        const rival = Modulo.utils.makeDiv(rivalHTML, true);
-        const transforms = Object.assign({}, this.tagTransforms, tagTransforms);
-        this.applyTagTransforms(rival, transforms);
-        this.markRecDirectives(rival);
+        if (typeof rival === 'string') {
+            rival = this.loadString(rival, tagTransforms);
+        }
         this.reconcileChildren(node, rival);
         this.cleanRecDirectiveMarks(node);
-        if (!this.shouldNotApplyPatches) {
+        if (!this.makePatchSet) { // should ONLY makePatchSet
             this.applyPatches(this.patches);
         }
         return this.patches;
     }
 
-    applyTagTransforms(elem, tagTransforms) {
-        const sel = Object.keys(tagTransforms).join(',');
-        for (const node of elem.querySelectorAll(sel || 'X')) {
+    applyLoadDirectives(elem, tagTransforms) {
+        //const sel = Object.keys(tagTransforms).join(',');
+        //for (const node of elem.querySelectorAll(sel || 'X')) {
+        this._oldPatch = this.patch;
+        this.patch = this.applyPatch; // Apply patches immediately
+        for (const node of elem.querySelectorAll('*')) {
+            // legacy -v, TODO rm
             const newTag = tagTransforms[node.tagName.toLowerCase()];
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);
             }
+            ///////
+
+            const dName = this.tagDirectives[node.tagName.toLowerCase()];
+            if (dName) {
+                this.patchDirectives(node, `[${dName}]${node.tagName}`, 'TagLoad');
+            }
+            for (const rawName of node.getAttributeNames()) {
+                // Apply load-time directive patches
+                this.patchDirectives(node, rawName, 'Load');
+            }
         }
+        this.markRecDirectives(elem); // TODO rm
+        this.patch = this._oldPatch;
     }
 
     markRecDirectives(elem) {
+        // TODO remove this after we reimplement [component.ignore]
         // Mark all children of modulo-ignore with mm-ignore
         for (const node of elem.querySelectorAll('[modulo-ignore] *')) {
             // TODO: Very important: also mark to ignore children that are
@@ -1450,6 +1538,9 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             } else if (!this.shouldNotDescend) {
                 // NOTE: Cannot do pushDescent (which would be BFS, then) since
                 // presently only works with DFS, for some reason.
+                // EASIEST SOLUTION: Create a new "descend()"
+                // that does the inverse: push current settings
+                // onto queue, but start new settings
                 //cursor.pushDescent(child, rival);
                 this.reconcileChildren(child, rival);
             }
@@ -1457,7 +1548,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patch(node, method, arg, arg2 = null) {
-        this.patches.push([node, method, arg, arg2]);
+        this.patches.push([ node, method, arg, arg2 ]);
     }
 
     applyPatch(node, method, arg, arg2) { // take that, rule of 3!
@@ -1466,17 +1557,23 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         } else if (method === 'insertBefore') {
             node.insertBefore(arg, arg2); // Needs 2 arguments
         } else {
+            /*
+            if (!(method in node)) {
+                console.error('Invalid Patchset: ', node, 'has no', method);
+            } else {
+            }
+            */
             node[method].call(node, arg); // invoke method
         }
     }
 
     patchDirectives(el, rawName, suffix) {
         const callbackName = 'directive' + suffix;
-        const directives = Modulo.utils.parseDirectives(rawName);
+        const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
         if (directives) {
             const value = el.getAttribute(rawName);
             for (const directive of directives) {
-                Object.assign(directive, { value, el,  callbackName});
+                Object.assign(directive, { value, el, callbackName });
                 this.patch(this.elementCtx, callbackName, directive);
                 //const result = this.elementCtx.directiveCallback(directive, suffix);
                 //if (result) {
@@ -1514,7 +1611,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         if (parentNode.nodeType !== 1) { // cannot have descendants
             return;
         }
-        let nodes = [parentNode]; // also, patch self (but last)
+        let nodes = [ parentNode ]; // also, patch self (but last)
         if (!this.shouldNotDescend) {
             nodes = Array.from(parentNode.querySelectorAll('*')).concat(nodes);
         }
@@ -1672,14 +1769,16 @@ Modulo.utils = class utils {
         //return [index ? s.slice(0, index - 1) : s, s.slice(index)];
     }
 
-    static parseDirectives(rawName) {
+    static parseDirectives(rawName, directiveShortcuts) { //, directives) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
+            // TODO: If we ever support key= as a shortcut, this
+            // will break
         }
 
         // "Expand" shortcuts into their full versions
         let name = rawName;
-        for (const [regexp, directive] of Modulo.directiveShortcuts) {
+        for (const [regexp, directive] of directiveShortcuts) {
             if (rawName.match(regexp)) {
                 name = `[${directive}]` + name.replace(regexp, '');
             }
@@ -1693,7 +1792,8 @@ Modulo.utils = class utils {
         const arr = [];
         const attrName = cleanWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
         for (const directiveName of name.split(']').map(cleanWord)) {
-            if (directiveName !== attrName) { // Skip the bare name itself
+            // Skip the bare name itself, and filter for valid directives
+            if (directiveName !== attrName) {// && directiveName in directives) {
                 arr.push({ attrName, rawName, directiveName, name })
             }
         }
@@ -2946,77 +3046,6 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/embeddedexampleslib.html) 
 
-  "/components/layouts/base.html": // (69 lines)
-`<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf8" />
-    <title>{{ props.pagetitle }} - modulojs.org</title>
-    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
-    <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-</head>
-<body>
-
-<nav class="Navbar">
-    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
-    <ul>
-        <li>
-            <a href="/index.html#about" {% if props.navbar == "about" %}class="Navbar--selected"{% endif %}>About</a>
-        </li>
-        <li>
-            <a href="/start.html" {% if props.navbar == "start" %}class="Navbar--selected"{% endif %}>Start</a>
-        </li>
-        <li>
-            <a href="/docs/" {% if props.navbar == "docs" %}class="Navbar--selected"{% endif %}>Docs</a>
-        </li>
-    </ul>
-
-    <div class="Navbar-rightInfo">
-        {% if script.exports.version %}
-            v: {{ script.exports.version }}<br />
-            SLOC: {{ script.exports.sloc }} lines<br />
-            <a href="https://github.com/michaelpb/modulo/">github</a> | 
-            <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
-        {% else %}
-            <a href="https://github.com/michaelpb/modulo/">Source Code
-            <br />
-            (on GitHub)
-            </a>
-        {% endif %}
-    </div>
-</nav>
-
-{% if props.docbarselected %}
-    <main class="Main Main--fluid Main--withSidebar">
-        <aside class="TitleAside TitleAside--navBar" >
-            <h3><span alt="Lower-case delta">%</span></h3>
-            <nav class="TitleAside-navigation">
-                <h3>Documentation</h3>
-                <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
-            </nav>
-        </aside>
-        <aside style="border: none">
-            {{ component.originalHTML|safe }}
-        </aside>
-    </main>
-{% else %}
-    <main class="Main">
-        {{ component.originalHTML|safe }}
-    </main>
-{% endif %}
-
-<footer>
-    <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
-    </main>
-</footer>
-
-</body>
-</html>
-`,// (ends: /components/layouts/base.html) 
-
   "/components/modulowebsite.html": // (497 lines)
 `<component name="Section">
     <props
@@ -3179,20 +3208,6 @@ examples to the Modulo framework, not as a examples themselves -->
         },
 
         {
-            label: 'CParts',
-            filename: '/docs/cparts.html',
-            children: [
-                _child('Props'),
-                _child('Template'),
-                _child('State'),
-                _child('Script'),
-                _child('Style'),
-                _child('Component'),
-                _child('Module'),
-            ],
-        },
-
-        {
             label: 'Templating',
             filename: '/docs/templating.html',
             children: [
@@ -3220,6 +3235,20 @@ examples to the Modulo framework, not as a examples themselves -->
                     'length', 'lower', 'number', 'pluralize', 'subtract',
                     'truncate', 'renderas', 'reversed', 'upper',
                 ]),
+            ],
+        },
+
+        {
+            label: 'CParts',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Props'),
+                _child('Template'),
+                _child('State'),
+                _child('Script'),
+                _child('Style'),
+                _child('Component'),
+                _child('Module'),
             ],
         },
 
@@ -3515,6 +3544,77 @@ examples to the Modulo framework, not as a examples themselves -->
 
 
 `,// (ends: /components/modulowebsite.html) 
+
+  "/components/layouts/base.html": // (69 lines)
+`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf8" />
+    <title>{{ props.pagetitle }} - modulojs.org</title>
+    <link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/img/mono_logo.png" />
+    <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+</head>
+<body>
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
+    <ul>
+        <li>
+            <a href="/index.html#about" {% if props.navbar == "about" %}class="Navbar--selected"{% endif %}>About</a>
+        </li>
+        <li>
+            <a href="/start.html" {% if props.navbar == "start" %}class="Navbar--selected"{% endif %}>Start</a>
+        </li>
+        <li>
+            <a href="/docs/" {% if props.navbar == "docs" %}class="Navbar--selected"{% endif %}>Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        {% if script.exports.version %}
+            v: {{ script.exports.version }}<br />
+            SLOC: {{ script.exports.sloc }} lines<br />
+            <a href="https://github.com/michaelpb/modulo/">github</a> | 
+            <a href="https://npmjs.com/michaelpb/modulo/">npm</a> 
+        {% else %}
+            <a href="https://github.com/michaelpb/modulo/">Source Code
+                <br />
+                (on GitHub)
+            </a>
+        {% endif %}
+    </div>
+</nav>
+
+{% if props.docbarselected %}
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar" >
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
+            </nav>
+        </aside>
+        <aside style="border: none">
+            {{ component.originalHTML|safe }}
+        </aside>
+    </main>
+{% else %}
+    <main class="Main">
+        {{ component.originalHTML|safe }}
+    </main>
+{% endif %}
+
+<footer>
+    <main>
+        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
+</body>
+</html>
+`,// (ends: /components/layouts/base.html) 
 
   "/components/examplelib-tests/Hello-tests.html": // (42 lines)
 `<test name="Renders with different numbers">
