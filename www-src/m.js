@@ -1,4 +1,4 @@
-// modulo build i18vht
+// modulo build 1pj8jcr
 'use strict';
 
 // # Introduction
@@ -2051,6 +2051,377 @@ Modulo.fetchQ.data = {
 
 `,// (ends: /components/layouts.html) 
 
+  "/components/embeddedexampleslib.html": // (369 lines)
+`<module>
+    <script>
+        // Splits up own source-code to get source for each example
+        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
+        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
+        //console.log('this si myText', myText);
+        const componentTexts = {};
+        if (!myText) {
+            console.error('ERROR: Could not load own text :(');
+            myText = '';
+        }
+        let name = '';
+        let currentComponent = '';
+        let inTestSuite = false;
+        for (const line of myText.split('\\n')) {
+            if (line.startsWith('</component>')) {
+                componentTexts[name] = currentComponent;
+                currentComponent = '';
+                name = null;
+            } else if (line.startsWith('<component')) {
+                name = line.split(' name="')[1].split('"')[0];
+            } else if (line.startsWith('<testsuite')) {
+                inTestSuite = true;
+            } else if (line.includes('</testsuite>')) {
+                inTestSuite = false;
+            } else if (name && !inTestSuite) {
+                currentComponent += line + '\\n';
+            }
+        }
+        script.exports.componentTexts = componentTexts;
+    </script>
+</module>
+
+
+
+<component name="Templating_1">
+<template>
+<p>There are <em>{{ state.count }}
+  {{ state.count|pluralize:"articles,article" }}</em>
+  on {{ script.exports.title }}.</p>
+
+{# Show the articles #}
+{% for article in state.articles %}
+    <h4 style="color: blue">{{ article.headline|upper }}</h4>
+    {% if article.tease %}
+      <p>{{ article.tease|truncate:30 }}</p>
+    {% endif %}
+{% endfor %}
+</template>
+
+<!-- The data below was used to render the template above -->
+<state
+    count:=42
+    articles:='[
+      {"headline": "Modulo released!",
+       "tease": "The most exciting news of the century."},
+      {"headline": "Can JS be fun again?"},
+      {"headline": "MTL considered harmful",
+       "tease": "Why constructing JS is risky business."}
+    ]'
+></state>
+<script>
+    script.exports.title = "ModuloNews";
+</script>
+
+<testsuite
+    src="./examplelib-tests/Templating_1-tests.html"
+></testsuite>
+
+</component>
+
+
+
+<component name="Templating_Comments">
+<template>
+    <h1>hello {# greeting #}</h1>
+    {% comment %}
+      {% if a %}<div>{{ b }}</div>{% endif %}
+      <h3>{{ state.items|first }}</h3>
+    {% endcomment %}
+    <p>Below the greeting...</p>
+</template>
+
+<testsuite>
+    <test name="Hides comments">
+        <template>
+            <h1>hello </h1>
+            <p>Below the greeting...</p>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+
+<component name="Templating_Escaping">
+<template>
+<p>User "<em>{{ state.username }}</em>" sent a message:</p>
+<div class="msgcontent">
+    {{ state.content|safe }}
+</div>
+</template>
+
+<state
+    username="Little <Bobby> <Drop> &tables"
+    content='
+        I <i>love</i> the classic <a target="_blank"
+        href="https://xkcd.com/327/">xkcd #327</a> on
+        the risk of trusting <b>user inputted data</b>
+    '
+></state>
+<style>
+    .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style>
+
+<testsuite>
+    <test name="Escapes HTML, safe works">
+        <template>
+            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
+            &amp;tables</em>" sent a message:</p>
+            <div class="msgcontent"> I <i>love</i> the classic <a
+            target="_blank" href="https://xkcd.com/327/">xkcd #327</a> on
+            the risk of trusting <b>user inputted data</b></div>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+
+<component name="Tutorial_P1">
+<template>
+Hello <strong>Modulo</strong> World!
+<p class="neat">Any HTML can be here!</p>
+</template>
+<style>
+/* ...and any CSS here! */
+strong {
+    color: blue;
+}
+.neat {
+    font-variant: small-caps;
+}
+:host { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style>
+
+<testsuite>
+    <test name="renders as expected">
+        <template>
+            Hello <strong>Modulo</strong> World!
+            <p class="neat">Any HTML can be here!</p>
+        </template>
+    </test>
+</testsuite>
+
+
+</component>
+
+
+<component name="Tutorial_P2">
+<template>
+    <p>Trying out the button...</p>
+    <x-ExampleBtn
+        label="Button Example"
+        shape="square"
+    ></x-ExampleBtn>
+
+    <p>Another button...</p>
+    <x-ExampleBtn
+        label="Example 2: Rounded"
+        shape="round"
+    ></x-ExampleBtn>
+</template>
+
+<testsuite>
+    <test name="renders as expected">
+        <template string-count=1>
+            <p>Trying out the button...</p>
+        </template>
+        <!-- Unfortunately can't test the following... -->
+        <!--
+        <template>
+            <button class="my-btn my-btn__square">
+                Button Example
+            </button>
+        </template>
+        <template>
+            <button class="my-btn my-btn__round">
+                Rounded is Great Too
+            </button>
+        </template>
+        -->
+    </test>
+</testsuite>
+</component>
+
+
+<component name="Tutorial_P2_filters_demo">
+<template>
+    <p>Trying out the button...</p>
+    <x-ExampleBtn
+        label="Button Example"
+        shape="square"
+    ></x-ExampleBtn>
+
+    <p>Another button...</p>
+    <x-ExampleBtn
+        label="Example 2: Rounded"
+        shape="round"
+    ></x-ExampleBtn>
+</template>
+
+<testsuite>
+    <test name="renders as expected">
+        <template string-count=1>
+            <p>Trying out the button...</p>
+        </template>
+    </test>
+</testsuite>
+
+
+</component>
+
+
+
+<!-- ................................ -->
+<!-- . Tutorial - Part 3 ............ -->
+<!-- ................................ -->
+
+<component name="Tutorial_P3_state_demo">
+<template>
+<p>Nonsense poem:</p> <pre>
+Professor {{ state.verb|capfirst }} who
+{{ state.verb }}ed a {{ state.noun }},
+taught {{ state.verb }}ing in
+the City of {{ state.noun|capfirst }},
+to {{ state.count }} {{ state.noun }}s.
+</pre>
+</template>
+
+<state
+    verb="toot"
+    noun="kazoo"
+    count="two"
+></state>
+
+<style>
+    :host {
+        font-size: 0.8rem;
+    }
+</style>
+
+<testsuite>
+    <test>
+        <template>
+            <p>Nonsense poem:</p>
+            <pre>Professor Toot who tooted a kazoo, taught tooting in the City
+            of Kazoo, to two kazoos. </pre>
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+<component name="Tutorial_P3_state_bind">
+<template>
+
+<div>
+    <label>Username:
+        <input [state.bind] name="username" /></label>
+    <label>Color ("green" or "blue"):
+        <input [state.bind] name="color" /></label>
+    <label>Opacity: <input [state.bind]
+        name="opacity"
+        type="number" min="0" max="1" step="0.1" /></label>
+
+    <h5 style="
+            opacity: {{ state.opacity }};
+            color: {{ state.color|allow:'green,blue'|default:'red' }};
+        ">
+        {{ state.username|lower }}
+    </h5>
+</div>
+
+</template>
+
+<state
+    opacity="0.5"
+    color="blue"
+    username="Testing_Username"
+></state>
+
+<testsuite
+    src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
+></testsuite>
+
+</component>
+
+
+
+
+
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<!-- The remaining components are only being used for adding more tests for
+examples to the Modulo framework, not as a examples themselves -->
+<!-- TODO: Remove, and move to tests/ -->
+<component name="TestBtn">
+    <props
+        myclicky
+        mytexty
+    ></props>
+    <template>
+        <button @click:=props.myclicky>{{ props.mytexty }}</button>
+    </template>
+</component>
+
+<component name="CompositionTests">
+<props b></props>
+<template name="comptest2">
+    <x-TestBtn
+        mytexty="Test text"
+        myclicky:=script.gotClickies
+    >should be IGNORED</x-TestBtn>
+    <p>state.a: {{ state.a }}</p>
+</template>
+
+<template name="comptest1">
+    Testing
+    <x-Tutorial_P1></x-Tutorial_P1>
+    <x-Templating_Escaping></x-Templating_Escaping>
+</template>
+
+
+<!-- just add some random stuff here -->
+<state
+    a:=1
+></state>
+
+<script>
+    function gotClickies() {
+        state.a = 1337;
+    }
+</script>
+
+<testsuite
+    skip
+    src="./examplelib-tests/CompositionTests-tests.html"
+></testsuite>
+
+</component>
+
+
+
+`,// (ends: /components/embeddedexampleslib.html) 
+
   "/components/examplelib.html": // (622 lines)
 `<module>
     <script>
@@ -2675,377 +3046,6 @@ h3 {
 
 `,// (ends: /components/examplelib.html) 
 
-  "/components/embeddedexampleslib.html": // (369 lines)
-`<module>
-    <script>
-        // Splits up own source-code to get source for each example
-        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
-        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
-        //console.log('this si myText', myText);
-        const componentTexts = {};
-        if (!myText) {
-            console.error('ERROR: Could not load own text :(');
-            myText = '';
-        }
-        let name = '';
-        let currentComponent = '';
-        let inTestSuite = false;
-        for (const line of myText.split('\\n')) {
-            if (line.startsWith('</component>')) {
-                componentTexts[name] = currentComponent;
-                currentComponent = '';
-                name = null;
-            } else if (line.startsWith('<component')) {
-                name = line.split(' name="')[1].split('"')[0];
-            } else if (line.startsWith('<testsuite')) {
-                inTestSuite = true;
-            } else if (line.includes('</testsuite>')) {
-                inTestSuite = false;
-            } else if (name && !inTestSuite) {
-                currentComponent += line + '\\n';
-            }
-        }
-        script.exports.componentTexts = componentTexts;
-    </script>
-</module>
-
-
-
-<component name="Templating_1">
-<template>
-<p>There are <em>{{ state.count }}
-  {{ state.count|pluralize:"articles,article" }}</em>
-  on {{ script.exports.title }}.</p>
-
-{# Show the articles #}
-{% for article in state.articles %}
-    <h4 style="color: blue">{{ article.headline|upper }}</h4>
-    {% if article.tease %}
-      <p>{{ article.tease|truncate:30 }}</p>
-    {% endif %}
-{% endfor %}
-</template>
-
-<!-- The data below was used to render the template above -->
-<state
-    count:=42
-    articles:='[
-      {"headline": "Modulo released!",
-       "tease": "The most exciting news of the century."},
-      {"headline": "Can JS be fun again?"},
-      {"headline": "MTL considered harmful",
-       "tease": "Why constructing JS is risky business."}
-    ]'
-></state>
-<script>
-    script.exports.title = "ModuloNews";
-</script>
-
-<testsuite
-    src="./examplelib-tests/Templating_1-tests.html"
-></testsuite>
-
-</component>
-
-
-
-<component name="Templating_Comments">
-<template>
-    <h1>hello {# greeting #}</h1>
-    {% comment %}
-      {% if a %}<div>{{ b }}</div>{% endif %}
-      <h3>{{ state.items|first }}</h3>
-    {% endcomment %}
-    <p>Below the greeting...</p>
-</template>
-
-<testsuite>
-    <test name="Hides comments">
-        <template>
-            <h1>hello </h1>
-            <p>Below the greeting...</p>
-        </template>
-    </test>
-</testsuite>
-
-</component>
-
-
-
-<component name="Templating_Escaping">
-<template>
-<p>User "<em>{{ state.username }}</em>" sent a message:</p>
-<div class="msgcontent">
-    {{ state.content|safe }}
-</div>
-</template>
-
-<state
-    username="Little <Bobby> <Drop> &tables"
-    content='
-        I <i>love</i> the classic <a target="_blank"
-        href="https://xkcd.com/327/">xkcd #327</a> on
-        the risk of trusting <b>user inputted data</b>
-    '
-></state>
-<style>
-    .msgcontent {
-        background: #999;
-        padding: 10px;
-        margin: 10px;
-    }
-</style>
-
-<testsuite>
-    <test name="Escapes HTML, safe works">
-        <template>
-            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
-            &amp;tables</em>" sent a message:</p>
-            <div class="msgcontent"> I <i>love</i> the classic <a
-            target="_blank" href="https://xkcd.com/327/">xkcd #327</a> on
-            the risk of trusting <b>user inputted data</b></div>
-        </template>
-    </test>
-</testsuite>
-
-</component>
-
-
-
-<component name="Tutorial_P1">
-<template>
-Hello <strong>Modulo</strong> World!
-<p class="neat">Any HTML can be here!</p>
-</template>
-<style>
-/* ...and any CSS here! */
-strong {
-    color: blue;
-}
-.neat {
-    font-variant: small-caps;
-}
-:host { /* styles the entire component */
-    display: inline-block;
-    background-color: cornsilk;
-    padding: 5px;
-    box-shadow: 10px 10px 0 0 turquoise;
-}
-</style>
-
-<testsuite>
-    <test name="renders as expected">
-        <template>
-            Hello <strong>Modulo</strong> World!
-            <p class="neat">Any HTML can be here!</p>
-        </template>
-    </test>
-</testsuite>
-
-
-</component>
-
-
-<component name="Tutorial_P2">
-<template>
-    <p>Trying out the button...</p>
-    <x-ExampleBtn
-        label="Button Example"
-        shape="square"
-    ></x-ExampleBtn>
-
-    <p>Another button...</p>
-    <x-ExampleBtn
-        label="Example 2: Rounded"
-        shape="round"
-    ></x-ExampleBtn>
-</template>
-
-<testsuite>
-    <test name="renders as expected">
-        <template string-count=1>
-            <p>Trying out the button...</p>
-        </template>
-        <!-- Unfortunately can't test the following... -->
-        <!--
-        <template>
-            <button class="my-btn my-btn__square">
-                Button Example
-            </button>
-        </template>
-        <template>
-            <button class="my-btn my-btn__round">
-                Rounded is Great Too
-            </button>
-        </template>
-        -->
-    </test>
-</testsuite>
-</component>
-
-
-<component name="Tutorial_P2_filters_demo">
-<template>
-    <p>Trying out the button...</p>
-    <x-ExampleBtn
-        label="Button Example"
-        shape="square"
-    ></x-ExampleBtn>
-
-    <p>Another button...</p>
-    <x-ExampleBtn
-        label="Example 2: Rounded"
-        shape="round"
-    ></x-ExampleBtn>
-</template>
-
-<testsuite>
-    <test name="renders as expected">
-        <template string-count=1>
-            <p>Trying out the button...</p>
-        </template>
-    </test>
-</testsuite>
-
-
-</component>
-
-
-
-<!-- ................................ -->
-<!-- . Tutorial - Part 3 ............ -->
-<!-- ................................ -->
-
-<component name="Tutorial_P3_state_demo">
-<template>
-<p>Nonsense poem:</p> <pre>
-Professor {{ state.verb|capfirst }} who
-{{ state.verb }}ed a {{ state.noun }},
-taught {{ state.verb }}ing in
-the City of {{ state.noun|capfirst }},
-to {{ state.count }} {{ state.noun }}s.
-</pre>
-</template>
-
-<state
-    verb="toot"
-    noun="kazoo"
-    count="two"
-></state>
-
-<style>
-    :host {
-        font-size: 0.8rem;
-    }
-</style>
-
-<testsuite>
-    <test>
-        <template>
-            <p>Nonsense poem:</p>
-            <pre>Professor Toot who tooted a kazoo, taught tooting in the City
-            of Kazoo, to two kazoos. </pre>
-        </template>
-    </test>
-</testsuite>
-
-</component>
-
-
-<component name="Tutorial_P3_state_bind">
-<template>
-
-<div>
-    <label>Username:
-        <input [state.bind] name="username" /></label>
-    <label>Color ("green" or "blue"):
-        <input [state.bind] name="color" /></label>
-    <label>Opacity: <input [state.bind]
-        name="opacity"
-        type="number" min="0" max="1" step="0.1" /></label>
-
-    <h5 style="
-            opacity: {{ state.opacity }};
-            color: {{ state.color|allow:'green,blue'|default:'red' }};
-        ">
-        {{ state.username|lower }}
-    </h5>
-</div>
-
-</template>
-
-<state
-    opacity="0.5"
-    color="blue"
-    username="Testing_Username"
-></state>
-
-<testsuite
-    src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
-></testsuite>
-
-</component>
-
-
-
-
-
-
-<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-<!-- The remaining components are only being used for adding more tests for
-examples to the Modulo framework, not as a examples themselves -->
-<!-- TODO: Remove, and move to tests/ -->
-<component name="TestBtn">
-    <props
-        myclicky
-        mytexty
-    ></props>
-    <template>
-        <button @click:=props.myclicky>{{ props.mytexty }}</button>
-    </template>
-</component>
-
-<component name="CompositionTests">
-<props b></props>
-<template name="comptest2">
-    <x-TestBtn
-        mytexty="Test text"
-        myclicky:=script.gotClickies
-    >should be IGNORED</x-TestBtn>
-    <p>state.a: {{ state.a }}</p>
-</template>
-
-<template name="comptest1">
-    Testing
-    <x-Tutorial_P1></x-Tutorial_P1>
-    <x-Templating_Escaping></x-Templating_Escaping>
-</template>
-
-
-<!-- just add some random stuff here -->
-<state
-    a:=1
-></state>
-
-<script>
-    function gotClickies() {
-        state.a = 1337;
-    }
-</script>
-
-<testsuite
-    skip
-    src="./examplelib-tests/CompositionTests-tests.html"
-></testsuite>
-
-</component>
-
-
-
-`,// (ends: /components/embeddedexampleslib.html) 
-
   "/components/modulowebsite.html": // (497 lines)
 `<component name="Section">
     <props
@@ -3617,6 +3617,174 @@ examples to the Modulo framework, not as a examples themselves -->
 </html>
 `,// (ends: /components/layouts/base.html) 
 
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
+
+  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (49 lines)
+`<test name="Behaves as expected">
+    <template name="Ensure initial inputs are bound so render is as expected" test-values>
+        <div>
+            <label>Username:
+                <input [state.bind] name="username" value="Testing_Username" /></label>
+            <label>Color ("green" or "blue"):
+                <input [state.bind] name="color" value="blue" /></label>
+            <label>Opacity: <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
+            <h5 style="
+                    opacity: 0.5;
+                    color: blue;
+                ">
+                testing_username
+            </h5>
+        </div>
+    </template>
+
+    <script>
+        element.querySelector('input[name="username"]').value = 'tEsT2'
+        event: keyup input[name="username"]
+    </script>
+
+    <script>
+        element.querySelector('input[name="color"]').value = 'green'
+        event: keyup input[name="color"]
+    </script>
+
+    <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
+        <div>
+            <label>Username:
+                <input [state.bind] name="username" value="tEsT2" /></label>
+            <label>Color ("green" or "blue"):
+                <input [state.bind] name="color" value="green" /></label>
+            <label>Opacity: <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
+            <h5 style="
+                    opacity: 0.5;
+                    color: green;
+                ">
+                test2
+            </h5>
+        </div>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
+
+  "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
+`
+<!-- Due to bug with the test runner or testing framework, including this
+test will cause other tests to fail, but running it separately it succeeds. -->
+<test name="Misc sub-components correctly render">
+    <script>
+        element.cparts.template =
+            element.cpartSpares.template
+                .find(({attrs}) => attrs.name === 'comptest1')
+        assert: element.cparts.template
+    </script>
+
+    <template>
+        Testing
+        <x-Tutorial_P1>
+            Hello <strong>Modulo</strong> World!
+            <p class="neat">Any HTML can be here!</p>
+        </x-Tutorial_P1>
+        <x-templating_escaping>
+            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
+            &amp;tables</em>" sent a message:</p>
+            <div class="msgcontent">
+                I <i>love</i> the classic <a target="_blank"
+                href="https://xkcd.com/327/">xkcd #327</a> on
+                the risk of trusting <b>user inputted data</b>
+            </div>
+        </x-templating_escaping>
+    </template>
+</test>
+
+
+<test name="Button sub-component behavior">
+    <script>
+        element.cparts.template =
+            element.cpartSpares.template
+                .find(({attrs}) => attrs.name === 'comptest2')
+    </script>
+
+    <!--
+    <template name="Renders">
+        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+            <button @click:=props.myclicky>Test text</button>
+        </x-TestBtn>
+        <p>state.a: 1</p>
+    </template>
+    -->
+
+    <script>
+        event: click button
+        assert: state.a === 1337
+    </script>
+
+    <!--
+    <template name="Renders after click">
+        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+            <button @click:=props.myclicky>Test text</button>
+        </x-TestBtn>
+        <p>state.a: 1337</p>
+    </template>
+
+    <template name="Shouldn't show subcomp children" string-count=0>
+        IGNORED
+    </template>
+
+    -->
+</test>
+
+
+
+
+`,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
+
+  "/components/examplelib-tests/ToDo-tests.html": // (29 lines)
+`<test name="Basic functionality">
+
+    <template name="Ensure initial render is correct" test-values>
+        <ol>
+            <li>Milk</li><li>Bread</li><li>Candy</li>
+            <li>
+                <input [state.bind] name="text" value="Beer" />
+                <button @click:="script.addItem">Add</button>
+            </li>
+        </ol>
+    </template>
+
+    <script>
+        event: click button
+        assert: state.list.length === 4
+    </script>
+
+    <template name="Ensure render after adding is fine" test-values>
+        <ol>
+            <li>Milk</li><li>Bread</li><li>Candy</li><li>Beer</li>
+            <li>
+                <input [state.bind] name="text" value="" />
+                <button @click:="script.addItem">Add</button>
+            </li>
+        </ol>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/ToDo-tests.html) 
+
   "/components/examplelib-tests/Hello-tests.html": // (42 lines)
 `<test name="Renders with different numbers">
     <script name="Ensure state is initialized">
@@ -3660,37 +3828,6 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 
 `,// (ends: /components/examplelib-tests/Hello-tests.html) 
-
-  "/components/examplelib-tests/ToDo-tests.html": // (29 lines)
-`<test name="Basic functionality">
-
-    <template name="Ensure initial render is correct" test-values>
-        <ol>
-            <li>Milk</li><li>Bread</li><li>Candy</li>
-            <li>
-                <input [state.bind] name="text" value="Beer" />
-                <button @click:="script.addItem">Add</button>
-            </li>
-        </ol>
-    </template>
-
-    <script>
-        event: click button
-        assert: state.list.length === 4
-    </script>
-
-    <template name="Ensure render after adding is fine" test-values>
-        <ol>
-            <li>Milk</li><li>Bread</li><li>Candy</li><li>Beer</li>
-            <li>
-                <input [state.bind] name="text" value="" />
-                <button @click:="script.addItem">Add</button>
-            </li>
-        </ol>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/ToDo-tests.html) 
 
   "/components/examplelib-tests/API-tests.html": // (43 lines)
 `<test name="renders with search data">
@@ -4050,143 +4187,6 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
-
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
-  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (49 lines)
-`<test name="Behaves as expected">
-    <template name="Ensure initial inputs are bound so render is as expected" test-values>
-        <div>
-            <label>Username:
-                <input [state.bind] name="username" value="Testing_Username" /></label>
-            <label>Color ("green" or "blue"):
-                <input [state.bind] name="color" value="blue" /></label>
-            <label>Opacity: <input [state.bind]
-                name="opacity"
-                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
-            <h5 style="
-                    opacity: 0.5;
-                    color: blue;
-                ">
-                testing_username
-            </h5>
-        </div>
-    </template>
-
-    <script>
-        element.querySelector('input[name="username"]').value = 'tEsT2'
-        event: keyup input[name="username"]
-    </script>
-
-    <script>
-        element.querySelector('input[name="color"]').value = 'green'
-        event: keyup input[name="color"]
-    </script>
-
-    <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
-        <div>
-            <label>Username:
-                <input [state.bind] name="username" value="tEsT2" /></label>
-            <label>Color ("green" or "blue"):
-                <input [state.bind] name="color" value="green" /></label>
-            <label>Opacity: <input [state.bind]
-                name="opacity"
-                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
-            <h5 style="
-                    opacity: 0.5;
-                    color: green;
-                ">
-                test2
-            </h5>
-        </div>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
-
-  "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
-`
-<!-- Due to bug with the test runner or testing framework, including this
-test will cause other tests to fail, but running it separately it succeeds. -->
-<test name="Misc sub-components correctly render">
-    <script>
-        element.cparts.template =
-            element.cpartSpares.template
-                .find(({attrs}) => attrs.name === 'comptest1')
-        assert: element.cparts.template
-    </script>
-
-    <template>
-        Testing
-        <x-Tutorial_P1>
-            Hello <strong>Modulo</strong> World!
-            <p class="neat">Any HTML can be here!</p>
-        </x-Tutorial_P1>
-        <x-templating_escaping>
-            <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
-            &amp;tables</em>" sent a message:</p>
-            <div class="msgcontent">
-                I <i>love</i> the classic <a target="_blank"
-                href="https://xkcd.com/327/">xkcd #327</a> on
-                the risk of trusting <b>user inputted data</b>
-            </div>
-        </x-templating_escaping>
-    </template>
-</test>
-
-
-<test name="Button sub-component behavior">
-    <script>
-        element.cparts.template =
-            element.cpartSpares.template
-                .find(({attrs}) => attrs.name === 'comptest2')
-    </script>
-
-    <!--
-    <template name="Renders">
-        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
-            <button @click:=props.myclicky>Test text</button>
-        </x-TestBtn>
-        <p>state.a: 1</p>
-    </template>
-    -->
-
-    <script>
-        event: click button
-        assert: state.a === 1337
-    </script>
-
-    <!--
-    <template name="Renders after click">
-        <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
-            <button @click:=props.myclicky>Test text</button>
-        </x-TestBtn>
-        <p>state.a: 1337</p>
-    </template>
-
-    <template name="Shouldn't show subcomp children" string-count=0>
-        IGNORED
-    </template>
-
-    -->
-</test>
-
-
-
-
-`,// (ends: /components/examplelib-tests/CompositionTests-tests.html) 
 
   "/components/modulowebsite/demo.html": // (71 lines)
 `<div class="demo-wrapper
