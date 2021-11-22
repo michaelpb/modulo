@@ -237,7 +237,7 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
         this.localNameMap = this.element.factory().loader.localNameMap;
     }
 
-    tagTransformLoad({ el }) {
+    transformTagLoad({ el }) {
         // dead code, but can come to life
         const newTag = this.localNameMap[el.tagName.toLowerCase()];
         if (newTag) {
@@ -530,19 +530,47 @@ Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     static factoryCallback(opts, factory, loadObj) {
-        // Note: Some of this might go into general config stuff
+        // Note: Some of this might go into general config stuff.
+        // Also, needs refactor when we get attr defaults.
         const EVENT = 'component.event';
         const DATA_PROP = 'component.dataProp';
+        const HEAD = 'component.head';
         const directiveShortcuts = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
         const directives = [ DATA_PROP, EVENT, 'component.children' ];
         /*const tagDirectives = this.mode !== 'vanish-into-document' ? {} :
             { 'body': 'vanishBody', 'head': 'vanishHead' };*/
-        return { directives, directiveShortcuts, tagDirectives: [] };
+        const vanishDirs = {
+            link: HEAD,
+            title: HEAD,
+            meta: HEAD,
+            script: 'component.script',
+        };
+        const tagDirectives = (opts.attrs.mode || '') === 'vanish-into-document'
+          ? vanishDirs : { };
+        return { directives, directiveShortcuts, tagDirectives };
+    }
+
+    headTagLoad({ el }) {
+        console.count('headTagLoad');
+        el.remove(); // delete old element & move to head
+        Modulo.globals.document.head.append(el);
+    }
+
+    scriptTagLoad({ el }) {
+        const newScript = Modulo.globals.document.createElement('script');
+        newScript.src = el.src; // TODO: Possibly copy other attrs
+        el.remove(); // delete old element
+        Modulo.globals.document.head.append(newScript);
     }
 
     /* Reconciler ElementCtx interface: */
     /* TODO: Can I refactor into above, e.g. generate a this.elementCtx = {
     ** directiveLoad: () => ... } as a factory step? */
+    directiveTagLoad(args) {
+        args.element = this.element;
+        this.element._invokeCPart(args.directiveName, 'TagLoad', args);
+    }
+
     directiveLoad(args) {
         //console.log('directive load');
         args.element = this.element;
@@ -566,7 +594,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     initializedCallback(renderObj) {
         this.localNameMap = this.element.factory().loader.localNameMap;
-        this.mode = this.attrs.mode || 'default'; // TODO refactor when we get attr defaults
+        this.mode = this.attrs.mode || 'regular'; // TODO refactor when we get attr defaults
         if (this.mode === 'shadow') {
             this.element.attachShadow({ mode: 'open' });
         }
@@ -592,18 +620,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updateCallback(renderObj) {
         let { innerHTML, patches } = renderObj.component;
         if (innerHTML !== null) {
-            let root = this.element;
             if (!this.reconciler) {
                 // XXX (Delete this, only needed for SSG)
                 this.newModRec(renderObj);
             }
+            let root = this.element; // default, use element as root
             if (this.mode === 'vanish-into-document') {
-                // TODO: Possibly make this a reconciler feature
-                // (Reason can't do for <PrivateComponents>: Requires parsing
-                // HTML, since /[^>]+/ only works since we ignore attributes)
-                const regExp = /<(\/?)(body|head)([^>]*)>/gi;
-                innerHTML = innerHTML.replace(regExp, '<$1modulo-v-$2$3>');
-                //root = Modulo.globals.document.documentElement;
+                root = Modulo.globals.document.body; // render into body
             } else if (this.mode === 'shadow') {
                 root = this.shadowRoot;
             }
@@ -626,7 +649,12 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         if (!this.element.isMounted) { // First time initialized
             if (this.mode === 'vanish') {
                 this.element.replaceWith(...this.element.childNodes); // Delete self
-            } else if (this.mode === 'vanish-into-document') {
+            }
+            if (this.mode.startsWith('vanish')) {
+                this.element.remove();
+            }
+            /*
+            else if (this.mode === 'vanish-into-document') {
                 for (const oldScr of this.element.querySelectorAll('script')) {
                     // TODO: should copy over all attributes, eg async
                     const newScript = Modulo.globals.document.createElement('script');
@@ -642,11 +670,10 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                 Modulo.globals.document.head.append(..._childrenOf('head'));
                 Modulo.globals.document.body.append(..._childrenOf('body'));
                 this.element.remove();
-                /*
                 //console.log('this is element.innerHTML', this.element.innerHTML);
                 //throw new Error('what');
-                */
             }
+            */
         }
     }
 
@@ -660,16 +687,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         }
     }
 
-    childrenMount({el}) {
-        // IDEA: Have value be querySelector, eg [component.children]="div"
+    childrenLoad({ el }) {
         el.append(...this.element.originalChildren);
-        //el.setAttribute('modulo-ignore', 'modulo-ignore');
-    }
-
-    childrenUnmount({el}) {
-        el.innerHTML = '';
-        //console.log('childrenUnmount!', el);
-        //el.removeAttribute('modulo-ignore');
     }
 
     eventMount({el, value, attrName, rawName}) {
@@ -744,15 +763,21 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
         const { prefixAllSelectors } = Modulo.cparts.style;
-        const { document } = Modulo.globals;
+        const doc = Modulo.globals.document;
         const { loader, name, fullName } = factory;
         content = prefixAllSelectors(loader.namespace, name, content);
-        const id = `${fullName}_style`;
-        let elem = document.getElementById(id);
+        const id = `${fullName}_Modulo_Style`;
+        let elem = doc.getElementById(id);
         if (!elem) {
-            elem = document.createElement('style');
+            elem = doc.createElement('style');
             elem.id = id;
-            document.head.append(elem)
+            if (doc.head === null) {
+                // NOTE: this is still broken, can still trigger
+                // before head is created!
+                setTimeout(() => doc.head.append(elem), 0);
+            } else {
+                doc.head.append(elem);
+            }
         }
         elem.textContent = content;
     }
@@ -814,8 +839,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         // (todo: untested, needs unit testing, iirc?)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
-            obj[template.attrs.name || 'default'] = template;
-            //obj[template.name || 'default'] = template;
+            obj[template.attrs.name || 'regular'] = template;
+            //obj[template.name || 'regular'] = template;
         }
         return obj;
     }
@@ -1284,6 +1309,7 @@ Modulo.reconcilers.Cursor = class Cursor {
 
     pushDescent(parentNode, parentRival) {
         // DEADCODE
+        // (see note on BFS vs DFS)
         this.parentNodeQueue.push([parentNode, parentRival]);
     }
 
@@ -1366,6 +1392,8 @@ Modulo.reconcilers.Cursor = class Cursor {
     }
 
     getMatchedNode(elem, keyedElems, keyedOthers) {
+        // IDEA: Rewrite keying elements with this trick: - Use LoadTag directive, removed keyed rival from DOM
+        /// - Issue: Cursor is scoped per "layer", and not created yet, so reconciler will need to keep keyed elements
         const key = elem && elem.getAttribute && elem.getAttribute('key');
         if (!key) {
             return null;
@@ -1411,10 +1439,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         this.patches = [];
         const rival = Modulo.utils.makeDiv(rivalHTML, true);
         const transforms = Object.assign({}, this.tagTransforms, tagTransforms);
-        this.findLoadDirectives(rival, transforms);
-        if (this.patches.length) {
-            this.applyPatches(this.patches);
-            this.patches = [];
+        this.applyLoadDirectives(rival, transforms);
+        if (this.patches.length) { // Were patches found?
+            this.applyPatches(this.patches); // They were, apply...
+            this.patches = []; // ...and clear.
         }
         return rival;
     }
@@ -1437,21 +1465,30 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         return this.patches;
     }
 
-    findLoadDirectives(elem, tagTransforms) {
+    applyLoadDirectives(elem, tagTransforms) {
         //const sel = Object.keys(tagTransforms).join(',');
         //for (const node of elem.querySelectorAll(sel || 'X')) {
+        this._oldPatch = this.patch;
+        this.patch = this.applyPatch; // Apply patches immediately
         for (const node of elem.querySelectorAll('*')) {
+            // legacy -v, TODO rm
             const newTag = tagTransforms[node.tagName.toLowerCase()];
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);
             }
+            ///////
 
+            const dName = this.tagDirectives[node.tagName.toLowerCase()];
+            if (dName) {
+                this.patchDirectives(node, `[${dName}]${node.tagName}`, 'TagLoad');
+            }
             for (const rawName of node.getAttributeNames()) {
                 // Apply load-time directive patches
                 this.patchDirectives(node, rawName, 'Load');
             }
         }
         this.markRecDirectives(elem); // TODO rm
+        this.patch = this._oldPatch;
     }
 
     markRecDirectives(elem) {
@@ -1521,6 +1558,9 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             } else if (!this.shouldNotDescend) {
                 // NOTE: Cannot do pushDescent (which would be BFS, then) since
                 // presently only works with DFS, for some reason.
+                // EASIEST SOLUTION: Create a new "descend()"
+                // that does the inverse: push current settings
+                // onto queue, but start new settings
                 //cursor.pushDescent(child, rival);
                 this.reconcileChildren(child, rival);
             }
@@ -1752,6 +1792,8 @@ Modulo.utils = class utils {
     static parseDirectives(rawName, directiveShortcuts) { //, directives) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
+            // TODO: If we ever support key= as a shortcut, this
+            // will break
         }
 
         // "Expand" shortcuts into their full versions

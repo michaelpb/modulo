@@ -63,6 +63,24 @@
     - One simple way to express it is: all cases of "&lt;C" turn into
       "&lt;modulo-C"
 
+- Thunked function / "PatchSet"
+    - For render() and directives, it might make sense to "squash" functions
+      into a "function set" that can run all (see older idea below about a
+      possible micro-optimization for rerender())
+          - E.g. instead of renderCallback()
+    - If that makes sense, then perhaps merging this with the idea of "patch
+      set" would help
+    - They could get "nested", but keep on storing a pre-computed flattened
+      version for fast speed
+    - In the end, this would almost be like a mini VM thing:
+        - Tightly optimize an inner loop
+        - A special list format for storing a sequence of function executions
+        - Each execution could be wrapped in a try/catch block
+        - Could have "metadata" in a separate list 
+    - Might even be useful for replacing "callback" interface with TagLoad --
+      generally dereferencing since {'body': 'bodyVanish'} is repetitive
+    - Note: Danger with this is hot-reloading -- needs to be easy to "refresh"
+
 ------
 # Misc notes:
 
@@ -351,6 +369,13 @@
 
 - Does not work, shadowDom only:Consideration for [component.children] ... Perhaps do < slot > interface
   instead?
+
+
+                // (Reason can't do for <PrivateComponents>: Requires parsing
+                // HTML, since /[^>]+/ only works since we ignore attributes)
+                //const regExp = /<(\/?)(body|head)([^>]*)>/gi;
+                //innerHTML = innerHTML.replace(regExp, '<$1modulo-v-$2$3>');
+
 <!--
 TODO Idea:
 Implement another demo type:
