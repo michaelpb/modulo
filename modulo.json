@@ -1,8 +1,8 @@
 {
     "preload": ["www-src/components/layouts.html"],
-    "output": "docs",
     "testLog": true,
     "domEngine": "jsdom",
     "testLogPath": "modulo.testlog.json",
+    "output": "tmp-www-out",
     "input": "www-src"
 }
