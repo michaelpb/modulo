@@ -8,6 +8,8 @@
       with CPart (can be configured with stackable defaults, has this.element
       back reference, etc)
 
+- Misc todo item: Rename "component.children" to "component.slot", so its more
+  obvious what it does
 ------
 
 # Broad idea or approach to detangle various rendering issues:
@@ -27,7 +29,9 @@
       but it isn't actually (e.g. one of the old "maps", or a hashed registry
       of cached renderObjs, or something, or a "pushAndFork(arr)" or something)
 
-- Predirectives
+
+
+- Predirectives (MOSTLY DONE!)
     - Directives that get resolved BEFORE reconciler.reconcile()
     - Maybe change the interface to support "loadString" then "reconcile"
     - The loadString step would make a fragment and then apply pre-directives

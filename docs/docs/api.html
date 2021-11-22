@@ -11,17 +11,6 @@ e2g1-Example a {
     text-decoration: underline;
     cursor: pointer;
 }
-</style><style id="e4g1-Example_Modulo_Style">
-e4g1-Example nav {
-    background: black;
-    color: gray;
-    padding: 3px;
-}
-e4g1-Example a {
-    color: lightblue;
-    text-decoration: underline;
-    cursor: pointer;
-}
 </style></head><body>
 
 
@@ -33,6 +22,9 @@ e4g1-Example a {
     
 
 
+
+<div [component.children]="above-navbar">
+</div>
 
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
@@ -196,8 +188,8 @@ e4g1-Example a {
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none">
-            
+        <aside style="border: none" [component.children]="">
+        
 
 <h1>API &amp; Extension</h1>
 
@@ -283,7 +275,7 @@ Modulo.cparts.mycoolpart = MyCoolPart;
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e3g1-example mm-ignore="mm-ignore" modulo-innerhtml=""><h3>Hello CPart World</h3></e3g1-example>
+                    <e1g1-example mm-ignore="mm-ignore" modulo-innerhtml=""></e1g1-example>
                 </div>
             </div>
         
@@ -402,11 +394,11 @@ a {
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e4g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
+                    <e2g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
     <nav><a @click:="script.swap" payload="shop">Shop</a>|Home</nav>
     <h1>Home</h1>
     <p>Welcome to my banana stand!</p>
-</e4g1-example>
+</e2g1-example>
                 </div>
             </div>
         
@@ -439,8 +431,7 @@ these renderObj</a>). For some types of spares, this effectively causes them to
 be "squashed" into a single renderObj.</p>
 
 
-
-        </aside>
+</aside>
     </main>
 
 
@@ -452,4 +443,4 @@ be "squashed" into a single renderObj.</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--1qf3u8j.js"></script></body>

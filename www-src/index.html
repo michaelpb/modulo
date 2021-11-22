@@ -1,6 +1,10 @@
 <script src="/m.js"></script>
 
-<div class="IndexWrapper">
+<x-Page
+    pagetitle="Modulo"
+    navbar="about">
+
+<div class="IndexWrapper" slot="above-navbar">
     <div class="Tagline">
         <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
         <div class="Tagline-logo">
@@ -26,12 +30,8 @@
         ></mws-Demo>
     </main>
 </div>
-<span id="about"></span>
+<span id="about" slot="above-navbar"></span>
 
-
-<x-Page
-    pagetitle="Modulo"
-    navbar="about">
 
 <section class="SideBySide">
     <aside class="TitleAside">

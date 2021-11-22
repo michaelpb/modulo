@@ -12,6 +12,61 @@
 
 
 
+<div [component.children]="above-navbar">
+<div class="IndexWrapper" slot="above-navbar">
+    <div class="Tagline">
+        <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
+        <div class="Tagline-logo">
+            <img src="/img/mono_logo_percent_only.png" class="Tagline-logoimg">
+        </div>
+        <h1 class="Tagline-title">modulo</h1>
+
+        <a style="background: #b90183; color: white;" href="#project_status" title="This product is still under heavy development.">(unreleased)</a>
+        <h2>A small, modular JavaScript Web Component framework</h2>
+        <ul>
+            <li>Fewer than 2000 lines of simple, commented code</li>
+            <li>Component system inspired by React, Svelte, and Polymer</li>
+            <!--<li>Declarative, synchronous, modular, and ease of learning</li>-->
+            <li>A dependency-free, "no fuss" drop-in for existing web apps</li>
+        <ul>
+    </ul></ul></div>
+
+    <main style="margin-top: 30px">
+        <mws-demo fromlibrary="Hello,Simple,ToDo,API,PrimeSieve,MemoryGame" demotype="minipreview" modulo-innerhtml=""><div class="demo-wrapper
+        
+        
+        
+        
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div modulo-ignore="">
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
+    </main>
+</div><span id="about" slot="above-navbar"></span></div>
+
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -37,8 +92,12 @@
 </nav>
 
 
-    <main class="Main">
-        
+    <main class="Main" [component.children]="">
+    
+
+
+
+
 
 <section class="SideBySide">
     <aside class="TitleAside">
@@ -183,8 +242,7 @@
 </section>
 
 
-
-    </main>
+</main>
 
 
 <footer>
@@ -195,4 +253,4 @@
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--1qf3u8j.js"></script></body>

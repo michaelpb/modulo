@@ -664,7 +664,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     childrenLoad({ el, value }) {
         let chosenSlot = value || el.getAttribute('name') || null;
-        const getSlot = c => c.getAttribute ? c.getAttribute('slot') : null;
+        const getSlot = c => c.getAttribute ? (c.getAttribute('slot') || null) : null;
         let childs = this.element.originalChildren;
         childs = childs.filter(child => getSlot(child) === chosenSlot);
         el.append(...childs);

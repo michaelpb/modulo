@@ -13,6 +13,9 @@
 
 
 
+<div [component.children]="above-navbar">
+</div>
+
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -171,8 +174,8 @@
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none">
-            
+        <aside style="border: none" [component.children]="">
+        
 
 <h1>CParts</h1>
 
@@ -535,8 +538,7 @@ They take the following attributes:</p>
 <p>TODO</p>
 
 
-
-        </aside>
+</aside>
     </main>
 
 
@@ -548,4 +550,4 @@ They take the following attributes:</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--1qf3u8j.js"></script></body>

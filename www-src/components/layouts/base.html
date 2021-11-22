@@ -10,6 +10,9 @@
 </head>
 <body>
 
+<div [component.children]="above-navbar">
+</div>
+
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
     <ul>
@@ -48,13 +51,11 @@
                 <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none">
-            {{ component.originalHTML|safe }}
+        <aside style="border: none" [component.children]>
         </aside>
     </main>
 {% else %}
-    <main class="Main">
-        {{ component.originalHTML|safe }}
+    <main class="Main" [component.children]>
     </main>
 {% endif %}
 

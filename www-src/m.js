@@ -1,4 +1,4 @@
-// modulo build jq8bof
+// modulo build -1ggu3ar
 'use strict';
 
 // # Introduction
@@ -665,7 +665,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     childrenLoad({ el, value }) {
         let chosenSlot = value || el.getAttribute('name') || null;
-        const getSlot = c => c.getAttribute ? c.getAttribute('slot') : null;
+        const getSlot = c => c.getAttribute ? (c.getAttribute('slot') || null) : null;
         let childs = this.element.originalChildren;
         childs = childs.filter(child => getSlot(child) === chosenSlot);
         el.append(...childs);
@@ -3545,7 +3545,7 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/modulowebsite.html) 
 
-  "/components/layouts/base.html": // (69 lines)
+  "/components/layouts/base.html": // (70 lines)
 `<!DOCTYPE html>
 <html>
 <head>
@@ -3557,6 +3557,9 @@ examples to the Modulo framework, not as a examples themselves -->
     <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
 </head>
 <body>
+
+<div [component.children]="above-navbar">
+</div>
 
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
@@ -3596,13 +3599,11 @@ examples to the Modulo framework, not as a examples themselves -->
                 <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none">
-            {{ component.originalHTML|safe }}
+        <aside style="border: none" [component.children]>
         </aside>
     </main>
 {% else %}
-    <main class="Main">
-        {{ component.originalHTML|safe }}
+    <main class="Main" [component.children]>
     </main>
 {% endif %}
 
@@ -3896,6 +3897,71 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 `,// (ends: /components/examplelib-tests/PrimeSieve-tests.html) 
 
+  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
+`<test name="Renders initially as expected">
+    <template>
+        <p>There are <em>42 articles</em> on ModuloNews.</p>
+        <h4 style="color: blue">MODULO RELEASED!</h4>
+        <p>The most exciting news of the…</p>
+        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
+        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
+        <p>Why constructing JS is risky …</p>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
+
+  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (49 lines)
+`<test name="Behaves as expected">
+    <template name="Ensure initial inputs are bound so render is as expected" test-values>
+        <div>
+            <label>Username:
+                <input [state.bind] name="username" value="Testing_Username" /></label>
+            <label>Color ("green" or "blue"):
+                <input [state.bind] name="color" value="blue" /></label>
+            <label>Opacity: <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
+            <h5 style="
+                    opacity: 0.5;
+                    color: blue;
+                ">
+                testing_username
+            </h5>
+        </div>
+    </template>
+
+    <script>
+        element.querySelector('input[name="username"]').value = 'tEsT2'
+        event: keyup input[name="username"]
+    </script>
+
+    <script>
+        element.querySelector('input[name="color"]').value = 'green'
+        event: keyup input[name="color"]
+    </script>
+
+    <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
+        <div>
+            <label>Username:
+                <input [state.bind] name="username" value="tEsT2" /></label>
+            <label>Color ("green" or "blue"):
+                <input [state.bind] name="color" value="green" /></label>
+            <label>Opacity: <input [state.bind]
+                name="opacity"
+                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
+            <h5 style="
+                    opacity: 0.5;
+                    color: green;
+                ">
+                test2
+            </h5>
+        </div>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
+
   "/components/examplelib-tests/MemoryGame-tests.html": // (152 lines)
 `<test name="starts a game">
     <template name="Ensure initial render is correct">
@@ -4049,71 +4115,6 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 
 `,// (ends: /components/examplelib-tests/MemoryGame-tests.html) 
-
-  "/components/examplelib-tests/Templating_1-tests.html": // (12 lines)
-`<test name="Renders initially as expected">
-    <template>
-        <p>There are <em>42 articles</em> on ModuloNews.</p>
-        <h4 style="color: blue">MODULO RELEASED!</h4>
-        <p>The most exciting news of the…</p>
-        <h4 style="color: blue">CAN JS BE FUN AGAIN?</h4>
-        <h4 style="color: blue">MTL CONSIDERED HARMFUL</h4>
-        <p>Why constructing JS is risky …</p>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Templating_1-tests.html) 
-
-  "/components/examplelib-tests/Tutorial_P3_state_bind-tests.html": // (49 lines)
-`<test name="Behaves as expected">
-    <template name="Ensure initial inputs are bound so render is as expected" test-values>
-        <div>
-            <label>Username:
-                <input [state.bind] name="username" value="Testing_Username" /></label>
-            <label>Color ("green" or "blue"):
-                <input [state.bind] name="color" value="blue" /></label>
-            <label>Opacity: <input [state.bind]
-                name="opacity"
-                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
-            <h5 style="
-                    opacity: 0.5;
-                    color: blue;
-                ">
-                testing_username
-            </h5>
-        </div>
-    </template>
-
-    <script>
-        element.querySelector('input[name="username"]').value = 'tEsT2'
-        event: keyup input[name="username"]
-    </script>
-
-    <script>
-        element.querySelector('input[name="color"]').value = 'green'
-        event: keyup input[name="color"]
-    </script>
-
-    <template name="Ensure changing inputs with state.bind causes updated rendering" test-values>
-        <div>
-            <label>Username:
-                <input [state.bind] name="username" value="tEsT2" /></label>
-            <label>Color ("green" or "blue"):
-                <input [state.bind] name="color" value="green" /></label>
-            <label>Opacity: <input [state.bind]
-                name="opacity"
-                type="number" min="0" max="1" step="0.1" value="0.5" /></label>
-            <h5 style="
-                    opacity: 0.5;
-                    color: green;
-                ">
-                test2
-            </h5>
-        </div>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
 
   "/components/examplelib-tests/CompositionTests-tests.html": // (70 lines)
 `

@@ -12,6 +12,9 @@
 
 
 
+<div [component.children]="above-navbar">
+</div>
+
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
@@ -154,8 +157,8 @@
 </mws-docsidebar>
             </nav>
         </aside>
-        <aside style="border: none">
-            
+        <aside style="border: none" [component.children]="">
+        
 
 <h1>Lifecycle &amp; Directives</h1>
 
@@ -360,11 +363,11 @@ Open your browser dev console to see messages...
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e9g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
+                    <e3g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
 Hello <strong>Modulo</strong> World!
 Open your browser dev console to see messages...
 <button @click:="script.gotClicked">Click me to generate an event</button>
-</e9g1-example>
+</e3g1-example>
                 </div>
             </div>
         
@@ -528,11 +531,11 @@ Show messages in console</label>
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e10g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
+                    <e4g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
 <label>
 <input [state.bind]="" name="enabled" type="checkbox" value="false">
 Show messages in console</label>
-</e10g1-example>
+</e4g1-example>
                 </div>
             </div>
         
@@ -650,7 +653,7 @@ run into the limits of what Modulo is capable of doing.</p>
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e11g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
+                    <e5g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
 
 <input [script.myinput]="">
 
@@ -658,7 +661,7 @@ run into the limits of what Modulo is capable of doing.</p>
 <button [component.event]click:="script.showInfo">
     Click me
 </button>
-</e11g1-example>
+</e5g1-example>
                 </div>
             </div>
         
@@ -930,7 +933,7 @@ custom directives used (which should be avoided to begin with).</p>
         
             <div class="editor-minipreview">
                 <div modulo-ignore="">
-                    <e12g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
+                    <e6g1-example mm-ignore="mm-ignore" modulo-innerhtml="">
     Game Shop: 31 moneys<br>
     Avg Movie Creeps: 10 moneys<br>
     <button @click:="script.toggle">
@@ -939,7 +942,7 @@ custom directives used (which should be avoided to begin with).</p>
         
     </button> <br>
     
-</e12g1-example>
+</e6g1-example>
                 </div>
             </div>
         
@@ -955,8 +958,7 @@ component, but in general shortcuts are only intended for CPart directives, not
 custom script tag directives.</p>
 
 
-
-        </aside>
+</aside>
     </main>
 
 
@@ -968,4 +970,4 @@ custom script tag directives.</p>
 
 
 
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11-1rl6anl.js"></script></body>
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script><script src="/js/modulo-build-121.11--1qf3u8j.js"></script></body>
