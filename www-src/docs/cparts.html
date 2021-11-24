@@ -301,6 +301,12 @@ They take the following attributes:</p>
             will be put directly into the document's body, for a clean DOM
             structure that removes itself entirely during this "one-time
             render".</li>
+
+
+            <li><code>mode="custom-root"</code> - This is rarely useful, but
+            allows for setting some other DOM element as the new root element
+            for the component to target for rendering it's content. This is
+            done by setting <code>renderObj.component.root</code>.</li>
         </ul>
     </li>
 </ul>

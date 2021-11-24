@@ -86,7 +86,7 @@ class TestSuite extends Modulo.ComponentPart {
             }
             element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
         `);
-        const document = element.factory().testDoc;
+        const document = element.ownerDocument;
         const extra = { _reportValues, element, Modulo, document };
         const vars = Object.assign(element.getCurrentRenderObj(), extra);
         let func;

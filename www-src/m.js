@@ -1,4 +1,4 @@
-// modulo build -1d1fa83
+// modulo build i18vht
 'use strict';
 
 // # Introduction
@@ -86,8 +86,13 @@ Modulo.DOMLoader = class DOMLoader extends HTMLElement {
 */
 
 Modulo.ComponentPart = class ComponentPart {
+    static getAttrDefaults(node, loader) {
+        return {};
+    }
+
     static loadCallback(node, loader) {
-        const attrs = Modulo.utils.mergeAttrs(node);
+        const defaults = this.getAttrDefaults(node, loader);
+        const attrs = Modulo.utils.mergeAttrs(node, defaults);
         // TODO is this still useful? --v
         const content = node.tagName.startsWith('TE') ? node.innerHTML
                                                       : node.textContent;
@@ -441,7 +446,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                 this._invokeCPart(cName, lc + 'Callback');
             }
             if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
-                  (this.fullName + '|' + lc) in Modulo.breakpoints)) {
+                    (this.fullName + '|' + lc) in Modulo.breakpoints)) {
                 // DEADCODE, finish or delete
                 debugger;
             }
@@ -491,7 +496,11 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     parsedCallback() {
         // HACKy code here
         if (this.hasAttribute('modulo-innerhtml')) { // "modulo-innerhtml" pseudo-directive
-            this.originalHTML = this.getAttribute('modulo-innerhtml')
+            // TODO: Broken SSG-only code: Need to instead move to "template"
+            // tag in head with a unique ID to squirrel away resulting DOM, or
+            // something similar (and SSG should delete all directives in
+            // resulting innerHTML so it forces attachment of them)
+            this.originalHTML = this.getAttribute('modulo-innerhtml');
         } else if (!this.isMounted) {
             this.originalHTML = this.innerHTML;
             this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
@@ -500,15 +509,11 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         // /HACK
 
         this.setupCParts();
-        this.lifecycle(['initialized'])
+        this.lifecycle([ 'initialized' ])
         this.rerender();
         this.isMounted = true;
     }
 }
-
-Modulo.directiveShortcuts = [[/^@/, 'component.event'],
-                             [/:$/, 'component.dataProp']];
-
 
 Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     static childrenLoadedCallback(childrenLoadObj, loader, data) {
@@ -530,6 +535,14 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
 Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
+    static getAttrDefaults() {
+        return {
+            mode: 'regular',
+            rerender: 'event',
+            engine: 'ModRec',
+        };
+    }
+
     static factoryCallback(opts, factory, loadObj) {
         // Note: Some of this might go into general config stuff.
         // Also, needs refactor when we get attr defaults.
@@ -538,17 +551,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const HEAD = 'component.head';
         const directiveShortcuts = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
         const directives = [ DATA_PROP, EVENT, 'component.children' ];
-        /*const tagDirectives = this.mode !== 'vanish-into-document' ? {} :
-            { 'body': 'vanishBody', 'head': 'vanishHead' };*/
-        const vanishDirs = {
+        const tagDirectives = opts.attrs.mode === 'vanish-into-document' ? {
             link: HEAD,
             title: HEAD,
             meta: HEAD,
             // slot: 'component.children',
             script: 'component.script',
-        };
-        const tagDirectives = (opts.attrs.mode || '') === 'vanish-into-document'
-          ? vanishDirs : { };
+        } : { };
         return { directives, directiveShortcuts, tagDirectives };
     }
 
@@ -603,8 +612,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     newReconciler({ directives, directiveShortcuts, tagDirectives }) {
-        const { engine = 'ModRec' } = this.attrs;
-        this.reconciler = new Modulo.reconcilers[engine]({
+        this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
             directives,
             directiveShortcuts,
             tagDirectives,
@@ -619,17 +627,20 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     updateCallback(renderObj) {
-        let { innerHTML, patches } = renderObj.component;
+        let { innerHTML, patches, root } = renderObj.component;
         if (innerHTML !== null) {
             if (!this.reconciler) {
                 // XXX (Delete this, only needed for SSG)
                 this.newModRec(renderObj);
             }
-            let root = this.element; // default, use element as root
-            if (this.mode === 'vanish-into-document') {
-                root = Modulo.globals.document.body; // render into body
+            if (this.mode === 'regular' || this.mode === 'vanish') {
+                root = this.element; // default, use element as root
             } else if (this.mode === 'shadow') {
-                root = this.shadowRoot;
+                root = this.element.shadowRoot;
+            } else if (this.mode === 'vanish-into-document') {
+                root = Modulo.globals.document.body; // render into body
+            } else {
+                Modulo.assert(this.mode === 'custom-root', 'Err:', this.mode);
             }
             patches = this.reconciler.reconcile(root, innerHTML || '', this.localNameMap);// rm last arg
         }
@@ -639,16 +650,11 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updatedCallback(renderObj) {
         const { patches, innerHTML } = renderObj.component;
         if (patches) {
-            // hax XXX
-            /*if (this.mode === 'vanish' || this.mode === 'vanish-into-document') {
-                console.log('this is element.innerHTML2', this.element.innerHTML);
-            }*/
-            // hax XXX
             this.reconciler.applyPatches(patches);
         }
 
         if (!this.element.isMounted && this.mode.startsWith('vanish')) {
-            // First time initialized
+            // First time initialized, and is one of the vanish modes
             this.element.replaceWith(...this.element.childNodes); // Replace self
         }
     }
@@ -693,13 +699,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         this.eventMount(info);
     }
 
-    eventUnmount({el, attrName}) {
+    eventUnmount({ el, attrName }) {
         const listen = el.moduloEvents[attrName];
         el.removeEventListener(attrName, listen);
         delete el.moduloEvents[attrName];
     }
 
-    dataPropMount({el, value, attrName, element}) {
+    dataPropMount({ el, value, attrName, element }) {
         const { get } = Modulo.utils;
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
@@ -743,8 +749,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({content}, factory, renderObj) {
         const { prefixAllSelectors } = Modulo.cparts.style;
-        const doc = Modulo.globals.document;
         const { loader, name, fullName } = factory;
+        const doc = Modulo.globals.document;
         content = prefixAllSelectors(loader.namespace, name, content);
         const id = `${fullName}_Modulo_Style`;
         let elem = doc.getElementById(id);
@@ -1181,10 +1187,9 @@ Modulo.templating.defaultOptions.filters = (function () {
     //trim: s => s.trim(), // TODO: improve interface to be more useful
     //invoke: (s, arg) => s(arg),
     //getAttribute: (s, arg) => s.getAttribute(arg),
-    //stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
-    // {% for rowData in table %}
-    //    {{ rowData|renderas:template.row }}
-    // {% endfor %}
+    // Idea: Could move more utils here, e.g. style:
+    // stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+
     // Idea: Generalized "matches" filter that gets registered like such:
     //     defaultOptions.filters.matches = {name: //ig}
     // Then we could configure "named" RegExps in Script that get used in
@@ -1192,7 +1197,6 @@ Modulo.templating.defaultOptions.filters = (function () {
 
     const filters = {
         add: (s, arg) => s + arg,
-        // color|allow:"red,blue"|default:"blue"
         allow: (s, arg) => arg.split(',').includes(s) ? s : '',
         capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
         concat: (s, arg) => s.concat ? s.concat(arg) : s + arg,
@@ -1646,9 +1650,9 @@ Modulo.utils = class utils {
         return obj;
     }
 
-    static mergeAttrs(elem) {
-        const {parseAttrs} = Modulo.utils;
-        return Object.assign(parseAttrs(elem), elem.dataProps || {});
+    static mergeAttrs(elem, defaults) {
+        const attrs = Modulo.utils.parseAttrs(elem);
+        return Object.assign(defaults, attrs, elem.dataProps || {});
     }
 
     static parseAttrs(elem) {
@@ -3661,6 +3665,37 @@ examples to the Modulo framework, not as a examples themselves -->
 
 `,// (ends: /components/examplelib-tests/Hello-tests.html) 
 
+  "/components/examplelib-tests/ToDo-tests.html": // (29 lines)
+`<test name="Basic functionality">
+
+    <template name="Ensure initial render is correct" test-values>
+        <ol>
+            <li>Milk</li><li>Bread</li><li>Candy</li>
+            <li>
+                <input [state.bind] name="text" value="Beer" />
+                <button @click:="script.addItem">Add</button>
+            </li>
+        </ol>
+    </template>
+
+    <script>
+        event: click button
+        assert: state.list.length === 4
+    </script>
+
+    <template name="Ensure render after adding is fine" test-values>
+        <ol>
+            <li>Milk</li><li>Bread</li><li>Candy</li><li>Beer</li>
+            <li>
+                <input [state.bind] name="text" value="" />
+                <button @click:="script.addItem">Add</button>
+            </li>
+        </ol>
+    </template>
+</test>
+
+`,// (ends: /components/examplelib-tests/ToDo-tests.html) 
+
   "/components/examplelib-tests/API-tests.html": // (43 lines)
 `<test name="renders with search data">
 
@@ -3705,37 +3740,6 @@ examples to the Modulo framework, not as a examples themselves -->
 </test>
 
 `,// (ends: /components/examplelib-tests/API-tests.html) 
-
-  "/components/examplelib-tests/ToDo-tests.html": // (29 lines)
-`<test name="Basic functionality">
-
-    <template name="Ensure initial render is correct" test-values>
-        <ol>
-            <li>Milk</li><li>Bread</li><li>Candy</li>
-            <li>
-                <input [state.bind] name="text" value="Beer" />
-                <button @click:="script.addItem">Add</button>
-            </li>
-        </ol>
-    </template>
-
-    <script>
-        event: click button
-        assert: state.list.length === 4
-    </script>
-
-    <template name="Ensure render after adding is fine" test-values>
-        <ol>
-            <li>Milk</li><li>Bread</li><li>Candy</li><li>Beer</li>
-            <li>
-                <input [state.bind] name="text" value="" />
-                <button @click:="script.addItem">Add</button>
-            </li>
-        </ol>
-    </template>
-</test>
-
-`,// (ends: /components/examplelib-tests/ToDo-tests.html) 
 
   "/components/examplelib-tests/SearchBox-tests.html": // (119 lines)
 `<test name="Renders based on state">

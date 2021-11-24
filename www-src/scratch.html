@@ -1,4 +1,5 @@
 <script src="/js/Modulo.js"></script>
+
 <modulo>
     <load namespace="x" src="/components/layouts.html" ></load>
     <component name="Test2" mode="vanish-into-document">
@@ -21,7 +22,7 @@
                 </div>
 
                 <div style="border: 1px green solid; padding: 50px; margin: 50px;">
-                    <div [component.children] name="slotties">
+                    <div [component.children]="slotties">
                     </div>
                 </div>
 
@@ -30,17 +31,24 @@
                     </div>
                 </div>
 
-
                 <footer>- (footer) -</footer>
                 <!--<script src="js/not-exists-body.js"></script>-->
             </body>
         </template>
+        <script>
+            function prepareCallback({ component }) {
+                // activated with "custom-root"
+                component.root = document.querySelector('#what')
+            }
+        </script>
     </component>
 </modulo>
 <script> Modulo.defineAll() </script>
 
+<div id="what"></div>
+
 <x-Test2
-    pagetitle="Testing testing"
+    pagetitle="Do the testing thing!"
     navbar="lol">
 
     <eg-Hello></eg-Hello>

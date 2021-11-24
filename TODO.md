@@ -1,5 +1,27 @@
 ------
 
+# Broad ideas for increased code-use around CParts + templates + build
+
+- Problem:
+    - How do we structure different asset requirements? How can we make JS/CSS
+      build bundles? How do CParts expose this?
+    - Idea 1: CParts can implement a "exportCallback" that accumulates a JS file
+    - Idea 2: This could somehow get folded into the < script > and < style >
+      tag in the header idea: Basically, a CPart can export a "head depedency",
+      that get inserted of the given type. Thus, building is the same as just
+      summing together all "exports" or head-dependencies.
+    - Idea 3: This feels like this could also somehow get folded into "fast
+      reorged builds" (e.g. resurrecting factoryData)
+    - Idea 4: For flat
+
+- IDEA: When we get default attrs, refactor Style factory Callback into a
+  Template that somehow implements prefixAllSelectors. The Template can be
+  overridden.
+
+
+- Misc cleanup: Replace all Modulo.globals.document with ownerDocument!
+
+
 # Broad idea for increased code re-use around coniguration:
 
 - "Configurable" base class
