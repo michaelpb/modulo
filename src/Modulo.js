@@ -59,6 +59,32 @@ Modulo.defineAll = function defineAll() {
     });
 };
 
+
+/*
+Modulo.defineAll = function defineAll(customConfig) {
+    if (Modulo.config) {
+        Modulo.configHistory.push(Modulo.config);
+    }
+    const attrs = { namespace: 'x', src: '/' };
+    Modulo.config = Object.assign(configDefaults, {
+        instances: {
+            fetchQ: new Modulo.FetchQueue(),
+            globalLoader: new Modulo.Loader(null, { attrs }),
+        },
+    }, customConfig);
+    Modulo.globalLoader = Modulo.config.instances.loader;
+    Modulo.fetchQ = Modulo.config.instances.fetchQ;
+    Modulo.CommandMenu.setup();
+    Modulo.fetchQ.wait(() => {
+        const query = 'template[modulo-embed],modulo,m-module';
+        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+            Modulo.globalLoader.loadString(elem.innerHTML);
+        }
+    });
+};
+*/
+
+
 /*
 Modulo.DOMLoader = class DOMLoader extends HTMLElement {
     // TODO: Delete DOMLoader
