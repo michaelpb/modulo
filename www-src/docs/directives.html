@@ -364,24 +364,24 @@ text='
 <em>CParts</em> (1 from <em>State</em> and 3 from <em>Component</em>).</p>
 
 <ul>
-    <li><code>[state.bind]</code> - Two-way binding with <em>State</em>
-    data, with the key determined by the <code>name=</code> property of
-    whatever it is attached to.</li>
-
-    <li><code>[component.children]</code> - Reattach the original child
-    elements that this component had when it was first mounted to a new DOM
-    element. (For React users, this is similar to doing
-    <code>{this.props.children}</code>.)</li>
+    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
+    Attach data to a DOM element's `.dataProp` object, which can be used to
+    directly pass <code>renderObj</code> values as <em>Props</em> or
+    events</li>
 
     <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
     Attach event listeners to DOM elements, and remove them when the DOM
     elements are removed. (For jQuery users, this is used for similar purposes
     as "live" (delegated) events, but is faster.)</li>
 
-    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
-    Attach data to a DOM element's `.dataProp` object, which can be used to
-    directly pass <code>renderObj</code> values as <em>Props</em> or
-    events</li>
+    <li><code>[component.slot]</code> - Reattach the original child elements
+    that this component had when it was first mounted to a new DOM element.
+    (For React users, this is similar to doing
+    <code>{this.props.children}</code>.)</li>
+
+    <li><code>[state.bind]</code> - Two-way binding with <em>State</em>
+    data, with the key determined by the <code>name=</code> property of
+    whatever it is attached to.</li>
 </ul>
 
 <h3>Directives vs templates</h3>

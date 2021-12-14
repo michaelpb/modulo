@@ -19,8 +19,20 @@
   overridden.
 
 
-- Misc cleanup: Replace all Modulo.globals.document with ownerDocument!
+- Misc cleanup: Replace all Modulo.globals.document with "ownerDocument"!
 
+- MDU idea:
+    - MTLMarkdown - A varient of MTL engine that does a "markown" conversion
+      after templating but before setting component.innerHTML
+    - Or maybe better yet, markdowntemplate is the CPart
+    - Building on that, perhaps a way to configure markdown "handlers" for
+      different types, e.g. using x-EmbedImg instead of img.
+    - Could create and register custom tags using TagLex
+
+# Ideas for better CPart development:
+
+- Script should allow "export-as-cpart" or "cpart-name", which creates a
+  one-off CPart class that can be reused
 
 # Broad idea for increased code re-use around coniguration:
 

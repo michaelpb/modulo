@@ -15,12 +15,14 @@
 
         <test name="Testing innerHTML interface">
             <script name="Ensure component exists and innerHTML starts as null">
-                const { innerHTML } = component;
+                const { innerHTML } = component
                 component.innerHTML = '<div id="test"><p>Abc</p></div>'
-                component.rerender();
+                // Note: Need to change this if we ever change lc methods
+                element.lifecycle([ 'render', 'update', 'updated' ])
                 assert: innerHTML === null
             </script>
-            <template skip-rerender name="Ensure innerHTML causes reconcile">
+
+            <template skip-rerender name="Ensure setting innerHTML causes reconcile">
                 <div id="test"><p>Abc</p></div>
             </template>
         </test>

@@ -140,8 +140,8 @@ to integrate the new and the old! Or maybe it sounded cool. Maybe that!</p>
 
 <hr />
 <p><strong>Q: Isn't <em>Modulo</em> already a thing in
-JavaScript?</strong></pHere>
-<p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
+JavaScript?</strong></p>
+<p>A: Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
 Instead, it uses the percent sign as a <em>remainder operator</em>,
 which behaves similarly for some numbers, but differs for negative
 numbers. So, while Modulo.js is not the first thing to be called
@@ -151,6 +151,149 @@ development for years.">"Modulo" in JS</abbr> it <em>is not</em>
 named after the <code>%</code> operator in JavaScript, making both the logo and
 the name a bit of a pedantic and tongue-in-cheek jab at our favorite (but
 sometimes deficient) computer language.</p>
+
+
+
+<mws-Section name="workflow">Learning and workflow</mws-Section>
+
+<p>In this section, I'll explain how Modulo was designed with learners and dev
+shops in mind. Modulo was designed observing the pitfalls involved with 1)
+ramping up new coders, 2) new coder learning component frameworks, and 3)
+industry workflow patterns.</p>
+
+
+
+<h3>1. Ramping up new coders</h3>
+
+<p>The first task that Modulo was designed to tackle was the task of ramping up
+novice engineers or junior hires, such as coders who only know HTML and
+CSS.</p>
+
+<p>It used to be that the cutting-edge of software development offered easy
+"ramp ups" from HTML and CSS: PHP, jQuery, and even stacks like ColdFusion or
+old-school ASP, all enabled HTML and CSS developers to "spice up" their static
+sites with backend logic or frontend behavior, only by sprinkling in some
+cut-and-paste examples or learning a few concepts at a time.  This is how I
+learned coding web app coding: One tiny bit of PHP at a time. However, this is
+no longer an option. Even modern PHP with an MVC framework typically resembles
+other backend development more (in other words, does not provide this ramp-up),
+and jQuery is largely obsoleted by built-in browser features (notably,
+<code>querySelector</code>) and more sophisticated frontend frameworks such as
+React. This is good, since the previous approaches were completely
+unmaintainable as web-app behavior grows in complexity. Any dev shop without a
+more sophisticated MVC framework either ended up developing their own informal,
+chaotic MVC framework out of pure necessity, or just suffered from paralyzing
+technical debt, spending time hunting down SQL statements scattered throughout
+their sprawling directory tree of PHP files.</p>
+
+<p>So, how do we provide this ramp-up today, without falling into the traps of
+yesterday? Modulo provides a clear ramp-up from static HTML to JavaScript apps.
+Even with the ramp-up, it still keeps components encapsulated, and permits
+code-sharing via component libraries. It's basis on simple web-standards even
+permits a "final ramp-up" to another JavaScript framework all together, if
+Modulo's immature feature-set falls short.</p>
+
+<p>While still in heavy development and undocumented, the
+<code>modulocli</code> static-site generator used to generate this page is also
+based on that ramp-up concept, with a rule of 1:1 correspondence between input
+and output.  This enables people only familiar with manually built static sites
+to more easily reason with and understand the purpose of static site
+generation.  Furthermore, if static sites fall short, the option for a full
+stack app is always available, since <code>modulocli</code> also permits
+spinning up a backend server too as a convenience.</p>
+
+
+
+<h3>2. Novices learning component frameworks</h3>
+
+<p>At this point, I've taught <em>a lot</em> of novice engineers to code using
+React JavaScript <a href="https://kickstartcoding.com/">at my coding school
+Kickstart Coding</a>. I've learned that JavaScript is more difficult for
+newbies than other languages such as Python, generally due to confusion around
+async topics and the large number of variants, versions, and coding styles
+resulting in code snippets they find online being harder to integrate.  I've
+also learned that React in particular is tricky for beginners, and can even be
+difficult for more intermediate programmers who are just not used to thinking
+in terms of directional data-flow, state, and so on.</p>
+
+<p>When designing Modulo, I wanted to create a framework that resembled React,
+but designed from the ground-up to be easier to learn. When teaching React, I
+found that learners benefit most when they see clear, explicit connections. For
+example, I found it easier to explain the concept and use of state data when
+there was an explicit state object (i.e. <code>this.state</code>) to point to
+instead of various variables or properties (as with React Hooks, or other
+frameworks like Vue.js or Svelte). Other challenges I noticed were with JSX:
+The idea of mixing XML and embedded JavaScript is extremely powerful, but
+perhaps too powerful for newer developers who are also learning JavaScript for
+the first time. Using a Liquid-style templating language makes component HTML
+development resemble templating, which is more easily understood than DOM-tree
+building with a XML/JS syntax hybrid, and is more widely familiar, as some
+email template software uses similar syntax.  Similarly, moving "click event"
+functions to their own "zone" in the component definition (the <em>Script</em>
+CPart), makes it easier for new developers to find, and distinguish what is
+custom functionality from general boilerplate.</p>
+
+
+
+<h3>3. Industry workflow patterns</h3>
+
+<p>A common software team structure might consist of designers who produce
+mockups, with specs often written in CSS units (e.g. 3px margin, color is of a
+certain pallet, etc), frontend developers turn these into React JavaScript
+components, and finally backend developers developing APIs to permit the
+features. There exists several clear "separations" or "gaps" in skillsets in
+this workflow which can result in unfortunate amounts of back-and-forth,
+especially between the frontend developer and the designer. Many designers are
+comfortable with the basics of CSS, but have trouble with a modern frontend
+stack. This, I think, is a core problem that many "no code" solutions seek to
+solve: How can we give the designers more control so there's less
+back-and-forth between them and developers?</p>
+
+<p>The goal of Modulo is to enable designers who may only have comfort with
+HTML and CSS to begin developing components directly. By combining a simple
+templating language with components that "ramp up" from plain HTML and CSS,
+designers can give component development a "first pass" before even handing it
+off to JavaScript developers for any more custom aspects. While not finished
+yet, there is also plans to make sure it integrates well with <a
+href="https://storybook.js.org/">Storybook</a> and similar "component library
+show-cases". Modulo's declarative style of CParts is unusually well suited to
+this, enabling more easily categorized behavior of components.</p>
+
+<p>Perhaps more importantly, the "CPart" abstraction enables an entirely new
+alternative structure for a frontend team: Designers, component developers, and
+CPart developers. In this structure, designers focus on mockups, component
+developers use HTML and CSS to bring those mockups to life, and CPart
+developers do all the heavy JavaScript development, writing an internal library
+of custom CParts that interface with necessary APIs or code certain behavior.
+Using this model, the component developers might never use the <em>Script</em>
+CPart: Instead, all custom JavaScript behavior is coded in custom CParts by the
+CPart developers, and then re-used by the component developers wherever that
+custom behavior is needed. This enables cleaner separation of duties: CPart
+developers are the only role that requires JavaScript coding chops, developing
+CParts that handle the nitty-gritty of interfacing with backend APIs, but not
+needing to know anything about styling or even UX or user-facing behavior.
+Similarly, Component developers can avoid needing to know much about the
+backend, about API usage, or even JavaScript at all: They just need to be
+comfortable "snapping together" CParts.</p>
+
+<p>Finally, from a big picture framework design perspective, I think this sort
+of "ramp up" is a sign of good framework design in general. I think writing
+documentation for newbies makes it easier for pros to pick up as well, and
+forces complex ideas into simpler packages.  When deadlines aren't pressing
+down on us, I often view software library development, including development of
+internal libraries, as sort of like creating a mini-framework (or even a sort
+of domain-specific language that happens to be a subset of the original
+language), that is especially suited to solving the task at hand. Eventually,
+as you build upon layers of abstraction, you have created a "DSL" that enables
+an expression or statement that solves the problem, expressed in a very
+high-level way. Good frameworks, in my opinion, are both written with this in
+mind, but also expose that to framework extenders, in the form of middleware
+interfaces.  CParts are basically a form of powerful middleware.  In this case,
+that's what Modulo enables you to do: You can develop a collection of CParts
+that turn your configured version of Modulo into a sort of "DSL" to solve
+specific issues in your specific problem domain.</p>
+
+
 
 
 <hr />
@@ -270,12 +413,14 @@ patterns of usage.  Just look at the dozens of ways that Redux is implemented
 in the industry, for an example. Just saying that you use "Redux" tells little
 about the code structure or practices, or the myriad of middleware that is
 typically incorporated to handle various common use-patterns. Redux Toolkit
-projects can look entirely different than other Redux projects! Once you "bring
-your own" patterns to fill in these gaps, only then the framework is "truly
-complete" (using the nomenclature I'm using in this document, at least). One
-Redux setup might be so different than another due to patterns of usage, that
-the lines defining them are a bit fuzzier, and they might as well be a
-different framework.</p>
+(which <em>is</em> actually opinionated) can make projects look entirely
+different than the "BYO" Redux projects! Once you "bring your own" patterns to
+fill in these gaps, only then the framework is "truly complete", using the
+nomenclature I'm using in this document, at least. One Redux setup might be so
+different than another due to patterns of usage, that the lines defining them
+are a bit fuzzier, in some cases to the point where it's difficult to share
+code between different interpretations of the same framework, making it almost
+like a different framework altogether.</p>
 
 <p>With any project, very quickly the "userland" (e.g. developer's)
 code eclipses the framework code in size and performance impact, which means
@@ -284,7 +429,7 @@ resulting product than internal implementations. If the documentation shows
 many slow performing examples, or if it doesn't suggest anything at all and
 developers tend to go for slow implementations, I think it's perfectly fair to
 say that the framework is "slow", regardless of the internal operations. (An
-adjective that probably applies to Modulo as well!)</p>
+adjective that no doubt applies to Modulo as well, to be fair!)</p>
 
 
 <p>Modulo's goal is short code and long docs. It's basically "Fish", but
@@ -299,8 +444,8 @@ less than 500 lines for Electron.js. That, in turn, evolved out of a demo that
 I live coded for a class I was teaching on React JavaScript back in 2017. The
 in-class demo was a "React-like" in just a few dozen lines of code, to explain
 the core philosophy and patterns used by React without the extra baggage of the
-new syntax and complicated build environment. Similarly, the Modulo Template
-Language evolved out of <a
+new JSX syntax and complicated build environment (webpack, babel, etc).
+Similarly, the Modulo Template Language evolved out of <a
 href="https://www.npmjs.com/package/tinytiny">TinyTiny</a>, which was an
 expanded version of an even shorter "codegolf" challenge that I had done for
 fun (now about a decade ago).</p>
@@ -317,8 +462,11 @@ tweak or two and the right context. This doesn't matter either way for our
 purposes.  Also, I'm very far from the first person to approach framework
 development this way &mdash; in fact, the increasingly popular Alpine.js
 follows a similar principle! It also happens to resemble my silly "Fish"
-example, but is actually real, so if you want an actually useful version of
-this, <a href="https://alpinejs.dev/">check it out</a>.</p>
+example, but is actually real and truly useful, so if you want an actually
+production-ready version of this, <a href="https://alpinejs.dev/">check it
+out</a>. If the "component-oriented" structure of Modulo is not your cup of
+tea, but you still want a tiny, modern, drop-in JS framework, Apline.js could
+be a good option!</p>
 
 
 

@@ -586,7 +586,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     /* Reconciler ElementCtx interface: */
-    /* TODO: Can I refactor into above, e.g. generate a this.elementCtx = {
+    /* TODO: Can I refactor into newReconciler, e.g. generate a this.elementCtx = {
     ** directiveLoad: () => ... } as a factory step? */
     directiveTagLoad(args) {
         args.element = this.element;
@@ -624,6 +624,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     newReconciler({ directives, directiveShortcuts, tagDirectives }) {
+        /* TODO: Rename elementCtx into a "callbacks" and then create an obj of
+        ** pre-computed bound directive calbacks there */
         this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
             directives,
             directiveShortcuts,
@@ -642,9 +644,9 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         let { innerHTML, patches, root } = renderObj.component;
         if (innerHTML !== null) {
 
-            if (!this.reconciler) { // XXX (Delete this, only needed for SSG)
-                this.newModRec(renderObj);
-            }
+            //if (!this.reconciler) { // XXX (Delete this, only needed for SSG)
+            //    this.newReconciler(renderObj);
+            //}
 
             if (this.mode === 'regular' || this.mode === 'vanish') {
                 root = this.element; // default, use element as root
@@ -670,7 +672,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                                         this.mode === 'vanish-into-document')) {
             // First time initialized, and is one of the vanish modes
             this.element.replaceWith(...this.element.childNodes); // Replace self
-            this.element.remove();
+            this.element.remove(); // TODO: rm when fully tested
             //console.log('removing!', this.element);
         }
     }
@@ -693,7 +695,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         el.append(...childs);
     }
 
-    eventMount({el, value, attrName, rawName}) {
+    eventMount({ el, value, attrName, rawName }) {
         // TODO: Make it @click.payload, and then have this see if '.' exists
         // in attrName and attach as payload if so
         const { resolveDataProp } = Modulo.utils;
@@ -907,11 +909,12 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     }
 
     cb(func) {
+        // DEAD CODE (but used in documentation...)
         const renderObj = this.element.getCurrentRenderObj();
         return (...args) => {
             this.prepLocalVars(renderObj);
             func(...args);
-            //this.clearLocalVariablesj(renderObj);
+            //this.clearLocalVariables(renderObj); // should do, set to "Invalid wrapped"
         };
     }
 
