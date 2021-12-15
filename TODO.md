@@ -1,5 +1,81 @@
 ------
 
+# Final To-Do:
+
+1. HeadExportCPart
+  - "AssetCPart" ?
+  - Base class for Script and Style CPart
+  - Allow CParts to export a tag with given content (style or script)
+
+2. Finish m.build()
+  - Idea, use hashes? can that hack work?
+
+3. ModRec & DOMCursor refactor
+  - Finish de-tangling bugs
+  - Implement new patch-set system
+  - Swap algo with non-recursive DFS using explicit stack var
+
+4. CPart interface refactor
+  - Decide on "template" vs "Template"
+
+5. Decide on general Modulo config
+  - Change "defineAll" to "configAndRegister" or something
+  - Generates a "configuration stack" of Modulo objects
+  - Remove ALL global "Modulo" object references, instead allow instantiating
+    entire framework / lib as encapsulated config instance
+  - Decide on Possibly moving more config to this level
+
+6. Namespaces & Module interface
+
+7. CPart stdlib finalize
+  - Move more of "element" into FactoryCPart
+  - Finish Store, Fetch
+  - Rename to component.slot
+  - Finalize < slot > vs [component.slot]
+
+8. Documentation finalize
+
+
+------
+# AssetCPart
+
+  - During build step, "style" goes into a CSS file, "script" goes into JS
+  - Script and Style contents in fetchQ cache output get blanked (or maybe
+    replaced with newlines to preserve line numbering, or a comment explaining
+    the new location)
+  - Interface could have a "dedupe" and "dedupeReplace"
+  - Script format:
+    -
+      (function (factory, Modulo, loadObj) {
+
+
+
+
+
+          loadObj.script = {
+          }); // what was return before
+      })();
+
+
+  - Another idea: Have "detachedFactoryCallback" as a general utility
+
+
+- Think about refactoring FactoryCPart and AssetCPart each into a helper
+  library, or something, to avoid too many base classes (or maybe just
+  assetCPart)
+
+
+
+
+
+
+
+
+
+
+
+------
+
 # Broad ideas for increased code-use around CParts + templates + build
 
 - Problem:

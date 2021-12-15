@@ -377,6 +377,31 @@ text='
 
 </section>
 
+<p>There's one final, but fully optional, update we can do to make our "load"
+be a tiny bit shorter and neater.  Once you have removed any embedded
+components, you can replace <code>&lt;template&nbsp;modulo-embed&gt;</code>
+with simply <code>&lt;modulo&gt;</code>, as such:</p>
+
+
+<mws-Demo
+text='
+<modulo>
+    <load
+        src="./components/my-component-lib.html"
+        namespace="lib"
+    ></load>
+</modulo>
+'></mws-Demo>
+
+<p>The two are almost identical, with one difference: The more verbose
+"template modulo-embed" supports both defining embedded components AND
+"loading" components from another file, while the more succinct "modulo" tag
+only supports "loading" components from another file. In other words, if all
+your components are moved to another file, you can use
+<code>&lt;modulo&gt;</code>, but if you want to define components and then use
+them on the same page, you'll need to use
+<code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
+
 
 <h3>Part 1: Summary</h3>
 

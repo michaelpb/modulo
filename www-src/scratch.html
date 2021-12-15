@@ -1,62 +1,41 @@
 <script src="/js/Modulo.js"></script>
 
-<modulo>
+<template modulo-embed>
     <load namespace="x" src="/components/layouts.html" ></load>
-    <component name="Test2" mode="vanish-into-document">
+
+    <component name="MahBtn">
         <props
-            pagetitle
+            txt
         ></props>
+
         <template>
-            <head>
-                <title>{{ props.pagetitle }}</title>
-                <link rel="stylesheet" href="/css/style.css" />
-                <!--<script src="js/not-exists-head.js"></script>-->
-                <meta charset="utf-8" />
-            </head>
-            <body>
-                <nav>NAVBAR_________</nav>
-                <div style="border: 1px red solid; padding: 50px; margin: 50px;">
-                    <div>
-                        {{ component.originalHTML|safe }}
-                    </div>
-                </div>
-
-                <div style="border: 1px green solid; padding: 50px; margin: 50px;">
-                    <div [component.children]="slotties">
-                    </div>
-                </div>
-
-                <div style="border: 1px orange solid; padding: 50px; margin: 50px;">
-                    <div [component.children]>
-                    </div>
-                </div>
-
-                <footer>- (footer) -</footer>
-                <!--<script src="js/not-exists-body.js"></script>-->
-            </body>
+            <button @click:=script.clickies>{{ props.txt }}</button>
         </template>
+
         <script>
-            function prepareCallback({ component }) {
-                // activated with "custom-root"
-                component.root = document.querySelector('#what')
+            function clickies() {
+                console.log('hi it is clickies');
+                const a = 123;
+                a();
             }
         </script>
+
+        <style>
+            button {
+                border: 3px solid orange;
+                color: orange;
+                background: black;
+            }
+        </style>
     </component>
-</modulo>
+
+</template>
+
 <script> Modulo.defineAll() </script>
 
-<div id="what"></div>
 
-<x-Test2
-    pagetitle="Do the testing thing!"
-    navbar="lol">
+<button>Before button</button>
+<x-MahBtn txt="Hello"></x-MahBtn>
+<button>After button</button>
 
-    <eg-Hello></eg-Hello>
 
-    <h1>testing page</h1>
-
-    <div slot="slotties">
-        <h1>testing page below mod</h1>
-    </div>
-
-</x-Test2>

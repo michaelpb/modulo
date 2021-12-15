@@ -7,8 +7,9 @@
 // Earlier versions of Modulo.js's source code were written with literate
 // programming (an explanation is contained in the next comment paragraph).
 // Most of this documentation has been deleted, but will be rewritten once the
-// public API is settled. Until then, the code is riddled with TODO's: It's not
-// "literate" and aspires to much better comments, formatting, complexity, etc.
+// public API is settled. Until then, the code is a mess, riddled with TODO's,
+// not "literate" and thus merely aspires to much better comments, formatting,
+// complexity, etc.
 
 // ## Literate
 // Unlike most code files, this one is arranged in a very deliberate way. It's
@@ -155,11 +156,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
-    // ## Loader: loadString
-    // The main loading method. This will take a string with the source code to
-    // a module as an argument and loop through all `<component ...>` style
-    // definitions. Then, it uses `Loader.loadFromDOMElement` to create a
-    // `ComponentFactory` instance for each component definition.
     loadString(text, newSrc = null) {
         Modulo.assert(text, 'Text must be a non-empty string, not', text)
         if (newSrc) {
@@ -544,6 +540,52 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     }
 }
 
+Modulo.AssetCPart = class AssetCPart extends Modulo.ComponentPart {
+    static factoryCallback(opts, factory, loadObj) {
+        const { tagName, content, funcName, funcArgs } =
+              this.assetFactoryCallback(opts, factory, loadObj);
+        const { fullName } = factory;
+        const id = `${ fullName }_Modulo_${ tagName.toUpperCase() }`;
+        const doc = Modulo.globals.document;
+        let elem = doc.getElementById(id);
+        if (tagName && !elem) {
+            elem = doc.createElement(tagName);
+            elem.id = id;
+            if (doc.head === null) {
+                // NOTE: this is still broken, can still trigger
+                // before head is created!
+                setTimeout(() => doc.head.append(elem), 0);
+            } else {
+                doc.head.append(elem);
+            }
+        }
+
+        if (elem) { // && elem.textContent !== content) {
+            if (Modulo.isBackend && tagName === 'script') {
+                eval(content); // TODO Fix this, limitation of JSDOM
+            } else {
+                elem.textContent = content; // Causes eval (if is script)
+            }
+        }
+
+        if (funcArgs) {
+            const results = Modulo._lastFactoryFunc.apply(null, funcArgs);
+            Modulo._lastFactoryFunc = null; // clear reference
+
+            if (results.factoryCallback) {
+                //this.prepLocalVars(loadObj); // ?
+                results.factoryCallback(partOptions, factory, loadObj);
+            }
+            // TODO HACK fix ---v (just trying to get unit tests to pass)
+            const localVars = Object.keys(loadObj);
+            localVars.push('element'); // add in element as a local var
+            localVars.push('cparts');
+            results.localVars = localVars;
+            return results;
+        }
+    }
+}
+
 Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
@@ -764,26 +806,11 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 }
 
-Modulo.cparts.style = class Style extends Modulo.ComponentPart {
-    static factoryCallback({content}, factory, renderObj) {
+Modulo.cparts.style = class Style extends Modulo.AssetCPart {
+    static assetFactoryCallback({ content }, { loader, name }, loadObj) {
         const { prefixAllSelectors } = Modulo.cparts.style;
-        const { loader, name, fullName } = factory;
-        const doc = Modulo.globals.document;
         content = prefixAllSelectors(loader.namespace, name, content);
-        const id = `${fullName}_Modulo_Style`;
-        let elem = doc.getElementById(id);
-        if (!elem) {
-            elem = doc.createElement('style');
-            elem.id = id;
-            if (doc.head === null) {
-                // NOTE: this is still broken, can still trigger
-                // before head is created!
-                setTimeout(() => doc.head.append(elem), 0);
-            } else {
-                doc.head.append(elem);
-            }
-        }
-        elem.textContent = content;
+        return { content, tagName: 'style', extension: 'css' }
     }
 
     static prefixAllSelectors(namespace, name, text='') {
@@ -855,7 +882,7 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 }
 
 
-Modulo.cparts.script = class Script extends Modulo.ComponentPart {
+Modulo.cparts.script = class Script extends Modulo.AssetCPart {
     static getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
@@ -872,7 +899,6 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const localVarsIfs = localVars
           .map(n => `if (name === '${n}') ${n} = value;`).join('\n');
 
-
         return `'use strict';
             var ${localVarsLet};
             var script = { exports: {} };
@@ -882,22 +908,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         `;
     }
 
-    static factoryCallback(partOptions, factory, renderObj) {
-        // TODO: Much better idea:
-        // Put into IFFE (with same arguments as here) and then put into script
-        // tag into page.  Only do "just in time, e.g. before first time
-        // mounting this on this page. Just like with style.  That way we'll
-        // get full traceback, etc. Would maybe increase speed by preloading
-        // scripts too.
-        const code = partOptions.content || '';
-        const localVars = Object.keys(renderObj);
-        localVars.push('element'); // add in element as a local var
-        localVars.push('cparts');
-        // TODO: shouldn't use "this" in static (?)
-        const wrappedJS = this.wrapJavaScriptContext(code, localVars);
-        const ns = factory.loader.namespace;
-        const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
-        const module = moduleFac ? moduleFac.baseRenderObj : null;
+    static factoryOlddddd() {
         const results = (new Function('Modulo, factory, module', wrappedJS))
                            .call(null, Modulo, factory, module);
         if (results.factoryCallback) {
@@ -905,7 +916,27 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
             results.factoryCallback(partOptions, factory, renderObj);
         }
         results.localVars = localVars;
-        return results;
+    }
+
+    static assetFactoryCallback(partOptions, factory, loadObj) {
+        const code = partOptions.content || '';
+        const localVars = Object.keys(loadObj);
+        localVars.push('element'); // add in element as a local var
+        localVars.push('cparts');
+        const ns = factory.loader.namespace;
+        const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
+        const module = moduleFac ? moduleFac.baseRenderObj : null;
+        const { fullName } = factory;
+        const funcName = `Modulo_${ factory.fullName.replace('-', '$') }_Script`;
+        // TODO: Is "static this" well-supported?
+        const content = `
+            Modulo._lastFactoryFunc = function ${ funcName } (Modulo, factory, module) {
+              ${ this.wrapJavaScriptContext(code, localVars) }
+            }
+        `;
+        const tagName = 'script';
+        const funcArgs = [ Modulo, factory, module ];
+        return { content, tagName, funcArgs };
     }
 
     cb(func) {
