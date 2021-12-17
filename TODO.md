@@ -14,6 +14,8 @@
   - Finish de-tangling bugs
   - Implement new patch-set system
   - Swap algo with non-recursive DFS using explicit stack var
+  - Nested subrender problem: Debug components controlling their own
+    rendering interaction with slot
 
 4. CPart interface refactor
   - Decide on "template" vs "Template"
@@ -36,13 +38,68 @@
 8. Documentation finalize
 
 
+
 ------
+
+# Nested Subrender Problem
+
+Happens when a parent component renders a child component that uses slots,
+generates contents, etc, and the parent component re-renders, how do we
+keep the child component rerendering correctly so it "receives" the updated
+content, without replacing it, etc?
+
+- Unneeded for mode="shadow", but required for mode="regular"
+- Ideally Might be doable with pre-directives, e.g. Swap out DOM
+- Three approaches, might require some combo:
+    - "Ignoring" system -- e.g ignore all isModulo elements, only update &
+      rerender via props
+    - predirectives, transform rival or something
+    - "requestRerenderCallback()"  -- a callback system, where we ignore
+      the component, but pass it's new children in, and the component does
+      a sub-render or something
+- Probably the best is the last:
+    - Do re-render with originalChildren updated to new children
+    - Can be done during preload, e.g. substitute in the "< real-Instance
+      >" for the "< FakeInstance >", and then reattach originalChildren
+      and rerender or something
+
+------
+
+# AssetCPart Mk II
+
+This strategy can more cleanly eliminate all evals during build, including
+for Template:
+
+- Use AssetManager
+- This gets instantiated per loader (?), and/or globally
+- Allows registerFunction that either creates a new function or uses an
+  existing registered version
+- This allows 1:1 replacement with all "new Function"
+- Build thus is focused on prepopulating fetchQ.data and AssetManager
+
+Compiles like:
+
+        Modulo.assets.functions['affd93a'] = function MyComp_Template() { ..
+        Modulo.assets.stylesheets['0af9eaf'] = true; // Prevent re-inclusion
+
+Or annotated like:
+        /* MyComp <script name="lol"> */ Modulo.assets.functions['x84af3a'] = function MyComp_Script() { ..
+
+        /* </script> */ return ....}
+
+- Then, deduping can be as follows:
+    - Replace all instances of "text" with quoted hash in final build
+    - If attempt to register text that matches regexp of quoted hash,
+      use quoted hash instead for hash
+
 # AssetCPart
 
   - During build step, "style" goes into a CSS file, "script" goes into JS
   - Script and Style contents in fetchQ cache output get blanked (or maybe
     replaced with newlines to preserve line numbering, or a comment explaining
     the new location)
+  - Another idea: Use for Template compilation as well, to prevent ANY eval
+    from getting into built JS!
   - Interface could have a "dedupe" and "dedupeReplace"
   - Script format:
     -
@@ -420,6 +477,13 @@
             }
             // ...
         }
+
+# Computed Values: Misc Templating idea
+
+- abc.xy turns into abc.xy || abc.xyComputedCallback()
+
+
+------
 
 # -------------------
 

@@ -33,13 +33,13 @@ var Modulo = {
 };
 
 
-// ## Modulo.defineAll()
-// Our Modulo journey begins with `Modulo.defineAll()`, the function invoked to
-// "activate" all of Modulo by defining the "mod-load" web component. This
-// constructs a Loader object for every `<mod-load ...>` tag it encounters.
+// TODO: Once Modulo config stack is finished, refactor to:
+// window.Modulo = new Modulo(config);
 Modulo.defineAll = function defineAll() {
+
     if (!Modulo.fetchQ) {
         Modulo.fetchQ = new Modulo.FetchQueue();
+        Modulo.assets = new Modulo.AssetManager();
     }
 
     // Then, looks for embedded modulo components, found in <template modulo>
@@ -59,56 +59,6 @@ Modulo.defineAll = function defineAll() {
         }
     });
 };
-
-
-/*
-Modulo.defineAll = function defineAll(customConfig) {
-    if (Modulo.config) {
-        Modulo.configHistory.push(Modulo.config);
-    }
-    const attrs = { namespace: 'x', src: '/' };
-    Modulo.config = Object.assign(configDefaults, {
-        instances: {
-            fetchQ: new Modulo.FetchQueue(),
-            globalLoader: new Modulo.Loader(null, { attrs }),
-        },
-    }, customConfig);
-    Modulo.globalLoader = Modulo.config.instances.loader;
-    Modulo.fetchQ = Modulo.config.instances.fetchQ;
-    Modulo.CommandMenu.setup();
-    Modulo.fetchQ.wait(() => {
-        const query = 'template[modulo-embed],modulo,m-module';
-        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
-            Modulo.globalLoader.loadString(elem.innerHTML);
-        }
-    });
-};
-*/
-
-
-/*
-Modulo.DOMLoader = class DOMLoader extends HTMLElement {
-    // TODO: Delete DOMLoader
-    // The Web Components specifies the use of a "connectedCallback" function.
-    // In this case, this function will be invoked as soon as the DOM is loaded
-    // with a `<mod-load>` tag in it.
-    connectedCallback() {
-        if (this.loader) {
-            console.log('Error: Duplicate connected?', this.loader.attrs);
-            //this.loader.doFetch();
-        } else {
-            this.initialize();
-        }
-    }
-    initialize() {
-        const src = this.getAttribute('src');
-        const namespace = this.getAttribute('namespace');
-        const opts = {attrs: {namespace, src}};
-        this.loader = new Modulo.Loader(null, opts);
-        this.loader.doFetch();
-    }
-}
-*/
 
 Modulo.ComponentPart = class ComponentPart {
     static getAttrDefaults(node, loader) {
@@ -142,7 +92,7 @@ Modulo.ComponentPart = class ComponentPart {
 // the heavy lifting of fetching & registering Modulo components.
 Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove component part extension, unused
     // ## Loader: connectedCallback()
-    constructor(element = null, options = { attrs: {} }, parentLoader = null) {
+    constructor(element = null, options = { attrs: {} }) {
         super(element, options);
         this.src = this.attrs.src;
 
@@ -186,7 +136,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             }
             const cpartClass = this.cparts[cPartName];
             const data = cpartClass.loadCallback(node, this, array);
-            array.push([cPartName, data]);
+            array.push([ cPartName, data ]);
 
             if (data.dependencies) {
                 // Ensure any CPart dependencies are loaded (relative to src)
@@ -241,9 +191,8 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
 
 Modulo.cparts.load = class Load extends Modulo.ComponentPart {
     static loadedCallback(data, content, label, loader, src) {
-        // idea: make namespace ALWAYS required, no default? 'x' is only for local/global?
         const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
-        data.loader = new Modulo.Loader(null, { attrs }, loader);
+        data.loader = new Modulo.Loader(null, { attrs });
         data.loader.loadString(content);
     }
 
@@ -542,6 +491,7 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
 
 Modulo.AssetCPart = class AssetCPart extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, loadObj) {
+        // TODO: Is "static this" well-supported?
         const { tagName, content, funcName, funcArgs } =
               this.assetFactoryCallback(opts, factory, loadObj);
         const { fullName } = factory;
@@ -853,7 +803,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     static factoryCallback(opts, factory, loadObj) {
         // TODO: Delete this after we are done with directive-based expansion
         const tagPref = '$1' + factory.loader.namespace + '-';
-        return {content: (opts.content || '').replace(/(<\/?)my-/ig, tagPref)};
+        const content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
+        return { content };
     }
 
     constructor(element, options) {
@@ -882,7 +833,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 }
 
 
-Modulo.cparts.script = class Script extends Modulo.AssetCPart {
+//Modulo.cparts.script = class Script extends Modulo.AssetCPart {
+Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
@@ -894,6 +846,8 @@ Modulo.cparts.script = class Script extends Modulo.AssetCPart {
     }
 
     static wrapJavaScriptContext(contents, localVars) {
+        // TODO: Move localVariable definitions to argList to keep
+        // consistent / shorter code / faster, but still use __set to assign
         const symbolsString = this.getSymbolsAsObjectAssignment(contents);
         const localVarsLet = localVars.join(',') || 'noLocalVars=true';
         const localVarsIfs = localVars
@@ -908,35 +862,27 @@ Modulo.cparts.script = class Script extends Modulo.AssetCPart {
         `;
     }
 
-    static factoryOlddddd() {
-        const results = (new Function('Modulo, factory, module', wrappedJS))
-                           .call(null, Modulo, factory, module);
+    static factoryCallback(partOptions, factory, renderObj) {
+        const code = partOptions.content || '';
+        const localVars = Object.keys(renderObj);
+        localVars.push('element'); // add in element as a local var
+        localVars.push('cparts'); // give access to CParts JS interface
+        const wrappedJS = this.wrapJavaScriptContext(code, localVars);
+        const ns = factory.loader.namespace;
+        const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
+        const module = moduleFac ? moduleFac.baseRenderObj : null;
+
+        // Combine localVars + fixed args into allArgs
+        const args = [ 'Modulo', 'factory', 'module' ];
+        const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
+        const func = Modulo.assets.registerFunction(allArgs, wrappedJS);
+        const results = func.call(null, Modulo, factory, module);
         if (results.factoryCallback) {
             //this.prepLocalVars(renderObj); // ?
             results.factoryCallback(partOptions, factory, renderObj);
         }
         results.localVars = localVars;
-    }
-
-    static assetFactoryCallback(partOptions, factory, loadObj) {
-        const code = partOptions.content || '';
-        const localVars = Object.keys(loadObj);
-        localVars.push('element'); // add in element as a local var
-        localVars.push('cparts');
-        const ns = factory.loader.namespace;
-        const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
-        const module = moduleFac ? moduleFac.baseRenderObj : null;
-        const { fullName } = factory;
-        const funcName = `Modulo_${ factory.fullName.replace('-', '$') }_Script`;
-        // TODO: Is "static this" well-supported?
-        const content = `
-            Modulo._lastFactoryFunc = function ${ funcName } (Modulo, factory, module) {
-              ${ this.wrapJavaScriptContext(code, localVars) }
-            }
-        `;
-        const tagName = 'script';
-        const funcArgs = [ Modulo, factory, module ];
-        return { content, tagName, funcArgs };
+        return results;
     }
 
     cb(func) {
@@ -1099,7 +1045,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
         // this.opAliases['not in'] = `!(${this.opAliases['in']})`;
-        this.renderFunc = this.compile(text);
+        this.compiledCode = this.compile(text);
     }
 
     tokenizeText(text) {
@@ -1116,17 +1062,24 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         for (const token of this.tokenizeText(text)) {
             if (mode) { // if in a "mode" (text or token), then call mode func
                 const result = this.modes[mode](token, this, this.stack);
-                this.output += result || '';
+                if (result) { // Mode generated text output, add to code
+                    this.output += `${result} // |${JSON.stringify(token)}\n`;
+                }
             }
             // FSM for mode: ('text' -> null) (null -> token) (* -> 'text')
             mode = (mode === 'text') ? null : (mode ? 'text' : token);
         }
-        // console.log('this is the rsulting template code', this.output.replace(/([;\}\{])/g, '$1\n'));
-        return new Function('CTX,G', this.output + ';return OUT.join("");');
+        this.output += '\nreturn OUT.join("");'
+        // this.renderFunc = new Function('CTX,G', this.output + ';return OUT.join("");');
+        return this.output;
     }
 
     render(renderObj) {
-        return this.renderFunc(Object.assign({renderObj}, renderObj), this);
+        if (!this.renderFunc) {
+            this.renderFunc = Modulo.assets.
+                registerFunction([ 'CTX', 'G' ], this.compiledCode);
+        }
+        return this.renderFunc(Object.assign({ renderObj }, renderObj), this);
     }
 
     parseExpr(text) {
@@ -1183,6 +1136,8 @@ Modulo.templating.defaultOptions = {
         //'and': 'X && Y',
         //'or': 'X || Y',
         'not': '!(Y)',
+        // TODO: Consider this to avoid excess rerenderings:
+        // (tmp = Y).includes ? tmp.includes(X) : (X in tmp)
         'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
         'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
     },
@@ -1203,7 +1158,7 @@ Modulo.templating.defaultOptions.modes = {
         }
         return result.start || result;
     },
-    '{#': (text, tmplt) => {},
+    '{#': (text, tmplt) => false, // falsy values are ignored
     '{{': (text, tmplt) => `OUT.push(G.escapeHTML(${tmplt.parseExpr(text)}));`,
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
@@ -1260,7 +1215,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         length: s => s.length !== undefined ? s.length : Object.keys(s).length,
         lower: s => s.toLowerCase(),
         number: (s) => Number(s),
-        pluralize: (s, arg) => arg.split(',')[(s === 1) * 1],
+        pluralize: (s, arg) => (arg.split(',')[(s === 1) * 1]) || '',
         subtract: (s, arg) => s - arg,
         truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
         renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
@@ -1281,9 +1236,10 @@ Modulo.templating.defaultOptions.tags = {
         return {start, end: '}'};
     },
     'and': (text, tmplt) => {
-        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
-        // tmplt.output[tmplt.output.length - 1].replace(') {', ' && ' + condition + ') {')
+        // Another idea: const start = `if (${condition}) {//COND`;
+        // tmplt.output[tmplt.output.length - 1].replace(') {//COND', ' && ' + condition + ') {//COND')
         return '';
+        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
     },
     'else': () => '} else {',
     'elif': (s, tmplt) => '} else ' + tmplt.tags['if'](s, tmplt).start,
@@ -1932,7 +1888,57 @@ Modulo.assert = function assert(value, ...info) {
     }
 }
 
-// TODO: Probably should do this on an onload event or similar
+
+Modulo.AssetManager = class AssetManager {
+    constructor () {
+        this.functions = {};
+        this.functionsText = {};
+        this.stylesheets = {};
+    }
+    registerFunction(parameterList, text) {
+        const paramStr = parameterList.join(',');
+        const hash = Modulo.utils.hash(paramStr + '|' + text);
+        if (!(hash in this.functions)) {
+            // TODO: Do script tag stuff here, for dev mode
+            //const id = `Modulo_${ hash }`;
+            //const elem = doc.getElementById(id);
+            //elem.id = id;
+            //this.functions[hash] = new Function(paramStr, text);
+            this.functionsText[hash] = text;
+            const doc = Modulo.globals.document;
+            const elem = doc.createElement('script');
+            if (doc.head === null) {
+                // NOTE: this is still broken, can still trigger
+                // before head is created!
+                setTimeout(() => doc.head.append(elem), 0);
+            } else {
+                doc.head.append(elem);
+            }
+            const content = `
+                Modulo.assets.functions["${hash}"] = function (${paramStr}) {
+                  ${ text }
+                }
+            `;
+            if (Modulo.isBackend) {
+                eval(content); // TODO Fix this, limitation of JSDOM
+            } else {
+                elem.textContent = content; // Blocking, causes eval
+            }
+        }
+        return this.functions[hash];
+    }
+    registerStylesheet(text) {
+        const hash = Modulo.utils.hash(text);
+        if (!(hash in this.stylesheets)) {
+            this.stylesheets[hash] = true;
+            //TODO: Do style tag stuff here
+        }
+    }
+}
+
+// TODO: Maybe should do this on an onload event or similar
+// TODO: Merge buildTemplate (used with backend) with hack_buildTemplate (used
+// by frontend)
 //Modulo.globals.onload = () => Modulo.defineAll();
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
@@ -1943,6 +1949,23 @@ Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
 Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
                                "{{ path|escapejs|safe }}");
 {% endfor %}`);
+
+/*
+Modulo.hack_buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
+{% for src, code in scriptSources %}
+  // BEGIN {{ src }}
+  {{ code|safe }}
+  // END {{ src }}
+{% endfor %}
+Modulo.fetchQ.data = {};
+{% for src, data in fetchQData %}
+  // BEGIN {{ src }}
+  Modulo.fetchQ.data["{{ src|escapejs|safe }}"] = "{{ code|escapejs|safe }}";
+  // END {{ src }}
+{% endfor %}
+Modulo.defineAll();
+`);
+*/
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
@@ -1956,14 +1979,31 @@ Modulo.CommandMenu = class CommandMenu {
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
     build() {
-        const {document, console} = Modulo.globals;
-        console.group('BUILD');
-        const {src} = document.querySelector('script[src*="/Modulo.js"]');
-        const {fetchQ} = Modulo;
-        fetchQ.enqueue(src, source => {
-            //const js = Modulo.buildTemplate.render({hash, fetchQ, source});
-            // TODO: finish, offer to download, also build CSS
-        });
+        // Untested (dead) WIP code
+        const scriptTags = document.querySelectorAll('script[src*=".js"]');
+        const scripts = [];
+        for (const scriptTag of scriptTags) {
+            fetchQ.enqueue(scriptTag.src, data => {
+                delete fetchQ.data[scriptTag.src]; // clear cached data
+                scripts.push([scriptTag.src, data]);
+            });
+        }
+        fetchQ.wait(() => this._doBuild(scripts, Object.entries(fetchQ.data)));
+    }
+    _doBuild(scriptSources, fetchQData) {
+        const { document, console } = Modulo.globals;
+
+        scriptSources.sort(([src1], [src2]) => src1 > src2 ? 1 : -1);
+        fetchQData.sort(([src1], [src2]) => src1 > src2 ? 1 : -1);
+        const hashString = JSON.stringify([ scriptSources, fetchQData ]);
+        // Maybe instead of hashing fetchQData we use loader hashes?
+        const hash = Modulo.utils.hash(hashString); // update hash
+
+        // Alternative idea: Start with loaders, have loaders generate build,
+        // and IFFE enclose every loader
+
+    }
+    _getBuildHash(scriptSources) {
     }
 }
 

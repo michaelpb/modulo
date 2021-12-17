@@ -4,7 +4,11 @@
     <script>
         const { MTL } = Modulo.templating;
         // Attach simple helper function used below
-        Modulo._r = (tText, context) => new MTL(tText).render(context);
+        Modulo._r = (tText, context) => {
+            const tmpl = new MTL(tText);
+            //console.log('tmpl', tmpl.output);
+            return tmpl.render(context);
+        }
         assert: MTL
     </script>
 </test>

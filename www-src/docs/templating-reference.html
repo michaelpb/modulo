@@ -555,12 +555,17 @@ text='
 <p>Escape special characters in a given string using JavaScript (specifically,
 JSON) escaping rules. If you have a string like <code>"Hello\nWorld!"</code>
 (where <code>\n</code> is a single new-line character), it will output
-<code>Hello\nWorld!</code> (that is, as "backslash-n" or two characters).  Note
-that this is unrelated to the
-<a href="/docs/templating.html#escaping">HTML autoescaping</a>, meaning you may
-need to mark as <code>|safe</code> if do not want it turning <code>&lt;</code>
-into <code>&amp;lt;</code>, etc. as well.
-JSON if it were to be surrounded with double quotes were</p>
+<code>Hello\nWorld!</code> (that is, as "backslash-n" or two characters). It
+will also "double-up" any backslashes it encounters.</p>
+
+<p>Note that this is unrelated to the <a
+href="/docs/templating.html#escaping">HTML autoescaping</a>, meaning you may
+need to also mark as <code>|safe</code> if do not want it escaping for HTML
+rules as well (e.g. changing <code>&lt;</code>, which is invalid for HTML text
+but valid for JavaScript, into <code>&amp;lt;</code>). Similarly, there is no
+need to use this for escaping for HTML attribute values (e.g.
+<code>&lt;input&nbsp;placeholder="{{&nbsp;state.msg&nbsp;}}"&gt;</code>), as
+the HTML escaping is sufficient. The only use is embedded JS strings.</p>
 
 <mws-Demo demotype="minipreview"
 text='
@@ -571,7 +576,7 @@ text='
 <state
     value="Just
 trying
-stuff
+\stuff\
 out"
 ></state>
 '></mws-Demo>
@@ -694,12 +699,14 @@ text='
 
 <p>Allows for convenient pluralization in many human languages. This is for
 words in languages where a plural form is used when there is "0" or "2+" items,
-and a singular form for exactly 1 item. The majority of words in English,
-Spanish, Portuguese, and many others follow these rules. To use, give it a
-number (typically, the length of a list), and a comma separated version of two
-forms of a word. If that number is exactly "1" it will output the second form
-(or nothing at all, if the second form is not specified), otherwise it will
-output the first form.</p>
+and a singular form for exactly 1 item. This is useful for the majority of noun
+and verb conjugations in English, along with many other Indo-European
+languages.</p>
+
+<p>To use, give it a number (typically, the length of a list), and a comma
+separated version of two forms of a word. If that number is exactly "1" it will
+output the second form (or nothing at all, if the second form is not
+specified), otherwise it will output the first form.</p>
 
 <p>Below are some examples. Note that in the second example, it does not
 specify a singular form, but instead only specifies an "s" to append to the
@@ -767,6 +774,7 @@ text='
 
 <h4>renderas</h4>
 
+
 <p>A highly useful filter that allows use of re-usable template snippets.</p>
 
 <p>Typically in the format of
@@ -778,11 +786,25 @@ to take complicated bits of template code and refactor it into another smaller,
 helper, "child" template that is then used within the main template.</p>
 
 <p>The "input" to renderas should always be an Object. The keys and values of
-that object will populate the template variables for that template, meaning you
-can access them directly with <code>{{ varName }}</code> style syntax within
-that child template. Note that the child template will be isolated or
-"sandboxed" to <em>only</em> have access to properties of the specified
-object (state, props, etc will not be accessible).</p>
+that object will populate the "template variables" for that template, meaning
+you can access them directly as template variables within the child template.
+As an example, if we <code>renderas</code> with an Object like
+<code>{altTitle:&nbsp;"Newest entry"}</code>, then within the child template
+the "altTitle" becomes a "top-level" variable, and  we can use syntax like
+<code>{{&nbsp;altTitle&nbsp;}}</code> (no need for "." syntax).</p>
+
+<p>Note that the child template will be isolated or "sandboxed" to
+<em>only</em> have access to properties of the specified object. State, props,
+script, etc will not be accessible as template variables. This sandboxing is
+usually good and helps reduce bugs and makes child templates much easier to
+read. However, sometimes you just want to quickly spit up and refactor a
+template, meaning you want the child template to behave just like the parent,
+and you want global variables available, just as they were available to the
+parent. To include another template without any sandboxing, consider using the
+<code>renderObj</code> template variable which contains the "global" template
+scope. For an example, if we have a <code>name="modalInfo"</code> template, we
+might write: <code>{{&nbsp;renderObj|renderas:template.modalInfo&nbsp;}}</code>
+
 
 <mws-Demo demotype="minipreview"
 text='
@@ -792,12 +814,12 @@ text='
 
 <template>
     <table>
-        <thead><tr><th>Name</th> <th>Type</th> <th>Level</th></tr></thead>
         <tbody>
             {% for info in state.pokemon %}
                 {{ info|renderas:template.trow }}
             {% endfor %}
         </tbody>
+        <thead><tr><th>Name</th> <th>Type</th> <th>Level</th></tr></thead>
     </table>
 </template>
 
@@ -809,6 +831,14 @@ text='
     ]&apos;
 ></state>
 '></mws-Demo>
+
+
+<p>Tip: If you want to avoid sandboxing, you can use
+that object will populate the template variables for that template, meaning you
+can access them directly with <code>{{ varName }}</code> style syntax within
+that child template. Note that the child template will be isolated or
+"sandboxed" to <em>only</em> have access to properties of the specified
+object (state, props, etc will not be accessible).</p>
 
 
 

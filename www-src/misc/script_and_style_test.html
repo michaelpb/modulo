@@ -1,0 +1,41 @@
+<script src="/js/Modulo.js"></script>
+
+<template modulo-embed>
+    <load namespace="x" src="/components/layouts.html" ></load>
+
+    <component name="MahBtn">
+        <props
+            txt
+        ></props>
+
+        <template>
+            <button @click:=script.clickies>{{ props.txt }}</button>
+        </template>
+
+        <script>
+            function clickies() {
+                console.log('hi it is clickies');
+                const a = 123;
+                a();
+            }
+        </script>
+
+        <style>
+            button {
+                border: 3px solid orange;
+                color: orange;
+                background: black;
+            }
+        </style>
+    </component>
+
+</template>
+
+<script> Modulo.defineAll() </script>
+
+
+<button>Before button</button>
+<x-MahBtn txt="Hello"></x-MahBtn>
+<button>After button</button>
+
+
