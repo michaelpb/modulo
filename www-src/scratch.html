@@ -1,7 +1,7 @@
 <script src="/js/Modulo.js"></script>
 
 <template modulo-embed>
-    <load namespace="x" src="/components/layouts.html" ></load>
+    <load namespace="x" src="/components/layouts.html"></load>
 
     <component name="MahBtn">
         <props
@@ -9,14 +9,24 @@
         ></props>
 
         <template>
-            <button @click:=script.clickies>{{ props.txt }}</button>
+            <p>count: {{ state.count }}</p>
+            <button @click:=script.clickies>{{ props.txt|reversed }}</button>
+            {% if state.count gt 6 %}
+              <p>bigger! {{ props.txt }}</p>
+            {% endif %}
         </template>
 
+        <state
+            count:=5
+        ></state>
+
         <script>
+            // Okay this is line 1
             function clickies() {
                 console.log('hi it is clickies');
-                const a = 123;
-                a();
+                state.count++;
+                //const a = 123;
+                //a();
             }
         </script>
 
@@ -35,6 +45,8 @@
 
 
 <button>Before button</button>
+<x-MahBtn txt="Hello"></x-MahBtn>
+<x-MahBtn txt="Hello"></x-MahBtn>
 <x-MahBtn txt="Hello"></x-MahBtn>
 <button>After button</button>
 

@@ -34,7 +34,7 @@ var Modulo = {
 
 
 // TODO: Once Modulo config stack is finished, refactor to:
-// window.Modulo = new Modulo(config);
+// defineAll = config => { Modulo.instance = new Modulo(config); }
 Modulo.defineAll = function defineAll() {
 
     if (!Modulo.fetchQ) {
@@ -835,39 +835,11 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
 //Modulo.cparts.script = class Script extends Modulo.AssetCPart {
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
-    static getSymbolsAsObjectAssignment(contents) {
-        const regexpG = /function\s+(\w+)/g;
-        const regexp2 = /function\s+(\w+)/; // hack, refactor
-        const matches = contents.match(regexpG) || [];
-        return matches.map(s => s.match(regexp2)[1])
-            .filter(s => s && !Modulo.INVALID_WORDS.has(s))
-            .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
-            .join('');
-    }
-
-    static wrapJavaScriptContext(contents, localVars) {
-        // TODO: Move localVariable definitions to argList to keep
-        // consistent / shorter code / faster, but still use __set to assign
-        const symbolsString = this.getSymbolsAsObjectAssignment(contents);
-        const localVarsLet = localVars.join(',') || 'noLocalVars=true';
-        const localVarsIfs = localVars
-          .map(n => `if (name === '${n}') ${n} = value;`).join('\n');
-
-        return `'use strict';
-            var ${localVarsLet};
-            var script = { exports: {} };
-            function __set(name, value) { ${localVarsIfs} }
-            ${contents}
-            return { ${symbolsString} setLocalVariable: __set, exports: script.exports};
-        `;
-    }
-
     static factoryCallback(partOptions, factory, renderObj) {
         const code = partOptions.content || '';
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts'); // give access to CParts JS interface
-        const wrappedJS = this.wrapJavaScriptContext(code, localVars);
         const ns = factory.loader.namespace;
         const moduleFac = Modulo.factoryInstances[`{ns}-{ns}`];
         const module = moduleFac ? moduleFac.baseRenderObj : null;
@@ -875,7 +847,10 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         // Combine localVars + fixed args into allArgs
         const args = [ 'Modulo', 'factory', 'module' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
-        const func = Modulo.assets.registerFunction(allArgs, wrappedJS);
+        const opts = { exports: 'script' };
+        const func = Modulo.assets.registerFunction(allArgs, code, opts);
+
+        // Now, actually run code in Script tag to do factory method
         const results = func.call(null, Modulo, factory, module);
         if (results.factoryCallback) {
             //this.prepLocalVars(renderObj); // ?
@@ -1057,20 +1032,20 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 
     compile(text) {
         this.stack = []; // Template tag stack
-        this.output = 'var OUT=[];'; // Variable used to accumulate code
+        this.output = 'var OUT=[];\n'; // Variable used to accumulate code
         let mode = 'text'; // Start in text mode
         for (const token of this.tokenizeText(text)) {
             if (mode) { // if in a "mode" (text or token), then call mode func
                 const result = this.modes[mode](token, this, this.stack);
                 if (result) { // Mode generated text output, add to code
-                    this.output += `${result} // |${JSON.stringify(token)}\n`;
+                    const comment = JSON.stringify(token.trim());
+                    this.output += `${result} // ${ comment }\n`;
                 }
             }
             // FSM for mode: ('text' -> null) (null -> token) (* -> 'text')
             mode = (mode === 'text') ? null : (mode ? 'text' : token);
         }
         this.output += '\nreturn OUT.join("");'
-        // this.renderFunc = new Function('CTX,G', this.output + ';return OUT.join("");');
         return this.output;
     }
 
@@ -1892,42 +1867,66 @@ Modulo.assert = function assert(value, ...info) {
 Modulo.AssetManager = class AssetManager {
     constructor () {
         this.functions = {};
-        this.functionsText = {};
+        // this.functionsText = {};
+        // this.functionsText[hash] = text;
         this.stylesheets = {};
     }
-    registerFunction(parameterList, text) {
-        const paramStr = parameterList.join(',');
-        const hash = Modulo.utils.hash(paramStr + '|' + text);
+
+    getSymbolsAsObjectAssignment(contents) {
+        const regexpG = /function\s+(\w+)/g;
+        const regexp2 = /function\s+(\w+)/; // hack, refactor
+        const matches = contents.match(regexpG) || [];
+        return matches.map(s => s.match(regexp2)[1])
+            .filter(s => s && !Modulo.INVALID_WORDS.has(s))
+            .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
+            .join('');
+    }
+
+    wrapFunctionText(params, text, opts) {
+        let prefix = `Modulo.assets.functions["${this.getHash(params, text)}"]`;
+        prefix += `= function ${ opts.funcName || ''}(${ params.join(', ') }){`;
+        let suffix = '};'
+        if (opts.exports) {
+            const symbolsString = this.getSymbolsAsObjectAssignment(text);
+            const localVarsIfs = params.map(n => `if (name === '${n}') ${n} = value;`).join(' ');
+            prefix += `var ${ opts.exports } = { exports: {} };  `;
+            prefix += `function __set(name, value) { ${ localVarsIfs } }`;
+            suffix = `return { ${symbolsString} setLocalVariable: __set, exports: ${ opts.exports }.exports}\n};`;
+        }
+        return `"use strict";${prefix}\n${text}\n${suffix}`;
+    }
+
+    getHash(params, text) {
+        return Modulo.utils.hash(params.join(',') + '|' + text);
+    }
+
+    registerFunction(params, text, opts = {}) {
+        const hash = this.getHash(params, text);
         if (!(hash in this.functions)) {
-            // TODO: Do script tag stuff here, for dev mode
-            //const id = `Modulo_${ hash }`;
-            //const elem = doc.getElementById(id);
-            //elem.id = id;
-            //this.functions[hash] = new Function(paramStr, text);
-            this.functionsText[hash] = text;
-            const doc = Modulo.globals.document;
-            const elem = doc.createElement('script');
-            if (doc.head === null) {
-                // NOTE: this is still broken, can still trigger
-                // before head is created!
-                setTimeout(() => doc.head.append(elem), 0);
-            } else {
-                doc.head.append(elem);
-            }
-            const content = `
-                Modulo.assets.functions["${hash}"] = function (${paramStr}) {
-                  ${ text }
-                }
-            `;
-            if (Modulo.isBackend) {
-                eval(content); // TODO Fix this, limitation of JSDOM
-            } else {
-                elem.textContent = content; // Blocking, causes eval
-            }
+            const funcText = this.wrapFunctionText(params, text, opts);
+            this.runInScriptTag(funcText, opts);
         }
         return this.functions[hash];
     }
-    registerStylesheet(text) {
+
+    runInScriptTag(codeStr, opts) {
+        const doc = Modulo.globals.document;
+        const elem = doc.createElement('script');
+        if (doc.head === null) {
+            // NOTE: this is still broken, can still trigger
+            // before head is created!
+            setTimeout(() => doc.head.append(elem), 0);
+        } else {
+            doc.head.append(elem);
+        }
+        if (Modulo.isBackend) {
+            eval(codeStr); // TODO Fix this, limitation of JSDOM
+        } else {
+            elem.textContent = codeStr; // Blocking, causes eval
+        }
+    }
+
+    registerStylesheet(text, opts) {
         const hash = Modulo.utils.hash(text);
         if (!(hash in this.stylesheets)) {
             this.stylesheets[hash] = true;
