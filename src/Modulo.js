@@ -489,53 +489,6 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     }
 }
 
-Modulo.AssetCPart = class AssetCPart extends Modulo.ComponentPart {
-    static factoryCallback(opts, factory, loadObj) {
-        // TODO: Is "static this" well-supported?
-        const { tagName, content, funcName, funcArgs } =
-              this.assetFactoryCallback(opts, factory, loadObj);
-        const { fullName } = factory;
-        const id = `${ fullName }_Modulo_${ tagName.toUpperCase() }`;
-        const doc = Modulo.globals.document;
-        let elem = doc.getElementById(id);
-        if (tagName && !elem) {
-            elem = doc.createElement(tagName);
-            elem.id = id;
-            if (doc.head === null) {
-                // NOTE: this is still broken, can still trigger
-                // before head is created!
-                setTimeout(() => doc.head.append(elem), 0);
-            } else {
-                doc.head.append(elem);
-            }
-        }
-
-        if (elem) { // && elem.textContent !== content) {
-            if (Modulo.isBackend && tagName === 'script') {
-                eval(content); // TODO Fix this, limitation of JSDOM
-            } else {
-                elem.textContent = content; // Causes eval (if is script)
-            }
-        }
-
-        if (funcArgs) {
-            const results = Modulo._lastFactoryFunc.apply(null, funcArgs);
-            Modulo._lastFactoryFunc = null; // clear reference
-
-            if (results.factoryCallback) {
-                //this.prepLocalVars(loadObj); // ?
-                results.factoryCallback(partOptions, factory, loadObj);
-            }
-            // TODO HACK fix ---v (just trying to get unit tests to pass)
-            const localVars = Object.keys(loadObj);
-            localVars.push('element'); // add in element as a local var
-            localVars.push('cparts');
-            results.localVars = localVars;
-            return results;
-        }
-    }
-}
-
 Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
@@ -571,6 +524,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     scriptTagLoad({ el }) {
+        //const newScript = this.element.ownerDocument.createElement('script');
         const newScript = Modulo.globals.document.createElement('script');
         newScript.src = el.src; // TODO: Possibly copy other attrs?
         el.remove(); // delete old element
@@ -670,7 +624,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     handleEvent(func, payload, ev) {
-        this.element.lifecycle([ 'event' ], { _eventFunction: func });
+        this.element.lifecycle([ 'event' ]);
         const { value } = (ev.target || {}); // Get value if is <INPUT>, etc
         func.call(null, payload === undefined ? value : payload, ev);
         this.element.lifecycle([ 'eventCleanup' ]); // todo: should this go below rerender()?
@@ -728,7 +682,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
         dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
     }
-    dataPropUnmount({el, attrName}) {
+    dataPropUnmount({ el, attrName }) {
         delete el.dataProps[attrName];
     }
 }
@@ -741,7 +695,7 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         const props = {};
         const { resolveDataProp } = Modulo.utils;
-        for (let [propName, def] of Object.entries(this.attrs)) {
+        for (let [ propName, def ] of Object.entries(this.attrs)) {
             propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
             props[propName] = resolveDataProp(propName, this.element, def);
         }
@@ -756,11 +710,17 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 }
 
-Modulo.cparts.style = class Style extends Modulo.AssetCPart {
-    static assetFactoryCallback({ content }, { loader, name }, loadObj) {
+Modulo.cparts.style = class Style extends Modulo.ComponentPart {
+    static factoryCallback({ content }, { loader, name }, loadObj) {
+        // TODO: Add in support for shadow DOMAssetCPart
+        //if (loadObj.component.mode === 'shadow') {
+        //    return;
+        //}
         const { prefixAllSelectors } = Modulo.cparts.style;
         content = prefixAllSelectors(loader.namespace, name, content);
-        return { content, tagName: 'style', extension: 'css' }
+        Modulo.assets.registerStylesheet(content);
+        //const { fullName } = factory;
+        //const id = `${ fullName }_Modulo_${ tagName.toUpperCase() }`;
     }
 
     static prefixAllSelectors(namespace, name, text='') {
@@ -812,7 +772,11 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         const engineClass = Modulo.templating[this.attrs.engine || 'MTL'];
         // TODO: Do not put here! Move to factoryCallback, since otherwise
         // it will compile every time (unless we cache templates)
-        this.instance = new engineClass(this.content, this.attrs);
+        //const rFOpts = { tagName: element.tagName.replace('-', '__') };
+        const opts = Object.assign({}, this.attrs, {
+            makeFunc: (a, b) => Modulo.assets.registerFunction(a, b),
+        });
+        this.instance = new engineClass(this.content, opts);
     }
 
     prepareCallback(renderObj) {
@@ -833,7 +797,6 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 }
 
 
-//Modulo.cparts.script = class Script extends Modulo.AssetCPart {
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
         const code = partOptions.content || '';
@@ -1051,8 +1014,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
 
     render(renderObj) {
         if (!this.renderFunc) {
-            this.renderFunc = Modulo.assets.
-                registerFunction([ 'CTX', 'G' ], this.compiledCode);
+            this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
         }
         return this.renderFunc(Object.assign({ renderObj }, renderObj), this);
     }
@@ -1102,6 +1064,7 @@ Modulo.templating.defaultOptions = {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
     //opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,and,or',
     opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,gt,lt',
+    makeFunc: (argList, text) => new Function(argList.join(','), text),
     opAliases: {
         '==': 'X === Y',
         'is': 'X === Y',
@@ -1674,6 +1637,16 @@ Modulo.utils = class utils {
         return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2').trim();
     }
 
+    static downloadFile(filename, text) {
+      const element = document.createElement('a');
+      const enc = encodeURIComponent(text);
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
+      element.setAttribute('download', filename);
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+
     static loadNodeData(node) {
         // DEAD CODE
         const {parseAttrs} = Modulo.utils;
@@ -1867,9 +1840,27 @@ Modulo.assert = function assert(value, ...info) {
 Modulo.AssetManager = class AssetManager {
     constructor () {
         this.functions = {};
-        // this.functionsText = {};
-        // this.functionsText[hash] = text;
         this.stylesheets = {};
+        this.rawAssets = { js: {}, css: {} };
+    }
+
+    registerFunction(params, text, opts = {}) {
+        const hash = this.getHash(params, text);
+        if (!(hash in this.functions)) {
+            const funcText = this.wrapFunctionText(params, text, opts);
+            this.rawAssets.js[hash] = funcText;
+            this.appendToHead('script', funcText);
+        }
+        return this.functions[hash];
+    }
+
+    registerStylesheet(text) {
+        const hash = Modulo.utils.hash(text);
+        if (!(hash in this.stylesheets)) {
+            this.stylesheets[hash] = true;
+            this.rawAssets.css[hash] = text;
+            this.appendToHead('style', text);
+        }
     }
 
     getSymbolsAsObjectAssignment(contents) {
@@ -1882,7 +1873,7 @@ Modulo.AssetManager = class AssetManager {
             .join('');
     }
 
-    wrapFunctionText(params, text, opts) {
+    wrapFunctionText(params, text, opts = {}) {
         let prefix = `Modulo.assets.functions["${this.getHash(params, text)}"]`;
         prefix += `= function ${ opts.funcName || ''}(${ params.join(', ') }){`;
         let suffix = '};'
@@ -1900,18 +1891,9 @@ Modulo.AssetManager = class AssetManager {
         return Modulo.utils.hash(params.join(',') + '|' + text);
     }
 
-    registerFunction(params, text, opts = {}) {
-        const hash = this.getHash(params, text);
-        if (!(hash in this.functions)) {
-            const funcText = this.wrapFunctionText(params, text, opts);
-            this.runInScriptTag(funcText, opts);
-        }
-        return this.functions[hash];
-    }
-
-    runInScriptTag(codeStr, opts) {
+    appendToHead(tagName, codeStr) {
         const doc = Modulo.globals.document;
-        const elem = doc.createElement('script');
+        const elem = doc.createElement(tagName);
         if (doc.head === null) {
             // NOTE: this is still broken, can still trigger
             // before head is created!
@@ -1919,18 +1901,11 @@ Modulo.AssetManager = class AssetManager {
         } else {
             doc.head.append(elem);
         }
-        if (Modulo.isBackend) {
-            eval(codeStr); // TODO Fix this, limitation of JSDOM
+        if (Modulo.isBackend && tagName === 'script') {
+            codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace first
+            eval(codeStr, this); // TODO Fix this, limitation of JSDOM
         } else {
             elem.textContent = codeStr; // Blocking, causes eval
-        }
-    }
-
-    registerStylesheet(text, opts) {
-        const hash = Modulo.utils.hash(text);
-        if (!(hash in this.stylesheets)) {
-            this.stylesheets[hash] = true;
-            //TODO: Do style tag stuff here
         }
     }
 }
@@ -1949,22 +1924,17 @@ Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
                                "{{ path|escapejs|safe }}");
 {% endfor %}`);
 
-/*
-Modulo.hack_buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
-{% for src, code in scriptSources %}
-  // BEGIN {{ src }}
-  {{ code|safe }}
-  // END {{ src }}
+Modulo.hack_buildTemplate = new Modulo.templating.MTL(`
+{{ SOURCE|safe }}
+Modulo.defineAll(); // TODO Move to below
+{% for src, text in fetchQ.data %}
 {% endfor %}
-Modulo.fetchQ.data = {};
-{% for src, data in fetchQData %}
-  // BEGIN {{ src }}
-  Modulo.fetchQ.data["{{ src|escapejs|safe }}"] = "{{ code|escapejs|safe }}";
-  // END {{ src }}
+
+{% for hash, code in assets.rawAssets.js %}
+{{ code|safe }}
 {% endfor %}
-Modulo.defineAll();
+
 `);
-*/
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
@@ -1977,7 +1947,28 @@ Modulo.CommandMenu = class CommandMenu {
         }
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
+
     build() {
+        // Base bundle is fetchQ + CSS only
+        this.buildcss();
+    }
+
+    buildcss() {
+        // TODO: Make later customizable templates
+        const tmpl = new Modulo.templating.MTL(`// modulo build {{ hash }}
+            {{ source|safe }};\n
+            Modulo.defineAll();
+            Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
+            {% for path in preload %}
+            //  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
+            Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
+                                          "{{ path|escapejs|safe }}");
+            {% endfor %}`);
+    }
+
+    /*
+    build() {
+        // TODO: Add later options for getting other scripts, etc
         // Untested (dead) WIP code
         const scriptTags = document.querySelectorAll('script[src*=".js"]');
         const scripts = [];
@@ -2000,8 +1991,8 @@ Modulo.CommandMenu = class CommandMenu {
 
         // Alternative idea: Start with loaders, have loaders generate build,
         // and IFFE enclose every loader
-
     }
+    */
     _getBuildHash(scriptSources) {
     }
 }

@@ -1,0 +1,100 @@
+<component name="BrowserBuildTester"><testsuite>
+
+<test name="Test AssetManager functionality">
+    <script name="Ensure instantiates with expected properties">
+        const inst = new Modulo.AssetManager();
+        assert: inst.functions && inst.stylesheets && inst.rawAssets;
+    </script>
+
+    <script name="Ensure registerFunction successfully evals string">
+        const inst = new Modulo.AssetManager();
+        const func = inst.registerFunction(['a', 'b'], 'return a + b');
+        const result = func(100, 13)
+        assert: result === 113
+    </script>
+
+    <script name="Ensure it doesn't register twice">
+        const inst = new Modulo.AssetManager();
+        const func1 = inst.registerFunction(['a', 'b'], 'return a + b');
+        const func2 = inst.registerFunction(['a', 'b'], 'return a + b');
+        const count = Object.keys(inst.functions).length;
+        assert: func1 === func2 && count === 1
+    </script>
+
+    <script name="Ensure that different functions are kept separate">
+        const inst = new Modulo.AssetManager();
+        const func1 = inst.registerFunction(['a', 'b'], 'return a + b');
+        const func2 = inst.registerFunction(['a', 'b'], 'return a - b');
+        const count = Object.keys(inst.functions).length;
+        assert: func1 !== func2 && count === 2
+    </script>
+
+    <script name="Test registerStylesheet doesn't register twice">
+        const inst = new Modulo.AssetManager();
+        inst.registerStylesheet('a { color: blue }');
+        inst.registerStylesheet('a { color: blue }');
+        const count = Object.keys(inst.stylesheets).length;
+        assert: count === 1
+    </script>
+
+    <script name="Test wrapFunctionText">
+        const inst = new Modulo.AssetManager();
+        const text = inst.wrapFunctionText(['a', 'b'], '/* abc */');
+        const expected = 
+            '"use strict";Modulo.assets.functions["-1nl2b1t"]' +
+            '= function (a, b){\n/* abc */\n};';
+        assert: text === expected
+    </script>
+
+</test>
+
+<test name="Test Build">
+
+    <script name="Ensure instantiates with expected properties">
+        const inst = new Modulo.AssetManager();
+        assert: inst.functions && inst.stylesheets && inst.rawAssets;
+    </script>
+
+    <script name="Ensure registerFunction successfully evals string">
+        const inst = new Modulo.AssetManager();
+        const func = inst.registerFunction(['a', 'b'], 'return a + b');
+        const result = func(100, 13)
+        assert: result === 113
+    </script>
+
+    <script name="Ensure it doesn't register twice">
+        const inst = new Modulo.AssetManager();
+        const func1 = inst.registerFunction(['a', 'b'], 'return a + b');
+        const func2 = inst.registerFunction(['a', 'b'], 'return a + b');
+        const count = Object.keys(inst.functions).length;
+        assert: func1 === func2 && count === 1
+    </script>
+
+    <script name="Ensure that different functions are kept separate">
+        const inst = new Modulo.AssetManager();
+        const func1 = inst.registerFunction(['a', 'b'], 'return a + b');
+        const func2 = inst.registerFunction(['a', 'b'], 'return a - b');
+        const count = Object.keys(inst.functions).length;
+        assert: func1 !== func2 && count === 2
+    </script>
+
+    <script name="Test registerStylesheet doesn't register twice">
+        const inst = new Modulo.AssetManager();
+        inst.registerStylesheet('a { color: blue }');
+        inst.registerStylesheet('a { color: blue }');
+        const count = Object.keys(inst.stylesheets).length;
+        assert: count === 1
+    </script>
+
+    <script name="Test wrapFunctionText">
+        const inst = new Modulo.AssetManager();
+        const text = inst.wrapFunctionText(['a', 'b'], '/* abc */');
+        const expected = 
+            '"use strict";Modulo.assets.functions["-1nl2b1t"]' +
+            '= function (a, b){\n/* abc */\n};';
+        assert: text === expected
+    </script>
+</test>
+
+
+</testsuite></component>
