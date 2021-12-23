@@ -97,4 +97,56 @@
 </test>
 
 
+
+<test name="Test CommandMenu build">
+    <script name="Setup & ensure CommandMenu exists">
+        let oldDoc = Modulo.globals.document;
+        Modulo.cmd = new Modulo.CommandMenu();
+        Modulo.assets = new Modulo.AssetManager();
+        Modulo.cmd.setup = () => {
+            oldDoc = Modulo.globals.document;
+            const body = Modulo.utils.makeDiv('');
+            body.removeChild = () => {}; // make no-op
+            Modulo.globals.document = {
+                body,
+                createElement: (...a) => oldDoc.createElement(...a),
+            };
+            return body;
+        }
+        Modulo.cmd.teardown = () => {
+            Modulo.globals.document = oldDoc;
+        }
+    </script>
+
+    <script name="Snapshot: Ensure buildcss works as expected">
+        Modulo.assets.registerStylesheet('a { color: blue }');
+
+        const mockDoc = Modulo.cmd.setup();
+        Modulo.cmd.buildcss(); // Try building CSS
+        Modulo.cmd.teardown();
+
+        const aTag = mockDoc.querySelector('a[download]');
+        const expHref = "data:text/plain;charset=utf-8,a%20%7B%20color%3A%20blue%20%7D";
+        const expDownload = "modulo-build-19mok4s.css";
+        assert: aTag !== null && aTag.href === expHref && aTag.download === expDownload;
+    </script>
+
+    <script name="Snapshot: Ensure buildjs works as expected">
+        Modulo.assets = new Modulo.AssetManager();
+        Modulo.assets.registerFunction([ 'a', 'b' ], 'return a + b');
+        Modulo.fetchQ.data = {};
+
+        const mockDoc = Modulo.cmd.setup();
+        Modulo.cmd.buildjs(); // Try building JS
+        Modulo.cmd.teardown();
+
+        const aTag = mockDoc.querySelector('a[download]');
+        const actHref = aTag && aTag.href.replace(/%20/g, '');
+        const expHref = "data:text/plain;charset=utf-8,%0AModulo.fetchQ.data%3D%7B%0A%7D%3B%0A%0A%22usestrict%22%3BModulo.assets.functions%5B%22-v8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0A%0AModulo.defineAll()%3B%0A";
+        const expDownload = "modulo-build-haot2u.js";
+        assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
+    </script>
+
+</test>
+
 </testsuite></component>

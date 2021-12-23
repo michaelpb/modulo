@@ -712,7 +712,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({ content }, { loader, name }, loadObj) {
-        // TODO: Add in support for shadow DOMAssetCPart
+        // TODO: Add in support for shadow DOM
         //if (loadObj.component.mode === 'shadow') {
         //    return;
         //}
@@ -1637,14 +1637,15 @@ Modulo.utils = class utils {
         return html.replace(/\s+/g, ' ').replace(/(^|>)\s*(<|$)/g, '$1$2').trim();
     }
 
-    static downloadFile(filename, text) {
-      const element = document.createElement('a');
-      const enc = encodeURIComponent(text);
+    static saveFileAs(filename, text) {
+      const doc = Modulo.globals.document;
+      const element = doc.createElement('a');
+      const enc = encodeURIComponent(text); // TODO silo in globals
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
       element.setAttribute('download', filename);
-      document.body.appendChild(element);
+      doc.body.appendChild(element);
       element.click();
-      document.body.removeChild(element);
+      doc.body.removeChild(element);
     }
 
     static loadNodeData(node) {
@@ -1705,6 +1706,7 @@ Modulo.utils = class utils {
             */
             h = Math.imul(31, h) + str.charCodeAt(i) | 0;
         }
+        //return (h || 0).toString(16);
         return (h || 0).toString(32);
     }
 
@@ -1910,9 +1912,6 @@ Modulo.AssetManager = class AssetManager {
     }
 }
 
-// TODO: Maybe should do this on an onload event or similar
-// TODO: Merge buildTemplate (used with backend) with hack_buildTemplate (used
-// by frontend)
 //Modulo.globals.onload = () => Modulo.defineAll();
 Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
 {{ source|safe }};\n
@@ -1924,23 +1923,13 @@ Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
                                "{{ path|escapejs|safe }}");
 {% endfor %}`);
 
-Modulo.hack_buildTemplate = new Modulo.templating.MTL(`
-{{ SOURCE|safe }}
-Modulo.defineAll(); // TODO Move to below
-{% for src, text in fetchQ.data %}
-{% endfor %}
-
-{% for hash, code in assets.rawAssets.js %}
-{{ code|safe }}
-{% endfor %}
-
-`);
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
         Modulo.cmd = new Modulo.CommandMenu();
         Modulo.globals.m = Modulo.cmd;
     }
+
     target(elem) {
         if (!this.targeted) {
             this.targeted = [];
@@ -1951,19 +1940,28 @@ Modulo.CommandMenu = class CommandMenu {
     build() {
         // Base bundle is fetchQ + CSS only
         this.buildcss();
+        this.buildjs();
     }
 
     buildcss() {
-        // TODO: Make later customizable templates
-        const tmpl = new Modulo.templating.MTL(`// modulo build {{ hash }}
-            {{ source|safe }};\n
+        const { saveFileAs, hash } = Modulo.utils;
+        const cssArray = Object.values(Modulo.assets.rawAssets.css).sort();
+        const text = cssArray.join('');
+        saveFileAs(`modulo-build-${hash(text)}.css`, text);
+    }
+
+    buildjs() {
+        const { saveFileAs, hash } = Modulo.utils;
+        // TODO move template string to config
+        const buildTemplate = new Modulo.templating.MTL(`
+            Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
+            {% for hash, jsText in assets.rawAssets.js %}
+                {{ jsText|safe }}
+            {% endfor %}
             Modulo.defineAll();
-            Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
-            {% for path in preload %}
-            //  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
-            Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
-                                          "{{ path|escapejs|safe }}");
-            {% endfor %}`);
+        `);
+        const jsText = buildTemplate.render(Modulo);
+        saveFileAs(`modulo-build-${ hash(jsText) }.js`, jsText);
     }
 
     /*
@@ -1979,18 +1977,6 @@ Modulo.CommandMenu = class CommandMenu {
             });
         }
         fetchQ.wait(() => this._doBuild(scripts, Object.entries(fetchQ.data)));
-    }
-    _doBuild(scriptSources, fetchQData) {
-        const { document, console } = Modulo.globals;
-
-        scriptSources.sort(([src1], [src2]) => src1 > src2 ? 1 : -1);
-        fetchQData.sort(([src1], [src2]) => src1 > src2 ? 1 : -1);
-        const hashString = JSON.stringify([ scriptSources, fetchQData ]);
-        // Maybe instead of hashing fetchQData we use loader hashes?
-        const hash = Modulo.utils.hash(hashString); // update hash
-
-        // Alternative idea: Start with loaders, have loaders generate build,
-        // and IFFE enclose every loader
     }
     */
     _getBuildHash(scriptSources) {
