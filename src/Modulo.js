@@ -193,7 +193,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
 Modulo.cparts.load = class Load extends Modulo.ComponentPart {
     static loadedCallback(data, content, label, loader, src) {
         const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
-        console.log('this is laoder', src);
         data.loader = new Modulo.Loader(null, { attrs });
         data.loader.loadString(content);
     }
@@ -1792,7 +1791,6 @@ Modulo.FetchQueue = class FetchQueue {
             this.basePath = this.basePath + '/'; // make sure trails '/'
         }
         src = Modulo.utils.resolvePath(this.basePath || '', src);
-        console.log('this is src', src);
         if (src in this.data) {
             callback(this.data[src], label, src); // Synchronous route
         } else if (!(src in this.queue)) {
