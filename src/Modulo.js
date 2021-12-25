@@ -141,9 +141,10 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             if (data.dependencies) {
                 // Ensure any CPart dependencies are loaded (relative to src)
                 const basePath = Modulo.utils.resolvePath(this.src, '..');
-                //console.log('this is basePath', basePath);
                 const loadCb = cpartClass.loadedCallback.bind(cpartClass);
                 const cb = (text, label, src) => loadCb(data, text, label, this, src);
+                //console.log('this.src', this.src);
+                //console.log('basePath', basePath);
                 Modulo.fetchQ.enqueue(data.dependencies, cb, basePath);
             }
 
@@ -192,6 +193,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
 Modulo.cparts.load = class Load extends Modulo.ComponentPart {
     static loadedCallback(data, content, label, loader, src) {
         const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
+        console.log('this is laoder', src);
         data.loader = new Modulo.Loader(null, { attrs });
         data.loader.loadString(content);
     }
@@ -994,6 +996,8 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     }
 
     compile(text) {
+        // const { truncate, trim, escapejs } = this.defaultFilters;
+        // const prepComment = token => truncate(escapejs(trim(token)), 80);
         this.stack = []; // Template tag stack
         this.output = 'var OUT=[];\n'; // Variable used to accumulate code
         let mode = 'text'; // Start in text mode
@@ -1675,6 +1679,9 @@ Modulo.utils = class utils {
         if (!workingDir) {
             console.log('Warning: Blank workingDir:', workingDir);
         }
+        if (relPath.toLowerCase().startsWith('http')) {
+            return relPath; // already absolute
+        }
         workingDir = workingDir || '';
         // Similar to Node's path.resolve()
         const combinedPath = workingDir + '/' + relPath;
@@ -1785,12 +1792,13 @@ Modulo.FetchQueue = class FetchQueue {
             this.basePath = this.basePath + '/'; // make sure trails '/'
         }
         src = Modulo.utils.resolvePath(this.basePath || '', src);
+        console.log('this is src', src);
         if (src in this.data) {
-            callback(this.data[src], label); // Synchronous route
+            callback(this.data[src], label, src); // Synchronous route
         } else if (!(src in this.queue)) {
             this.queue[src] = [callback];
             // TODO: Think about if cache:no-store
-            Modulo.globals.fetch(src, {cache: 'no-store'})
+            Modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
                 // v- uncomment after switch to new BE
@@ -1823,10 +1831,10 @@ Modulo.FetchQueue = class FetchQueue {
 
 
 Modulo.INVALID_WORDS = new Set((`
-    break case  catch class  const continue debugger default delete  do  else
+    break case  catch class  const continue debugger default delete  do else
     enum  export extends finally  for if implements  import  in instanceof
     interface new null  package  private protected  public return static  super
-    switch throw  try typeof var  void  while with await async
+    switch throw  try typeof var let void  while with await async
 `).split());
 
 //Modulo.RESERVED_WORDS = ['true', 'false', 'this'] // ? void
@@ -1937,10 +1945,10 @@ Modulo.CommandMenu = class CommandMenu {
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
 
-    build() {
+    build(opts = {}) {
         // Base bundle is fetchQ + CSS only
-        this.buildcss();
-        this.buildjs();
+        this.buildcss(opts);
+        this.buildjs(opts);
     }
 
     buildcss() {
@@ -1950,36 +1958,36 @@ Modulo.CommandMenu = class CommandMenu {
         saveFileAs(`modulo-build-${hash(text)}.css`, text);
     }
 
-    buildjs() {
+    buildjs(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
         // TODO move template string to config
         const buildTemplate = new Modulo.templating.MTL(`
+            {% for row in scriptSources %} {{ row|get:1|safe }} {% endfor %}
+            Modulo.defineAll(); // ensure fetchQ gets defined
             Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
             {% for hash, jsText in assets.rawAssets.js %}
                 {{ jsText|safe }}
             {% endfor %}
-            Modulo.defineAll();
+            window.onload = () => Modulo.defineAll();
         `);
-        const jsText = buildTemplate.render(Modulo);
+        const jsText = buildTemplate.render(Object.assign({}, opts, Modulo));
         saveFileAs(`modulo-build-${ hash(jsText) }.js`, jsText);
+        Modulo.SCRIPT_SOURCES = []; // clear just in case
     }
 
-    /*
-    build() {
-        // TODO: Add later options for getting other scripts, etc
-        // Untested (dead) WIP code
+    bundle() {
         const scriptTags = document.querySelectorAll('script[src*=".js"]');
-        const scripts = [];
+        const scriptSources = [];
         for (const scriptTag of scriptTags) {
-            fetchQ.enqueue(scriptTag.src, data => {
-                delete fetchQ.data[scriptTag.src]; // clear cached data
-                scripts.push([scriptTag.src, data]);
+            Modulo.fetchQ.enqueue(scriptTag.src, data => {
+                delete Modulo.fetchQ.data[scriptTag.src]; // clear cached data
+                scriptSources.push([scriptTag.src, data]);
             });
         }
-        fetchQ.wait(() => this._doBuild(scripts, Object.entries(fetchQ.data)));
-    }
-    */
-    _getBuildHash(scriptSources) {
+        // TODO: Add in "embedded" to bundle
+        //const embeddedTags = document.querySelectorAll('script[src*=".js"]');
+        //const embedded = [];
+        Modulo.fetchQ.wait(() => this.build({ scriptSources }));
     }
 }
 

@@ -32,6 +32,42 @@
 </component>
 
 
+<component name="ErrorCauser">
+    <template>
+        <a @click:=script.makeError>Click me to cause a traceback</a>
+        <a @click:=script.countUp>Click me to count: {{ state.num }}</a>
+
+        {% if state.num gt 3 %}
+            {{ state.num|brokenFilter }}
+        {% endif %}
+    </template>
+    <state
+      num:=1
+    ></state>
+    <script>
+        console.info('factory method of ErrorCauser');
+        function countUp() {
+            state.num++;
+        }
+
+        function makeError() {
+            console.info('makeError callback happening');
+            const a = 10;
+            a(); // cause error
+        }
+    </script>
+    <style>
+        * {
+            color: orangered !important;
+            background: black !important;
+            border: blue 5px solid;
+            padding: 10px;
+        }
+    </style>
+</component>
+
+
+
 
 <component name="Demo">
     <!-- TODO: Refactor the following to take variable length props instead of 2, 3, etc-->
