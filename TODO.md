@@ -2,13 +2,15 @@
 
 # Final To-Do:
 
-1. HeadExportCPart
-  - "AssetCPart" ?
-  - Base class for Script and Style CPart
-  - Allow CParts to export a tag with given content (style or script)
-
-2. Finish m.build()
+2. MOSTLY DONE -------Finish m.build()
   - Idea, use hashes? can that hack work?
+  - What's left:
+    - Finalize "build" vs "bundle"
+        - "build" - as it works now
+        - "bundle" - add sources
+    - Implement testing for both
+    - Make all be based on hashes
+    - Slightly improve hash to never have "-" (& fix tests)
 
 3. ModRec & DOMCursor refactor
   - Finish de-tangling bugs
@@ -37,6 +39,14 @@
 
 8. Documentation finalize
 
+------
+
+
+
+1. DONE ------Asset manager
+  - "AssetCPart" ?
+  - Base class for Script and Style CPart
+  - Allow CParts to export a tag with given content (style or script)
 
 
 ------
@@ -54,9 +64,9 @@ content, without replacing it, etc?
     - "Ignoring" system -- e.g ignore all isModulo elements, only update &
       rerender via props
     - predirectives, transform rival or something
-    - "requestRerenderCallback()"  -- a callback system, where we ignore
-      the component, but pass it's new children in, and the component does
-      a sub-render or something
+    - "requestRerenderCallback()"  -- a callback system, where we ignore the
+      component, but pass it's new children in, and the component does a
+      sub-render or something
 - Probably the best is the last:
     - Do re-render with originalChildren updated to new children
     - Can be done during preload, e.g. substitute in the "< real-Instance

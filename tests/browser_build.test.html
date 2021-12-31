@@ -41,7 +41,7 @@
         const inst = new Modulo.AssetManager();
         const text = inst.wrapFunctionText(['a', 'b'], '/* abc */');
         const expected = 
-            '"use strict";Modulo.assets.functions["-1nl2b1t"]' +
+            '"use strict";Modulo.assets.functions["x1nl2b1t"]' +
             '= function (a, b){\n/* abc */\n};';
         assert: text === expected
     </script>
@@ -90,7 +90,7 @@
         const inst = new Modulo.AssetManager();
         const text = inst.wrapFunctionText(['a', 'b'], '/* abc */');
         const expected = 
-            '"use strict";Modulo.assets.functions["-1nl2b1t"]' +
+            '"use strict";Modulo.assets.functions["x1nl2b1t"]' +
             '= function (a, b){\n/* abc */\n};';
         assert: text === expected
     </script>
@@ -142,8 +142,50 @@
 
         const aTag = mockDoc.querySelector('a[download]');
         const actHref = aTag && aTag.href.replace(/%20/g, '');
-        const expHref = "data:text/plain;charset=utf-8,%0A%0AModulo.defineAll()%3B%2F%2FensurefetchQgetsdefined%0AModulo.fetchQ.data%3D%7B%0A%7D%3B%0A%0A%22usestrict%22%3BModulo.assets.functions%5B%22-v8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0A%0Awindow.onload%3D()%3D%3EModulo.defineAll()%3B%0A";
-        const expDownload = "modulo-build--vsti9r.js";
+        const expHref = "data:text/plain;charset=utf-8,%0A%0AModulo.defineAll()%3B%2F%2FensurefetchQgetsdefined%0AModulo.fetchQ.data%3D%7B%0A%7D%3B%0A%0A%22usestrict%22%3BModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0A%0A%0Awindow.onload%3D()%3D%3EModulo.defineAll()%3B%0A"
+        const expDownload = "modulo-build-j47irm.js"
+        assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
+    </script>
+
+
+    <script name="Snapshot: Ensure buildjs supports additional texts">
+        Modulo.assets = new Modulo.AssetManager();
+        Modulo.assets.registerFunction([ 'a', 'b' ], 'return a + b');
+        Modulo.fetchQ.data = {'test': 'thing'};
+        const opts = {
+            scriptSources: ['abc', 'def'],
+            cssSources: ['ghi', 'jkl'],
+            embeddedSources: ['mno', 'pqr'],
+        };
+
+        const mockDoc = Modulo.cmd.setup();
+        Modulo.cmd.buildjs(opts); // Try building JS
+        Modulo.cmd.teardown();
+
+        const aTag = mockDoc.querySelector('a[download]');
+        const actHref = aTag && aTag.href.replace(/%20/g, '');
+        const expHref = "data:text/plain;charset=utf-8,%0Aabcdef%0AModulo.defineAll()%3B%2F%2FensurefetchQgetsdefined%0AModulo.fetchQ.data%3D%7B%0A%22test%22%3A%2F%2F(1lines)%0A%60thing%60%2C%2F%2F(ends%3Atest)%0A%0A%7D%3B%0A%0A%22usestrict%22%3BModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0A%0A%0AModulo.globalLoader.loadString(%22mno%22)%3B%0A%0AModulo.globalLoader.loadString(%22pqr%22)%3B%0A%0Awindow.onload%3D()%3D%3EModulo.defineAll()%3B%0A"
+        const expDownload = "modulo-build-x195m4pk.js";
+        assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
+    </script>
+
+
+    <script name="Snapshot: Ensure bundle gathers texts">
+        Modulo.assets = new Modulo.AssetManager();
+        Modulo.assets.registerFunction([ 'a', 'b' ], 'return a + b');
+        Modulo.fetchQ.data = {};
+
+        const mockDoc = Modulo.cmd.setup();
+        mockDoc.innerHTML = '<modulo>abc</modulo>';
+        Modulo.cmd.buildjs(); // Try building JS
+        Modulo.cmd.teardown();
+
+        /*
+        const aTag = mockDoc.querySelector('a[download]');
+        const actHref = aTag && aTag.href.replace(/%20/g, '');
+        const expHref = "data:text/plain;charset=utf-8,%0A%0AModulo.defineAll()%3B%2F%2FensurefetchQgetsdefined%0AModulo.fetchQ.data%3D%7B%0A%7D%3B%0A%0A%22usestrict%22%3BModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0A%0A%0Awindow.onload%3D()%3D%3EModulo.defineAll()%3B%0A"
+        const expDownload = "modulo-build-j47irm.js"
+        */
         assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
     </script>
 

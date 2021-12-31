@@ -11,16 +11,6 @@
 // not "literate" and thus merely aspires to much better comments, formatting,
 // complexity, etc.
 
-// ## Literate
-// Unlike most code files, this one is arranged in a very deliberate way. It's
-// arranged in a top-down manner, reflecting the "lifecycle" of a Modulo
-// component, such that the earlier and more important code is at the top, and
-// later and less important code is at the bottom. You can read it like a
-// linear "story" of how Modulo works. Modulo employs [literate
-// programming](https://en.wikipedia.org/wiki/Literate_programming), or
-// interweaving Markdown-formatted comments on to tell this story, and uses a
-// tool (docco) to extract all these comments for easy reading.
-
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
@@ -87,11 +77,7 @@ Modulo.ComponentPart = class ComponentPart {
     }
 }
 
-// # Modulo.Loader
-// Once registered by `defineAll()`, the `Modulo.Loader` will do the rest of
-// the heavy lifting of fetching & registering Modulo components.
 Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove component part extension, unused
-    // ## Loader: connectedCallback()
     constructor(element = null, options = { attrs: {} }) {
         super(element, options);
         this.src = this.attrs.src;
@@ -112,21 +98,11 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             this.src = newSrc;
         }
         //this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text));
-        this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text, true));
+        this.loadFromDOMElement(Modulo.utils.makeDiv(text, true));
         this.hash = Modulo.utils.hash(this.hash + text); // update hash
     }
 
-    // ## Loader: loadFromDOMElement
-    // Create a ComponentFactory instance from a given `<component>` definition.
     loadFromDOMElement(elem) {
-
-        // ### define CParts
-        // Loop through each CPart DOM definition within the component (e.g.
-        // `<state>`), invoking the `loadCallback` on each definition (e.g.
-        // `Modulo.cparts.state.loadCallback` will get invoked for each
-        // `<state>`). This `loadCallback` in turn will do any pre-processing
-        // necessary to transform the attributes of the DOM element into the
-        // data necessary to define this CPart.
         const array = [];
         const nodes = elem.content ? elem.content.childNodes : elem.children;
         for (const node of nodes) {
@@ -1700,20 +1676,13 @@ Modulo.utils = class utils {
     }
 
     static hash(str) {
-        // Simple, insecure, hashing function, returns base32 hash
+        // Simple, insecure, "hashCode()" implementation. Returns base32 hash
         let h = 0;
-        let hashChunks = [];
         for(let i = 0; i < str.length; i++) {
-            /*
-            if (i % (str.length / hashChunkSize) === 0) {
-                hashChunks.push(h); // for hashChunkSize count chunks
-                h = 0;
-            }
-            */
+            //h = ((h << 5 - h) + str.charCodeAt(i)) | 0;
             h = Math.imul(31, h) + str.charCodeAt(i) | 0;
         }
-        //return (h || 0).toString(16);
-        return (h || 0).toString(32);
+        return (h || 0).toString(32).replace(/-/g, 'x');
     }
 
     static cleanWord(text) {
@@ -1949,43 +1918,60 @@ Modulo.CommandMenu = class CommandMenu {
         this.buildjs(opts);
     }
 
-    buildcss() {
+    buildcss(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
-        const cssArray = Object.values(Modulo.assets.rawAssets.css).sort();
-        const text = cssArray.join('');
-        saveFileAs(`modulo-build-${hash(text)}.css`, text);
+        const text = Object.values(Modulo.assets.rawAssets.css)
+                           .concat(opts.cssSources || []).sort().join('');
+        saveFileAs(`modulo-build-${ hash(text) }.css`, text);
     }
 
     buildjs(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
         // TODO move template string to config
         const buildTemplate = new Modulo.templating.MTL(`
-            {% for row in scriptSources %} {{ row|get:1|safe }} {% endfor %}
+            {% for jsText in scriptSources %}{{ jsText|safe }}{% endfor %}
             Modulo.defineAll(); // ensure fetchQ gets defined
             Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
             {% for hash, jsText in assets.rawAssets.js %}
                 {{ jsText|safe }}
             {% endfor %}
+            {% for text in embeddedSources %}
+                Modulo.globalLoader.loadString("{{ text|escapejs|safe }}");
+            {% endfor %}
             window.onload = () => Modulo.defineAll();
         `);
         const jsText = buildTemplate.render(Object.assign({}, opts, Modulo));
         saveFileAs(`modulo-build-${ hash(jsText) }.js`, jsText);
-        Modulo.SCRIPT_SOURCES = []; // clear just in case
     }
 
     bundle() {
-        const scriptTags = document.querySelectorAll('script[src*=".js"]');
+        this.fetchBundleData(opts => this.build(opts));
+    }
+
+    fetchBundleData(callback) {
+        const query = 'script[src*=".js"],link[rel=stylesheet],' +
+                      'template[modulo-embed],modulo';
+        const tags = Modulo.globals.document.querySelectorAll(query);
         const scriptSources = [];
-        for (const scriptTag of scriptTags) {
-            Modulo.fetchQ.enqueue(scriptTag.src, data => {
-                delete Modulo.fetchQ.data[scriptTag.src]; // clear cached data
-                scriptSources.push([scriptTag.src, data]);
+        const cssSources = [];
+        const embeddedSources = [];
+        for (const tag of tags) {
+            if (tag.tagName === 'TEMPLATE' || tag.tagName === 'MODULO') {
+                embeddedSources.push(data);
+                continue;
+            }
+            Modulo.fetchQ.enqueue(tag.src, data => {
+                delete Modulo.fetchQ.data[tag.src]; // clear cached data
+                const arr = tag.tagName === 'SCRIPT' ? scriptSources : cssSources;
+                arr.push(data);
             });
         }
         // TODO: Add in "embedded" to bundle
         //const embeddedTags = document.querySelectorAll('script[src*=".js"]');
         //const embedded = [];
-        Modulo.fetchQ.wait(() => this.build({ scriptSources }));
+        const opts = { scriptSources, cssSources, embeddedSources };
+        Modulo.fetchQ.wait(() => callback(opts));
+        return embeddedSources; // could be used for loadString in defineAll?
     }
 }
 
