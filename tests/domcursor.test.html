@@ -66,8 +66,12 @@
         assert: hasNext === true && t0 === 'ABC' && t1 === 'ABC';
     </script>
 
+    <!--
+        Note: May need to decide on best way to handle modulo-ignore etc before
+        implementing a DFS non-recursive descent stack
+    -->
 
-<!--
+    <!--
     <script name="hasNext() and next() can descend">
         const md = Modulo.utils.makeDiv;
         const node = md('<p>A<span>B</span>C</p><p>D</p>');
@@ -80,7 +84,7 @@
         const t1 = next[1] && next[1].textContent;
         assert: hasNext === true && t0 === 'B' && t1 === 'B';
     </script>
--->
+    -->
 
 </test>
 
