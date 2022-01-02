@@ -100,6 +100,36 @@ available whenever you attach an event, e.g. <code>@click</code>.</p>
 </ul>
 
 
+<h3>The mechanics of the factory lifecycle</h3>
+
+<p>The Factory lifecycle behaves slightly differently. Most lifecycle methods
+can be invoked by using the <code>lifecycle</code> method of
+<code>ModuloElement</code>, e.g.  <code>element.lifecycle('prepare')</code>.
+The "factory" lifecycle, however, is run with <code>runFactoryLifecycle</code>,
+a method of <code>ComponentFactory</code>, before any components or actual
+elements are created.</p>
+
+<p>The is a special lifecycle for any global or one-time setup, after component
+definitions are loaded, but before before any components are constructed.
+Examples: the Style CPart uses this stage to set up global CSS, the Template
+CPart uses this to compile the template and include it in a script tag in the
+head, and the Script CPart will actually wrap the script-tag and include into
+the head.</p>
+
+<p>Like every other "lifecycle" in Modulo, it passes around a "renderObj"
+called baseRenderObj. After this method, this baseRenderObj is not modified,
+but instead gets copied into every other renderObj to form, as the name
+implies, the "base" of future renderObj.</p>
+
+<p>In total, the <code>runFactoryLifecycle(cPartOpts)</code> method of
+<code>ComponentFactory</code> loops through all the CPart names, finding
+each relevant CPart Classes, and then invoking each CPart static method
+<code>factoryCallback</code>, which is what does the necessary preprocessing.
+If there are multiples of the same CPart, then whichever appears last will
+overwrite and/or merge data with the previous ones.  However, that particular
+behavior can be controlled from within each CPart factoryCallback itself.</p>
+
+
 
 <h3>Hooking into a lifecycle phase</h3>
 

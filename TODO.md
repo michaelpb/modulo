@@ -16,6 +16,7 @@
   - Finish de-tangling bugs
   - Implement new patch-set system
   - Swap algo with non-recursive DFS using explicit stack var
+      - INP
   - Nested subrender problem: Debug components controlling their own
     rendering interaction with slot
 

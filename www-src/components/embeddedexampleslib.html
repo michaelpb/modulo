@@ -70,6 +70,52 @@
 </component>
 
 
+<component name="Templating_PrepareCallback">
+<template>
+    <input name="perc" [state.bind] />% of
+    <input name="total" [state.bind] />
+    is: {{ script.calcResult }}
+</template>
+
+<state
+    perc:=50
+    total:=30
+></state>
+
+<script>
+    function prepareCallback() {
+        const calcResult = (state.perc / 100) * state.total;
+        return { calcResult };
+    }
+</script>
+
+<style>
+    input { display: inline; width: 25px }
+</style>
+
+<testsuite>
+    <test name="renders with computed value as expected">
+        <template test-values name="initial render">
+          <input name="perc" value="50" [state.bind] />% of
+          <input name="total" value="30" [state.bind] />
+          is: 15
+        </template>
+
+        <state
+            perc:=55
+        ></state>
+
+        <template test-values name="rerenders correctly if changed">
+          <input name="perc" value="55" [state.bind] />% of
+          <input name="total" value="30" [state.bind] />
+          is: 16.5
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
 
 <component name="Templating_Comments">
 <template>

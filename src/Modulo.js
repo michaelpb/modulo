@@ -4,12 +4,11 @@
 // Welcome to the Modulo.js source code.
 
 // ## Note
-// Earlier versions of Modulo.js's source code were written with literate
-// programming (an explanation is contained in the next comment paragraph).
-// Most of this documentation has been deleted, but will be rewritten once the
-// public API is settled. Until then, the code is a mess, riddled with TODO's,
-// not "literate" and thus merely aspires to much better comments, formatting,
-// complexity, etc.
+// Earlier versions of Modulo.js's source code were written with "literate
+// programming". Most of this documentation has been deleted, but will be
+// rewritten in this style once the public API is settled. Until then, the code
+// is a mess, riddled with TODO's, not "literate" and thus merely aspires to
+// much better comments, formatting, lower complexity, etc.
 
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -186,22 +185,7 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
     }
 }
 
-// # Modulo.ComponentFactory
-
-// Now that we have traversed the jungle of loading Modulo component
-// definitions, what happens next? Well, for each component that is defined, a
-// ComponentFactory instance is created. This class handles instantiating and
-// setting up Modulo components whenever they are encountered on an HTML page.
-
-// In Modulo, every component definition consists of a collection of CPart
-// configurations. Thus, the ComponentFactory stores the configuration of the
-// CParts.
 Modulo.ComponentFactory = class ComponentFactory {
-
-    // ## ComponentFactory constructor
-    // When a ComponentFactory gets constructed (that is, by the Loader), it in
-    // turn sets up expected properties, and then invokes its methods
-    // createClass and runFactoryLifeCycle explained next.
     constructor(loader, name, childrenLoadObj) {
         this.loader = loader;
         this.name = name;
@@ -216,37 +200,6 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.baseRenderObj = this.runFactoryLifecycle(this.childrenLoadObj);
     }
 
-    // ## ComponentFactory: Factory lifecycle
-
-    // This "factory" lifecycle is a special lifecycle for any global or
-    // one-time setup, after component definitions are loaded, but before
-    // before any components are constructed. Examples: the Style CPart uses
-    // this stage to set up global CSS, the Template CPart uses this to compile
-    // the template, and the Script CPart will actually wrap the script-tag &
-    // invoke it now.
-
-    // Like every other "lifecycle" in Modulo, it passes around a "renderObj"
-    // called baseRenderObj. After this method, this baseRenderObj is not
-    // modified, but instead gets copied into every other renderObj to form, as
-    // the name implies, the "base" of future renderObj.
-
-    // In total, this method loops through all the CPart names, finding each
-    // relevant CPart Classes, and then invoking each CPart static method
-    // "factoryCallback", which is what does the necessary preprocessing. If
-    // there are multiples of the same CPart, then whichever appears last will
-    // overwrite and/or merge data with the previous ones.  However, that
-    // particular behavior can be controlled from within each CPart
-    // factoryCallback itself.
-
-    // At the end of this method, baseRenderObj will look like this:
-
-    // ```javascript
-    // this.baseRenderObj = {
-    //     script: {text: '"use strict"\nvar state;\nfunction inpCh(....etc)'},
-    //     template: {compiledTemplate: function () { ...etc... }},
-    //     (...etc...)
-    // }
-    // ```
     runFactoryLifecycle(cPartOpts) {
         const baseRenderObj = {};
         for (let [ cPartName, data ] of cPartOpts) {
@@ -257,10 +210,9 @@ Modulo.ComponentFactory = class ComponentFactory {
         return baseRenderObj;
     }
 
-    // ## ComponentFactory: createClass
-    // Finally, we are ready to create the class that the browser will use to
-    // actually instantiate each Component, with a "back reference" to the fac.
     createClass() {
+        // Create the class that the browser will use to actually instantiate
+        // each Modulo Element (e.g. Component)
         const { fullName } = this;
         return class CustomElement extends Modulo.Element {
             factory() {
@@ -270,10 +222,9 @@ Modulo.ComponentFactory = class ComponentFactory {
         };
     }
 
-    // ## ComponentFactory: buildCParts
-    // This function does the heavy lifting of actually constructing a
-    // component, and is invoked when the component is mounted to the page.
     buildCParts(element) {
+        // This function does the heavy lifting of actually constructing a
+        // component, and is invoked when the component is mounted to the page.
         element.cparts = { element }; // Include "element", for lifecycle method
         element.cpartSpares = {}; // no need to include, since only 1 element
 
@@ -301,10 +252,8 @@ Modulo.ComponentFactory = class ComponentFactory {
         elem.rerender(); // presently no other steps
     }
 
-    // ## ComponentFactory: register & registerInstance
-    // These are minor helper functions. The first registers with the browser,
-    // the second keeps a central location of all component factories defined.
     register() {
+        // Register the Custom Web Component with the browser
         const tagName = this.fullName.toLowerCase();
 
         // TODO: This is actually the "biggest" try-catch, catching defining a
@@ -318,6 +267,7 @@ Modulo.ComponentFactory = class ComponentFactory {
     }
 
     static registerInstance(instance) {
+        // Keep a central location of all component factories defined.
         if (!Modulo.factoryInstances) {
             Modulo.factoryInstances = {};
         }
@@ -823,8 +773,8 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
                 // NOTE: renderObj is passed in for Callback, but not Mount
                 const renderObj = this.element.getCurrentRenderObj();
                 this.prepLocalVars(renderObj); // always prep (for event CB)
-                if (cbName in script) { // if we also have this
-                    script[cbName](arg);
+                if (cbName in script) { // if it's specified in script
+                    Object.assign(renderObj.script, script[cbName](arg));
                 }
             };
         }
@@ -1199,7 +1149,7 @@ Modulo.templating.defaultOptions.tags = {
 // TODO: 
 //  - Then, re-implement [component.key] and [component.ignore] as TagLoad
 //  - Possibly: Use this to then do granular patches (directiveMount etc)
-Modulo.reconcilers.Cursor = class Cursor {
+Modulo.reconcilers.DOMCursor = class DOMCursor {
     constructor(parentNode, parentRival) {
         this.initialize(parentNode, parentRival);
     }
@@ -1211,6 +1161,21 @@ Modulo.reconcilers.Cursor = class Cursor {
         this.parentNodeQueue = [];
         this.keyedChildrenArr = null;
         this.keyedRivalsArr = null;
+
+        // (DEADCODE BFSvDFS)
+        this.parentNode = parentNode;
+        this.parentRival = parentRival;
+        this.instanceStack = [];
+    }
+
+    saveToStackAndDescend(parentNode, parentRival) {
+        // DEADCODE
+        // (see note on BFS vs DFS)
+        this.instanceStack.push({
+            init: [this.parentNode, this.parentRival],
+            next: [this.nextChild, this.nextRival],
+        });
+        this.initialize(parentNode, parentRival);
     }
 
     pushDescent(parentNode, parentRival) {
@@ -1280,7 +1245,7 @@ Modulo.reconcilers.Cursor = class Cursor {
             this.nextRival = rival ? rival.nextSibling : null;
         }
         const keyWasFound = matchedRival !== null || matchedChild !== null;
-        const matchFound = matchedChild !== child && keyWasFound
+        const matchFound = matchedChild !== child && keyWasFound;
         if (matchFound && matchedChild) {
             // Rival matches, but not with child. Swap in child.
             this.nextChild = child;
@@ -1423,7 +1388,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     reconcileChildren(node, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
-        const cursor = new Modulo.reconcilers.Cursor(node, rivalParent);
+        const cursor = new Modulo.reconcilers.DOMCursor(node, rivalParent);
         while (cursor.hasNext()) {
             const [ child, rival ] = cursor.next();
 
@@ -1467,10 +1432,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             } else if (!this.shouldNotDescend) {
                 // NOTE: Cannot do pushDescent (which would be BFS, then) since
                 // presently only works with DFS, for some reason.
-                // EASIEST SOLUTION: Create a new "descend()"
-                // that does the inverse: push current settings
-                // onto queue, but start new settings
+                // EASIEST SOLUTION: Create a new "descend()" that does the
+                // inverse: push current settings onto queue, but start new
+                // settings
                 //cursor.pushDescent(child, rival);
+                //cursor.saveToStackAndDescend(child, rival);
                 this.reconcileChildren(child, rival);
             }
         }
