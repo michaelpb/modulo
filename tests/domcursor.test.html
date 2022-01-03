@@ -66,25 +66,25 @@
         assert: hasNext === true && t0 === 'ABC' && t1 === 'ABC';
     </script>
 
-    <!--
-        Note: May need to decide on best way to handle modulo-ignore etc before
-        implementing a DFS non-recursive descent stack
-    -->
-
-    <!--
-    <script name="hasNext() and next() can descend">
+    <script name="saveToStack and initialize can be used to descend or move cursor">
         const md = Modulo.utils.makeDiv;
         const node = md('<p>A<span>B</span>C</p><p>D</p>');
-        const rival = md('<p>A<span>B</span>C</p><p>D</p>');
+        const rival = md('<p>A<span>E</span>C</p><p>D</p>');
         const cursor = new Modulo.reconcilers.DOMCursor(node, rival);
-        cursor.next(); // skip over first, descend into second
-        const hasNext = cursor.hasNext();
+        cursor.next(); // skip first, move to D
+        cursor.saveToStack(); // save location
+        cursor.initialize(node.firstChild.children[0], rival.firstChild.children[0]);
+        const hN = cursor.hasNext();
         const next = cursor.next();
         const t0 = next[0] && next[0].textContent;
         const t1 = next[1] && next[1].textContent;
-        assert: hasNext === true && t0 === 'B' && t1 === 'B';
+        const lR = !!cursor.loadFromStack();
+        const next2 = cursor.next();
+        const hN2 = cursor.hasNext();
+        const t3 = next2[0] && next2[0].textContent;
+        const t4 = next2[1] && next2[1].textContent;
+        assert: hN === true && t0 === 'B' && t1 === 'E' && lR && hN2 === false && t3 === 'D' && t4 === 'D';
     </script>
-    -->
 
 </test>
 

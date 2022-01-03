@@ -15,9 +15,8 @@
 3. ModRec & DOMCursor refactor
   - Finish implementing & detangling load directive system
   - Finish de-tangling bugs
-  - Implement new patch-set system
-  - Swap algo with non-recursive DFS using explicit stack var
-      - INP - blocked: need to detangle modulo-ignore etc
+  - Implement new patch-set system (?)
+  - Swap algo with non-recursive DFS using explicit stack var - DONE
   - Nested subrender problem: Debug components controlling their own
     rendering interaction with slot
 
@@ -61,7 +60,7 @@
     - Can access like: config.XYZ (in Script, Template, etc)
     - Then, can config in embedded same way!!
     - Loaders can get them too -- for extra module-level config, when
-      importing modules!!!!!
+      importing modules
           - This is how it will work:
               <Load src="some/lib.html">
                   <Config
@@ -400,12 +399,12 @@ Or annotated like:
 - More ideas for "fetch actions":
     <request
         prefix="https://github.com/"
-        repos.GET="/api/users/{{ username }}"
+        repos.GET="/api/users/{{ state.username }}/{{ page }}"
         repos.callback:=script.dataReceived
     ></request>
     - Under the hood uses fetchQ.enqueue + fetchQ.wait (to gather multiple)
     - The routes are all templated, e.g.:
-    - request.repos.get({username: 'michaelpb'})
+    - request.repos.get({ page: 3 })
     - Future idea: Could use reversable named routes from backend
 
 - Misc other ideas:

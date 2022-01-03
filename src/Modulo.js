@@ -96,8 +96,16 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         if (newSrc) {
             this.src = newSrc;
         }
+        const rec = new Modulo.reconcilers.ModRec({
+            directives: [],
+            directiveShortcuts: [],
+            tagDirectives: {},
+            makePatchSet: true,
+            elementCtx: {},
+        });
+        const elem = rec.loadString(text, {});
         //this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text));
-        this.loadFromDOMElement(Modulo.utils.makeDiv(text, true));
+        this.loadFromDOMElement(elem);
         this.hash = Modulo.utils.hash(this.hash + text); // update hash
     }
 
@@ -697,8 +705,9 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     constructor(element, options) {
         super(element, options);
         const engineClass = Modulo.templating[this.attrs.engine || 'MTL'];
-        // TODO: Do not put here! Move to factoryCallback, since otherwise
-        // it will compile every time (unless we cache templates)
+
+        // NOTE: May want to move this to Factory. While it will only create 1
+        // template function, it will generate the code with every instance.
         //const rFOpts = { tagName: element.tagName.replace('-', '__') };
         const opts = Object.assign({}, this.attrs, {
             makeFunc: (a, b) => Modulo.assets.registerFunction(a, b),
@@ -1168,7 +1177,7 @@ Modulo.reconcilers.DOMCursor = class DOMCursor {
     }
 
     saveToStack() {
-        // TODO: Write _.pick helper
+        // TODO: Once we finalize this class, write "_.pick" helper
         const { nextChild, nextRival, keyedChildren, keyedRivals,
                 parentNode, keyedChildrenArr, keyedRivalsArr } = this;
         const instance = { nextChild, nextRival, keyedChildren, keyedRivals,
@@ -1177,10 +1186,8 @@ Modulo.reconcilers.DOMCursor = class DOMCursor {
     }
 
     loadFromStack() {
-        if (this.instanceStack.length < 1) {
-            return false;
-        }
-        return Object.assign(this, this.instanceStack.pop());
+        const stack = this.instanceStack;
+        return stack.length > 0 && Object.assign(this, stack.pop());
     }
 
     hasNext() {
