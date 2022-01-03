@@ -1168,8 +1168,6 @@ Modulo.reconcilers.DOMCursor = class DOMCursor {
     }
 
     saveToStack() {
-        // (INP) DEAD CODE (see note on BFS vs DFS)
-
         // TODO: Write _.pick helper
         const { nextChild, nextRival, keyedChildren, keyedRivals,
                 parentNode, keyedChildrenArr, keyedRivalsArr } = this;
@@ -1184,24 +1182,6 @@ Modulo.reconcilers.DOMCursor = class DOMCursor {
         }
         return Object.assign(this, this.instanceStack.pop());
     }
-
-    /*
-        //this.parentNodeQueue = [];
-    pushDescent(parentNode, parentRival) {
-        // DEADCODE
-        this.parentNodeQueue.push([parentNode, parentRival]);
-    }
-    popDescent() {
-        // DEADCODE
-        if (this.parentNodeQueue.length < 1) {
-            return false;
-        }
-        const result = this.parentNodeQueue.shift();
-        //console.log('this is reuslt', result);
-        this.initialize(...result);
-        return true;
-    }
-    */
 
     hasNext() {
         if (this.nextChild || this.nextRival) {
@@ -1396,54 +1376,44 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     reconcileChildren(childParent, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
-        //const cursor = new Modulo.reconcilers.DOMCursor(childParent, rivalParent);
-        const firstCursor = new Modulo.reconcilers.DOMCursor(childParent, rivalParent);
-        const cursorStack = [ firstCursor ];
-        while (cursorStack.length > 0) {
-            let cursor = cursorStack.pop();
-            while (cursor.hasNext()) {
-                let node = cursor.parentNode;
-                const [ child, rival ] = cursor.next();
+        const cursor = new Modulo.reconcilers.DOMCursor(childParent, rivalParent);
+        while (cursor.hasNext()) {
+            const [ child, rival ] = cursor.next();
 
-                // Does this node to be swapped out? Swap if exist but mismatched
-                const needReplace = child && rival && (
-                    child.nodeType !== rival.nodeType ||
-                    child.nodeName !== rival.nodeName
-                );
+            // Does this node to be swapped out? Swap if exist but mismatched
+            const needReplace = child && rival && (
+                child.nodeType !== rival.nodeType ||
+                child.nodeName !== rival.nodeName
+            );
 
-                if ((child && !rival) || needReplace) { // we have more rival, delete child
-                    this.patchAndDescendants(child, 'Unmount');
-                    this.patch(node, 'removeChild', child);
-                }
+            if ((child && !rival) || needReplace) { // we have more rival, delete child
+                this.patchAndDescendants(child, 'Unmount');
+                this.patch(cursor.parentNode, 'removeChild', child);
+            }
 
-                if (needReplace) { // do swap with insertBefore
-                    this.patch(node, 'insertBefore', rival, child.nextSibling);
-                    this.patchAndDescendants(rival, 'Mount');
-                }
+            if (needReplace) { // do swap with insertBefore
+                this.patch(cursor.parentNode, 'insertBefore', rival, child.nextSibling);
+                this.patchAndDescendants(rival, 'Mount');
+            }
 
-                if (!child && rival) { // we have less than rival, take rival
-                    this.patch(node, 'appendChild', rival);
-                    this.patchAndDescendants(rival, 'Mount');
-                }
+            if (!child && rival) { // we have less than rival, take rival
+                this.patch(cursor.parentNode, 'appendChild', rival);
+                this.patchAndDescendants(rival, 'Mount');
+            }
 
-                if (child && rival && !needReplace) {
-                    // Both exist and are of same type, let's reconcile nodes
-                    if (child.nodeType !== 1) { // text or comment node
-                        if (child.nodeValue !== rival.nodeValue) { // update
-                            this.patch(child, 'node-value', rival.nodeValue);
-                        }
-                    } else if (!child.isEqualNode(rival)) { // sync if not equal
-                        this.reconcileAttributes(child, rival);
-                        if (rival.hasAttribute('modulo-ignore')) {
-                            //console.log('Skipping ignored node');
-                        } else if (!this.shouldNotDescend) {
-                            cursorStack.push(cursor);
-                            cursor = new Modulo.reconcilers.DOMCursor(child, rival)
-                            //cursor.saveToStack();
-                            //cursor.initialize(child, rival);
-                            //cursor.loadFromStack();
-                            //this.reconcileChildren(child, rival);
-                        }
+            if (child && rival && !needReplace) {
+                // Both exist and are of same type, let's reconcile nodes
+                if (child.nodeType !== 1) { // text or comment node
+                    if (child.nodeValue !== rival.nodeValue) { // update
+                        this.patch(child, 'node-value', rival.nodeValue);
+                    }
+                } else if (!child.isEqualNode(rival)) { // sync if not equal
+                    this.reconcileAttributes(child, rival);
+                    if (rival.hasAttribute('modulo-ignore')) {
+                        //console.log('Skipping ignored node');
+                    } else if (!this.shouldNotDescend) {
+                        cursor.saveToStack();
+                        cursor.initialize(child, rival);
                     }
                 }
             }
