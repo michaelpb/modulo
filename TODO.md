@@ -13,10 +13,11 @@
     - Slightly improve hash to never have "-" (& fix tests)
 
 3. ModRec & DOMCursor refactor
+  - Finish implementing & detangling load directive system
   - Finish de-tangling bugs
   - Implement new patch-set system
   - Swap algo with non-recursive DFS using explicit stack var
-      - INP
+      - INP - blocked: need to detangle modulo-ignore etc
   - Nested subrender problem: Debug components controlling their own
     rendering interaction with slot
 
@@ -49,6 +50,31 @@
   - Base class for Script and Style CPart
   - Allow CParts to export a tag with given content (style or script)
 
+------
+
+# CONFIG Idea:
+
+- Config CPart
+    - This is a super critical way to solve this and many other issues
+    - Implicit CPart as a sub-cpart in EVERY factory CPart
+    - Can get overridden on a per-component or per-module basis
+    - Can access like: config.XYZ (in Script, Template, etc)
+    - Then, can config in embedded same way!!
+    - Loaders can get them too -- for extra module-level config, when
+      importing modules!!!!!
+          - This is how it will work:
+              <Load src="some/lib.html">
+                  <Config
+                      theme=""
+                      templateEngine="whatevers"
+                  ></Config>
+              </Load>
+          - The "src" just gets PREPENDED as text, so the second Config
+            overrides the first! Easy-peasy!
+    - NOTE: Further thinking, this may make modules obsolete:
+          - Perhaps instead of "Load src=" it becomes "Module src="?
+          - That would also allow loose Scripts to be module-level, and loose
+            Configs to be module-level as well
 
 ------
 
