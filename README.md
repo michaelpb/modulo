@@ -1,4 +1,4 @@
-![](www-src/img/mono_logo.png)
+![](www-src/img/mono_logo_percent_only.png)
 
 # Modulo
 
@@ -12,28 +12,7 @@
 - [X] A "no fuss" drop-in to add JS to existing web apps
 
 
----------
-
-## Status: `prealpha`
-
-- **prealpha - unreleased, keep an eye on it!**
-- alpha - use it if you don't mind large bugs or incomplete feature
-- beta - use it if you don't mind small bugs
-- release - use it, ready for general use, some small bugs may crop up, and
-  some extra features may be added
-- mature - use it, featureset is stable and will have no changes
-
-
-## Versioning roadmap
-
-- Prealpha / alpha: no version numbers
-- Beta: 0.x.y
-    - Patch releases: No documentation changes
-    - Minor releases: Documentation or feature changes
-    - Major releases: Backwards incompatibility
-
-
----------
+- **Status**: `prealpha` *(unreleased, but keep an eye on it!)*
 
 # Usage
 
@@ -42,9 +21,8 @@ Full getting started guide on Modulo's website: <https://modulojs.org/start.html
 Modulo is a small framework for creating custom Web Components, reusable
 snippets of HTML, CSS, and JavaScript that create new HTML-like tags that can
 be used and reused anywhere on your site. Under the hood, it uses a subset of
-the customElements API, [which is now supported by all modern
-browsers](https://caniuse.com/custom-elementsv1). To get started with creating
-a custom component, do the following 3 steps:
+the [customElements API](https://caniuse.com/custom-elementsv1). To get started
+with creating a custom component, do the following 3 steps:
 
 1. Download [src/Modulo.js](https://github.com/michaelpb/modulo/blob/main/src/Modulo.js)
 (the single file that contains all of Modulo) to
@@ -133,9 +111,25 @@ standards:
   necessary.
 
 
------
+## Status: `prealpha`
 
-# License
+- **prealpha - unreleased, keep an eye on it!**
+- alpha - use it if you don't mind large bugs or incomplete feature
+- beta - use it if you don't mind small bugs
+- release - use it, ready for general use, some small bugs may crop up, and
+  some extra features may be added
+- mature - use it, featureset is stable and will have no changes
+
+
+## Versioning roadmap
+
+- Prealpha / alpha: no version numbers
+- Beta: 0.x.y
+    - Patch releases: No documentation changes
+    - Minor releases: Documentation or feature changes
+    - Major releases: Backwards incompatibility
+
+## License
 
 (C) 2022 - Michael Bethencourt
 
