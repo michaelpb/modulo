@@ -96,6 +96,8 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         if (newSrc) {
             this.src = newSrc;
         }
+
+        // TODO: This is where we would loop in pre-directives for loading component defs
         const rec = new Modulo.reconcilers.ModRec({
             directives: [],
             directiveShortcuts: [],
@@ -617,6 +619,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
         dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
     }
+
     dataPropUnmount({ el, attrName }) {
         delete el.dataProps[attrName];
     }
@@ -1292,8 +1295,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         this.elementCtx = opts.elementCtx;
         this.tagTransforms = opts.tagTransforms;
 
-        // New configs --- TODO remove this once ModRec tests are
-        // refactored
+        // New configs --- TODO remove this once ModRec tests are refactored
         const EVENT = 'component.event';
         const DATA_PROP = 'component.dataProp';
         const defDirShort = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];

@@ -14,9 +14,9 @@
 
 ---------
 
-## Status: prealpha
+## Status: `prealpha`
 
-- **prealpha - keep an eye on it!**
+- **prealpha - unreleased, keep an eye on it!**
 - alpha - use it if you don't mind large bugs or incomplete feature
 - beta - use it if you don't mind small bugs
 - release - use it, ready for general use, some small bugs may crop up, and
@@ -24,7 +24,7 @@
 - mature - use it, featureset is stable and will have no changes
 
 
-### Versioning roadmap
+## Versioning roadmap
 
 - Prealpha / alpha: no version numbers
 - Beta: 0.x.y
@@ -33,7 +33,63 @@
     - Major releases: Backwards incompatibility
 
 
+---------
 
+# Usage
+
+*(Full getting started guide on site: <https://modulojs.org/start.html>)*
+
+1. Download `/src/Modulo.js` (the single file containing all of Modulo.js) to
+wherever you put JS files for your website (for example, `/static/js/Modulo.js`)
+
+
+2. Include in your HTML file a reference to the script:
+
+```html
+<script src="/js/Modulo.js"></script>
+```
+
+
+3. And finally, define a component, followed by a "Modulo.defineAll()" to
+activate Modulo. For example, we can use "template", "script", and "style"
+tags, to incorporate HTML, JavaScript, and CSS respectively into our component:
+
+```html
+<script src="/js/Modulo.js"></script>
+
+<!-- Define a custom component in a "modulo-embed" -->
+<template modulo-embed>
+    <component name="HelloWorld">
+        <template>
+            Hello <strong>Modulo</strong> World!
+        </template>
+        <script>
+            console.log('Hello Modulo JS world!');
+        </script>
+        <style>
+            strong { color: purple; }
+        </style>
+    </component>
+</template>
+
+<script>Modulo.defineAll()</script>
+```
+
+4. Now, you can use and reuse your component wherever you want, just like any
+normal HTML tag:
+
+```html
+<x-HelloWorld></x-HelloWorld>
+<p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
+```
+
+
+5. Want to try more? The tutorial picks up where this leaves
+off starting with
+[Part 1, Section 2: CParts](https://modulojs.org/docs/tutorial_part1.html#cparts)
+
+
+-----
 
 # Contributing
 

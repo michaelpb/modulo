@@ -1,5 +1,17 @@
 ------
 
+# 2022 Final, final To-Do:
+
+1. Implement "dataProp" for load
+    - Probably: Move more of "element" into FactoryCPart
+    - FactoryCPart should have dataProp handler
+
+3. Work on < config > system
+    - "config" gets referenced into every FactoryCPart cparts obj -- if it does
+      not have one, it just points at the Module/Loader's
+
+------
+
 # Final To-Do:
 
 2. MOSTLY DONE -------Finish m.build()
@@ -16,7 +28,7 @@
   - Finish implementing & detangling load directive system
   - Finish de-tangling bugs
   - Implement new patch-set system (?)
-  - Swap algo with non-recursive DFS using explicit stack var - DONE
+  - DONE: Swap algo with non-recursive DFS using explicit stack var
   - Nested subrender problem: Debug components controlling their own
     rendering interaction with slot
 
@@ -24,11 +36,12 @@
   - Decide on "template" vs "Template"
 
 5. Decide on general Modulo config
+  - Probably with < Config > CPart
   - Change "defineAll" to "configAndRegister" or something
   - Generates a "configuration stack" of Modulo objects
   - Remove ALL global "Modulo" object references, instead allow instantiating
     entire framework / lib as encapsulated config instance
-  - Decide on Possibly moving more config to this level
+  - Decide on possibly moving more config to this level
 
 6. Namespaces & Module interface
 
