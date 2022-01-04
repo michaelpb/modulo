@@ -1,4 +1,4 @@
-![](docs-src/img/mono_logo.png)
+![](www-src/img/mono_logo.png)
 
 # Modulo
 
@@ -37,27 +37,41 @@
 
 # Usage
 
-*(Full getting started guide on site: <https://modulojs.org/start.html>)*
+Full getting started guide on Modulo's website: <https://modulojs.org/start.html>
 
-1. Download `/src/Modulo.js` (the single file containing all of Modulo.js) to
+Modulo is a small framework for creating custom Web Components, reusable
+snippets of HTML, CSS, and JavaScript that create new HTML-like tags that can
+be used and reused anywhere on your site. Under the hood, it uses a subset of
+the customElements API, [which is now supported by all modern
+browsers](https://caniuse.com/custom-elementsv1). To get started with creating
+a custom component, do the following 3 steps:
+
+1. Download [src/Modulo.js](https://github.com/michaelpb/modulo/blob/main/src/Modulo.js)
+(the single file that contains all of Modulo) to
 wherever you put JS files for your website (for example, `/static/js/Modulo.js`)
 
 
-2. Include in your HTML file a reference to the script:
+2. Include in your HTML file a reference to the script, followed by a
+"modulo-embed", which we'll fill later with component definitions, and finally
+followed by a `Modulo.defineAll()` to activate Modulo:
 
 ```html
-<script src="/js/Modulo.js"></script>
+<script src="/static/js/Modulo.js"></script>
+
+<template modulo-embed>
+</template>
+
+<script>Modulo.defineAll()</script>
 ```
 
 
-3. And finally, define a component, followed by a "Modulo.defineAll()" to
-activate Modulo. For example, we can use "template", "script", and "style"
-tags, to incorporate HTML, JavaScript, and CSS respectively into our component:
+3. Now, in this "modulo-embed", we can define our first component. We can use
+"template", "script", and "style" tags, to incorporate HTML, JavaScript, and
+CSS respectively into our component:
 
 ```html
-<script src="/js/Modulo.js"></script>
+<script src="/static/js/Modulo.js"></script>
 
-<!-- Define a custom component in a "modulo-embed" -->
 <template modulo-embed>
     <component name="HelloWorld">
         <template>
@@ -75,7 +89,7 @@ tags, to incorporate HTML, JavaScript, and CSS respectively into our component:
 <script>Modulo.defineAll()</script>
 ```
 
-4. Now, you can use and reuse your component wherever you want, just like any
+Now, you can use and reuse your component wherever you want, just like any
 normal HTML tag:
 
 ```html
@@ -84,8 +98,8 @@ normal HTML tag:
 ```
 
 
-5. Want to try more? The tutorial picks up where this leaves
-off starting with
+* **Continue?** Want to try more? The tutorial picks up where this leaves off
+  starting with
 [Part 1, Section 2: CParts](https://modulojs.org/docs/tutorial_part1.html#cparts)
 
 
@@ -117,4 +131,13 @@ standards:
 - Most operations should be synchronous, so they can finish before reflow.
 - Do not add any layers of callback indirection unless it is absolutely
   necessary.
+
+
+-----
+
+# License
+
+(C) 2022 - Michael Bethencourt
+
+[LGPL-2.1](https://github.com/michaelpb/modulo/blob/main/LICENSE)
 
