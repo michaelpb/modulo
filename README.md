@@ -6,7 +6,7 @@
 
 **A concise JavaScript Component framework**
 
-- [X] About ~1000 lines of code as a thin layer over vanilla Custom Web Components
+- [X] A single file with less than 2000 lines as a thin layer over vanilla Custom Web Components
 - [X] Components system inspired by React, Svelte, and Polymer
 - [X] Modular with opinionated defaults and few assumptions
 - [X] A "no fuss" drop-in to add JS to existing web apps
@@ -18,11 +18,11 @@
 
 Full getting started guide on Modulo's website: <https://modulojs.org/start.html>
 
-Modulo is a small framework for creating custom Web Components, reusable
+Modulo is a small framework for creating custom Web Components: Reusable
 snippets of HTML, CSS, and JavaScript that create new HTML-like tags that can
-be used and reused anywhere on your site. Under the hood, it uses a subset of
-the [customElements API](https://caniuse.com/custom-elementsv1). To get started
-with creating a custom component, do the following 3 steps:
+be used and reused anywhere on your site. Under the hood, it uses a widely
+compatible subset of the [customElements API](https://caniuse.com/custom-elementsv1).
+To get started with creating a custom component, do the following 3 steps:
 
 1. Download [src/Modulo.js](https://github.com/michaelpb/modulo/blob/main/src/Modulo.js)
 (the single file that contains all of Modulo) to

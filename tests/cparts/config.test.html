@@ -1,0 +1,29 @@
+<component name="ConfigCPart_SimpleTest">
+    <state
+        testing="lol"
+    ></state>
+
+    <config
+      test="123"
+      an_array_val:='["a", "b", "c"]'
+      stuff:='{}'
+    ></config>
+    <!--stuff.prop:='"This is it"'-->
+
+    <testsuite solo>
+
+        <test name="Testing initial config is readable as a CPart">
+            <script name="Config works for simple string">
+                assert: config.test === '123'
+            </script>
+
+            <script name="Config works for dataProp type">
+                const expected = JSON.stringify(["a", "b", "c"]);
+                const actual = JSON.stringify(config.an_array_val);
+                assert: expected === actual
+            </script>
+        </test>
+
+    </testsuite>
+</component>
+

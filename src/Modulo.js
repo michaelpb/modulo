@@ -80,6 +80,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
     constructor(element = null, options = { attrs: {} }) {
         super(element, options);
         this.src = this.attrs.src;
+        this.config = {};
 
         // TODO: Do some sort of "fork" of cparts Object to allow CPart namespacing
         this.cparts = Modulo.cparts;
@@ -97,13 +98,18 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             this.src = newSrc;
         }
 
-        // TODO: This is where we would loop in pre-directives for loading component defs
+        // TODO: Refactor duplicated (3x) directives when config works
+        const tmp_Cmp = new this.cparts.component({}, {});
         const rec = new Modulo.reconcilers.ModRec({
-            directives: [],
-            directiveShortcuts: [],
+            directives: [ 'module.dataProp' ],
+            directiveShortcuts: [ [ /:$/, 'module.dataProp' ] ],
+            directiveCallbacks: {
+                directiveLoad: args => {
+                    tmp_Cmp.dataPropMount(args, {});
+                },
+            },
+            //directiveShortcuts: [ ],
             tagDirectives: {},
-            makePatchSet: true,
-            elementCtx: {},
         });
         const elem = rec.loadString(text, {});
         //this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text));
@@ -198,6 +204,7 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
 Modulo.ComponentFactory = class ComponentFactory {
     constructor(loader, name, childrenLoadObj) {
         this.loader = loader;
+        this.config = this.loader.config;
         this.name = name;
         this.fullName = `${this.loader.namespace}-${name}`;
 
@@ -426,6 +433,13 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
     }
 }
 
+Modulo.cparts.config = class Config extends Modulo.ComponentPart {
+    static factoryCallback({ attrs }, factory, loadObj) {
+        factory.loader.config = Object.assign(factory.loader.config, attrs);
+        return factory.loader.config;
+    }
+}
+
 Modulo.cparts.module = class Module extends Modulo.FactoryCPart { }
 
 Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
@@ -468,9 +482,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         this.element.ownerDocument.head.append(newScript);
     }
 
-    /* Reconciler ElementCtx interface: */
-    /* TODO: Can I refactor into newReconciler, e.g. generate a this.elementCtx = {
-    ** directiveLoad: () => ... } as a factory step? */
+    /* TODO: Refactor this so this methods are "prebaked" into the callbacks obj */
     directiveTagLoad(args) {
         args.element = this.element;
         this.element._invokeCPart(args.directiveName, 'TagLoad', args);
@@ -507,14 +519,12 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     newReconciler({ directives, directiveShortcuts, tagDirectives }) {
-        /* TODO: Rename elementCtx into a "callbacks" and then create an obj of
-        ** pre-computed bound directive calbacks there */
         this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
             directives,
             directiveShortcuts,
+            directiveCallbacks: this,
             tagDirectives,
             makePatchSet: true,
-            elementCtx: this,
         });
     }
 
@@ -606,13 +616,15 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         delete el.moduloEvents[attrName];
     }
 
-    dataPropMount({ el, value, attrName, element }) {
+    dataPropMount({ el, value, attrName, element }, obj) {
         const { get } = Modulo.utils;
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
             el.dataProps = {};
         }
-        const val = get(element.getCurrentRenderObj(), value);
+        const val = (/^[a-zA-Z]/.test(value))
+            ? get(obj || element.getCurrentRenderObj(), value)
+            : JSON.parse(value);
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
         const path = attrName.slice(0, index);
@@ -1292,7 +1304,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         opts = opts || {};
         this.makePatchSet = !!opts.makePatchSet;
         this.shouldNotDescend = !!opts.doNotDescend;
-        this.elementCtx = opts.elementCtx;
+        this.directiveCallbacks = opts.directiveCallbacks;
         this.tagTransforms = opts.tagTransforms;
 
         // New configs --- TODO remove this once ModRec tests are refactored
@@ -1322,8 +1334,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // Note: Always attempts to reconcile (even on first mount), in case
         // it's been pre-rendered
         // TODO: should normalize <!DOCTYPE html>
-        if (!this.elementCtx) {
-            this.elementCtx = node; // element context
+        if (!this.directiveCallbacks) {
+            this.directiveCallbacks = node; // element context
         }
         if (typeof rival === 'string') {
             rival = this.loadString(rival, tagTransforms);
@@ -1456,10 +1468,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             const value = el.getAttribute(rawName);
             for (const directive of directives) {
                 Object.assign(directive, { value, el, callbackName });
-                this.patch(this.elementCtx, callbackName, directive);
-                //const result = this.elementCtx.directiveCallback(directive, suffix);
+                //console.log('PATCH DIRECTIVES: this is callbackName', callbackName);
+                this.patch(this.directiveCallbacks, callbackName, directive);
+                //const result = this.directiveCallbacks.directiveCallback(directive, suffix);
                 //if (result) {
-                //    this.patch(this.elementCtx, callbackName, directive);
+                //    this.patch(this.directiveCallbacks, callbackName, directive);
                 //}
             }
         }
