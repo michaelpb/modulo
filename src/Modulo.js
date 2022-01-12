@@ -92,12 +92,7 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
-    loadString(text, newSrc = null) {
-        Modulo.assert(text, 'Text must be a non-empty string, not', text)
-        if (newSrc) {
-            this.src = newSrc;
-        }
-
+    _stringToDom(text) {
         // TODO: Refactor duplicated (3x) directives when config works
         const tmp_Cmp = new this.cparts.component({}, {});
         const rec = new Modulo.reconcilers.ModRec({
@@ -112,7 +107,16 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             tagDirectives: {},
         });
         const elem = rec.loadString(text, {});
+        return elem; // used by tests
+    }
+
+    loadString(text, newSrc = null) {
+        Modulo.assert(text, 'Text must be a non-empty string, not', text)
+        if (newSrc) {
+            this.src = newSrc;
+        }
         //this.data = this.loadFromDOMElement(Modulo.utils.makeDiv(text));
+        const elem = this._stringToDom(text);
         this.loadFromDOMElement(elem);
         this.hash = Modulo.utils.hash(this.hash + text); // update hash
     }
@@ -616,24 +620,28 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         delete el.moduloEvents[attrName];
     }
 
-    dataPropMount({ el, value, attrName, element }, obj) {
+    dataPropMount({ el, value, attrName, element, rawName }, obj) {
         const { get } = Modulo.utils;
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
             el.dataProps = {};
+            //el.dataPropAttributes = [];
         }
-        const val = (/^[a-zA-Z]/.test(value))
-            ? get(obj || element.getCurrentRenderObj(), value)
-            : JSON.parse(value);
+        const val = (/^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value))
+            ? get(obj || element.getCurrentRenderObj(), value) // renderObj
+            : JSON.parse(value); // is a JSON literal
+
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
         const path = attrName.slice(0, index);
         const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
         dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
+        //el.dataPropAttributes.push(rawName);
     }
 
     dataPropUnmount({ el, attrName }) {
         delete el.dataProps[attrName];
+        //el.dataPropAttributes.remove(rawName);
     }
 }
 
@@ -843,6 +851,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
     initializedCallback(renderObj) {
         this.rawDefaults = renderObj.state.attrs || {};
+        //console.log('thsi is rawDefaults', this.rawDefaults);
         this.boundElements = {};
         if (!this.data) {
             this.data = Modulo.utils.simplifyResolvedLiterals(this.rawDefaults);
@@ -1543,7 +1552,9 @@ Modulo.utils = class utils {
 
     static mergeAttrs(elem, defaults) {
         const attrs = Modulo.utils.parseAttrs(elem);
-        return Object.assign(defaults, attrs, elem.dataProps || {});
+        // TODO: remove parseAttrs, but clean up decorated attrs from
+        // appearing twice
+        return Object.assign({}, defaults, attrs, elem.dataProps || {});
     }
 
     static parseAttrs(elem) {
@@ -1764,11 +1775,11 @@ Modulo.FetchQueue = class FetchQueue {
 
 
 Modulo.INVALID_WORDS = new Set((`
-    break case  catch class  const continue debugger default delete  do else
-    enum  export extends finally  for if implements  import  in instanceof
-    interface new null  package  private protected  public return static  super
-    switch throw  try typeof var let void  while with await async
-`).split());
+    break case catch class const continue debugger default delete do else
+    enum export extends finally for if implements import in instanceof
+    interface new null package private protected public return static super
+    switch throw try typeof var let void  while with await async true false
+`).split(/\s+/ig));
 
 //Modulo.RESERVED_WORDS = ['true', 'false', 'this'] // ? void
 

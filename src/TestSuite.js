@@ -155,13 +155,17 @@ class TestSuite extends Modulo.ComponentPart {
         let total = 0;
         let failure = 0;
 
-        for (const testNode of Modulo.utils.makeDiv(content).children) {
+        const parentNode = Modulo.utils.makeDiv(content);
+        //const parentNode = factory.loader._stringToDom(content); // TODO ?
+        for (const testNode of parentNode.children) {
             const element = factory.createTestElement();
             // Could be implied first test?
             Modulo.assert(element.isMounted, 'Successfully mounted element');
+
             // TODO: Switch to new cpart-container system used by "component" and "module"
             const stepArray = factory.loader.loadFromDOMElement(testNode);
             const testName = testNode.getAttribute('name') || '<test>';
+
             console.group('[%]', '         ? TEST', testName);
             Modulo.isTest = testName; // useful in tests, maybe remove, or document
             let testTotal = 0;

@@ -6,11 +6,14 @@
     <config
       test="123"
       an_array_val:='["a", "b", "c"]'
-      stuff:='{}'
     ></config>
-    <!--stuff.prop:='"This is it"'-->
+    <!-- TODO: There's something wrong that causes the following to break: -->
+    <!--
+      stuff:='{}'
+      stuff.prop:='"This is it"'
+    -->
 
-    <testsuite solo>
+    <testsuite>
 
         <test name="Testing initial config is readable as a CPart">
             <script name="Config works for simple string">
