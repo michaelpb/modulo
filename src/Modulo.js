@@ -102,7 +102,6 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
             directives2: {
                 'config.dataPropLoad': tmp_Cmp,
             },
-            directiveCallbacks: {},
             tagDirectives: {},
         });
         const elem = rec.loadString(text, {});
@@ -568,33 +567,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             directives,
             directiveShortcuts,
             directives2,
-            directiveCallbacks: {
-                directiveLoad: args => {
-                    //console.log('directive load');
-                    args.element = this.element;
-                    this.element._invokeCPart(args.directiveName, 'Load', args);
-                },
-
-                directiveTagLoad: args => {
-                    args.element = this.element;
-                    this.element._invokeCPart(args.directiveName, 'TagLoad', args);
-                },
-
-                directiveMount: args => {
-                    args.element = this.element;
-                    this.element._invokeCPart(args.directiveName, 'Mount', args);
-                },
-
-                directiveUnmount: args => {
-                    args.element = this.element;
-                    this.element._invokeCPart(args.directiveName, 'Unmount', args);
-                },
-
-                directiveChange: args => {
-                    args.element = this.element;
-                    this.element._invokeCPart(args.directiveName, 'Change', args);
-                },
-            },
         });
     }
 
@@ -1380,7 +1352,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         opts = opts || {};
         this.makePatchSet = !!opts.makePatchSet;
         this.shouldNotDescend = !!opts.doNotDescend;
-        this.directiveCallbacks = opts.directiveCallbacks;
         this.directives2 = opts.directives2 || {};
         this.tagTransforms = opts.tagTransforms;
 
@@ -1413,9 +1384,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // Note: Always attempts to reconcile (even on first mount), in case
         // it's been pre-rendered
         // TODO: should normalize <!DOCTYPE html>
-        if (!this.directiveCallbacks) {
-            this.directiveCallbacks = node; // element context
-        }
         if (typeof rival === 'string') {
             rival = this.loadString(rival, tagTransforms);
         }
@@ -1540,40 +1508,26 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         } else if (method.startsWith('directive-')) {
             // TODO: Remove 'directive-' prefix
             method = method.substr('directive-'.length);
-            if (!node[method]) {
-                console.log('ERROR: Attempting to do call of', node, method);
-            }
             node[method].call(node, arg); // invoke method
         } else {
-            /*
-            if (!(method in node)) {
-                console.error('Invalid Patchset: ', node, 'has no', method);
-            } else {
-            }
-            */
             node[method].call(node, arg); // invoke method
         }
     }
 
     patchDirectives(el, rawName, suffix) {
+        // TODO: Remove 'directive-' prefix
         const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
-
         if (!directives || directives.length === 0) {
             return;
         }
         const value = el.getAttribute(rawName);
         for (const directive of directives) {
-
-            Object.assign(directive, { value, el });
-            const dName = directive.directiveName;
-            const callbackPath = dName + suffix;
-            if (dName in this.directives2) {
-                const thisContext = this.directives2[dName];
-                this.patch(thisContext, 'directive-' + callbackPath, directive);
-            } else if (callbackPath in this.directives2) {
-                const thisContext = this.directives2[callbackPath];
-                const methodName = callbackPath.split('.')[1];
-                // TODO: Remove 'directive-' prefix
+            const dName = directive.directiveName; // e.g. "state.bind", "link"
+            const fullName = dName + suffix; // e.g. "state.bindMount"
+            const thisContext = this.directives2[dName] || this.directives2[fullName];
+            if (thisContext) { // If a directive matches...
+                const methodName = fullName.split('.')[1] || fullName;
+                Object.assign(directive, { value, el });
                 this.patch(thisContext, 'directive-' + methodName, directive);
             }
         }

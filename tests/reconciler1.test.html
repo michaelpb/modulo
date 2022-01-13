@@ -223,9 +223,9 @@
         const {ModRec} = Modulo.reconcilers;
         const {patches, targetStr} = element;
         const mr = new ModRec({makePatchSet: true});
-        mr.directiveCallbacks = patches[0][0]; // get element out of 0th
+        const elem = patches[0][0]; // get element out of 0th
         patches.map(patch => mr.applyPatch.apply(mr, patch))
-        let results = mr.directiveCallbacks.innerHTML.trim();
+        const results = elem.innerHTML.trim();
         assert: results === targetStr.trim();
     </script>
 
@@ -240,7 +240,7 @@
         const modRec = new ModRec({makePatchSet: true});
         modRec.reconcile(mockElement, element.targetStr2);
         element.patches2 = modRec.patches;
-        element.mockElement = modRec.directiveCallbacks; // ensure has element interface
+        element.mockElement = mockElement; // ensure has element interface
         // Should be length 1 since it's 1 node and has no directives
         assert: element.patches2
                 && element.patches2.length === 1
@@ -252,7 +252,7 @@
         const {ModRec} = Modulo.reconcilers;
         const {patches2, targetStr2, mockElement} = element;
         const mr = new ModRec({makePatchSet: true});
-        mr.directiveCallbacks = patches2[0][0]; // get element out of 0th
+        console.log('this is patches2', patches2);
         patches2.map(patch => mr.applyPatch.apply(mr, patch))
 
         // Ensure results are the same (normalized by wrapping in DOM element)
