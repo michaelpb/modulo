@@ -92,18 +92,22 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
-    _stringToDom(text) {
+    _stringToDom(text) { // <-- NOTE: _strToDom is used in TestSuite
         // TODO: Refactor duplicated (3x) directives when config works
         const tmp_Cmp = new this.cparts.component({}, {});
         const rec = new Modulo.reconcilers.ModRec({
             directives: [ 'module.dataProp' ],
             directiveShortcuts: [ [ /:$/, 'module.dataProp' ] ],
+            directives2: {
+                // TODO New directives format
+                //'script': [tmp_Cmp, 'dataPropMount'],
+                'module.dataPropLoad': [tmp_Cmp, 'dataPropMount'],
+            },
             directiveCallbacks: {
                 directiveLoad: args => {
-                    tmp_Cmp.dataPropMount(args, {});
+                    tmp_Cmp.dataPropMount(args, this.config);
                 },
             },
-            //directiveShortcuts: [ ],
             tagDirectives: {},
         });
         const elem = rec.loadString(text, {});
@@ -486,33 +490,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         this.element.ownerDocument.head.append(newScript);
     }
 
-    /* TODO: Refactor this so this methods are "prebaked" into the callbacks obj */
-    directiveTagLoad(args) {
-        args.element = this.element;
-        this.element._invokeCPart(args.directiveName, 'TagLoad', args);
-    }
-
-    directiveLoad(args) {
-        //console.log('directive load');
-        args.element = this.element;
-        this.element._invokeCPart(args.directiveName, 'Load', args);
-    }
-
-    directiveMount(args) {
-        args.element = this.element;
-        this.element._invokeCPart(args.directiveName, 'Mount', args);
-    }
-
-    directiveUnmount(args) {
-        args.element = this.element;
-        this.element._invokeCPart(args.directiveName, 'Unmount', args);
-    }
-
-    directiveChange(args) {
-        args.element = this.element;
-        this.element._invokeCPart(args.directiveName, 'Change', args);
-    }
-
     initializedCallback(renderObj) {
         this.localNameMap = this.element.factory().loader.localNameMap;
         this.mode = this.attrs.mode || 'regular'; // TODO rm and check tests
@@ -524,11 +501,37 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     newReconciler({ directives, directiveShortcuts, tagDirectives }) {
         this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
-            directives,
-            directiveShortcuts,
-            directiveCallbacks: this,
             tagDirectives,
             makePatchSet: true,
+            directives,
+            directiveShortcuts,
+            directiveCallbacks: {
+                directiveLoad: args => {
+                    //console.log('directive load');
+                    args.element = this.element;
+                    this.element._invokeCPart(args.directiveName, 'Load', args);
+                },
+
+                directiveTagLoad: args => {
+                    args.element = this.element;
+                    this.element._invokeCPart(args.directiveName, 'TagLoad', args);
+                },
+
+                directiveMount: args => {
+                    args.element = this.element;
+                    this.element._invokeCPart(args.directiveName, 'Mount', args);
+                },
+
+                directiveUnmount: args => {
+                    args.element = this.element;
+                    this.element._invokeCPart(args.directiveName, 'Unmount', args);
+                },
+
+                directiveChange: args => {
+                    args.element = this.element;
+                    this.element._invokeCPart(args.directiveName, 'Change', args);
+                },
+            },
         });
     }
 
@@ -625,23 +628,22 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
             el.dataProps = {};
-            //el.dataPropAttributes = [];
+            el.dataPropsAttributeNames = {};
         }
         const val = (/^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value))
             ? get(obj || element.getCurrentRenderObj(), value) // renderObj
             : JSON.parse(value); // is a JSON literal
-
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
         const path = attrName.slice(0, index);
         const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
         dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
-        //el.dataPropAttributes.push(rawName);
+        el.dataPropsAttributeNames[rawName] = attrName;
     }
 
-    dataPropUnmount({ el, attrName }) {
+    dataPropUnmount({ el, attrName, rawName }) {
         delete el.dataProps[attrName];
-        //el.dataPropAttributes.remove(rawName);
+        delete el.dataPropsAttributeNames[rawName];
     }
 }
 
@@ -850,12 +852,12 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     initializedCallback(renderObj) {
-        this.rawDefaults = renderObj.state.attrs || {};
-        //console.log('thsi is rawDefaults', this.rawDefaults);
         this.boundElements = {};
         if (!this.data) {
-            this.data = Modulo.utils.simplifyResolvedLiterals(this.rawDefaults);
+            this.data = renderObj.state.attrs || {};
+            //console.log('this is data', this.data);
         }
+        //console.log('thsi is data', this.data);
         return this.data;
     }
 
@@ -919,6 +921,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 
 Modulo.cparts.store = class Store extends Modulo.cparts.state {
     initializedCallback(renderObj) {
+        // DEAD CODE
         const cls = Modulo.cparts.store;
         if (!('boundElements' in cls)) {
             cls.storeData = {};
@@ -1314,6 +1317,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         this.makePatchSet = !!opts.makePatchSet;
         this.shouldNotDescend = !!opts.doNotDescend;
         this.directiveCallbacks = opts.directiveCallbacks;
+        this.directives2 = opts.directives2 || {};
         this.tagTransforms = opts.tagTransforms;
 
         // New configs --- TODO remove this once ModRec tests are refactored
@@ -1332,6 +1336,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         const rival = Modulo.utils.makeDiv(rivalHTML, true);
         const transforms = Object.assign({}, this.tagTransforms, tagTransforms);
         this.applyLoadDirectives(rival, transforms);
+
+        // v-- RM below since applyLoadDiretives already does htis?
         if (this.patches.length) { // Were patches found?
             this.applyPatches(this.patches); // They were, apply...
             this.patches = []; // ...and clear.
@@ -1477,8 +1483,16 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             const value = el.getAttribute(rawName);
             for (const directive of directives) {
                 Object.assign(directive, { value, el, callbackName });
-                //console.log('PATCH DIRECTIVES: this is callbackName', callbackName);
-                this.patch(this.directiveCallbacks, callbackName, directive);
+                //console.log('PATCH DIRECTIVES: this is callbackName', callbackPath );
+
+                const callbackPath = directive.directiveName + '.' + suffix;
+                if (callbackPath in this.directives2) {
+                    const [ thisContext, methodName ] = this.directives2[callbackPath];
+                    this.patch(thisContext, methodName, directive);
+                } else {
+                    this.patch(this.directiveCallbacks, callbackName, directive);
+                }
+                //Modulo.utils.get(this.directiveCallbacks, callbackPath);
                 //const result = this.directiveCallbacks.directiveCallback(directive, suffix);
                 //if (result) {
                 //    this.patch(this.directiveCallbacks, callbackName, directive);
@@ -1535,34 +1549,19 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
 
 Modulo.utils = class utils {
-    static simplifyResolvedLiterals(attrs) {
-        // TODO: rm, this will be obsolte once dataProps is done to load stage
-        const obj = {};
-        for (let [name, value] of Object.entries(attrs)) {
-            name = name.replace(/-([a-z])/g, g => g[1].toUpperCase());
-            if (name.endsWith(':')) {
-                name = name.slice(0, -1); // slice out colon
-                Modulo.assert(value.trim(), `Invalid literal: ${name}="${value}"`);
-                value = JSON.parse(value.trim());
-            }
-            obj[name] = value;
-        }
-        return obj;
-    }
-
     static mergeAttrs(elem, defaults) {
-        const attrs = Modulo.utils.parseAttrs(elem);
-        // TODO: remove parseAttrs, but clean up decorated attrs from
-        // appearing twice
-        return Object.assign({}, defaults, attrs, elem.dataProps || {});
-    }
-
-    static parseAttrs(elem) {
-        const obj = {};
-        for (let name of elem.getAttributeNames()) {
-            const value = elem.getAttribute(name);
-            name = name.replace(/-([a-z])/g, g => g[1].toUpperCase());
-            obj[name] = value;
+        const obj = Object.assign({}, defaults);
+        const dpNames = elem.dataPropsAttributeNames || {};
+        const camelCase = s => s.replace(/-([a-z])/g, g => g[1].toUpperCase());
+        for (const name of elem.getAttributeNames()) {
+            // TODO: Test if this correctly cleans up decorated attrs from
+            // appearing twice
+            const dpKey = dpNames[name];
+            if (dpKey) {
+                obj[camelCase(dpKey)] = elem.dataProps[dpKey];
+            } else {
+                obj[camelCase(name)] = elem.getAttribute(name);
+            }
         }
         return obj;
     }
@@ -1606,9 +1605,9 @@ Modulo.utils = class utils {
 
     static loadNodeData(node) {
         // DEAD CODE
-        const {parseAttrs} = Modulo.utils;
+        //const {parseAttrs} = Modulo.utils;
         const {tagName, dataProps} = node;
-        const attrs = Object.assign(parseAttrs(node), dataProps);
+        const attrs = Object.assign(/*parseAttrs(node), */dataProps);
         const {name} = attrs;
         let type = tagName.toLowerCase();
         const splitType = (node.getAttribute('type') || '').split('/');
@@ -1720,7 +1719,6 @@ Modulo.FetchQueue = class FetchQueue {
         this.queue = {};
         this.data = {};
         this.waitCallbacks = [];
-        this.finallyCallbacks = [];
     }
 
     enqueue(fetchObj, callback, basePath = null) {

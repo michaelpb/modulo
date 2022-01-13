@@ -155,8 +155,7 @@ class TestSuite extends Modulo.ComponentPart {
         let total = 0;
         let failure = 0;
 
-        const parentNode = Modulo.utils.makeDiv(content);
-        //const parentNode = factory.loader._stringToDom(content); // TODO ?
+        const parentNode = factory.loader._stringToDom(content);
         for (const testNode of parentNode.children) {
             const element = factory.createTestElement();
             // Could be implied first test?

@@ -29,11 +29,11 @@
         };
 
         Modulo.utils.patchStringify = function patchStringify (patch)  {
-            const {parseAttrs} = Modulo.utils;
+            const { mergeAttrs } = Modulo.utils;
             const [node, method, arg1] = patch;
             let arg = arg1;
             if (arg1 && arg1.nodeType && arg1.nodeType === 1) { // elem
-                const attrs = parseAttrs(arg1);
+                const attrs = mergeAttrs(arg1);
                 arg = `<1 ${arg1.tagName}>${JSON.stringify(attrs)}</1>`;
             } else if (arg1 && arg1.nodeType) { // text or something else
                 const value = arg1.nodeValue ? arg1.nodeValue.trim() : '?';

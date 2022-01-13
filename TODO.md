@@ -1,15 +1,34 @@
-------
-
 # 2022 Final, final To-Do:
 
-1. Implement "dataProp" for load
+
+1. Implement "dataProp" for load (PARTIALLY DONE!)
     - Probably: Move more of "element" into FactoryCPart
     - FactoryCPart should have dataProp handler
+
+2. "Bake" directives for Reconciler
+    - When doing new ModRec, should bake callback
 
 3. Work on < config > system
     - "config" gets referenced into every FactoryCPart cparts obj -- if it does
       not have one, it just points at the Module/Loader's
 
+
+- IDEA: Use directive tag load for CPart instantiation
+    - When we do preload, the tagloads could build the CParts
+
+
+
+BAKED DIRECTIVES DATA STRUCTURE:
+
+directives: {
+    // Without '.' it is a TAG directive
+    script: [this.component, 'addToHead'],
+    // OR even... link: [document.head, 'append'],
+
+    // With '.' it's a attribute directive
+    'component.dataProp': [this.cparts.component, 'dataProp'],
+    'component.dataProp': [this.cparts.component, 'dataProp'],
+}
 
 
 ------
