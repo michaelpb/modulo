@@ -345,8 +345,14 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     lifecycle(lifecycleNames, rObj={}) {
         this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
         for (const lc of lifecycleNames) {
-            for (const cName of Object.keys(this.cparts)) {
-                this._invokeCPart(cName, lc + 'Callback');
+            for (const [ cpartName, cPart ] of Object.entries(this.cparts)) {
+                const method = cPart[lc + 'Callback'];
+                if (method) {
+                    const result = method.call(cPart, this.renderObj);
+                    if (result) {
+                        this.renderObj[cpartName] = result;
+                    }
+                }
             }
             if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
                     (this.fullName + '|' + lc) in Modulo.breakpoints)) {
@@ -359,27 +365,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
     getCurrentRenderObj() {
         return (this.eventRenderObj || this.renderObj || this.initRenderObj);
-    }
-
-    _invokeCPart(cpartName, methodName, dirMountArg) {
-        // Two valid invocation styles:
-        //  _invokeCPart('state.bind', 'Mount', {...})
-        //  _invokeCPart('state', 'bindMount')
-        const argument = dirMountArg || this.renderObj;
-        const splitKey = cpartName.split('.');
-        if (splitKey.length === 2) {         // "state.bind"
-            cpartName = splitKey[0];         // "state.
-            methodName = splitKey[1] + methodName; // .bindMount"
-        }
-        const method = this.cparts[cpartName][methodName];
-        let result;
-        if (method) {
-            result = method.call(this.cparts[cpartName], argument);
-        }
-        if (!dirMountArg && result) {
-            this.renderObj[cpartName] = result;
-        }
-        return result;
     }
 
     connectedCallback() {
