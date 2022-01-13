@@ -16,18 +16,20 @@
 - IDEA: Use directive tag load for CPart instantiation
     - When we do preload, the tagloads could build the CParts
 
+- Another idea:
+    - Have both "Module" and "Load"
+    - Load does the same as Module, but lets you configure with attrs (so
+      we can do namespace= etc)
 
 
 BAKED DIRECTIVES DATA STRUCTURE:
 
 directives: {
     // Without '.' it is a TAG directive
-    script: [this.component, 'addToHead'],
-    // OR even... link: [document.head, 'append'],
+    scriptTagLoad: this.component,
 
     // With '.' it's a attribute directive
-    'component.dataProp': [this.cparts.component, 'dataProp'],
-    'component.dataProp': [this.cparts.component, 'dataProp'],
+    'component.dataPropLoad': this.cparts.component,
 }
 
 

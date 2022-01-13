@@ -1,101 +1,17 @@
 <!--
     Tests of core reconciler functionality
 -->
-<component name="ReconcilerTester1"><testsuite>
+<component name="ReconcilerTester1">
 
+<!-- Load a helper util -->
+<script src="./reconciler-testing-utils.js"></script>
 
-<test name="ensure ModRec and MTL are defined">
+<testsuite>
+
+<test name="Ensure testing utils are loaded">
     <script>
-        Modulo.utils.makeMockElement = function reconcile (html)  {
-            const {makeDiv} = Modulo.utils;
-            const mockElement = makeDiv(html);
-            mockElement.applyDirectives = () => {}; // dummy
-            mockElement.resolveValue = () => () => {}; // dummy(2)
-            mockElement.directiveLoad = () => {}; // dummy
-            mockElement.directiveMount = () => {}; // dummy
-            mockElement.directiveUnmount = () => {}; // dummy
-            mockElement.directiveChange = () => {}; // dummy
-            return mockElement;
-        }
-        Modulo.utils.getRecPatches = function reconcile (oldHTML, newHTML)  {
-            const {makeDiv} = Modulo.utils;
-            const mockElement = Modulo.utils.makeMockElement(oldHTML);
-            const modRec = new ModRec({makePatchSet: true});
-            modRec.reconcile(mockElement, newHTML);
-            return modRec.patches;
-        };
-
-        Modulo.utils.transformDOMCheck = function reconcile (oldHTML, newHTML, expectedDirCount, invertCheck)  {
-            if (newHTML === undefined) { // single argument given
-                newHTML = oldHTML;
-                oldHTML = '';
-            }
-            const {makeDiv} = Modulo.utils;
-            const mockElement = Modulo.utils.makeMockElement(oldHTML);
-            //const modRec = new ModRec({makePatchSet: true});
-            const modRec = new ModRec({makePatchSet: false});
-            modRec.reconcile(mockElement, newHTML);
-
-            let dirCount;
-            if (expectedDirCount !== undefined) {
-                dirCount = modRec.patches.filter(p => p[1].startsWith('directive')).length;
-            }
-            //modRec.patches.map(patch => modRec.applyPatch.apply(modRec, patch));
-            const genInner = makeDiv(mockElement.innerHTML).innerHTML;
-            const correctInner = makeDiv(newHTML).innerHTML;
-
-            let match = genInner === correctInner;
-            if (invertCheck) {
-                match = !match;
-            }
-
-            if (!match) {
-                console.log('-------------------------')
-                console.log('Error: no match');
-                console.log('Was naively wishing for:');
-                console.log(correctInner);
-                console.log('but instead got:');
-                console.log(genInner);
-                console.log('-------------------------')
-                const { pToString } = Modulo.utils;
-                console.log('- Examine the following:')
-                console.log(pToString(modRec.patches));
-                console.log('-------------------------')
-            } else {
-                //console.log('match', genInner, correctInner);
-            }
-
-            if (expectedDirCount !== dirCount) {
-                /*console.log('DIRECTIVE NOT MATCH:',
-                  modRec.patches.filter(p => p[1].startsWith('directive')));*/
-                console.log('DIRECTIVE NOT MATCH:', dirCount, 'actual', expectedDirCount, 'expected');
-            }
-            return match && expectedDirCount === dirCount;
-        };
-
-        Modulo.utils.patchStringify = function patchStringify (patch)  {
-            const [node, method, arg1] = patch;
-            return `<${node.nodeType} ${node.nodeName}> ${method}("${arg1}") </${node.nodeType}>`
-        };
-
-        Modulo.utils.pToString = function patchStringify (patches)  {
-            return patches.map(Modulo.utils.patchStringify).join('\n')
-        };
-
-        Modulo.utils.anchorInTheDeep = function anchorITD (html)  {
-            return `
-                <div>
-                    <div id="main"><p>A<p><p>B</p></div>
-                    <div class="other section">
-                      <p>A<p><p>B</p>
-                    </div>
-                    <footer><a href="#">${html}</a></footer>
-                </div>
-            `;
-        };
-
-        const {ModRec} = Modulo.reconcilers;
-        assert: ModRec
+        const { patchStringify, transformDOMCheck } = Modulo.utils;
+        assert: patchStringify !== undefined && transformDOMCheck !== undefined
     </script>
 </test>
 
@@ -147,16 +63,18 @@
         const patches = getRecPatches('<p>Test</p>', '<p [test.dir]a=b>Test</p>');
         const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
                           '<1 P> setAttributeNode("[object Attr]") </1>'; 
-        assert: patches.length === 2 && pToString(patches) === expected;
+        const actual = pToString(patches);
+        assert: patches.length === 2 && actual === expected;
     </script>
 
     <script name="Mounts multiple directives">
         const {getRecPatches, pToString} = Modulo.utils;
-        const patches = getRecPatches('<p>Test</p>', '<p [test2.dir2][test.dir]a=b>Test</p>');
+        const patches = getRecPatches('<p>Test</p>', '<p [my.dir][test.dir]a=b>Test</p>');
         const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
                           '<1 DIV> directiveMount("[object Object]") </1>\n' +
                           '<1 P> setAttributeNode("[object Attr]") </1>'; 
-        assert: patches.length === 3 && pToString(patches) === expected;
+        const actual = pToString(patches);
+        assert: patches.length === 3 && actual === expected;
     </script>
 
     <script name="Supports a directive shortcut">
@@ -424,7 +342,7 @@
         const {transformDOMCheck} = Modulo.utils;
         assert: transformDOMCheck(
             '<div>txt</div>',
-            '<div [directive.syntax]>txt</div>',
+            '<div [my.dir]>txt</div>',
             1,
         );
     </script>
@@ -432,7 +350,7 @@
     <script name="Removes old directives">
         const {transformDOMCheck} = Modulo.utils;
         assert: transformDOMCheck(
-            '<div [directive.syntax]>txt</div>',
+            '<div [my.dir]>txt</div>',
             '<div>txt</div>',
             1,
         );
@@ -450,7 +368,7 @@
     <script name="Handles directive removal and change">
         const {transformDOMCheck} = Modulo.utils;
         assert: transformDOMCheck(
-            '<div [my.dir]test=4>txt<p [other.dir]=okay>p</p></div>',
+            '<div [my.dir]test=4>txt<p [test.dir]=okay>p</p></div>',
             '<div [my.dir]test=5>txt<p >p</p></div>',
             2,
         );

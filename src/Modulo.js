@@ -474,6 +474,22 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     headTagLoad({ el }) {
         //el.remove();
+        // DAED CODE
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    metaTagLoad({ el }) {
+        // TODO: Refactor the following
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    linkTagLoad({ el }) {
+        // TODO: Refactor the following
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    titleTagLoad({ el }) {
+        // TODO: Refactor the following
         this.element.ownerDocument.head.append(el); // move to head
     }
 
@@ -505,7 +521,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
     gatherDirectives(directivesArray) {
         //console.log('this is directives', directives);
-        const knownSuffices = ['Mount', 'Unmount', 'Change', 'Load', 'TagLoad'];
+        const knownSuffices = ['Mount', 'Unmount', 'Change', 'Load'];//, 'TagLoad'];
 
         // TODO hacky code, rewrite after tests
         const directives = {};
@@ -520,10 +536,23 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                     const methodName = dMethod + suffix;
                     if (methodName in cpart) {
                         //directives[`${cName}.${methodName}`] = [ cpart, methodName ];
+                        //const dName = suffix === 'TagLoad' ? dMethod : `${cName}.${methodName}`
+                        //directives[dMethod] = cpart;
                         directives[`${cName}.${methodName}`] = cpart;
                     }
                 }
             }
+        }
+
+        // hardcoding tag directives for now
+        if (this.attrs.mode === 'vanish-into-document') {
+            Object.assign(directives, {
+                link: this,
+                title: this,
+                meta: this,
+                //slot: this,
+                script: this,
+            });
         }
         return directives;
     }
@@ -534,6 +563,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 
         this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
             tagDirectives,
+            tagDirectives: {},
             makePatchSet: true,
             directives,
             directiveShortcuts,
@@ -1408,12 +1438,20 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);
             }
-            ///////
 
             const dName = this.tagDirectives[node.tagName.toLowerCase()];
             if (dName) {
                 this.patchDirectives(node, `[${dName}]${node.tagName}`, 'TagLoad');
             }
+            ///////
+
+            const lowerName = node.tagName.toLowerCase();
+            //console.log('this is lowerName', lowerName);
+            if (lowerName in this.directives2) {
+                //console.log('FOUND LOWER NAME!!', lowerName);
+                this.patchDirectives(node, `[${lowerName}]`, 'TagLoad');
+            }
+
             for (const rawName of node.getAttributeNames()) {
                 // Apply load-time directive patches
                 this.patchDirectives(node, rawName, 'Load');
@@ -1503,7 +1541,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             // TODO: Remove 'directive-' prefix
             method = method.substr('directive-'.length);
             if (!node[method]) {
-                console.log('attempting to do call of', node, method);
+                console.log('ERROR: Attempting to do call of', node, method);
             }
             node[method].call(node, arg); // invoke method
         } else {
@@ -1519,6 +1557,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     patchDirectives(el, rawName, suffix) {
         const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
+
         if (!directives || directives.length === 0) {
             return;
         }
@@ -1526,18 +1565,16 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         for (const directive of directives) {
 
             Object.assign(directive, { value, el });
-            const callbackPath = directive.directiveName + suffix;
-            if (callbackPath in this.directives2) {
+            const dName = directive.directiveName;
+            const callbackPath = dName + suffix;
+            if (dName in this.directives2) {
+                const thisContext = this.directives2[dName];
+                this.patch(thisContext, 'directive-' + callbackPath, directive);
+            } else if (callbackPath in this.directives2) {
                 const thisContext = this.directives2[callbackPath];
                 const methodName = callbackPath.split('.')[1];
-                //console.log('directive getting patched', methodName);
                 // TODO: Remove 'directive-' prefix
                 this.patch(thisContext, 'directive-' + methodName, directive);
-            } else {
-                console.log('this is ', callbackPath, this.directives2);
-                // v--- Still using this code path for 14 assertions
-                const callbackName = 'directive' + suffix;
-                //this.patch(this.directiveCallbacks, callbackName, directive);
             }
         }
     }
