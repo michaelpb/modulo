@@ -95,19 +95,14 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
     _stringToDom(text) { // <-- NOTE: _strToDom is used in TestSuite
         // TODO: Refactor duplicated (3x) directives when config works
         const tmp_Cmp = new this.cparts.component({}, {});
+        tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount;
         const rec = new Modulo.reconcilers.ModRec({
-            directives: [ 'module.dataProp' ],
-            directiveShortcuts: [ [ /:$/, 'module.dataProp' ] ],
+            directives: [ 'config.dataProp' ],
+            directiveShortcuts: [ [ /:$/, 'config.dataProp' ] ],
             directives2: {
-                // TODO New directives format
-                //'script': [tmp_Cmp, 'dataPropMount'],
-                'module.dataPropLoad': [tmp_Cmp, 'dataPropMount'],
+                'config.dataPropLoad': tmp_Cmp,
             },
-            directiveCallbacks: {
-                directiveLoad: args => {
-                    tmp_Cmp.dataPropMount(args, this.config);
-                },
-            },
+            directiveCallbacks: {},
             tagDirectives: {},
         });
         const elem = rec.loadString(text, {});
@@ -499,7 +494,43 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         this.newReconciler(renderObj.component);
     }
 
+  /*
+    static getDirectives() {
+        return {
+            'event': ['Mount', 'Unmount'],
+            dataProp: ['Mount', 'Unmount'],
+            children: ['Mount', 'Unmount'],
+        };
+    }*/
+
+    gatherDirectives(directivesArray) {
+        //console.log('this is directives', directives);
+        const knownSuffices = ['Mount', 'Unmount', 'Change', 'Load', 'TagLoad'];
+
+        // TODO hacky code, rewrite after tests
+        const directives = {};
+        for (const [cName, cpart] of Object.entries(this.element.cparts)) {
+            for (const dirName of directivesArray) {
+                const [ dCPart, dMethod ] = dirName.split('.');
+                if (dCPart !== cName) {
+                    continue; // skip over
+                }
+
+                for (const suffix of knownSuffices) {
+                    const methodName = dMethod + suffix;
+                    if (methodName in cpart) {
+                        directives[`${cName}.${methodName}`] = [ cpart, methodName ];
+                    }
+                }
+            }
+        }
+        return directives;
+    }
+
     newReconciler({ directives, directiveShortcuts, tagDirectives }) {
+        const directives2 = this.gatherDirectives(directives);
+        //console.log('this is directives2', directives2);
+
         this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
             tagDirectives,
             makePatchSet: true,
@@ -630,9 +661,9 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             el.dataProps = {};
             el.dataPropsAttributeNames = {};
         }
-        const val = (/^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value))
-            ? get(obj || element.getCurrentRenderObj(), value) // renderObj
-            : JSON.parse(value); // is a JSON literal
+        const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
+        const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {};
+        const val = isVar ? get(renderObj, value) : JSON.parse(value);
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
         const path = attrName.slice(0, index);
@@ -1485,18 +1516,14 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                 Object.assign(directive, { value, el, callbackName });
                 //console.log('PATCH DIRECTIVES: this is callbackName', callbackPath );
 
-                const callbackPath = directive.directiveName + '.' + suffix;
+                const callbackPath = directive.directiveName + suffix;
                 if (callbackPath in this.directives2) {
-                    const [ thisContext, methodName ] = this.directives2[callbackPath];
+                    const thisContext = this.directives2[callbackPath];
+                    const methodName = callbackPath.split('.')[1];
                     this.patch(thisContext, methodName, directive);
                 } else {
                     this.patch(this.directiveCallbacks, callbackName, directive);
                 }
-                //Modulo.utils.get(this.directiveCallbacks, callbackPath);
-                //const result = this.directiveCallbacks.directiveCallback(directive, suffix);
-                //if (result) {
-                //    this.patch(this.directiveCallbacks, callbackName, directive);
-                //}
             }
         }
     }
