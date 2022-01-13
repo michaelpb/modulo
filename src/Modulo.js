@@ -519,7 +519,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                 for (const suffix of knownSuffices) {
                     const methodName = dMethod + suffix;
                     if (methodName in cpart) {
-                        directives[`${cName}.${methodName}`] = [ cpart, methodName ];
+                        //directives[`${cName}.${methodName}`] = [ cpart, methodName ];
+                        directives[`${cName}.${methodName}`] = cpart;
                     }
                 }
             }
@@ -536,6 +537,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             makePatchSet: true,
             directives,
             directiveShortcuts,
+            directives2,
             directiveCallbacks: {
                 directiveLoad: args => {
                     //console.log('directive load');
@@ -654,7 +656,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         delete el.moduloEvents[attrName];
     }
 
-    dataPropMount({ el, value, attrName, element, rawName }, obj) {
+    dataPropMount({ el, value, attrName, rawName }) { // element, 
         const { get } = Modulo.utils;
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
@@ -662,7 +664,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             el.dataPropsAttributeNames = {};
         }
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
-        const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {};
+        //const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {}; // not sure why I was doing it this way?
+        const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         const val = isVar ? get(renderObj, value) : JSON.parse(value);
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
@@ -1496,6 +1499,13 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             node.nodeValue = arg;
         } else if (method === 'insertBefore') {
             node.insertBefore(arg, arg2); // Needs 2 arguments
+        } else if (method.startsWith('directive-')) {
+            // TODO: Remove 'directive-' prefix
+            method = method.substr('directive-'.length);
+            if (!node[method]) {
+                console.log('attempting to do call of', node, method);
+            }
+            node[method].call(node, arg); // invoke method
         } else {
             /*
             if (!(method in node)) {
@@ -1508,22 +1518,26 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patchDirectives(el, rawName, suffix) {
-        const callbackName = 'directive' + suffix;
         const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
-        if (directives) {
-            const value = el.getAttribute(rawName);
-            for (const directive of directives) {
-                Object.assign(directive, { value, el, callbackName });
-                //console.log('PATCH DIRECTIVES: this is callbackName', callbackPath );
+        if (!directives || directives.length === 0) {
+            return;
+        }
+        const value = el.getAttribute(rawName);
+        for (const directive of directives) {
 
-                const callbackPath = directive.directiveName + suffix;
-                if (callbackPath in this.directives2) {
-                    const thisContext = this.directives2[callbackPath];
-                    const methodName = callbackPath.split('.')[1];
-                    this.patch(thisContext, methodName, directive);
-                } else {
-                    this.patch(this.directiveCallbacks, callbackName, directive);
-                }
+            Object.assign(directive, { value, el });
+            const callbackPath = directive.directiveName + suffix;
+            if (callbackPath in this.directives2) {
+                const thisContext = this.directives2[callbackPath];
+                const methodName = callbackPath.split('.')[1];
+                //console.log('directive getting patched', methodName);
+                // TODO: Remove 'directive-' prefix
+                this.patch(thisContext, 'directive-' + methodName, directive);
+            } else {
+                console.log('this is ', callbackPath, this.directives2);
+                // v--- Still using this code path for 14 assertions
+                const callbackName = 'directive' + suffix;
+                //this.patch(this.directiveCallbacks, callbackName, directive);
             }
         }
     }

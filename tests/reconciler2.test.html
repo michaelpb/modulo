@@ -2,22 +2,19 @@
     Some big, messy reconciler tests
 -->
 
-<component name="ReconcilerTester2"><testsuite>
+<component name="ReconcilerTester2"><testsuite solo>
 
 
 <test name="Successfully sets up mocks and testing data">
     <script>
-        const directiveShortcuts = [[/^@/, 'component.event'],
-                                    [/:$/, 'component.dataProp']];
+        /*const directiveShortcuts = [[/^@/, 'component.event'],
+                                    [/:$/, 'component.dataProp']];*/
         Modulo.utils.makeMockElement = function reconcile (html)  {
             const {makeDiv} = Modulo.utils;
             const mockElement = makeDiv(html);
-            mockElement.applyDirectives = () => {}; // dummy
-            mockElement.resolveValue = () => () => {}; // dummy(2)
-            mockElement.directiveLoad = () => {}; // dummy
-            mockElement.directiveMount = () => {}; // dummy
-            mockElement.directiveUnmount = () => {}; // dummy
-            mockElement.directiveChange = () => {}; // dummy
+            mockElement.childrenLoad = () => {}; // dummy
+            mockElement.childrenMount = () => {}; // dummy
+            mockElement.childrenUnmount = () => {}; // dummy
             return mockElement;
         }
 
@@ -29,7 +26,15 @@
             const { makeDiv } = Modulo.utils;
             const mockElement = Modulo.utils.makeMockElement(oldHTML);
             //const modRec = new ModRec({makePatchSet: true});
-            const modRec = new ModRec({ makePatchSet: false, directiveShortcuts });
+            const modRec = new ModRec({
+                makePatchSet: false,
+                directiveShortcuts: [],
+                directives2: {
+                    'component.childrenLoad': mockElement,
+                    'component.childrenMount': mockElement,
+                    'component.childrenUnmount': mockElement,
+                },
+            });
             const patches = modRec.reconcile(mockElement, newHTML);
 
             let dirCount;
@@ -42,10 +47,12 @@
             if (!match) {
                 console.log('-------------------------')
                 console.log('Error: no match');
+                /*
                 console.log('Was naively wishing for:');
                 console.log(correctInner);
                 console.log('but instead got:');
                 console.log(genInner);
+                */
                 console.log('-------------------------')
             } else {
                 //console.log('match', genInner, correctInner);
@@ -574,12 +581,14 @@ Modulo.utils.componentIH = `<!DOCTYPE html>
 <test name="Supporting interactions with directives">
     <script name="Complete page replacement with children (1)">
         const {transformDOMCheck, elementIH, componentIH} = Modulo.utils;
-        assert: transformDOMCheck(elementIH, componentIH, 1);
+        assert: transformDOMCheck(
+          elementIH, componentIH, 1);
     </script>
 
     <script name="Complete page replacement with children (2)">
         const {transformDOMCheck, elementIH, componentIH} = Modulo.utils;
-        assert: transformDOMCheck(componentIH, elementIH, 1);
+        assert: transformDOMCheck(
+          componentIH, elementIH, 1);
     </script>
 </test>
 
