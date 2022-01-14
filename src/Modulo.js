@@ -69,6 +69,10 @@ Modulo.ComponentPart = class ComponentPart {
 
     static factoryCallback() {}
 
+    getDirectives() {
+        return [];
+    }
+
     constructor(element, options) {
         this.element = element;
         this.content = options.content;
@@ -92,20 +96,16 @@ Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove comp
         this.hash = 'zerohash'; // the hash of an unloaded loader
     }
 
-    _stringToDom(text) { // <-- NOTE: _strToDom is used in TestSuite
-        // TODO: Refactor duplicated (3x) directives when config works
+    _stringToDom(text) {
+        // TODO: Refactor duped / messy code
         const tmp_Cmp = new this.cparts.component({}, {});
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount;
         const rec = new Modulo.reconcilers.ModRec({
-            directives: [ 'config.dataProp' ],
+            directives: { 'config.dataPropLoad': tmp_Cmp },
             directiveShortcuts: [ [ /:$/, 'config.dataProp' ] ],
-            directives2: {
-                'config.dataPropLoad': tmp_Cmp,
-            },
-            tagDirectives: {},
         });
         const elem = rec.loadString(text, {});
-        return elem; // used by tests
+        return elem;  // <-- NOTE: _strToDom is used in TestSuite
     }
 
     loadString(text, newSrc = null) {
@@ -317,6 +317,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.initialize();
     }
 
+    getDirectives() {
+        return []; // TODO: after moving more into Factory, maybe remove, and also remove from lifecycle?
+    }
+
     initialize() {
         this.cparts = {};
         this.isMounted = false;
@@ -324,14 +328,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.originalChildren = [];
         this.fullName = this.factory().fullName;
         this.initRenderObj = Object.assign({}, this.factory().baseRenderObj);
-        /*
-        if (this.fullName === 'x-Page') {
-            console.log('x page');
-            console.log('getting initialized!', this.originalHTML);
-            console.log('getting initialized!', this.originalChildren, this);
-            debugger;
-        }
-        */
     }
 
     setupCParts() {
@@ -353,11 +349,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
                         this.renderObj[cpartName] = result;
                     }
                 }
-            }
-            if (Modulo.breakpoints && (lc in Modulo.breakpoints ||
-                    (this.fullName + '|' + lc) in Modulo.breakpoints)) {
-                // DEADCODE, finish or delete
-                debugger;
             }
         }
         //this.renderObj = null; // ?rendering is over, set to null
@@ -441,19 +432,11 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     static factoryCallback(opts, factory, loadObj) {
         // Note: Some of this might go into general config stuff.
         // Also, needs refactor when we get attr defaults.
-        const EVENT = 'component.event';
-        const DATA_PROP = 'component.dataProp';
-        const HEAD = 'component.head';
-        const directiveShortcuts = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
-        const directives = [ DATA_PROP, EVENT, 'component.children' ];
-        const tagDirectives = opts.attrs.mode === 'vanish-into-document' ? {
-            link: HEAD,
-            title: HEAD,
-            meta: HEAD,
-            // slot: 'component.children',
-            script: 'component.script',
-        } : { };
-        return { directives, directiveShortcuts, tagDirectives };
+        const directiveShortcuts = [
+            [ /^@/, 'component.event' ],
+            [ /:$/, 'component.dataProp' ],
+        ];
+        return { directiveShortcuts };
     }
 
     headTagLoad({ el }) {
@@ -494,64 +477,31 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         this.newReconciler(renderObj.component);
     }
 
-  /*
-    static getDirectives() {
-        return {
-            'event': ['Mount', 'Unmount'],
-            dataProp: ['Mount', 'Unmount'],
-            children: ['Mount', 'Unmount'],
-        };
-    }*/
+    getDirectives() {
+        const dirs = [
+            'component.dataPropMount',
+            'component.dataPropUnmount',
+            'component.eventMount',
+            'component.eventUnmount',
+            'component.childrenLoad',
+        ];
+        if (this.attrs.mode === 'vanish-into-document') {
+            dirs.push('link', 'title', 'meta', 'script');
+        }
+        return dirs;
+    }
 
-    gatherDirectives(directivesArray) {
-        //console.log('this is directives', directives);
-        const knownSuffices = ['Mount', 'Unmount', 'Change', 'Load'];//, 'TagLoad'];
-
-        // TODO hacky code, rewrite after tests
+    newReconciler({ directiveShortcuts }) {
         const directives = {};
-        for (const [cName, cpart] of Object.entries(this.element.cparts)) {
-            for (const dirName of directivesArray) {
-                const [ dCPart, dMethod ] = dirName.split('.');
-                if (dCPart !== cName) {
-                    continue; // skip over
-                }
-
-                for (const suffix of knownSuffices) {
-                    const methodName = dMethod + suffix;
-                    if (methodName in cpart) {
-                        //directives[`${cName}.${methodName}`] = [ cpart, methodName ];
-                        //const dName = suffix === 'TagLoad' ? dMethod : `${cName}.${methodName}`
-                        //directives[dMethod] = cpart;
-                        directives[`${cName}.${methodName}`] = cpart;
-                    }
-                }
+        for (const cPart of Object.values(this.element.cparts)) {
+            for (const directiveName of cPart.getDirectives()) {
+                directives[directiveName] = cPart;
             }
         }
 
-        // hardcoding tag directives for now
-        if (this.attrs.mode === 'vanish-into-document') {
-            Object.assign(directives, {
-                link: this,
-                title: this,
-                meta: this,
-                //slot: this,
-                script: this,
-            });
-        }
-        return directives;
-    }
-
-    newReconciler({ directives, directiveShortcuts, tagDirectives }) {
-        const directives2 = this.gatherDirectives(directives);
-        //console.log('this is directives2', directives2);
-
         this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
-            tagDirectives,
-            tagDirectives: {},
-            makePatchSet: true,
-            directives,
             directiveShortcuts,
-            directives2,
+            directives,
         });
     }
 
@@ -631,11 +581,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         el.addEventListener(attrName, listen);
     }
 
+    /*
     eventChange(info) {
         // TODO: test this, or replace Change with Unmount -> Mount as default
         this.eventUnmount(info);
         this.eventMount(info);
     }
+    */
 
     eventUnmount({ el, attrName }) {
         const listen = el.moduloEvents[attrName];
@@ -676,9 +628,9 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         const props = {};
         const { resolveDataProp } = Modulo.utils;
-        for (let [ propName, def ] of Object.entries(this.attrs)) {
-            propName = propName.replace(/:$/, ''); // TODO, make func to normalize directives
+        for (const [ propName, def ] of Object.entries(this.attrs)) {
             props[propName] = resolveDataProp(propName, this.element, def);
+            // TODO: Implement type-checked, and required
         }
         return props;
     }
@@ -866,10 +818,8 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.state = class State extends Modulo.ComponentPart {
-    static factoryCallback(partOptions, factory, loadObj) {
-        if (loadObj.component) {
-            loadObj.component.directives.push('state.bind');
-        }
+    getDirectives() {
+        return [ 'state.bindMount', 'state.bindUnmount' ];
     }
 
     initializedCallback(renderObj) {
@@ -1127,6 +1077,7 @@ Modulo.templating.defaultOptions.filters = (function () {
     const filters = {
         add: (s, arg) => s + arg,
         allow: (s, arg) => arg.split(',').includes(s) ? s : '',
+        camelcase: s => s.replace(/-([a-z])/g, g => g[1].toUpperCase()),
         capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
         concat: (s, arg) => s.concat ? s.concat(arg) : s + arg,
         default: (s, arg) => s || arg,
@@ -1335,20 +1286,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // TODO: Refactor this, perhaps with some general "opts with defaults"
         // helper functions.
         opts = opts || {};
-        this.makePatchSet = !!opts.makePatchSet;
         this.shouldNotDescend = !!opts.doNotDescend;
-        this.directives2 = opts.directives2 || {};
+        this.directives = opts.directives || {};
         this.tagTransforms = opts.tagTransforms;
-
-        // New configs --- TODO remove this once ModRec tests are refactored
-        const EVENT = 'component.event';
-        const DATA_PROP = 'component.dataProp';
-        const defDirShort = [ [ /^@/, EVENT ], [ /:$/, DATA_PROP ] ];
-        const defDir = [ DATA_PROP, EVENT, 'component.children' ];
-        this.directives = opts.directives || defDir;
-        this.tagDirectives = opts.tagDirectives || {};
-        this.directiveShortcuts = opts.directiveShortcuts || defDirShort;
-        Modulo.assert(this.directiveShortcuts, 'must have shortcuts');
+        this.directiveShortcuts = opts.directiveShortcuts || [];
+        this.patch = this.pushPatch;
     }
 
     loadString(rivalHTML, tagTransforms) {
@@ -1356,12 +1298,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         const rival = Modulo.utils.makeDiv(rivalHTML, true);
         const transforms = Object.assign({}, this.tagTransforms, tagTransforms);
         this.applyLoadDirectives(rival, transforms);
-
-        // v-- RM below since applyLoadDiretives already does htis?
-        if (this.patches.length) { // Were patches found?
-            this.applyPatches(this.patches); // They were, apply...
-            this.patches = []; // ...and clear.
-        }
         return rival;
     }
 
@@ -1374,16 +1310,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
         this.reconcileChildren(node, rival);
         this.cleanRecDirectiveMarks(node);
-        if (!this.makePatchSet) { // should ONLY makePatchSet
-            this.applyPatches(this.patches);
-        }
         return this.patches;
     }
 
     applyLoadDirectives(elem, tagTransforms) {
-        //const sel = Object.keys(tagTransforms).join(',');
-        //for (const node of elem.querySelectorAll(sel || 'X')) {
-        this._oldPatch = this.patch;
         this.patch = this.applyPatch; // Apply patches immediately
         for (const node of elem.querySelectorAll('*')) {
             // legacy -v, TODO rm
@@ -1391,17 +1321,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);
             }
-
-            const dName = this.tagDirectives[node.tagName.toLowerCase()];
-            if (dName) {
-                this.patchDirectives(node, `[${dName}]${node.tagName}`, 'TagLoad');
-            }
             ///////
 
             const lowerName = node.tagName.toLowerCase();
-            //console.log('this is lowerName', lowerName);
-            if (lowerName in this.directives2) {
-                //console.log('FOUND LOWER NAME!!', lowerName);
+            if (lowerName in this.directives) {
                 this.patchDirectives(node, `[${lowerName}]`, 'TagLoad');
             }
 
@@ -1411,7 +1334,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
         }
         this.markRecDirectives(elem); // TODO rm
-        this.patch = this._oldPatch;
+        this.patch = this.pushPatch;
     }
 
     markRecDirectives(elem) {
@@ -1481,7 +1404,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         }
     }
 
-    patch(node, method, arg, arg2 = null) {
+    pushPatch(node, method, arg, arg2 = null) {
         this.patches.push([ node, method, arg, arg2 ]);
     }
 
@@ -1501,15 +1424,15 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     patchDirectives(el, rawName, suffix) {
         // TODO: Remove 'directive-' prefix
-        const directives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
-        if (!directives || directives.length === 0) {
+        const foundDirectives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
+        if (!foundDirectives || foundDirectives.length === 0) {
             return;
         }
         const value = el.getAttribute(rawName);
-        for (const directive of directives) {
+        for (const directive of foundDirectives) {
             const dName = directive.directiveName; // e.g. "state.bind", "link"
             const fullName = dName + suffix; // e.g. "state.bindMount"
-            const thisContext = this.directives2[dName] || this.directives2[fullName];
+            const thisContext = this.directives[dName] || this.directives[fullName];
             if (thisContext) { // If a directive matches...
                 const methodName = fullName.split('.')[1] || fullName;
                 Object.assign(directive, { value, el });
@@ -1557,7 +1480,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
 
             for (const rawName of rival.getAttributeNames()) {
-                // Loop through each attribute patching directives as necessary
+                // Loop through each attribute patching foundDirectives as necessary
                 this.patchDirectives(rival, rawName, actionSuffix);
             }
         }
@@ -1567,17 +1490,16 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
 Modulo.utils = class utils {
     static mergeAttrs(elem, defaults) {
+        // TODO: Write unit tests for this
+        const { camelcase } = Modulo.templating.defaultOptions.filters;
         const obj = Object.assign({}, defaults);
-        const dpNames = elem.dataPropsAttributeNames || {};
-        const camelCase = s => s.replace(/-([a-z])/g, g => g[1].toUpperCase());
+        const dataPropNames = elem.dataPropsAttributeNames || false;
         for (const name of elem.getAttributeNames()) {
-            // TODO: Test if this correctly cleans up decorated attrs from
-            // appearing twice
-            const dpKey = dpNames[name];
-            if (dpKey) {
-                obj[camelCase(dpKey)] = elem.dataProps[dpKey];
+            const dataPropKey = dataPropNames && dataPropNames[name];
+            if (dataPropKey) {
+                obj[camelcase(dataPropKey)] = elem.dataProps[dataPropKey];
             } else {
-                obj[camelCase(name)] = elem.getAttribute(name);
+                obj[camelcase(name)] = elem.getAttribute(name);
             }
         }
         return obj;
@@ -1699,7 +1621,7 @@ Modulo.utils = class utils {
         //return [index ? s.slice(0, index - 1) : s, s.slice(index)];
     }
 
-    static parseDirectives(rawName, directiveShortcuts) { //, directives) {
+    static parseDirectives(rawName, directiveShortcuts) { //, foundDirectives) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
             // TODO: If we ever support key= as a shortcut, this

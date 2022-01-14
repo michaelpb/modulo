@@ -252,7 +252,6 @@
         const {ModRec} = Modulo.reconcilers;
         const {patches2, targetStr2, mockElement} = element;
         const mr = new ModRec({makePatchSet: true});
-        console.log('this is patches2', patches2);
         patches2.map(patch => mr.applyPatch.apply(mr, patch))
 
         // Ensure results are the same (normalized by wrapping in DOM element)

@@ -5,12 +5,15 @@
     - Probably: Move more of "element" into FactoryCPart
     - FactoryCPart should have dataProp handler
 
-2. "Bake" directives for Reconciler
+2. "Bake" directives for Reconciler (ALMOST TOTALLY DONE!)
     - When doing new ModRec, should bake callback
 
 3. Work on < config > system
     - "config" gets referenced into every FactoryCPart cparts obj -- if it does
       not have one, it just points at the Module/Loader's
+    - Simplification:
+      - Move this.cparts to FactoryCPart (stdlib stabilziation)
+      - Have Config be FactoryCPart itself
 
 
 - IDEA: Use directive tag load for CPart instantiation
@@ -35,6 +38,13 @@ directives: {
 
 ------
 
+        // PERFORMANCE SHORTCUT: "Active Tag Directives"
+        // TagLoad directive could have a performance improvement where it does
+        // a simple string check to see if /<tagname/i appears, to filter out
+        // "active tag directives"
+        // (Could be expanded to just "active directives", where it does simple
+        // string checks for all directives and filters out ones that are
+        // impossible)
 
 
 ------

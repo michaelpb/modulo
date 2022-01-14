@@ -49,13 +49,13 @@ Modulo.utils.transformDOMCheck = function reconcile (oldHTML, newHTML, expectedD
     }
     const { makeDiv } = Modulo.utils;
     const mockElement = Modulo.utils.makeMockElement(oldHTML);
-    //const modRec = new ModRec({makePatchSet: true});
     const modRec = new ModRec({
-        makePatchSet: false,
+        makePatchSet: true,
         directiveShortcuts,
-        directives2: makeMockDirectives(mockElement),
+        directives: makeMockDirectives(mockElement),
     });
     const patches = modRec.reconcile(mockElement, newHTML);
+    modRec.applyPatches(patches);
 
     let dirCount;
     if (expectedDirCount !== undefined) {
@@ -125,9 +125,8 @@ Modulo.utils.getRecPatches = function reconcile (oldHTML, newHTML)  {
     const {makeDiv} = Modulo.utils;
     const mockElement = Modulo.utils.makeMockElement(oldHTML);
     const modRec = new ModRec({
-        makePatchSet: true,
         directiveShortcuts,
-        directives2: makeMockDirectives(mockElement),
+        directives: makeMockDirectives(mockElement),
     });
     modRec.reconcile(mockElement, newHTML);
     return modRec.patches;
