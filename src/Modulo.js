@@ -80,11 +80,15 @@ Modulo.ComponentPart = class ComponentPart {
     }
 }
 
-Modulo.Loader = class Loader extends Modulo.ComponentPart { // todo, remove component part extension, unused
+Modulo.Loader = class Loader {
     constructor(element = null, options = { attrs: {} }) {
-        super(element, options);
+        this.element = element;
+        this.content = options.content;
+        this.attrs = options.attrs;
         this.src = this.attrs.src;
+
         this.config = {};
+        //this.config = Object.freeze(Object.assign({}, Modulo));
 
         // TODO: Do some sort of "fork" of cparts Object to allow CPart namespacing
         this.cparts = Modulo.cparts;
@@ -187,6 +191,7 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
     static loadedCallback(data, content, label, loader, src) {
         const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
         data.loader = new Modulo.Loader(null, { attrs });
+        data.loader.config = Object.assign({}, loader.config);
         data.loader.loadString(content);
     }
 
@@ -412,8 +417,11 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
 }
 
 Modulo.cparts.config = class Config extends Modulo.ComponentPart {
-    static factoryCallback({ attrs }, factory, loadObj) {
-        factory.loader.config = Object.assign(factory.loader.config, attrs);
+    static loadCallback(node, loader, array) {
+        loader.config = Modulo.utils.mergeAttrs(node, loader.config);
+        return Modulo.ComponentPart.loadCallback(node, loader, array);
+    }
+    static factoryCallback(opts, factory, loadObj) {
         return factory.loader.config;
     }
 }
@@ -430,8 +438,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     static factoryCallback(opts, factory, loadObj) {
-        // Note: Some of this might go into general config stuff.
-        // Also, needs refactor when we get attr defaults.
         const directiveShortcuts = [
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
