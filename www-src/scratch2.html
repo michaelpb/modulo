@@ -1,0 +1,77 @@
+<script src="/js/Modulo.js"></script>
+<script> Modulo.defineAll() </script>
+
+<!--
+<script src="/misc/modulo-build-6beniv.js"></script>
+<link rel="stylesheet" href="/misc/modulo-build-s1lh2f.css" />
+    <load namespace="x" src="/components/layouts.html"></load>
+-->
+
+
+<template modulo-embed>
+
+<component name="MiniExcel">
+<!-- This example is unfinished, sorry! -->
+
+<!--<template>-->
+<script type="modulo/template">
+    <table>
+        <tbody>
+            {% for row in state.celldata %}
+                <tr>
+                    {% for col in row %}
+                        <td class="hah">
+                            {{ col }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</script>
+<!--</template>-->
+
+<state
+    celldata:='[ [10, 30] ]'
+/><state>
+
+<script>
+    console.log('factory for miniexcel');
+/*
+    console.log('factory for miniexcel');
+    function initalizedCallback(renderObj) {
+        console.log('getting initialized', renderObj);
+        state.data = [
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['', '', '', '', '', ''],
+        ];
+    }
+*/
+</script>
+
+<style>
+    table td {
+        border: 1px solid black;
+        padding: 3px;
+        color: green;
+    }
+    * {
+        color: blue;
+    }
+</style>
+
+</component>
+
+
+</template>
+
+<script> Modulo.defineAll() </script>
+
+
+<p>Before mini excel</p>
+<x-MiniExcel></x-MiniExcel>
+<p>After mini excel</p>
+

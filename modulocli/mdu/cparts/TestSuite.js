@@ -1,5 +1,5 @@
 if (typeof Modulo === 'undefined') {
-    var Modulo = require('../modulocli/lib/BaseModulo');
+    var Modulo = require('../../lib/BaseModulo');
 }
 
 class TestSuite extends Modulo.ComponentPart {

@@ -497,8 +497,23 @@
     </script>
 </test>
 
-<test name="Built-in operators">
+
+<test name="Nested data">
+    <script name="For-loops iterating over nested data">
+        const { MTL } = Modulo.templating;
+        const text =
+            'A\n A\n A{% for row in state.data %}' +
+                '<tr>{% for col in row %}<td>{{ col }}</td>{% endfor %}</tr>' +
+            '{% endfor %}Z\n Z\n Z\n ';
+        const first = arr => arr[0];
+        const template = new MTL(text);
+        const result = template.render({state: { data: [ [10, 30] ]} });
+
+        assert: result === 'A\n A\n A<tr><td>10</td><td>30</td></tr>Z\n Z\n Z\n '
+    </script>
+
 </test>
+
 
 
 <!--

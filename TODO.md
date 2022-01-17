@@ -11,6 +11,24 @@
         }
 
 
+# 2022 - ideas:
+
+- Documentation around limitations of loading in browser vs with fetch:
+    - See "scratch2.html" -- the template limitations are actually quite bad,
+      especially with "tables", as they reorder contents in very unexpected
+      ways, breaking any attempts to loop & generate table contents
+    - The only solution is a '< script'-style substitution when doing loadString
+    - This might require the "< CamelCase" syntax
+        -  Idea #2:
+            - Use the "x" replacement for components, <x-PrivateElement></x-...>
+            - That way CParts are handled separately, anything that's
+              `<Xyz` turns into `<script type="modulo/Xyz" ...`
+
+- debugger - Be able to table all variables in renderObj accross each lifecycle
+- templatetag "prefilter" -- modifies the default prefilter for "text" mode
+  output. Can be used also with "trim" to remove excess whitespace, or
+  something like "trimBetweenTags" to avoid space around HTML text (By default,
+  the defaultFilter is "escape"..?)
 
 # 2022 Final, final To-Do:
 

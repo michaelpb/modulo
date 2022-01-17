@@ -3,7 +3,7 @@ const baseModulo = require('./BaseModulo');
 const { customElementsUpgrade } = require('./DomAdapter');
 // Then bring in CommandMenu & TestSuite
 const CommandMenuNode = require('./CommandMenuNode');
-const TestSuite = require('../../src/TestSuite.js');
+const TestSuite = require('../mdu/cparts/TestSuite.js');
 
 let jsdomParseHTML;
 try {

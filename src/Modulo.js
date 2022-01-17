@@ -14,12 +14,31 @@ if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
 
-var Modulo = {
+function Modulo() {
+    // TODO: Dead code, needs development
+    // New interface without defineAll
+    const modulo = Object.freeze(Object.assign({}, Modulo));
+    modulo.fetchQ = new modulo.FetchQueue();
+    modulo.assets = new modulo.AssetManager();
+    modulo.globalLoader = new modulo.Loader(null, { attrs });
+    modulo.CommandMenu.setup();
+    window.Modulo = modulo;
+    modulo.fetchQ.wait(() => {
+        const query = 'template[modulo-embed],modulo,m-module';
+        for (const elem of modulo.globals.document.querySelectorAll(query)) {
+            // TODO: Should be elem.content if tag===TEMPLATE
+            modulo.globalLoader.loadString(elem.innerHTML);
+        }
+    });
+    return this;
+}
+
+Object.assign(Modulo, {
     globals: { HTMLElement }, // globals is window in Browser, an obj in Node.js
     reconcilers: {}, // used later, for custom DOM Reconciler classes
     cparts: {}, // used later, for custom CPart classes
     templating: {}, // used later, for custom Templating languages
-};
+});
 
 
 // TODO: Once Modulo config stack is finished, refactor to:
@@ -82,10 +101,15 @@ Modulo.ComponentPart = class ComponentPart {
 
 Modulo.Loader = class Loader {
     constructor(element = null, options = { attrs: {} }) {
-        this.element = element;
-        this.content = options.content;
-        this.attrs = options.attrs;
-        this.src = this.attrs.src;
+        if (element === null) {
+            // LEGACY constructor interface
+            this.element = element;
+            this.content = options.content;
+            this.attrs = options.attrs;
+            this.src = this.attrs.src;
+        } else {
+            throw new Error('Not supported yet')
+        }
 
         this.config = {};
         //this.config = Object.freeze(Object.assign({}, Modulo));
@@ -192,6 +216,8 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
         const attrs = Object.assign({ namespace: 'x' }, data.attrs, { src });
         data.loader = new Modulo.Loader(null, { attrs });
         data.loader.config = Object.assign({}, loader.config);
+        // Maybe instead (allow use of attrs):
+        //data.loader.config = Object.assign({}, loader.config, data.attrs);
         data.loader.loadString(content);
     }
 
@@ -699,12 +725,14 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
 
 Modulo.cparts.template = class Template extends Modulo.ComponentPart {
+    /*
     static factoryCallback(opts, factory, loadObj) {
         // TODO: Delete this after we are done with directive-based expansion
         const tagPref = '$1' + factory.loader.namespace + '-';
         const content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
         return { content };
     }
+    */
 
     constructor(element, options) {
         super(element, options);
@@ -713,6 +741,8 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
         // NOTE: May want to move this to Factory. While it will only create 1
         // template function, it will generate the code with every instance.
         //const rFOpts = { tagName: element.tagName.replace('-', '__') };
+        // TODO: Once we change interface to be "getCode" and/or "render", then
+        // we can compile in "Load"
         const opts = Object.assign({}, this.attrs, {
             makeFunc: (a, b) => Modulo.assets.registerFunction(a, b),
         });
