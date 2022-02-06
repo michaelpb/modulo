@@ -30,7 +30,7 @@ function Modulo() {
             modulo.globalLoader.loadString(elem.innerHTML);
         }
     });
-    return this;
+    return modulo;
 }
 
 Object.assign(Modulo, {
@@ -1450,7 +1450,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         } else if (method === 'insertBefore') {
             node.insertBefore(arg, arg2); // Needs 2 arguments
         } else if (method.startsWith('directive-')) {
-            // TODO: Remove 'directive-' prefix
+            // TODO: Possibly, remove 'directive-' prefix
             method = method.substr('directive-'.length);
             node[method].call(node, arg); // invoke method
         } else {
@@ -1459,7 +1459,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     patchDirectives(el, rawName, suffix) {
-        // TODO: Remove 'directive-' prefix
         const foundDirectives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
         if (!foundDirectives || foundDirectives.length === 0) {
             return;
@@ -1829,7 +1828,7 @@ Modulo.AssetManager = class AssetManager {
             doc.head.append(elem);
         }
         if (Modulo.isBackend && tagName === 'script') {
-            codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace first
+            codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace 1st
             eval(codeStr, this); // TODO Fix this, limitation of JSDOM
         } else {
             elem.textContent = codeStr; // Blocking, causes eval

@@ -1,4 +1,3 @@
-
 # 2022 FFF 2D:
 
 - Config works in layering. Next is add global Modulo-level config to allow new
