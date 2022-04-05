@@ -13,24 +13,8 @@
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
 }
-
-function Modulo() {
-    // TODO: Dead code, needs development
-    // New interface without defineAll
-    const modulo = Object.freeze(Object.assign({}, Modulo));
-    modulo.fetchQ = new modulo.FetchQueue();
-    modulo.assets = new modulo.AssetManager();
-    modulo.globalLoader = new modulo.Loader(null, { attrs });
-    modulo.CommandMenu.setup();
-    window.Modulo = modulo;
-    modulo.fetchQ.wait(() => {
-        const query = 'template[modulo-embed],modulo,m-module';
-        for (const elem of modulo.globals.document.querySelectorAll(query)) {
-            // TODO: Should be elem.content if tag===TEMPLATE
-            modulo.globalLoader.loadString(elem.innerHTML);
-        }
-    });
-    return modulo;
+if (typeof Modulo === 'undefined') {
+    var Modulo = {}; // TODO: have it instantiate a Modulo instance instead
 }
 
 Object.assign(Modulo, {
@@ -39,7 +23,6 @@ Object.assign(Modulo, {
     cparts: {}, // used later, for custom CPart classes
     templating: {}, // used later, for custom Templating languages
 });
-
 
 // TODO: Once Modulo config stack is finished, refactor to:
 // defineAll = config => { Modulo.instance = new Modulo(config); }
@@ -125,15 +108,28 @@ Modulo.Loader = class Loader {
     }
 
     _stringToDom(text) {
-        // TODO: Refactor duped / messy code
+        const { cleanWord } = Modulo.utils;
+        // TODO: Refactor duped / hacky / messy code
         const tmp_Cmp = new this.cparts.component({}, {});
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount;
         const rec = new Modulo.reconcilers.ModRec({
             directives: { 'config.dataPropLoad': tmp_Cmp },
             directiveShortcuts: [ [ /:$/, 'config.dataProp' ] ],
         });
-        const elem = rec.loadString(text, {});
-        return elem;  // <-- NOTE: _strToDom is used in TestSuite
+
+        // TODO refactor this as well, make it a configurable thing on CParts
+        const replaceTags = [ 'Template' ]; // Object.keys(this.cparts)
+        const reText = replaceTags.map(tag => `</?${tag}[\\s>]`).join('|');
+        const tagRegExp = RegExp(reText, 'g');
+        const changeToScript = tagText => tagText.startsWith('</') ? '</script>'
+            : ('<script type="modulo/' + cleanWord(tagText) + '"' +
+                tagText[tagText.length - 1]);
+        const scriptifiedText = text.replace(tagRegExp, changeToScript);
+        //console.log('scriptifiedText', scriptifiedText);
+        //const elem = rec.loadString(text, {});
+
+        const elem = rec.loadString(scriptifiedText, {});
+        return elem;  // <-- NOTE: _stringToDom is used in TestSuite
     }
 
     loadString(text, newSrc = null) {
@@ -197,11 +193,12 @@ Modulo.Loader = class Loader {
         }
 
         // Determine the name: The tag name, or the type attribute in the case
-        // of the alt script-tag syntax (eg `<script type="modulo/template">`)
-        let cPartName = tagName.toLowerCase();
+        // of the alt script-tag syntax (eg `<script type="modulo/Template">`)
+        let cPartName = tagName.toLowerCase(); // rm this, once its cparts.Template // TODO
         const splitType = (node.getAttribute('type') || '').split('/');
         if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
             cPartName = splitType[1];
+            cPartName = cPartName.toLowerCase(); // rm this, once its cparts.Template // TODO
         }
         if (!(cPartName in this.cparts)) {
             console.error('Modulo.Loader: Unknown CPart def:', tagName);
@@ -493,8 +490,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     scriptTagLoad({ el }) {
-        //const newScript = this.element.ownerDocument.createElement('script');
-        const newScript = Modulo.globals.document.createElement('script');
+        const newScript = el.ownerDocument.createElement('script');
         newScript.src = el.src; // TODO: Possibly copy other attrs?
         el.remove(); // delete old element
         this.element.ownerDocument.head.append(newScript);

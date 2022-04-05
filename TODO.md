@@ -1,13 +1,19 @@
-# 2022 FFF 2D:
+# 2022-03 FFF 2D:
 
-- Config works in layering. Next is add global Modulo-level config to allow new
-  Modulo({}) syntax
+New plan forward:
 
-    - Idea:
+1. Finish core public-facing API changes
+    - (DONE) Upgrade to uppercase CPart syntax: < Template -> script
+    - Work on documentation changes to reflect
+    - Finish tag replacement
+2. Finish first pass at documentation, hiding stuff that doesn't work
+3. Fix issue with nested components
+4. Decide on Loader / Module / Config simplification
+    - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'
 
-        constructor() {
-            this.config = Object.assign({}, Modulo);
-        }
+The goal is a "feature / refactor freeze". Once everything works as advertised,
+get feedback from folks. (Friends, meetups etc)
+
 
 
 # 2022 - ideas:
@@ -28,6 +34,11 @@
   output. Can be used also with "trim" to remove excess whitespace, or
   something like "trimBetweenTags" to avoid space around HTML text (By default,
   the defaultFilter is "escape"..?)
+- Misc cool things:
+    - If there's some way to rip out the Hyperscript parser, that would be a
+      cool script-tag alternative lang: https://hyperscript.org/
+    - Think about supporting Dino for the CLI version (seems simpler, possibly
+      better due to c% support!)
 
 # 2022 Final, final To-Do:
 
@@ -103,7 +114,9 @@
 
 7. CPart stdlib finalize
   - Move more of "element" into FactoryCPart
-  - Finish Store, Fetch
+  - Finish Store, Fetch CParts
+  - Fix State to correctly handle multiple binds, and different bind types
+    (e.g. check, button onClick to flip boolean, etc)
   - Rename to component.slot
   - Finalize < slot > vs [component.slot]
 
@@ -170,7 +183,8 @@ content, without replacing it, etc?
     - Or maybe better yet, markdowntemplate is the CPart
     - Building on that, perhaps a way to configure markdown "handlers" for
       different types, e.g. using x-EmbedImg instead of img.
-    - Could create and register custom tags using TagLex
+    - Could create and register custom tags using a configuration layer over
+      TagLex
 
 # Ideas for better CPart development:
 
