@@ -162,14 +162,14 @@ framework:</p>
 
 <mws-Demo
 text='
-<script>
+<Script>
 // Zen Framework - (C) 2091 - Tux the Penguin
 function Zen(el, key, value) {
     el.state = el.state || JSON.parse(el.getAttribute("x-state") || "{}")
     el.state[key] = value;
     el.innerHTML = el.innerHTML.replace(/\$\{([^\)]+)?\}/g, (a, b) => el.state[b]);
 }
-</script>
+</Script>
 '></mws-Demo>
 
 <p>Now, Tux could just publish this by itself, and no one would ever want to

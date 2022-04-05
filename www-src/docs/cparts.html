@@ -1,6 +1,6 @@
 <script src="/js/Modulo.js"></script>
 <modulo>
-    <load namespace="x" src="/components/layouts.html"> </load>
+    <Load namespace="x" src="/components/layouts.html"> </Load>
 </modulo>
 <script>Modulo.defineAll()</script>
 
@@ -124,32 +124,32 @@ of 4 ways:</p>
 <mws-Demo
 text='
 <!-- 1. Any type, required -->
-<props
+<Props
     design
     data
-></props>
+></Props>
 
 <!-- 2. Type-checked, required -->
-<props
+<Props
     design=String
     data=Array
-></props>
+></Props>
 
 <!-- 3. Any type, optional with default -->
-<props
+<Props
     design
     design.default="square"
     data
     data.default:=&apos;[1, 2, 3]&apos;
-></props>
+></Props>
 
 <!-- 4. Type-checked, optional with default -->
-<props
+<Props
     design=String
     design.default="square"
     data=Array
     data.default:=&apos;[1, 2, 3]&apos;
-></props>
+></Props>
 '></mws-Demo>
 
 
@@ -245,13 +245,13 @@ contents.</p>
 <mws-Demo
 text='
 <!-- Example 1: Two variables specified -->
-<state
+<State
     name="Luiz"
     faveratenum:=13
-></state>
+></State>
 
 <!-- Example 2: Many variables of different types -->
-<state
+<State
     color="blue"      (String)
     count:=1          (Number)
     ready:=true       (Boolean)
@@ -264,7 +264,7 @@ text='
         "a": "b",
         "c": "d"
     }&apos;
-></state>
+></State>
 '></mws-Demo>
 
 <p>Note that all "state variables" <em>must</em> have an initial value. It's
@@ -421,10 +421,10 @@ you should avoid direct DOM manipulation whenever you can, instead using a
 
 <mws-Demo
 text='
-<template>
+<Template>
     <button @click:=script.increment>Click me</button>
-</template>
-<script>
+</Template>
+<Script>
     // "Static" execution context. We have access to 3 variables:
     console.log("Modulo library instance:", Modulo);
     console.log("Any modules defined above in this file, or null:", module);
@@ -439,7 +439,7 @@ text='
         count++;
         console.log("Shared count between buttons:", count);
     }
-</script>
+</Script>
 '></mws-Demo>
 
 
@@ -491,16 +491,16 @@ for an example of this:</p>
 <mws-Demo
 demotype="minipreview"
 text='
-<template>
+<Template>
     API data: <pre>{{ state.data|json|truncate:80 }}</pre>
     <button @click:=script.fetchMe>Get API data</button>
-</template>
+</Template>
 
 <state
     data:=&apos;{}&apos;
 ></state>
 
-<script>
+<Script>
     function fetchMe() {
         fetch("https://api.github.com/users/michaelpb")
             .then(response => response.json())
@@ -511,7 +511,7 @@ text='
                 element.rerender(); // force rerender
             }));
     }
-</script>
+</Script>
 '></mws-Demo>
 
 
@@ -552,16 +552,16 @@ assumptions about using a synchronous or asynchronous coding style.</p>
 <mws-Demo
 demotype="minipreview"
 text='
-<template>
+<Template>
     <p>{% for item in script.exports.bigArray %}
         {{ item }},
     {% endfor %}</p>
-</template>
-<script>
+</Template>
+<Script>
     script.exports.bigArray =
         Array.from({ length: 100 })
         .map((val, i) => `i liek ${i} turtles`);
-</script>
+</Script>
 '></mws-Demo>
    </li>
 
@@ -608,11 +608,11 @@ or <em>Props</em>: Only defined with properties, but no contents.</p>
 
 <mws-Demo
 text='
-<store
+<Store
     name="userinfo"
     username="Luiz"
     faveratenum:=13
-></store>
+></Store>
 '></mws-Demo>
 
 <p>All other behavior of Store is the same as State.</p>
@@ -889,8 +889,8 @@ library file and is shared by components within that file.</p>
 
 <mws-Demo
 text='
-<module>
-    <script>
+<Module>
+    <Script>
         // You can write utility functions to be reused
         function copyTextToClipboard(text) {
             navigator.clipboard.writeText(text);
@@ -906,29 +906,29 @@ text='
 
         class CustomTemplates extends Modulo.templating.MTL { /* etc */ }
         Modulo.templating.mycoolengine = CustomTemplates;
-    </script>
-</module>
+    </Script>
+</Module>
 
-<component name="ExampleComponent">
+<Component name="ExampleComponent">
     <!-- Custom engines defined above can then be referenced here -->
-    <template engine="mycoolengine">
+    <Template engine="mycoolengine">
         <p>hello world</p>
-    </template>
+    </Template>
 
-    <script>
+    <Script>
         // Functions defined above are available here:
         module.script.copyTextToClipboard("hey there!")
 
         // All "module" exports are available here:
         console.log("global data:", module.script.exports.globalData);
-    </script>
+    </Script>
 
     <!-- And custom registered CParts can be used here as well -->
     <mycoolpart
         does="nothing yet"
     ></mycoolpart>
 
-</component>
+</Component>
 '></mws-Demo>
 
 

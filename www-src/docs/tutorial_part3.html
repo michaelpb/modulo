@@ -128,11 +128,11 @@ we initialize to equal <code>"1"</code>, and <code>color</code>, which we
 initialize to equal <code>blue</code>. We can then use the state variables in
 our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
 
-<pre>&lt;template&gt;
+<pre>&lt;Template&gt;
     &lt;p style="color: {{ state.color }}"&gt;
         You have {{ state.count }} bananas.
     &lt;/p&gt;
-&lt;/template&gt;</pre>
+&lt;/Template&gt;</pre>
 
 
 <section class="Tutorial-tryit">
@@ -248,9 +248,9 @@ single character in an input, should be reflected in state changes.</p>
 
 <p>To bind an input to state, use something like the following:</p>
 
-<pre>&lt;template&gt;
+<pre>&lt;Template&gt;
     &lt;input [state.bind] name="subject" /&gt;
-&lt;/template&gt;
+&lt;/Template&gt;
 &lt;state
     subject="Testing message..."
 &gt;&lt;/state&gt;</pre>
@@ -326,14 +326,14 @@ that input.</p>
     <li><em>Data props</em> support any JSON literal type. Technically,
     <em>data props</em> values can have double quotes just like normal
     String-based attributes. However, as a stylistic convention, you may omit
-    the double quotes for any one-word value, and for complex types, such as
-    JSON-formatted Arrays or Objects, use single quotes. See below for
+    the double quotes for any one-word value, and should use only single quotes
+    for complex types, such as JSON-formatted Arrays or Objects. See below for
     stylistic examples of data props with different types:
 
 
 <mws-Demo
 text='
-<state
+<State
     color="blue"      (String)
     count:=1          (Number)
     ready:=true       (Boolean)
@@ -346,7 +346,7 @@ text='
         "a": "b",
         "c": "d"
     }&apos;
-></state>
+></State>
 '
 ></mws-Demo>
 </li>

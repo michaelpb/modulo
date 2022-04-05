@@ -8,17 +8,17 @@
 <script>window.onload = () => Modulo.defineAll();</script>
 
 <template modulo-embed>
-    <component name="ExampleBtn">
-        <props
+    <Component name="ExampleBtn">
+        <Props
             label
             shape
-        ></props>
-        <template>
+        ></Props>
+        <Template>
             <button class="my-btn my-btn__{{ props.shape }}">
                 {{ props.label }}
             </button>
-        </template>
-        <style>
+        </Template>
+        <Style>
             .my-btn {
                 display: inline-block;
                 box-sizing: border-box;
@@ -47,8 +47,8 @@
             .my-btn__round {
                 border-radius: 150px;
             }
-        </style>
-    </component>
+        </Style>
+    </Component>
 </template>
 
 <x-Page
@@ -155,18 +155,18 @@ previous CParts, except they have no contents and are just an opening tag with
 attributes, followed by a closing tag. A <em>Props</em> CPart might look like
 this:</p>
 
-<pre>&lt;props name device frequency&gt;&lt;/props&gt;</pre>
+<pre>&lt;Props name device frequency&gt;&lt;/Props&gt;</pre>
 
 <p>The recommended style for Modulo code is to add a newline after each prop
 name for easier reading. HTML syntax doesn't care either way, so the above
 might be improved for readability if it were written as follows:</p>
 
 <pre>
-&lt;props
+&lt;Props
     name
     device
     frequency
-&gt;&lt;/props&gt;
+&gt;&lt;/Props&gt;
 </pre>
 
 
@@ -214,9 +214,9 @@ get filled in with specific data when the component gets reused. Examine the
 below code and try to guess at what it might do:</p>
 
 <pre>
-&lt;template&gt;
+&lt;Template&gt;
     Hi {{ props.name }}, your {{ props.device }} is at {{ props.frequency }}hz.
-&lt;/template&gt;
+&lt;/Template&gt;
 </pre>
 
 <p>In this case, if we were to use our component with the attributes
@@ -242,21 +242,21 @@ previous challenge:</p>
 
 <mws-Demo
 text='
-<component name="ExampleBtn">
+<Component name="ExampleBtn">
 
-    <props
+    <Props
         label
         shape
-    ></props>
+    ></Props>
 
-    <template>
+    <Template>
         <button class="my-btn  my-btn__{{ props.shape }}">
             {{ props.label }}
         </button>
-    </template>
+    </Template>
 
-    <!-- (Note: The <style> CPart was omitted for simplicity) -->
-</component>
+    <!-- (Note: The <Style> CPart was omitted for simplicity) -->
+</Component>
 '
 ></mws-Demo>
 
@@ -292,13 +292,13 @@ rectangular, towering look.</p>
         like this:
 <mws-Demo
 text='
-<component name="HelloWorld">
-    <props
+<Component name="HelloWorld">
+    <Props
         goal
         amount
-    ></props>
+    ></Props>
     <!-- ... snip ... -->
-</component>
+</Component>
 '></mws-Demo>
         </li>
 
@@ -308,11 +308,11 @@ text='
         for now, let's just display the goal prop and amount prop:</li>
 <mws-Demo
 text='
-<template>
+<Template>
     Hello <strong>Modulo</strong> World!
     <p>Goal: {{ props.goal }}</p>
     <p>Amount: {{ props.amount }}</p>
-</template>
+</Template>
 '></mws-Demo>
 
         <li>Refresh the web browser to view the results. Assuming you still
@@ -407,7 +407,7 @@ examples of all filters available.</p>
 
     <ol>
         <li>Practice modifying the <strong>Template</strong> CPart
-        (<code>&lt;template&gt;</code>) to see how that affects the
+        (<code>&lt;Template&gt;</code>) to see how that affects the
         output</li>
         <li>Practice modifying the <strong>Style</strong> CPart
         (<code>&lt;style&gt;</code>) to add or modify CSS</li>
@@ -461,9 +461,9 @@ we've learned so far that support it.</p>
 <p>For example, you can split off a <em>Template</em> into it's own separate
 file, as such:</p>
 
-<pre>&lt;template
+<pre>&lt;Template
     src="./my-file-name.html"
-&gt;&lt;/template&gt;</pre>
+&gt;&lt;/Template&gt;</pre>
 
 
 <p>Similarly, you can split off a <em>Style</em> as well:</p>

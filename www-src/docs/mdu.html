@@ -330,58 +330,58 @@ text='
     <test name="ensure fine">
         <!-- SETUP -->
         <!-- Using Props and State we can setup the component for testing -->
-        <props text="Hi"></props>
-        <state
+        <Props text="Hi"></Props>
+        <State
             search="the lord of the rings"
             loading:=true
-        ></state>
+        ></State>
 
         <!-- ASSERTIONS -->
         <!-- run arbitrary scripts, if ends in "assert: " it will then be a test -->
         <!-- If the assertion fails, the test runner will attempt to expose the
             values of any variable in the "assert:" line. For better debugging,
             keep the "assert:" line one simple expression with variables -->
-        <script name="ensure no longer loading">
+        <Script name="ensure no longer loading">
             const words = state.search.split(" ");
             const firstWord = words[0];
             assert: firstWord === "the"
-        </script>
+        </Script>
 
         <!-- Style lets us test CSS. Here we ensure all li elements are blue
             (no matter how they were colored that way, e.g. even if inline or
             inherited) -->
         <!-- TODO: Not implemented yet -->
-        <style name="blue is cool">
+        <Style name="blue is cool">
             li { color: blue; }
-        </style>
+        </Style>
 
-        <!-- Most powerful assertion of all, the template: Check if the
+        <!-- Most powerful assertion of all, the Template: Check if the
              contents of the component match the given DOM. This compares as DOM
              (not string), so excess whitespace, etc is ignored.
         -->
-        <template>
+        <Template>
             <p>Hello 3 world!</p>
             <h1>I have 5 bananas</h1>
-        </template>
+        </Template>
 
         <!-- We can use "test-values" to expose the values of inputs: -->
-        <template test-values>
+        <Template test-values>
             <input [state.bind] name="bananas" value="5" />
             <h1>I have 5 bananas</h1>
-        </template>
+        </Template>
 
         <!-- Fuzzy DOM match, default (eg, can actual DOM be
               transformed into this DOM, by only doing "delete"?) -->
         <!-- TODO: Not implemented yet -->
-        <template subdom>
+        <Template subdom>
             <p>Hello 3 world!</p>
-        </template>
+        </Template>
 
         <!-- Can check for exact string occurrences within innerHTML, with any
         count (including 0 to "ban" a string from occurring) -->
-        <template string-count=1>
+        <Template string-count=1>
             name="bananas"
-        </template>
+        </Template>
     </test>
 </testsuite>
 

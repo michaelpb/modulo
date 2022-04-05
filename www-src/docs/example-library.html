@@ -8,8 +8,8 @@
 </script>
 
 <template modulo-embed>
-    <component name="AllExamples">
-        <template>
+    <Component name="AllExamples">
+        <Template>
             {% for example in script.exports.examples %}
                 <mws-Section name="{{ example.name|lower }}">
                     {{ example.name }}
@@ -19,9 +19,9 @@
                     fromlibrary='{{ example.name }}'
                 ></mws-Demo>
             {% endfor %}
-        </template>
+        </Template>
 
-        <script>
+        <Script>
             console.log('loading AllExamples');
             script.exports.examples = [];
             function initializedCallback() {
@@ -53,8 +53,8 @@
                 }
                 element.rerender();
             }
-        </script>
-    </component>
+        </Script>
+    </Component>
 </template>
 
 

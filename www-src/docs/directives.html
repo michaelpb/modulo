@@ -163,13 +163,13 @@ in a later section</a>.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
 Hello <strong>Modulo</strong> World!
 Open your browser dev console to see messages...
 <button @click:=script.gotClicked>Click me to generate an event</button>
-</template>
+</Template>
 
-<script>
+<Script>
     function initializedCallback() {
         console.log("initalizedCallback: Got mounted");
     }
@@ -201,7 +201,7 @@ Open your browser dev console to see messages...
     function gotClicked() {
         console.log("(the button got clicked)");
     }
-</script>
+</Script>
 '></mws-Demo>
 
 
@@ -283,17 +283,17 @@ step:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
 <label>
 <input [state.bind] name="enabled" type="checkbox" />
 Show messages in console</label>
-</template>
+</Template>
 
-<state
+<State
     enabled:=false
-></state>
+></State>
 
-<script>
+<Script>
     function _logInfo(message, renderObj) {
         // Little helper function to do messages in console
         if (state.enabled) {
@@ -317,7 +317,7 @@ Show messages in console</label>
     function updatedCallback(renderObj) {
         _logInfo("updatedCallback:", renderObj);
     }
-</script>
+</Script>
 '></mws-Demo>
 
 
@@ -368,7 +368,7 @@ run into the limits of what Modulo is capable of doing.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
 {# [script.myinput] is a custom directive, defined below #}
 <input [script.myinput] />
 
@@ -376,9 +376,9 @@ text='
 <button [component.event]click:=script.showInfo>
     Click me
 </button>
-</template>
+</Template>
 
-<script>
+<Script>
     function myinputMount(mountOptions) {
         element.inputRef = mountOptions.el;
         // Try uncommenting the following to see data:
@@ -388,7 +388,7 @@ text='
         alert("Focusing on:" + String(element.inputRef));
         element.inputRef.focus();
     }
-</script>
+</Script>
 '></mws-Demo>
 
 <!--<mws-Section name="builtin">Built-in directives</mws-Section>-->
@@ -446,7 +446,7 @@ stricter structure.</p>
 
 <mws-Demo
 text='
-<template>
+<Template>
     {% for athlete in state.team %}
         {# (HTML Attributes) #}
         {# Broken, will not work: #}
@@ -464,7 +464,7 @@ text='
         <button @click:=script.selectOne payload="{{ athlete.id }}">
             {{ athlete.name }}</button>
     {% endfor %}
-</template>
+</Template>
 '></mws-Demo>
 
 <blockquote>
@@ -538,7 +538,7 @@ custom directives used (which should be avoided to begin with).</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     Game Shop: 31 moneys<br />
     Avg Movie Creeps: 10 moneys<br />
     <button @click:=script.toggle>
@@ -554,13 +554,13 @@ text='
         <button %%%long="AMC"></button>
         <button %%%short="AMC"></button>
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
     show:=false
-></state>
+></State>
 
-<script>
+<Script>
     Modulo.directiveShortcuts.push([/^%%%/, "script.example"]);
     /*
     // Correct way below:
@@ -581,7 +581,7 @@ text='
     function toggle() {
         state.show = !state.show;
     }
-</script>
+</Script>
 '></mws-Demo>
 
 <p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
