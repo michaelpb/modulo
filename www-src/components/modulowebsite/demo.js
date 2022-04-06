@@ -27,14 +27,49 @@ function _setupGlobalVariables() {
     }
 }
 
+function tmpGetDirectives() {
+    return [ 'script.codemirror' ];
+}
+
 function codemirrorMount({ el }) {
     const demoType = props.demotype || 'snippet';
-    _setupCodemirror(el, demoType, element, state);
+    //_setupCodemirror(el, demoType, element, state);
+    _setupCodemirrorSync(el, demoType, element, state);
+}
+
+function _setupCodemirrorSync(el, demoType, myElement, myState) {
+      let readOnly = false;
+      let lineNumbers = true;
+      if (demoType === 'snippet') {
+          readOnly = true;
+          lineNumbers = false;
+      }
+
+      const conf = {
+          value: myState.text,
+          mode: 'django',
+          theme: 'eclipse',
+          indentUnit: 4,
+          readOnly,
+          lineNumbers,
+      };
+
+      if (demoType === 'snippet') {
+          myState.showclipboard = true;
+      } else if (demoType === 'minipreview') {
+          myState.showpreview = true;
+      }
+
+      if (!myElement.codeMirrorEditor) {
+          myElement.codeMirrorEditor = Modulo.globals.CodeMirror(el, conf);
+      }
+      myElement.codeMirrorEditor.refresh()
 }
 
 function _setupCodemirror(el, demoType, myElement, myState) {
     //console.log('_setupCodemirror DISABLED'); return; ///////////////////
     let expBackoff = 10;
+    console.log('this is codemirror', Modulo.globals.CodeMirror);
     const mountCM = () => {
         // TODO: hack, allow JS deps or figure out loader or something
         if (!Modulo.globals.CodeMirror) {
@@ -71,6 +106,8 @@ function _setupCodemirror(el, demoType, myElement, myState) {
         myElement.codeMirrorEditor.refresh()
         //myElement.rerender();
     };
+    mountCM();
+    return;
     const {isBackend} = Modulo;
     if (!isBackend) {
         // TODO: Ugly hack, need better tools for working with legacy
@@ -145,6 +182,7 @@ function initializedCallback({ el }) {
             text = props.text3.trim();
             state.tabs.push({title, text});
         }
+        //console.log('this is props', props);
     }
 
     const demoType = props.demotype || 'snippet';
@@ -165,28 +203,12 @@ function initializedCallback({ el }) {
     const myElem = element;
     const myState = state;
     const {isBackend} = Modulo;
+    return;
     if (!isBackend) {
         setTimeout(() => {
             const div = myElem.querySelector('.editor-wrapper > div');
             _setupCodemirror(div, demoType, myElem, myState);
         }, 0); // put on queue
-    }
-}
-
-function setupShaChecksum() {
-     return; ///////////////////
-    console.log('setupShaChecksum DISABLED'); return; ///////////////////
-
-    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
-    if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
-        if (!mod || !mod.script || !mod.script.getVersionInfo) {
-            console.log('no mod!');
-        } else {
-            const info = mod.script.getVersionInfo();
-            const checksum = info.checksum || '';
-            state.text = state.text.replace('$modulojs_sha384_checksum$', checksum)
-            element.setAttribute('text', state.text);
-        }
     }
 }
 
@@ -226,10 +248,12 @@ function doRun() {
 function countUp() {
     // TODO: Remove this when resolution context bug is fixed so that children
     // no longer can reference parents
-    console.log('PROBLEM: Child event bubbling to parent!');
+    console.count('PROBLEM: Child event bubbling to parent!');
 }
 
 function doFullscreen() {
+    alert('full screen disabled!');
+    return;
     document.body.scrollTop = document.documentElement.scrollTop = 0;
     if (state.fullscreen) {
         state.fullscreen = false;
@@ -260,6 +284,23 @@ function previewspotMount({ el }) {
     element.previewSpot = el;
     if (!element.isMounted) {
         doRun(); // mount after first render
+    }
+}
+
+
+function setupShaChecksum() {
+    console.log('setupShaChecksum DISABLED'); return; ///////////////////
+
+    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
+    if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
+        if (!mod || !mod.script || !mod.script.getVersionInfo) {
+            console.log('no mod!');
+        } else {
+            const info = mod.script.getVersionInfo();
+            const checksum = info.checksum || '';
+            state.text = state.text.replace('$modulojs_sha384_checksum$', checksum)
+            element.setAttribute('text', state.text);
+        }
     }
 }
 */

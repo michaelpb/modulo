@@ -502,7 +502,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         if (this.mode === 'shadow') {
             this.element.attachShadow({ mode: 'open' });
         }
-        this.newReconciler(renderObj.component);
+        console.log('this, is,', renderObj.component);
+        this.newReconciler(this.element.initRenderObj.component);
     }
 
     getDirectives() {
@@ -576,6 +577,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     handleEvent(func, payload, ev) {
+        console.log('event happening!', func, payload, ev);
         this.element.lifecycle([ 'event' ]);
         const { value } = (ev.target || {}); // Get value if is <INPUT>, etc
         func.call(null, payload === undefined ? value : payload, ev);
@@ -594,32 +596,65 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     eventMount({ el, value, attrName, rawName }) {
+        console.log('JSON', JSON.stringify(
+            {el: el.textContent.trim(), value, attrName, rawName, dp: el.dataProps}
+        ));
+
+        // attrName becomes "event name"
         // TODO: Make it @click.payload, and then have this see if '.' exists
         // in attrName and attach as payload if so
         const { resolveDataProp } = Modulo.utils;
         const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
         const func = get(attrName);
+        //console.log('eventMount: el.textContent', [el.textContent.trim()], value, attrName, rawName, el.dataProps);
+        //console.log('eventMount: attrName, func', attrName, func);
+        //console.log('eventMount: attrName, func', attrName, get('click'));
         Modulo.assert(func, `Bad @${attrName} event: ${value} is falsy`);
         if (!el.moduloEvents) {
             el.moduloEvents = {};
         }
+        //console.log('eventMount #2: el.textContent', [el.textContent.trim()], func);
         const plName = attrName + '.payload';
-        const listen = ev => this.handleEvent(func, get(plName, 'payload'), ev);
-        el.moduloEvents[value] = listen;
+        //const listen = ev => this.handleEvent(func, get(plName, 'payload'), ev);
+
+        //-----------------------
+        if (!Modulo._tmpCount) {
+            Modulo._tmpCount = 1;
+        } else {
+            Modulo._tmpCount++;
+        }
+        let contextCount = Modulo._tmpCount;
+        //-----------------------
+
+
+        console.log(contextCount, 'eventSetup: el, el.dataProps', [el.textContent.trim()], el, el.dataProps);
+        const listen = ev => {
+            console.log(contextCount, 'eventHapps: el, el.dataProps', [el.textContent.trim()], el, el.dataProps);
+            const payload = get(plName, 'payload');
+            //console.log('eventHapps: el.textContent', [el.textContent.trim()], func);
+            const currentFunction = resolveDataProp(attrName, el);
+            this.handleEvent(currentFunction, payload, ev);
+        };
+        el.moduloEvents[attrName] = listen;
         el.addEventListener(attrName, listen);
+
+        // el.moduloEvents[value] = listen; // TODO: Before it was this, but this makes no sense
+        //el.addEventListener(attrName, listen);
+        //console.log(contextCount, 'eventSetup: el, el.dataProps', [el.textContent.trim()], el, el.dataProps);
     }
 
     /*
     eventChange(info) {
-        // TODO: test this, or replace Change with Unmount -> Mount as default
+        // TODO: rm (keep Unmount / Mount only)
         this.eventUnmount(info);
         this.eventMount(info);
     }
     */
 
     eventUnmount({ el, attrName }) {
-        const listen = el.moduloEvents[attrName];
-        el.removeEventListener(attrName, listen);
+        //const listen = el.moduloEvents[attrName];
+        console.log('this is eventUnmount:', el.moduloEvents);
+        el.removeEventListener(attrName, el.moduloEvents[attrName]);
         delete el.moduloEvents[attrName];
     }
 
@@ -631,20 +666,36 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             el.dataPropsAttributeNames = {};
         }
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
-        //const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {}; // not sure why I was doing it this way?
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         const val = isVar ? get(renderObj, value) : JSON.parse(value);
+        el.dataProps[attrName] = val;
+        el.dataPropsAttributeNames[rawName] = attrName;
+
+        //console.log('dataPropMount #1: el.textContent', [el.textContent.trim()],
+        //    value, attrName, rawName);//, JSON.stringify(el.dataProps));
+        /*
+        //const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {}; // not sure why I was doing it this way?
+        // TODO: Refactor this:
+        const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
+        const val = isVar ? get(renderObj, value) : JSON.parse(value);
+        //console.log('dataPropMount: val', val);
+        //needs work for dataObj support (e.g. building objs with '.' syntax)
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
         const path = attrName.slice(0, index);
         const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
         dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
-        el.dataPropsAttributeNames[rawName] = attrName;
+        */
+        //console.log('dataPropMount #2: el.textContent', [el.textContent.trim()],
+        //    value, attrName, rawName, el.dataProps)//, JSON.stringify(el.dataProps));
+
     }
 
     dataPropUnmount({ el, attrName, rawName }) {
+        console.log('dataPropUnmount: (1)', attrName, JSON.stringify(el.dataProps));
         delete el.dataProps[attrName];
         delete el.dataPropsAttributeNames[rawName];
+        console.log('dataPropUnmount: (2)', attrName, JSON.stringify(el.dataProps));
     }
 }
 
@@ -787,6 +838,14 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         }
         results.localVars = localVars;
         return results;
+    }
+
+    getDirectives() { // TODO: refactor / rm
+        const { script } = this.element.initRenderObj;
+        const isCbRegex = /(Unmount|Mount)$/;
+        return Object.keys(script)
+            .filter(key => key.match(isCbRegex))
+            .map(key => `script.${key}`);
     }
 
     cb(func) {
@@ -1322,6 +1381,16 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         this.directives = opts.directives || {};
         this.tagTransforms = opts.tagTransforms;
         this.directiveShortcuts = opts.directiveShortcuts || [];
+        console.log('directiveShortcuts:', this.directiveShortcuts);
+        if (this.directiveShortcuts.length === 0) { // XXX horrible HACK
+          console.error('this.directiveShortcuts.length === 0');
+          /*
+            this.directiveShortcuts = [
+                [ /^@/, 'component.event' ],
+                [ /:$/, 'component.dataProp' ],
+            ];
+          */
+        }
         this.patch = this.pushPatch;
     }
 
@@ -1456,6 +1525,9 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     patchDirectives(el, rawName, suffix) {
         const foundDirectives = Modulo.utils.parseDirectives(rawName, this.directiveShortcuts);
+        //if (suffix === 'Unmount') {
+        //    console.log('foundDirectives', foundDirectives, this.directiveShortcuts);
+        //}
         if (!foundDirectives || foundDirectives.length === 0) {
             return;
         }
@@ -1467,6 +1539,9 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (thisContext) { // If a directive matches...
                 const methodName = fullName.split('.')[1] || fullName;
                 Object.assign(directive, { value, el });
+                /*if (rawName === '@click:') { // XXX
+                    console.log('DIRECTIVEEEEEEE ', value, directive);
+                } // XXX */
                 this.patch(thisContext, 'directive-' + methodName, directive);
             }
         }
@@ -1482,14 +1557,26 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (myAttrs.has(rawName) && node.getAttribute(rawName) === attr.value) {
                 continue; // Already matches, on to next
             }
+
+            /*
             const suffix = myAttrs.has(rawName) ? 'Change' : 'Mount';
-            this.patchDirectives(rival, rawName, suffix);
+            //this.patchDirectives(rival, rawName, suffix); // TODO: Why was "rival" here?
+            this.patchDirectives(node, rawName, suffix);
+            this.patch(node, 'setAttributeNode', attr.cloneNode(true));
+            */
+
+            if (myAttrs.has(rawName)) {
+                console.log('Unmount BECAUSE ABOUT TO BE CHANGED', rawName);
+                this.patchDirectives(node, rawName, 'Unmount');
+            }
+            this.patchDirectives(node, rawName, 'Mount');
             this.patch(node, 'setAttributeNode', attr.cloneNode(true));
         }
 
         // Check for old attributes that were removed
         for (const rawName of myAttrs) {
             if (!rivalAttributes.has(rawName)) {
+                console.log('Unmount BECAUSE REMOVED', rawName);
                 this.patchDirectives(node, rawName, 'Unmount');
                 this.patch(node, 'removeAttribute', rawName);
             }

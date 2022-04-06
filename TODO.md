@@ -4,15 +4,25 @@ New plan forward:
 
 1. Finish core public-facing API changes
     - (DONE) Upgrade to uppercase CPart syntax: < Template -> script
-    - Work on documentation changes to reflect
-    - Finish tag replacement
-2. Finish first pass at documentation, hiding stuff that doesn't work
+    - (DONE) Work on documentation changes to reflect
+    - (DONE) Finish tag replacement
+2. Debug clear bugs with docs (e.g. all code examples should work)
+    - Currently: Event attachment has a major bug, see
+        - http://localhost:8081/docs/tutorial_part_test_tmp.html
+    - Currently: "state" doesn't get retained in embedded components in
+      tutorial part 3 (e.g. state.num is undefined for the example buttons)
 3. Fix issue with nested components
-4. Decide on Loader / Module / Config simplification
+4. Finish first pass at documentation
+    - Hiding stuff that doesn't work (e.g.  spares are probably going to be
+      removed)
+    - Move incomplete / nonessential docs into "experimental"
+    - Finish Part 3 of Tutorial and ensure Part 1 - 2 works.
+5. Maybe: Decide on Loader / Module / Config simplification
     - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'
 
-The goal is a "feature / refactor freeze". Once everything works as advertised,
-get feedback from folks. (Friends, meetups etc)
+The goal is an early "feature / refactor freeze". Once everything works
+(mostly) as advertised, at least enough to get feedback, then reach out to
+colleagues for early feedback.
 
 
 

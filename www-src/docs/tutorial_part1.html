@@ -1,3 +1,7 @@
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+
 <script src="/js/Modulo.js"></script>
 <template modulo-embed>
     <load namespace="x" src="/components/layouts.html"></load>
@@ -83,9 +87,9 @@ for simplicity's sake, although before the end of this section, we'll learn how
 to split your components into a separate file, which is the preferred way.</p>
 
 
-<p><strong>Component definitions</strong> start with a "component"
+<p><strong>Component definitions</strong> start with a "Component"
 opening tag in the format of
-<code>&lt;component&nbsp;name="HelloWorld"&gt;</code>. Modulo will look for
+<code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>. Modulo will look for
 these tags, defining components for each one it encounters.  Every component
 definition must specify a name, conventionally in <code>UpperCamelCase</code>.
 This is just a convention when writing code: Technically HTML tag names are all
@@ -105,7 +109,7 @@ Unlike plain HTML tags, you must use a dash
 Custom Components standard, which Modulo is based upon.
 Modulo's default behavior is to prefix custom components with an
 <code>x-</code>. So, if a component is defined like
-<code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, then it can be
+<code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>, then it can be
 referenced elsewhere like
 <code>&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;</code>.</p>
 
@@ -117,7 +121,7 @@ definitions only within a <code>modulo-embed</code> tag:
 
 <p>To quickly summarize: Components are reusable bits of HTML, JS, and CSS
 code, and must be defined within a tag like
-<code>&lt;component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
+<code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
 can be embedded in an HTML page within a tag like
 <code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
 
@@ -153,7 +157,6 @@ text='
 <script>Modulo.defineAll();</script>
 '></mws-Demo>
 </li>
-<!--<script src="https://cdn.skypack.dev/modulo?min"></script>-->
         <li>Ensure that the HTML file is opened in your preferred, modern web
         browser (such as Firefox or Chrome) as well.</li>
         <li>Refresh your web browser to view the results.</li>
@@ -186,7 +189,7 @@ in the component definition.</p>-->
 <p>Let's start with the two most basic CParts:</p>
 <ol>
     <li>
-        <strong>Template</strong> - <code>&lt;template&gt;</code>
+        <strong>Template</strong> - <code>&lt;Template&gt;</code>
         <p>Templates are where you put any arbitrary HTML code that you
         want your component to contain. For now, we'll just include some
         unchanging HTML. Later, we'll learn how to use "templating
@@ -195,12 +198,6 @@ in the component definition.</p>-->
     </li>
 
     <li>
-
-        <blockquote> <p><strong>Where to put CSS</strong> Instead of a
-        Style CPart, you can always link a global CSS file the regular way
-        to style your components.  However, many developers prefer the
-        simplicity of keeping everything in one place, e.g. the CSS with
-        the component definition that it styles.</p></blockquote>
 
         <strong>Style</strong> - <code>&lt;Style&gt;</code>
         <p>Just like the <code>&lt;style&gt;</code> tag in HTML, the
@@ -212,6 +209,18 @@ in the component definition.</p>-->
 
     </li>
 </ol>
+
+
+        <blockquote> <p><strong>Where to put CSS</strong> Instead of a
+        Style CPart, you can always link a global CSS file the regular way
+        to style your components.  However, many developers prefer the
+        simplicity of keeping everything in one place, e.g. the CSS with
+        the component definition that it styles.</p></blockquote>
+<p>Like Component naming, most CParts are technically case-insensitive (e.g.
+"<code>&lt;style&gt;</code>" will work the same as
+"<code>&lt;Style&gt;</code>"). However, it's important you follow the
+convention of making the CPart names start with a capital letter, such that you
+can easily distinguish them from plain HTML tags.</p>
 
 <p>Throughout Modulo documentation, there are little code editors, like below.
 These allow you to immediately practice new concepts learned. For simplicity,
@@ -225,8 +234,8 @@ sample code editors only focus on the CPart definitions within.</p>
 
     <ol>
         <li>Practice modifying the <strong>Template</strong> CPart
-        (<code>&lt;template&gt;</code>) to see how that affects the
-        output</li>
+        (<code>&lt;Template&gt;</code>) to see how that affects the
+        output preview on the right</li>
         <li>Practice modifying the <strong>Style</strong> CPart
         (<code>&lt;Style&gt;</code>) to add or modify CSS</li>
         <li>Practice incorporating these CParts into your own components on
@@ -244,12 +253,12 @@ sample code editors only focus on the CPart definitions within.</p>
 <mws-Section name="load">3. Loading Libraries</mws-Section>
 
 <blockquote> <p><strong>Why use load?</strong>
-Think of the <code>&lt;load&gt;</code> tag as being analogous to the
+Think of the <code>&lt;Load&gt;</code> tag as being analogous to the
 <code>&lt;link&gt;</code> tag, which lets multiple HTML files share the
 same CSS. The same rationale applies here: Components are "write once, use
 everywhere", so the way we get access to them "everywhere" is by
 <em>loading</em> them into each file that needs to use them. Other
-reasons include that <code>&lt;load&gt;</code> smooths over certain browser
+reasons include that <code>&lt;Load&gt;</code> smooths over certain browser
 limitations, and that it can keep your files neater.</p>
 </blockquote>
 
@@ -258,17 +267,17 @@ limitations, and that it can keep your files neater.</p>
 <p>Up until now, we have practiced with a component embedded on the same page
 that it is used. This is not recommended. Instead, you should put your
 components in a separate <em>component library</em> HTML file, and then use the
-<code>&lt;load&gt;</code> tag to import your components into every HTML file
+<code>&lt;Load&gt;</code> tag to import your components into every HTML file
 that needs them.</p>
 
 
 <p>"Load" tags look like the following:</p>
 
 <pre>
-&lt;load
+&lt;Load
     src="./components/my-stuff.html"
     namespace="coolstuff"&gt;
-&lt;/load&gt;
+&lt;/Load&gt;
 </pre>
 
 <p>Let's break this down:</p>
@@ -284,7 +293,7 @@ that needs them.</p>
         your set-up.</p>
         <p>The component library itself (<code>my-stuff.html</code> in this
         example) should consist of an HTML file filled with
-        <code>&lt;component&gt;</code> definitions.</p>
+        <code>&lt;Component&gt;</code> definitions.</p>
     </li>
 
     <li>
@@ -305,7 +314,7 @@ that needs them.</p>
         component name in order to create the component's <em>full
         name</em>. </p>
         <p><strong>Example:</strong> If <code>my-stuff.html</code> has a component
-        defined like <code>&lt;component name="MyThing"&gt;</code>
+        defined like <code>&lt;Component name="MyThing"&gt;</code>
         imported with <code>namespace="coolstuff"</code>, then the
         resulting full name would be <code>coolstuff-MyThing</code>, and
         we'd use the component like<br />
@@ -385,7 +394,7 @@ text='
 <p>There's one final, but fully optional, update we can do to make our "load"
 be a tiny bit shorter and neater.  Once you have removed any embedded
 components, you can replace <code>&lt;template&nbsp;modulo-embed&gt;</code>
-with simply <code>&lt;modulo&gt;</code>, as such:</p>
+with simply <code>&lt;Modulo&gt;</code>, as such:</p>
 
 
 <mws-Demo
@@ -403,7 +412,7 @@ text='
 "loading" components from another file, while the more succinct "modulo" tag
 only supports "loading" components from another file. In other words, if all
 your components are moved to another file, you can use
-<code>&lt;modulo&gt;</code>, but if you want to define components and then use
+<code>&lt;Modulo&gt;</code>, but if you want to define components and then use
 them on the same page, you'll need to use
 <code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
 
