@@ -360,7 +360,7 @@
         assert: transformDOMCheck(
             '<div [my.dir]test=3>txt</div>',
             '<div [my.dir]test=4>txt</div>',
-            1,
+            2,
         );
     </script>
 
@@ -369,7 +369,7 @@
         assert: transformDOMCheck(
             '<div [my.dir]test=4>txt<p [test.dir]=okay>p</p></div>',
             '<div [my.dir]test=5>txt<p >p</p></div>',
-            2,
+            3,
         );
     </script>
 
