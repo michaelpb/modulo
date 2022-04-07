@@ -173,9 +173,10 @@ variable with useful data:</p>
     current value of the "number" property of state.</li>
 
     <li><strong>Script</strong> - If the <em>Script</em> CPart is present, then
-    you will have a <code>{{ script }}</code> variable available. The main use
-    of this is to access the <code>{{ script.exports }}</code> variable. This
-    can be set within the script tag as a way to store global, static data
+    you will have a <code>{{ script }}</code> variable available. The main
+    uses of this for access to computed variables from the
+    <code>prepareCallback</code>. Another use is to access
+    <code>script.exports</code> variable as a way to store global, static data
     shared between all instances of a component.</li>
 </ul>
 
@@ -268,11 +269,12 @@ create text in the output, some control flow by performing loops or logic, and
 some load external information into the template to be used by later
 variables.</p>
 
-<p>Some tags require beginning and ending tags: <code>{%&nbsp;tag&nbsp;%}...contents...{%&nbsp;endtag&nbsp;%}</code></p>
+<p>Most built-in tags require beginning and ending tags:
+<code>{%&nbsp;tag&nbsp;%}...contents...{%&nbsp;endtag&nbsp;%}</code></p>
 
 <p>Modulo ships with several built-in template-tags. You can read all about
 them in the <a
-href="/docs/template_reference.html#filters">built-in template-tag reference</a>.</p>
+href="/docs/templating-reference.html#filters">built-in template-tag reference</a>.</p>
 
 <div class="InfoBox">
   <h2>Common Template-Tags</h2>

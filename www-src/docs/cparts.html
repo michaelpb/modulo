@@ -455,7 +455,26 @@ rendering lifecycle with callbacks. You can also create "custom directives"
 from within the Script tag. Read more about this in the section on <a
 href="/docs/directives.html">Lifecycle & Directives</a></p>
 
+<p>See below for an example of defining a custom <code>prepareCallback</code>
+in order to "hook into" the component rendering lifecycle to execute custom
+code. The return value of this function is available to the <em>Template</em>
+CPart when it renders during the <code>render</code> lifecycle.</p>
 
+<mws-Demo
+    demotype="minipreview"
+    fromlibrary="Templating_PrepareCallback"
+></mws-Demo>
+
+<p>All "group 2" and "group 3" lifecycle phase can be specified. This means
+you can define a function with any of the following names and expect it to be
+invoked during it's namesake lifecycle phase:
+    <code>initializedCallback</code>, <code>prepareCallback</code>,
+    <code>renderCallback</code>, <code>reconcileCallback</code>, and finally
+    <code>updateCallback</code>.
+</p>
+
+<p>Note that there is no "factory" callback, since the <code>factory</code>
+phase is when the code in the script tag itself gets executed.</p>
 
 <h3>Callback execution context: The "callback wrapper"</h3>
 
@@ -484,12 +503,13 @@ bug of mismatching events.</p>
 <p>This "magic" only occurs in public functions that are called as events by
 other CParts. Asynchronous coding is already discouraged in <em>Script</em>
 tags, which means that's the only "magic" necessary. However, if there are
-asynchronous functions
-This means that <strong>the <em>Script</em> tag discourages use
-of asynchronous coding.</strong> If you must, wrap any asynchronous callback
-using <code>cparts.script.cb()</code> in order to provide that execution
-context, and use <code>element.rerender</code> to manually rerender. See below
-for an example of this:</p>
+asynchronous functions, it won't always correctly apply the "magic" setup
+beforehand.</p>
+<p>This means that <strong>the <em>Script</em> tag discourages use of
+asynchronous coding.</strong> If you must, wrap any asynchronous callback using
+<code>cparts.script.cb()</code> in order to provide that execution context, and
+use <code>element.rerender</code> to manually rerender. See below for an
+example of this:</p>
 
 
 <mws-Demo
