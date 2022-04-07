@@ -6,7 +6,7 @@
 <!-- Load a helper util -->
 <script src="./reconciler-testing-utils.js"></script>
 
-<testsuite solo>
+<testsuite>
 
 <test name="Ensure testing utils are loaded">
     <script>
@@ -61,8 +61,8 @@
     <script name="Mounts a directive">
         const {getRecPatches, pToString} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p [test.dir]a=b>Test</p>');
-        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
-                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>\n' +
+                         '<1 DIV> directiveMount("[object Object]") </1>';
         const actual = pToString(patches);
         assert: patches.length === 2 && actual === expected;
     </script>
@@ -70,9 +70,9 @@
     <script name="Mounts multiple directives">
         const {getRecPatches, pToString} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p [my.dir][test.dir]a=b>Test</p>');
-        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
-                          '<1 DIV> directiveMount("[object Object]") </1>\n' +
-                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>\n' +
+                            '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                            '<1 DIV> directiveMount("[object Object]") </1>';
         const actual = pToString(patches);
         assert: patches.length === 3 && actual === expected;
     </script>
@@ -80,17 +80,17 @@
     <script name="Supports a directive shortcut">
         const {getRecPatches, pToString} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p @click=clickytarget>Test</p>');
-        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
-                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>\n' +
+                          '<1 DIV> directiveMount("[object Object]") </1>';
         assert: patches.length === 2 && pToString(patches) === expected;
     </script>
 
     <script name="Supports multiple directive shortcuts">
         const {getRecPatches, pToString} = Modulo.utils;
         const patches = getRecPatches('<p>Test</p>', '<p @click:=clickytarget>Test</p>');
-        const expected = '<1 DIV> directiveMount("[object Object]") </1>\n' +
-                          '<1 DIV> directiveMount("[object Object]") </1>\n' +
-                          '<1 P> setAttributeNode("[object Attr]") </1>'; 
+        const expected = '<1 P> setAttributeNode("[object Attr]") </1>\n' + 
+                        '<1 DIV> directiveMount("[object Object]") </1>\n' +
+                        '<1 DIV> directiveMount("[object Object]") </1>';
         assert: patches.length === 3 && pToString(patches) === expected;
     </script>
 
