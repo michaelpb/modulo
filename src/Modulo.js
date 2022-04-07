@@ -863,8 +863,14 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         this.boundElements = {};
         if (!this.data) {
-            this.data = renderObj.state.attrs || {};
-            //console.log('this is data', this.data);
+            // Initialize with deep copy of attributes
+            // TODO: Need to do proper deep-copy... is this okay?
+            // this.data = JSON.parse(JSON.stringify(this.attrs));
+            let { attrs } = this;
+            if (attrs.attrs) { // TODO: Hack code here, not sure why its like this
+                attrs = attrs.attrs;
+            }
+            this.data = Object.assign({}, attrs);
         }
         //console.log('thsi is data', this.data);
         return this.data;
