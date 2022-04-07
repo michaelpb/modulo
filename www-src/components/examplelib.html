@@ -9,15 +9,16 @@
             let currentComponent = '';
             let inTestSuite = false;
             for (const line of myText.split('\n')) {
-                if (line.startsWith('</component>')) {
+                const lower = line.toLowerCase();
+                if (lower.startsWith('</component>')) {
                     componentTexts[name] = currentComponent;
                     currentComponent = '';
                     name = null;
-                } else if (line.startsWith('<component')) {
+                } else if (lower.startsWith('<component')) {
                     name = line.split(' name="')[1].split('"')[0];
-                } else if (line.startsWith('<testsuite')) {
+                } else if (lower.startsWith('<testsuite')) {
                     inTestSuite = true;
-                } else if (line.includes('</testsuite>')) {
+                } else if (lower.includes('</testsuite>')) {
                     inTestSuite = false;
                 } else if (name && !inTestSuite) {
                     currentComponent += line + '\n';
@@ -42,17 +43,17 @@
 
 <component name="Hello">
 
-<template>
+<Template>
     <button @click:=script.countUp>Hello {{ state.num }}</button>
-</template>
-<state
+</Template>
+<State
     num:=42
-></state>
-<script>
+></State>
+<Script>
     function countUp() {
         state.num++;
     }
-</script>
+</Script>
 
 <testsuite
     src="./examplelib-tests/Hello-tests.html"
@@ -65,15 +66,15 @@
 
 <component name="Simple">
 
-<template>
+<Template>
     Components can use any number of <strong>CParts</strong>.
     Here we use only <em>Style</em> and <em>Template</em>.
-</template>
+</Template>
 
-<style>
+<Style>
     em { color: darkgreen; }
     * { text-decoration: underline; }
-</style>
+</Style>
 
 <testsuite>
     <test name="Initially renders">
@@ -90,7 +91,7 @@
 
 
 <component name="ToDo">
-<template>
+<Template>
 <ol>
     {% for item in state.list %}
         <li>{{ item }}</li>
@@ -100,19 +101,19 @@
         <button @click:=script.addItem>Add</button>
     </li>
 </ol>
-</template>
+</Template>
 
-<state
+<State
     list:='["Milk", "Bread", "Candy"]'
     text="Beer"
-></state>
+></State>
 
-<script>
+<Script>
     function addItem() {
         state.list.push(state.text); // add to list
         state.text = ""; // clear input
     }
-</script>
+</Script>
 
 <testsuite
     src="./examplelib-tests/ToDo-tests.html"
@@ -124,7 +125,7 @@
 
 
 <component name="API">
-<template>
+<Template>
 <p>{{ state.name }} | {{ state.location }}</p>
 <p>{{ state.bio }}</p>
 <a href="https://github.com/{{ state.search }}/" target="_blank">
@@ -133,16 +134,16 @@
 <input [state.bind] name="search"
     placeholder="Type GitHub username" />
 <button @click:=script.fetchGitHub>Get Info</button>
-</template>
+</Template>
 
-<state
+<State
     search=""
     name=""
     location=""
     bio=""
-></state>
+></State>
 
-<script>
+<Script>
     function fetchGitHub() {
         fetch(`https://api.github.com/users/${state.search}`)
             .then(response => response.json())
@@ -154,7 +155,7 @@
         state.bio = apiData.bio;
         element.rerender();
     }
-</script>
+</Script>
 
 <testsuite
     src="./examplelib-tests/API-tests.html"
@@ -167,7 +168,7 @@
 
 
 <component name="SearchBox">
-<template>
+<Template>
 <p>Start typing a book name to see "search as you type" (e.g. try &ldquo;the
 lord of the rings&rdquo;)</p>
 
@@ -190,15 +191,15 @@ lord of the rings&rdquo;)</p>
         {% endif %}
     </div>
 </div>
-</template>
+</Template>
 
-<state
+<State
     search=""
     results:=[]
     loading:=false
-></state>
+></State>
 
-<script>
+<Script>
     // Because this variable is created "loose" in the script tag, it becomes a
     // static variable global to all instances of this class (though,
     // thankfully, not global in general -- it's still in an "IFFE")
@@ -234,9 +235,9 @@ lord of the rings&rdquo;)</p>
     // Puting this long URL down here to declutter
     script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
                                  'semantic-ui/0.16.1/images/loader-large.gif');
-</script>
+</Script>
 
-<style>
+<Style>
     SearchBox {
         position: relative;
         display: block;
@@ -286,7 +287,7 @@ lord of the rings&rdquo;)</p>
         top: 0;
         left: 0;
     }
-</style>
+</Style>
 
 <testsuite
     src="./examplelib-tests/SearchBox-tests.html"
@@ -302,7 +303,7 @@ lord of the rings&rdquo;)</p>
 <component name="PrimeSieve">
 <!-- Demos mouseover, template filters, template control flow,
      and static script exports -->
-<template>
+<Template>
   <div class="grid">
     {% for i in script.exports.range %}
       <div @mouseover:=script.setNum
@@ -315,13 +316,13 @@ lord of the rings&rdquo;)</p>
         ">{{ i }}</div>
     {% endfor %}
   </div>
-</template>
+</Template>
 
-<state
+<State
     number:=64
-></state>
+></State>
 
-<script>
+<Script>
     // Getting big a range of numbers in JS. Use "script.exports"
     // to export this as a one-time global constant.
     // (Hint: Curious how it calculates prime? See CSS!)
@@ -330,9 +331,9 @@ lord of the rings&rdquo;)</p>
     function setNum(payload, ev) {
         state.number = Number(ev.target.textContent);
     }
-</script>
+</Script>
 
-<style>
+<Style>
 .grid {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
@@ -362,7 +363,7 @@ div.number::after { content: "*"; }
    If found, then hide asterisk and green */
 div.whole ~ div.number { background: #B90183; }
 div.whole ~ div.number::after { opacity: 0; }
-</style>
+</Style>
 
 <testsuite
     src="./examplelib-tests/PrimeSieve-tests.html"
@@ -376,7 +377,7 @@ div.whole ~ div.number::after { opacity: 0; }
 
 <component name="MemoryGame">
 <!-- A much more complicated example application -->
-<template>
+<Template>
 {% if not state.cards.length %}
     <h3>The Symbolic Memory Game</h3>
     <p>Choose your difficulty:</p>
@@ -413,18 +414,18 @@ div.whole ~ div.number::after { opacity: 0; }
                 color: red{% endif %}">
         {{ state.message }}</p>
 {% endif %}
-</template>
+</Template>
 
-<state
+<State
     message="Good luck!"
     win:=false
     cards:=[]
     revealed:=[]
     lastflipped:=null
     failedflip:=null
-></state>
+></State>
 
-<script>
+<Script>
 const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
 function setup(payload) {
     const count = Number(payload);
@@ -482,9 +483,9 @@ function flip(id) {
         }
     }
 }
-</script>
+</Script>
 
-<style>
+<Style>
 h3 {
     background: #B90183;
     border-radius: 8px;
@@ -532,7 +533,7 @@ h3 {
     from { transform: scaleX(-1.1); background: #B90183; }
     to {   transform: scaleX(1.0);  background: #FFFFFF; }
 }
-</style>
+</Style>
 
 <testsuite
     src="./examplelib-tests/MemoryGame-tests.html"
@@ -552,7 +553,7 @@ h3 {
 <component name="MiniExcel">
 <!-- This example is unfinished, sorry! -->
 
-<template>
+<Template>
     <table>
         {% for row in state.data %}
             <tr>
@@ -562,13 +563,13 @@ h3 {
             </tr>
         {% endfor %}
     </table>
-</template>
+</Template>
 
-<state
+<State
     data:='[[""]]'
-/><state>
+/><State>
 
-<script>
+<Script>
     console.log('factory for miniexcel');
 /*
     console.log('factory for miniexcel');
@@ -583,7 +584,7 @@ h3 {
         ];
     }
 */
-</script>
+</Script>
 
 </component>
 
@@ -602,18 +603,18 @@ h3 {
 
 <component name="AccessingLoader">
 
-<template>
+<Template>
     <button @button>Click me and look in Dev Console</strong>
-</template>
-<script>
+</Template>
+<Script>
     // console.log(module); // 
     function onClick() {
-        // Examine this object. See how script tag exports
+        // Examine this object. See how Script tag exports
         // are actually already available? This allows for
         // cross-component dependencies.
         console.log('This is module:', module);
     }
-</script>
+</Script>
 
 </component>
 

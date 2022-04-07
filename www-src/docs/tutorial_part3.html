@@ -121,10 +121,10 @@ are defined much like <em>Props</em>, except that instead of just listing the
 attribute names, initial values must be provided as defaults.  A <em>State</em>
 CPart might look like this:</p>
 
-<pre>&lt;state
+<pre>&lt;State
     count="1"
     color="blue"
-&gt;&lt;/state&gt;</pre>
+&gt;&lt;/State&gt;</pre>
 
 
 <p>Here we are defining two <em>state variables</em>: <code>count</code>, which
@@ -141,8 +141,6 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
 
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>
-    <!-- TODO: Add a better thing here, should be just a few basic "state"
-         variables and rendering them in template with filters -->
 
     <ol>
         <li>Practice modifying the <strong>State</strong> CPart
@@ -155,8 +153,14 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
     </ol>
     <mws-Demo
         demotype="minipreview"
+        fromlibrary="Tutorial_P3_state_demo"
+    ></mws-Demo>
+    <!--
+    <mws-Demo
+        demotype="minipreview"
         fromlibrary="Templating_1"
     ></mws-Demo>
+    -->
 
 </section>
 
@@ -199,10 +203,10 @@ The <code>count</code> variable didn't get assigned to <code>1</code> the
 <em>Number</em>, but rather <code>"1"</code> the <em>String</em>. To fix it, we
 do the following:</p>
 
-<pre>&lt;state
+<pre>&lt;State
     count:=1
     color="blue"
-&gt;&lt;/state&gt;</pre>
+&gt;&lt;/State&gt;</pre>
 
 <p>This is called a <em>data prop</em> directive.  In the case of the <em>data prop</em>
 directive (<code>:=</code>), the attribute name is suffixed with a colon right
@@ -255,9 +259,9 @@ single character in an input, should be reflected in state changes.</p>
 <pre>&lt;Template&gt;
     &lt;input [state.bind] name="subject" /&gt;
 &lt;/Template&gt;
-&lt;state
+&lt;State
     subject="Testing message..."
-&gt;&lt;/state&gt;</pre>
+&gt;&lt;/State&gt;</pre>
 
 
 <p>It's important that you always include a "name" attribute when binding. This

@@ -7,7 +7,7 @@ New plan forward:
     - (DONE) Work on documentation changes to reflect
     - (DONE) Finish tag replacement
 2. Debug clear bugs with docs (e.g. all code examples should work)
-    - Currently: Event attachment has a major bug, see
+    - (DONE) Currently: Event attachment has a major bug, see
         - http://localhost:8081/docs/tutorial_part_test_tmp.html
     - Currently: "state" doesn't get retained in embedded components in
       tutorial part 3 (e.g. state.num is undefined for the example buttons)

@@ -13,15 +13,16 @@
         let currentComponent = '';
         let inTestSuite = false;
         for (const line of myText.split('\n')) {
-            if (line.startsWith('</component>')) {
+            const lower = line.toLowerCase();
+            if (lower.startsWith('</component>')) {
                 componentTexts[name] = currentComponent;
                 currentComponent = '';
                 name = null;
-            } else if (line.startsWith('<component')) {
+            } else if (lower.startsWith('<component')) {
                 name = line.split(' name="')[1].split('"')[0];
-            } else if (line.startsWith('<testsuite')) {
+            } else if (lower.startsWith('<testsuite')) {
                 inTestSuite = true;
-            } else if (line.includes('</testsuite>')) {
+            } else if (lower.includes('</testsuite>')) {
                 inTestSuite = false;
             } else if (name && !inTestSuite) {
                 currentComponent += line + '\n';
@@ -34,7 +35,7 @@
 
 
 <component name="Templating_1">
-<template>
+<Template>
 <p>There are <em>{{ state.count }}
   {{ state.count|pluralize:"articles,article" }}</em>
   on {{ script.exports.title }}.</p>
@@ -46,10 +47,10 @@
       <p>{{ article.tease|truncate:30 }}</p>
     {% endif %}
 {% endfor %}
-</template>
+</Template>
 
 <!-- The data below was used to render the template above -->
-<state
+<State
     count:=42
     articles:='[
       {"headline": "Modulo released!",
@@ -58,10 +59,10 @@
       {"headline": "MTL considered harmful",
        "tease": "Why constructing JS is risky business."}
     ]'
-></state>
-<script>
+></State>
+<Script>
     script.exports.title = "ModuloNews";
-</script>
+</Script>
 
 <testsuite
     src="./examplelib-tests/Templating_1-tests.html"
@@ -71,27 +72,27 @@
 
 
 <component name="Templating_PrepareCallback">
-<template>
+<Template>
     <input name="perc" [state.bind] />% of
     <input name="total" [state.bind] />
     is: {{ script.calcResult }}
-</template>
+</Template>
 
-<state
+<State
     perc:=50
     total:=30
-></state>
+></State>
 
-<script>
+<Script>
     function prepareCallback() {
         const calcResult = (state.perc / 100) * state.total;
         return { calcResult };
     }
-</script>
+</Script>
 
-<style>
+<Style>
     input { display: inline; width: 25px }
-</style>
+</Style>
 
 <testsuite>
     <test name="renders with computed value as expected">
@@ -118,14 +119,14 @@
 
 
 <component name="Templating_Comments">
-<template>
+<Template>
     <h1>hello {# greeting #}</h1>
     {% comment %}
       {% if a %}<div>{{ b }}</div>{% endif %}
       <h3>{{ state.items|first }}</h3>
     {% endcomment %}
     <p>Below the greeting...</p>
-</template>
+</Template>
 
 <testsuite>
     <test name="Hides comments">
@@ -141,28 +142,28 @@
 
 
 <component name="Templating_Escaping">
-<template>
+<Template>
 <p>User "<em>{{ state.username }}</em>" sent a message:</p>
 <div class="msgcontent">
     {{ state.content|safe }}
 </div>
-</template>
+</Template>
 
-<state
+<State
     username="Little <Bobby> <Drop> &tables"
     content='
         I <i>love</i> the classic <a target="_blank"
         href="https://xkcd.com/327/">xkcd #327</a> on
         the risk of trusting <b>user inputted data</b>
     '
-></state>
-<style>
+></State>
+<Style>
     .msgcontent {
         background: #999;
         padding: 10px;
         margin: 10px;
     }
-</style>
+</Style>
 
 <testsuite>
     <test name="Escapes HTML, safe works">
@@ -181,11 +182,11 @@
 
 
 <component name="Tutorial_P1">
-<template>
+<Template>
 Hello <strong>Modulo</strong> World!
 <p class="neat">Any HTML can be here!</p>
-</template>
-<style>
+</Template>
+<Style>
 /* ...and any CSS here! */
 strong {
     color: blue;
@@ -199,7 +200,7 @@ strong {
     padding: 5px;
     box-shadow: 10px 10px 0 0 turquoise;
 }
-</style>
+</Style>
 
 <testsuite>
     <test name="renders as expected">
@@ -215,7 +216,7 @@ strong {
 
 
 <component name="Tutorial_P2">
-<template>
+<Template>
     <p>Trying out the button...</p>
     <x-ExampleBtn
         label="Button Example"
@@ -227,7 +228,7 @@ strong {
         label="Example 2: Rounded"
         shape="round"
     ></x-ExampleBtn>
-</template>
+</Template>
 
 <testsuite>
     <test name="renders as expected">
@@ -253,7 +254,7 @@ strong {
 
 
 <component name="Tutorial_P2_filters_demo">
-<template>
+<Template>
     <p>Trying out the button...</p>
     <x-ExampleBtn
         label="Button Example"
@@ -265,7 +266,7 @@ strong {
         label="Example 2: Rounded"
         shape="round"
     ></x-ExampleBtn>
-</template>
+</Template>
 
 <testsuite>
     <test name="renders as expected">
@@ -285,7 +286,7 @@ strong {
 <!-- ................................ -->
 
 <component name="Tutorial_P3_state_demo">
-<template>
+<Template>
 <p>Nonsense poem:</p> <pre>
 Professor {{ state.verb|capfirst }} who
 {{ state.verb }}ed a {{ state.noun }},
@@ -293,19 +294,19 @@ taught {{ state.verb }}ing in
 the City of {{ state.noun|capfirst }},
 to {{ state.count }} {{ state.noun }}s.
 </pre>
-</template>
+</Template>
 
-<state
+<State
     verb="toot"
     noun="kazoo"
     count="two"
-></state>
+></State>
 
-<style>
+<Style>
     :host {
         font-size: 0.8rem;
     }
-</style>
+</Style>
 
 <testsuite>
     <test>
@@ -321,7 +322,7 @@ to {{ state.count }} {{ state.noun }}s.
 
 
 <component name="Tutorial_P3_state_bind">
-<template>
+<Template>
 
 <div>
     <label>Username:
@@ -340,13 +341,13 @@ to {{ state.count }} {{ state.noun }}s.
     </h5>
 </div>
 
-</template>
+</Template>
 
-<state
+<State
     opacity="0.5"
     color="blue"
     username="Testing_Username"
-></state>
+></State>
 
 <testsuite
     src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
@@ -366,42 +367,42 @@ to {{ state.count }} {{ state.noun }}s.
 examples to the Modulo framework, not as a examples themselves -->
 <!-- TODO: Remove, and move to tests/ -->
 <component name="TestBtn">
-    <props
+    <Props
         myclicky
         mytexty
-    ></props>
+    ></Props>
     <template>
         <button @click:=props.myclicky>{{ props.mytexty }}</button>
     </template>
 </component>
 
 <component name="CompositionTests">
-<props b></props>
-<template name="comptest2">
+<Props b></Props>
+<Template name="comptest2">
     <x-TestBtn
         mytexty="Test text"
         myclicky:=script.gotClickies
     >should be IGNORED</x-TestBtn>
     <p>state.a: {{ state.a }}</p>
-</template>
+</Template>
 
-<template name="comptest1">
+<Template name="comptest1">
     Testing
     <x-Tutorial_P1></x-Tutorial_P1>
     <x-Templating_Escaping></x-Templating_Escaping>
-</template>
+</Template>
 
 
 <!-- just add some random stuff here -->
-<state
+<State
     a:=1
-></state>
+></State>
 
-<script>
+<Script>
     function gotClickies() {
         state.a = 1337;
     }
-</script>
+</Script>
 
 <testsuite
     skip
