@@ -544,79 +544,132 @@ h3 {
 
 
 
-
-
-
-
-
-
-<component name="MiniExcel">
-<!-- This example is unfinished, sorry! -->
-
+<component name="ConwayGameOfLife">
 <Template>
-    <table>
-        {% for row in state.data %}
-            <tr>
-                {% for col in row %}
-                    <td>{{ col }}</td>
-                {% endfor %}
-            </tr>
+  <div class="grid">
+    {% for i in script.exports.range %}
+        {% for j in script.exports.range %}
+          <div
+            @click:=script.toggle
+            payload:='[ {{ i }}, {{ j }} ]'
+            {% if state.cells|get:i %}
+                {% if state.cells|get:i|get:j %}
+                    style="background: #B90183;"
+                {% endif %}
+            {% endif %}
+           ></div>
         {% endfor %}
-    </table>
+    {% endfor %}
+  </div>
+  <div class="controls">
+    {% if not state.playing %}
+        <button @click:=script.play alt="Play">&#x25B6;</button>
+    {% else %}
+        <button @click:=script.pause alt="Pause">&#x2016;</button>
+    {% endif %}
+
+    <button @click:=script.randomize alt="Randomize">RND</button>
+    <button @click:=script.clear alt="Randomize">CLR</button>
+    <label>Spd: <input [state.bind]
+        name="speed"
+        type="number" min="1" max="10" step="1" /></label>
+  </div>
 </Template>
 
 <State
-    data:='[[""]]'
-/><State>
+    playing:=false
+    speed:=3
+    cells:='{
+        "12": { "10": true, "11": true, "12": true },
+        "11": { "12": true },
+        "10": { "11": true }
+    }'
+></State>
 
 <Script>
-    console.log('factory for miniexcel');
-/*
-    console.log('factory for miniexcel');
-    function initalizedCallback(renderObj) {
-        console.log('getting initialized', renderObj);
-        state.data = [
-            ['', '', '', '', '', ''],
-            ['', '', '', '', '', ''],
-            ['', '', '', '', '', ''],
-            ['', '', '', '', '', ''],
-            ['', '', '', '', '', ''],
-        ];
+    function toggle([ i, j ]) {
+        if (!state.cells[i]) {
+            state.cells[i] = {};
+        }
+        state.cells[i][j] = !state.cells[i][j];
     }
-*/
+
+    function play() {
+        state.playing = true;
+        setTimeout(() => {
+            if (state.playing) {
+                updateNextFrame();
+                element.rerender(); // manually rerender
+                play(); // cue next frame
+            }
+        }, 2000 / state.speed);
+    }
+
+    function pause() {
+        state.playing = false;
+    }
+
+    function clear() {
+        state.cells = {};
+    }
+
+    function randomize() {
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!state.cells[i]) {
+                    state.cells[i] = {};
+                }
+                state.cells[i][j] = (Math.random() > 0.5);
+            }
+        }
+    }
+
+    // Helper function for getting a cell from data
+    const get = (i, j) => Boolean(state.cells[i] && state.cells[i][j]);
+    function updateNextFrame() {
+        const nextData = {};
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!nextData[i]) {
+                    nextData[i] = {};
+                }
+                const count = countNeighbors(i, j);
+                nextData[i][j] = get(i, j) ?
+                    (count === 2 || count === 3) : // stays alive
+                    (count === 3); // comes alive
+            }
+        }
+        state.cells = nextData;
+    }
+
+    function countNeighbors(i, j) {
+        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),
+                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),
+                get(i + 1, j - 1), get(i - 1, j + 1)];
+        return neighbors.filter(v => v).length;
+    }
+    script.exports.range = Array.from({length: 24}, (x, i) => i);
 </Script>
 
-</component>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<component name="AccessingLoader">
-
-<Template>
-    <button @button>Click me and look in Dev Console</strong>
-</Template>
-<Script>
-    // console.log(module); // 
-    function onClick() {
-        // Examine this object. See how Script tag exports
-        // are actually already available? This allows for
-        // cross-component dependencies.
-        console.log('This is module:', module);
+<Style>
+    :host {
+        display: flex;
     }
-</Script>
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(24, 5px);
+        margin: -2px;
+        grid-gap: 1px;
+    }
+    .grid > div {
+        background: white;
+        width: 5px;
+        height: 5px;
+    }
+    input, button {
+        width: 40px;
+    }
+</Style>
 
 </component>
-
-<!-- idea: Conways game of life? -->
 

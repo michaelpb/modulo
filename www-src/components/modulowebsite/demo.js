@@ -252,8 +252,6 @@ function countUp() {
 }
 
 function doFullscreen() {
-    alert('full screen disabled!');
-    return;
     document.body.scrollTop = document.documentElement.scrollTop = 0;
     if (state.fullscreen) {
         state.fullscreen = false;

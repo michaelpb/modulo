@@ -29,17 +29,17 @@
             console.log('loading AllExamples');
             script.exports.examples = [];
             function initializedCallback() {
-                // TODO: make initialized only get called once
+                // TODO: make sure initialized only get called once
                 // TODO: Encapsolate this into a dependency pattern, if proves
                 // useful
                 Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => {
-                    Modulo.fetchQ.wait(() => _setup(text));
+                    //Modulo.fetchQ.wait(() => _setup(text)); // not sure why -v is needed
+                    Modulo.fetchQ.wait(() => setTimeout(() => _setup(text), 0));
                 });
             }
             function _setup(text) {
                 let componentTexts;
                 try {
-                    componentTexts = Modulo.factoryInstances['eg-eg']
                     componentTexts = Modulo.factoryInstances['eg-eg']
                             .baseRenderObj.script.exports.componentTexts;
                 } catch {
@@ -52,7 +52,6 @@
 
                 script.exports.examples = [];
                 for (const [name, content] of Object.entries(componentTexts)) {
-                    //console.log("dis is conent", content);
                     script.exports.examples.push({name, content});
                 }
                 element.rerender();
