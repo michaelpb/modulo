@@ -1,4 +1,13 @@
-<script src="/m.js"></script>
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<!-- ... -->
+<script src="/js/Modulo.js"></script>
+<modulo>
+    <load namespace="x" src="/components/layouts.html"></load>
+</modulo>
+<script>Modulo.defineAll()</script>
+
 <x-Page
     docbarselected="faq.html"
     pagetitle="FAQ"
@@ -157,14 +166,14 @@ framework:</p>
 
 <mws-Demo
 text='
-<script>
+<Script>
 // Zen Framework - (C) 2091 - Tux the Penguin
 function Zen(el, key, value) {
     el.state = el.state || JSON.parse(el.getAttribute("x-state") || "{}")
     el.state[key] = value;
     el.innerHTML = el.innerHTML.replace(/\$\{([^\)]+)?\}/g, (a, b) => el.state[b]);
 }
-</script>
+</Script>
 '></mws-Demo>
 
 <p>Now, Tux could just publish this by itself, and no one would ever want to

@@ -12,9 +12,9 @@ New plan forward:
     - (DONE) Currently: "state" doesn't get retained in embedded components in
       tutorial part 3 (e.g. state.num is undefined for the example buttons)
 3. Finish first pass at documentation
-    - Hiding stuff that doesn't work (e.g.  spares are probably going to be
-      removed)
-    - Move incomplete / nonessential docs into "experimental"
+    - (DONE) Hiding stuff that doesn't work (e.g.  spares are probably going to
+      be removed)
+    - (DONE) Move incomplete / nonessential docs into "experimental"
     - Finish Part 3 of Tutorial and ensure Part 1 - 2 works.
 4. Maybe: Decide on Loader / Module / Config simplification
     - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'

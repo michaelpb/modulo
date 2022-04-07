@@ -229,13 +229,20 @@
             label: 'CParts',
             filename: '/docs/cparts.html',
             children: [
-                _child('Props'),
-                _child('Template'),
-                _child('State'),
-                _child('Script'),
-                _child('Style'),
-                _child('Component'),
-                _child('Module'),
+                _child('Props', 'props', ['accessing props', 'defining props',
+                                    'setting props', 'using props']),
+                _child('Template', 'template', ['custom template', 'templating engine']),
+                _child('State', 'state', ['state definition', 'state data types',
+                                'json', 'state variables', 'state.bind directive']),
+                _child('Script', 'script', ['javascript', 'events', 'computed properties',
+                                'static execution', 'custom lifecycle methods',
+                                    'script callback execution context', 'script exports']),
+                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
+                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
+                                    'rendering mode', 'manual rerender', 'shadow',
+                                    'vanish', 'vanish-into-document', 'component.event',
+                                    'component.slot', 'component.dataProp']),
+                //_child('Module'),
             ],
         },
 
@@ -260,6 +267,7 @@
             ],
         },
 
+        /*
         {
             label: 'API & Extension',
             filename: '/docs/api.html',
@@ -274,6 +282,7 @@
                 _child('DOMCursor', 'cursor'),
             ],
         },
+        */
 
         {
             label: 'Example Library',

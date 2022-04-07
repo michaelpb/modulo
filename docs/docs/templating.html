@@ -1,4 +1,13 @@
-<script src="/m.js"></script>
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<!-- ... -->
+<script src="/js/Modulo.js"></script>
+<template modulo-embed>
+    <load namespace="x" src="/components/layouts.html"></load>
+</template>
+<script> Modulo.defineAll() </script>
+
 <x-Page
     docbarselected="/templating.html"
     pagetitle="Templating"
@@ -98,24 +107,50 @@ subproperty, then the <code>title</code> subproperty.</p>
 <p>If you use a variable that doesn't exist, the template system will insert
 the value of <code>undefined</code>, much like in JavaScript.</p>
 
-<p>Note that "bar" in a template expression like <code>{{ foo.bar }}</code> will be
-interpreted as a literal string and not using the value of the variable "bar",
-if one exists in the template context. If you wish to to do the opposite
-behavior, that is, actually resolve "bar" into it's own value, and then use
-that value to access a property of bar, consider using the "|get" filter
-(explained later).</p>
+<p>Note that "bar" in a template expression like <code>{{ foo.bar }}</code>
+will be interpreted as a literal string property of "foo', and not a variable
+"bar", even if one exists in the template context. If you wish to to do the
+opposite behavior, that is, actually resolve "bar" into it's own value, and
+then use that value to access a property of bar, consider using the
+<code>get</code> filter: <code>{{&nbsp;foo|get:bar&nbsp;}}</code>. This is
+equivalent to the "square brackets" notation of JavaScript (e.g.
+<code>foo[bar]</code>), and thus is also useful for accessing numeric indices.
+For an example, if we have an array in our state like
+<code>foo:='["a",&nbsp;"b",&nbsp;"c"]'</code>, then we can access
+<code>"b"</code> as follows: <code>{{&nbsp;state.foo|get:1&nbsp;}}</code>.</p>
 
 <p>Variable attributes that begin with an underscore should generally not be
 accessed, as that can be used to indicate private.</p>
 
+
+
 <h3>What variables are available</h3>
 
-<p>Variables come from the component's renderObj that is produced in the
-<code>prepare</code> stage. <a href="/docs/directives.html#renderobj">More on
-the "renderObj" in the section on lifecycle.</a></p>
+<p>Variables come from the component's <code>renderObj</code> that is produced
+in the <code>prepare</code> lifecycle phase. <a
+href="/docs/directives.html#renderobj">More on the "renderObj" in the section
+on lifecycle.</a> In practicality, this is another way to say that most
+variables typically "come from" the CParts of a component. That is,
+<code>state</code> will provide the state values, <code>props</code> will
+provide the values passed down to this component, and finally
+<code>script</code> will provide variables from script tags. In other words,
+each CPart "decides" which variables it supplies to the Template based on it's
+"prepare" lifecycle behavior. See the "Variables from CParts" section below for
+a more thorough look at this.</p>
 
-<p>In practicality, this is another way to say that most variables typically
-"come from" the CParts of a component.</p>
+
+<h3>Custom variables using the <em>Script</em> "prepare" callback</h3>
+
+<p>If you want to create computed variables (like in Vue.js), you can create a
+custom <code>prepare</code> lifecycle callback in your Script CPart tag as
+follows. Examine the following example:</p>
+
+<mws-Demo
+    demotype="minipreview"
+    fromlibrary="Templating_PrepareCallback"
+></mws-Demo>
+
+
 
 
 <h4>Variables from CParts</h4>
@@ -138,9 +173,10 @@ variable with useful data:</p>
     current value of the "number" property of state.</li>
 
     <li><strong>Script</strong> - If the <em>Script</em> CPart is present, then
-    you will have a <code>{{ script }}</code> variable available. The main use
-    of this is to access the <code>{{ script.exports }}</code> variable. This
-    can be set within the script tag as a way to store global, static data
+    you will have a <code>{{ script }}</code> variable available. The main
+    uses of this for access to computed variables from the
+    <code>prepareCallback</code>. Another use is to access
+    <code>script.exports</code> variable as a way to store global, static data
     shared between all instances of a component.</li>
 </ul>
 
@@ -227,17 +263,18 @@ tags and filters.</p>
 
 <mws-Section name="tags">Tags</mws-Section>
 
-<p>Tags look like this: <code>{% tag %}</code>. Tags are more complex than
-variables: Some create text in the output, some control flow by performing
-loops or logic, and some load external information into the template to be used
-by later variables.</p>
+<p>Tags look like this: <code>{% tag %}</code> (except  with the word "tag"
+replaced with something else). Tags are more complex than variables: Some
+create text in the output, some control flow by performing loops or logic, and
+some load external information into the template to be used by later
+variables.</p>
 
-<p>Some tags require beginning and ending tags (i.e. <code>{% tag %} ...
-tag contents ... {% endtag %}</code>).</p>
+<p>Most built-in tags require beginning and ending tags:
+<code>{%&nbsp;tag&nbsp;%}...contents...{%&nbsp;endtag&nbsp;%}</code></p>
 
 <p>Modulo ships with several built-in template-tags. You can read all about
 them in the <a
-href="/docs/template_reference.html#filters">built-in template-tag reference</a>.</p>
+href="/docs/templating-reference.html#filters">built-in template-tag reference</a>.</p>
 
 <div class="InfoBox">
   <h2>Common Template-Tags</h2>
@@ -286,14 +323,14 @@ displayed by the {{ state.athletes|length }} variable.</p>
 <h3>Final notes on tags</h3>
 
 <p>The most important difference between template tags and template filters are
-that template tags are interpreted at compile-time (when the template is first
-loaded), while filters are interpreted at render time (when the component is
-outputting it's HTML into the DOM). This means that mistakes with template tags
-might stop the component from rendering at all (mistakes such as syntax typo or
-a buggy third-party template tag), while mistakes with filters may only be
-detected when it tries using it, and could even be overlooked if the filter
-doesn't get used, e.g. it's only within an if statement that you haven't
-tested.</p>
+that template tags are interpreted at "compile-time" (when the template is
+first loaded or when you are building a JavaScript build or bundle), while
+filters are interpreted at "render-time" (when the component is outputting it's
+HTML into the DOM). This means that mistakes with template tags might stop the
+component from rendering at all (mistakes such as syntax typo or a buggy
+third-party template tag), while mistakes with filters may only be detected
+when it tries using it, and could even be overlooked if the filter doesn't get
+used, e.g.  it's only within an if statement that you haven't tested.</p>
 
 <p>Also, while the above examples work, be aware that some template filters
 return strings, so mathematical comparisons using filters will generally not
@@ -301,7 +338,7 @@ work as you expect. <code>|length</code> is an exception. You can use
 <code>|number</code> in other cases.</p>
 
 <p>Finally, just like filters, you can also create your own custom template
-tags; see <a href="/docs/template_reference.html">Template Reference</a>.</p>
+tags; see <a href="/docs/templating-reference.html">Templating Reference</a>.</p>
 
 
 <mws-Section name="comments">Comments</mws-Section>

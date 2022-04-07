@@ -7,7 +7,10 @@
         <button @click:="script.countUp">Hello 42</button>
     </template>
 
-    <state num:=100></state>
+    <state
+        num:=100
+    ></state>
+
     <template name="Ensure modifying state shows new content">
         <button @click:="script.countUp">Hello 100</button>
     </template>

@@ -1,4 +1,14 @@
-<script src="/m.js"></script>
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<!-- ... -->
+
+<script src="/js/Modulo.js"></script>
+<Modulo>
+    <Load namespace="x" src="/components/layouts.html"> </Load>
+</Modulo>
+<script>Modulo.defineAll()</script>
+
 <x-Page
     docbarselected="api.html"
     pagetitle="API & Extension"
@@ -18,6 +28,13 @@ transitions to a beta version and eventually a v1.0, this internal JavaScript
 API is much more likely to have larger changes before stabilizing. This is
 because it closely follows internal implementations.</p>
 
+<h2>Experimental</h2>
+
+<p>The remaining documentation here is on experimental features for Modulo.
+Experimental features may have incomplete documentation or an API that might
+change drastically in the future.</p>
+
+
 
 <mws-Section name="cparts">CParts</mws-Section>
 
@@ -25,7 +42,7 @@ because it closely follows internal implementations.</p>
 defining a CPart and then instantiating it immediately below.</p>
 <mws-Demo demotype="minipreview"
 text='
-<script>
+<Script>
 // CParts all extend Modulo.ComponentPart, and then override as many
 // callbacks as necessary to perform the intended "middleware"-style
 // functionality of the CPart.
@@ -42,11 +59,11 @@ class MyCoolPart extends Modulo.ComponentPart {
 }
 // Important: This is what actually "registers" with Modulo
 Modulo.cparts.mycoolpart = MyCoolPart;
-</script>
+</Script>
 
-<mycoolpart
+<MyCoolPart
     exampleattr="<h3>Hello CPart World</h3>"
-></mycoolpart>
+></MyCoolPart>
 '></mws-Demo>
 
 <p>Note that normally you will not define CParts in script tags and then use
@@ -86,27 +103,27 @@ in <code>element.cpartSpares</code>. Simply by assigning a property of
 <mws-Demo
 demotype="minipreview"
 text='
-<template name="shop">
+<Template name="shop">
     <nav>Shop|<a @click:=script.swap payload="home">Home</a></nav>
     <h1>Shop</h1>
     <p>$10 - A banana</p>
-</template>
-<template name="home">
+</Template>
+<Template name="home">
     <nav><a @click:=script.swap payload="shop">Shop</a>|Home</nav>
     <h1>Home</h1>
     <p>Welcome to my banana stand!</p>
-</template>
-<script>
+</Template>
+<Script>
     // swap: Set the active cpart by searching through the spare
     // array and selecting the one with a name matching payload:
     function swap(payload) {
         element.cparts.template = element.cpartSpares.template
             .find(({attrs}) => attrs.name === payload);
     }
-</script>
+</Script>
 
 <!-- some basic styling -->
-<style>
+<Style>
 nav {
     background: black;
     color: gray;
@@ -117,7 +134,7 @@ a {
     text-decoration: underline;
     cursor: pointer;
 }
-</style>
+</Style>
 '></mws-Demo>
 
 

@@ -1,15 +1,13 @@
-<!--
-<script src="/m.js"></script>
--->
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
 
-<!--Just for testing purposes:-->
 <script src="/js/Modulo.js"></script>
-<modulo>
-    <load namespace="x" src="/components/layouts.html"> </load>
-</modulo>
-<script>
-Modulo.defineAll()
-</script>
+<template modulo-embed>
+    <load namespace="x" src="/components/layouts.html"></load>
+    <!--<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>-->
+</template>
+<script> Modulo.defineAll() </script>
 
 <x-Page
     docbarselected="tutorial_part1.html"
@@ -29,7 +27,7 @@ Prerequisites: HTML, CSS, JavaScript, and Part 1 &amp; 2.</p>
 <mws-Section name="state">State</mws-Section>
 
 <p> So far, our components have been static and unchanging. They can't do a
-lot.  They might be useful for refactoring HTML into more DRY, reusable
+lot. They might be useful for refactoring HTML into more DRY, reusable
 components, but not much more than that.  They can't validate form data, use
 APIs, or form complete applications. In fact, they can't have any sort of
 <em>interaction</em> whatsoever, or any <em>dynamic</em> or changing
@@ -91,8 +89,8 @@ want changed, you do one thing: <em>Change state &amp; rerender</em>!</p>
 
 <p>State allows each component instance to store data. Each component instance
 has a separate state from every other instance. As a demonstration of that,
-examine the following "Hello" counting buttons, once again taken from the demo
-page:</p>
+examine the behavior of the following "Hello" counting buttons when clicked,
+once again taken from the demo page:</p>
 
 <p> <eg-Hello></eg-Hello> <eg-Hello></eg-Hello> <eg-Hello></eg-Hello> </p>
 
@@ -123,10 +121,10 @@ are defined much like <em>Props</em>, except that instead of just listing the
 attribute names, initial values must be provided as defaults.  A <em>State</em>
 CPart might look like this:</p>
 
-<pre>&lt;state
+<pre>&lt;State
     count="1"
     color="blue"
-&gt;&lt;/state&gt;</pre>
+&gt;&lt;/State&gt;</pre>
 
 
 <p>Here we are defining two <em>state variables</em>: <code>count</code>, which
@@ -134,22 +132,21 @@ we initialize to equal <code>"1"</code>, and <code>color</code>, which we
 initialize to equal <code>blue</code>. We can then use the state variables in
 our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
 
-<pre>&lt;template&gt;
+<pre>&lt;Template&gt;
     &lt;p style="color: {{ state.color }}"&gt;
         You have {{ state.count }} bananas.
     &lt;/p&gt;
-&lt;/template&gt;</pre>
+&lt;/Template&gt;</pre>
 
 
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>
-    <!-- TODO: Add a better thing here, should be just a few basic "state"
-         variables and rendering them in template with filters -->
 
     <ol>
         <li>Practice modifying the <strong>State</strong> CPart
-        (<code>&lt;state&gt;</code>) to see how that affects the output. No
-        need to mess with the template for now.</li>
+        (<code>&lt;State&gt;</code>) and re-running to see how that affects the
+        output. Note that the <em>State</em> CPart is traditionally placed
+        after the <em>Template</em>.</li>
         <li>Practice incorporating these CParts into your own components on a
         real page by copying the code here and pasting it within your component
         definition (that is, the one that you created in the <em>Part 1</em> of
@@ -157,8 +154,14 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
     </ol>
     <mws-Demo
         demotype="minipreview"
+        fromlibrary="Tutorial_P3_state_demo"
+    ></mws-Demo>
+    <!--
+    <mws-Demo
+        demotype="minipreview"
         fromlibrary="Templating_1"
     ></mws-Demo>
+    -->
 
 </section>
 
@@ -201,10 +204,10 @@ The <code>count</code> variable didn't get assigned to <code>1</code> the
 <em>Number</em>, but rather <code>"1"</code> the <em>String</em>. To fix it, we
 do the following:</p>
 
-<pre>&lt;state
+<pre>&lt;State
     count:=1
     color="blue"
-&gt;&lt;/state&gt;</pre>
+&gt;&lt;/State&gt;</pre>
 
 <p>This is called a <em>data prop</em> directive.  In the case of the <em>data prop</em>
 directive (<code>:=</code>), the attribute name is suffixed with a colon right
@@ -254,12 +257,12 @@ single character in an input, should be reflected in state changes.</p>
 
 <p>To bind an input to state, use something like the following:</p>
 
-<pre>&lt;template&gt;
+<pre>&lt;Template&gt;
     &lt;input [state.bind] name="subject" /&gt;
-&lt;/template&gt;
-&lt;state
+&lt;/Template&gt;
+&lt;State
     subject="Testing message..."
-&gt;&lt;/state&gt;</pre>
+&gt;&lt;/State&gt;</pre>
 
 
 <p>It's important that you always include a "name" attribute when binding. This
@@ -332,14 +335,14 @@ that input.</p>
     <li><em>Data props</em> support any JSON literal type. Technically,
     <em>data props</em> values can have double quotes just like normal
     String-based attributes. However, as a stylistic convention, you may omit
-    the double quotes for any one-word value, and for complex types, such as
-    JSON-formatted Arrays or Objects, use single quotes. See below for
+    the double quotes for any one-word value, and should use only single quotes
+    for complex types, such as JSON-formatted Arrays or Objects. See below for
     stylistic examples of data props with different types:
 
 
 <mws-Demo
 text='
-<state
+<State
     color="blue"      (String)
     count:=1          (Number)
     ready:=true       (Boolean)
@@ -352,7 +355,7 @@ text='
         "a": "b",
         "c": "d"
     }&apos;
-></state>
+></State>
 '
 ></mws-Demo>
 </li>

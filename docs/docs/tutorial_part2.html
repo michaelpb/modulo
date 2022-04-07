@@ -1,20 +1,28 @@
-<script src="/m.js"></script>
-<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+
+<script src="/js/Modulo.js"></script>
+<template modulo-embed>
+    <load namespace="x" src="/components/layouts.html"></load>
+    <!--<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>-->
+</template>
+<script> Modulo.defineAll() </script>
 
 <script>window.onload = () => Modulo.defineAll();</script>
 
 <template modulo-embed>
-    <component name="ExampleBtn">
-        <props
+    <Component name="ExampleBtn">
+        <Props
             label
             shape
-        ></props>
-        <template>
+        ></Props>
+        <Template>
             <button class="my-btn my-btn__{{ props.shape }}">
                 {{ props.label }}
             </button>
-        </template>
-        <style>
+        </Template>
+        <Style>
             .my-btn {
                 display: inline-block;
                 box-sizing: border-box;
@@ -43,8 +51,8 @@
             .my-btn__round {
                 border-radius: 150px;
             }
-        </style>
-    </component>
+        </Style>
+    </Component>
 </template>
 
 <x-Page
@@ -52,11 +60,11 @@
     pagetitle="Part 2 - Tutorial"
     navbar="docs">
 
-
 <h1>The Modulo Tutorial: Part 2</h1>
 <p>In Part 2 of this tutorial, we'll explore three more features: Customizing
 with Props, substituting with Template variables, and finally building your
-finished project into a single JS file. Prerequisites: HTML, CSS, and Part 1.</p>
+finished project into a single faster-loading file. Prerequisites: HTML, CSS,
+and Part 1.</p>
 
 
 <mws-Section name="props">1. Props</mws-Section>
@@ -151,18 +159,18 @@ previous CParts, except they have no contents and are just an opening tag with
 attributes, followed by a closing tag. A <em>Props</em> CPart might look like
 this:</p>
 
-<pre>&lt;props name device frequency&gt;&lt;/props&gt;</pre>
+<pre>&lt;Props name device frequency&gt;&lt;/Props&gt;</pre>
 
 <p>The recommended style for Modulo code is to add a newline after each prop
 name for easier reading. HTML syntax doesn't care either way, so the above
 might be improved for readability if it were written as follows:</p>
 
 <pre>
-&lt;props
+&lt;Props
     name
     device
     frequency
-&gt;&lt;/props&gt;
+&gt;&lt;/Props&gt;
 </pre>
 
 
@@ -210,9 +218,9 @@ get filled in with specific data when the component gets reused. Examine the
 below code and try to guess at what it might do:</p>
 
 <pre>
-&lt;template&gt;
+&lt;Template&gt;
     Hi {{ props.name }}, your {{ props.device }} is at {{ props.frequency }}hz.
-&lt;/template&gt;
+&lt;/Template&gt;
 </pre>
 
 <p>In this case, if we were to use our component with the attributes
@@ -238,21 +246,21 @@ previous challenge:</p>
 
 <mws-Demo
 text='
-<component name="ExampleBtn">
+<Component name="ExampleBtn">
 
-    <props
+    <Props
         label
         shape
-    ></props>
+    ></Props>
 
-    <template>
+    <Template>
         <button class="my-btn  my-btn__{{ props.shape }}">
             {{ props.label }}
         </button>
-    </template>
+    </Template>
 
-    <!-- (Note: The <style> CPart was omitted for simplicity) -->
-</component>
+    <!-- (Note: The <Style> CPart was omitted for simplicity) -->
+</Component>
 '
 ></mws-Demo>
 
@@ -288,13 +296,13 @@ rectangular, towering look.</p>
         like this:
 <mws-Demo
 text='
-<component name="HelloWorld">
-    <props
+<Component name="HelloWorld">
+    <Props
         goal
         amount
-    ></props>
+    ></Props>
     <!-- ... snip ... -->
-</component>
+</Component>
 '></mws-Demo>
         </li>
 
@@ -304,11 +312,11 @@ text='
         for now, let's just display the goal prop and amount prop:</li>
 <mws-Demo
 text='
-<template>
+<Template>
     Hello <strong>Modulo</strong> World!
     <p>Goal: {{ props.goal }}</p>
     <p>Amount: {{ props.amount }}</p>
-</template>
+</Template>
 '></mws-Demo>
 
         <li>Refresh the web browser to view the results. Assuming you still
@@ -403,7 +411,7 @@ examples of all filters available.</p>
 
     <ol>
         <li>Practice modifying the <strong>Template</strong> CPart
-        (<code>&lt;template&gt;</code>) to see how that affects the
+        (<code>&lt;Template&gt;</code>) to see how that affects the
         output</li>
         <li>Practice modifying the <strong>Style</strong> CPart
         (<code>&lt;style&gt;</code>) to add or modify CSS</li>
@@ -457,9 +465,9 @@ we've learned so far that support it.</p>
 <p>For example, you can split off a <em>Template</em> into it's own separate
 file, as such:</p>
 
-<pre>&lt;template
+<pre>&lt;Template
     src="./my-file-name.html"
-&gt;&lt;/template&gt;</pre>
+&gt;&lt;/Template&gt;</pre>
 
 
 <p>Similarly, you can split off a <em>Style</em> as well:</p>
@@ -477,26 +485,34 @@ gets too long and difficult to edit. In that case, conventional usage is to
 start splitting off larger CParts into their own files, until the HTML library
 file itself is just tie-ing everything together.</p>
 
-
+<p>However, there is a downside to splitting up your files: Each new file you
+create will require an additional request to load it. This means that each
+additional individual file you include in a page will cause the page to take a
+little longer to loader. So, if <code>src=</code> causes it to load slower, how
+can we stay neat during development, but still have a fast site? This is where
+"building" comes into play.</p>
 
 <h3>Modulo build: Packing it all up</h3>
 
 <p>"Building" is a feature of Modulo where it will pack up all the components
-you have loaded on a particular page, mix in it's own source code, and spit out
-a single JS file. This single JS file, called a <em>build</em>, will contain
-all the code from all your components (including CParts that were split off
-using <code>src=</code>). You can then comment out or delete the
-<code>&lt;load&gt;</code> tags, since this one JS file will be all you need.
-Generally, developers create builds before "launching" their site to
-"production" (e.g. publishing their site for the world to see), since it
-results in the fastest possible loading time.</p>
+you have loaded on a particular page into a single JS file. This single JS
+file, called a <em>build</em>, will contain all the code from all your
+components (including CParts that were split off using <code>src=</code>).
+Once the "build" file is included using a
+<code>&lt;script&nbsp;src="..."&gt;</code> tag, then all subsequent
+<code>&lt;load&gt;</code> tags on that page will not actually fetch the
+original HTML file that they are pointed to, but instead load the "built"
+version from the JS file. This causes the page to load very quickly, even
+faster than during development.  Generally, developers create builds before
+"launching" their site to "production" (e.g. publishing their site for the
+world to see), since it results in the fastest possible loading time.</p>
 
 <p>To build a project, we will need to run a <em>Modulo Console Command</em>.
 The <em>console</em> is a feature of all web browsers. As a web developer you
 likely have used it: It's a panel, hidden by default, where JS, CSS, and other
 such error messages are displayed. While most JS frameworks require NPM-based
 tools to build,  Modulo can be built right from your browser's console, simply
-by typing <code>m.build</code> and hitting enter.</p>
+by typing <code>m.build()</code> and hitting enter.</p>
 
 
 
@@ -511,32 +527,43 @@ by typing <code>m.build</code> and hitting enter.</p>
 
         <li>Bring up the console: Press <code>Control+Shift+J</code> (Linux,
         Windows) or <code>Command+Option+J</code> (macOS) on your keyboard to
-        open the Console.  Alternatively, you can right-click with your mouse
+        open the Console. Alternatively, you can right-click with your mouse
         and select "Inspect", and then go to the <em>Console</em> tab.</li>
 
-        <li>Within the newly opened console, type <code>m.build</code> and hit
-        enter.</li>
+        <li><em>Optional:</em> Within the newly opened developer tools,
+        navigate for a moment to the "Network" tab.  Force refresh your
+        browser. You should see a list of "requests" being sent, including one
+        for each component library that needs loading.  For example, if we
+        named our component library "./components/my-component-lib.html", we'll
+        see an additional request for this HTML file. If we had further split
+        our files using "src=", we'll see even more requests.</li>
 
-        <li>It should now offer to download a single JS file that contains both
-        Modulo.js and all your component code! Save this JS file somewhere,
-        such as in a "js" directory, or next to the HTML file that you have
-        open in your browser.</li>
+        <li>Ensuring that the "Console" tab is selected, now type
+        <code>m.build()</code> and hit enter.</li>
 
-        <li>Now, let's practice updating our HTML file to use the bundle. You
-        can comment out all of your previous loading code and script tags,
-        since this 1 bundle file will replace all of those. The end result
-        might look something like this:
+        <li>It should either immediately download a CSS and JS file, or offer
+        to download them. These are the "build" files, and contain the contents
+        of all libraries that were loaded on this page, with underlying
+        JavaScript pre-compiled for speed and security. Save these files
+        somewhere, such as in a "js" directory, or next to the HTML file that
+        you have open in your browser.</li>
+
+        <li>Now, let's practice updating our HTML file to use the build.  The
+        end result might look something like this:
 <mws-Demo
 text='
-<!-- Comment out old loading code:
-<template modulo-embed>
-    <load src="./components/my-component-lib.html" namespace="lib" ></load>
-</template>
-<script src="https://modulojs.org/js/Modulo.js"></script>
-<script>Modulo.defineAll();</script> -->
-
 <!-- Add in built JS file (Remember: Ensure the path is correct!) -->
+<link rel="stylesheet" href="./modulo-build.(some hash goes here).css" />
+<script src="https://modulojs.org/js/Modulo.js"></script>
 <script src="./modulo-build.(some hash goes here).js"></script>
+
+<!-- KEEP your old loading code: -->
+<modulo>
+    <load src="./components/my-component-lib.html" namespace="lib" ></load>
+</modulo>
+
+<!-- Make sure we defineAll (but only AFTER the script tags) -->
+<script>Modulo.defineAll();</script>
 
 <!-- Now, the components we define can be used just like before: -->
 <div>
@@ -544,20 +571,56 @@ text='
     <p>In a P tag: <x-HelloWorld goal="10" amount="2" ></x-HelloWorld> </p>
 </div>
 '></mws-Demo></li>
+
+        <li><em>Optional:</em> Time to validate that the "build" worked!
+        Navigate to the "Network" tab of your Development Console. Force
+        refresh your browser. You should now see no more extra "requests" being
+        sent for each HTML component library that needs to be loaded. Instead,
+        just the JS "build" file "preloads" all the individual files in one
+        go.</li>
     </ol>
+
 
     <p><strong>Important: Undo it all!</strong> Before going on to Part 3 of
     this tutorial, remember to switch back to using the load tag, e.g.
-    essentially reversing all of the steps above. This is because you will
-    continue to edit this component library as part of the tutorial. The build
-    "freezes" the component library in time, and you'll have to run build again
-    if you change anything.  A common mistake is forgetting that you are
-    editing the original <code>.html</code> file while using the built
+    commenting out the script and link tags with the bundle. This is because
+    you will continue to edit this component library as part of the tutorial.
+    The build "freezes" the component library in time, and you'll have to run
+    build again if you change anything.  A common mistake is forgetting that
+    you are editing the original <code>.html</code> file while using the built
     <code>.js</code> version, causing much confusion as to why your changes
     don't take effect!</p>
 
 </section>
 
+
+<h3>Modulo bundle: Packing up even further</h3>
+
+<p>So, we've learned how to "build" our components into a single JS file, which
+prevents extra requests. However, it doesn't solve the issue of having to do a
+separate request for the Modulo source code, or the possibly verbose or messy
+"boilerplate" which you need to copy between every HTML file. Furthermore, if
+you intend to incorporate more JS files or libraries, we could end up making
+many requests again. This is where Modulo's "bundle" command comes into
+play.</p>
+
+<p>Modulo also has a "bundle" command. A "bundle" goes even further than a
+build: A "bundle" will include the Modulo.js source code as well, along with
+any other JS files that are loaded. This allows you to delete ALL the script
+tags, load commands, and so on, and include only a single script tag with the
+bundle and a single link for the CSS. This "bundle" can then be used on any
+page to immediately activate your components.</p>
+
+<mws-Demo
+text='
+<!-- Include the output of the bundle command: -->
+<link rel="stylesheet" href="./modulo-bundle.(some hash goes here).css" />
+<script src="./modulo-bundle.(some hash goes here).js"></script>
+
+<!-- Now, the components we define can be used just like before: -->
+<x-HelloWorld goal="10" amount="2" ></x-HelloWorld>
+<!-- (no need for <template modulo-embed> or <load> - already "bundled") -->
+'></mws-Demo>
 
 <h3>Part 2: Summary</h3>
 
@@ -581,8 +644,9 @@ props.name }}</code>) mixed in with the HTML, and possibly modified or
 reformatted by attaching template filters (e.g. <code>{{ props.name|upper
 }}</code>)</li>
 
-<li><strong>build</strong> - Bundling all your JS and files together into a
-single file that loads faster.</li>
+<li><strong>build</strong> - Combining all your JS and CSS together into a
+single file that loads faster. "Bundling" will also "freeze" in the "load"
+commands along with any extra JS files.</li>
 </ul>
 
 

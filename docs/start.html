@@ -1,15 +1,14 @@
-<!--
-<script src="/m.js"></script>
--->
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<!-- ... -->
 
-<!--Just for testing purposes:-->
 <script src="/js/Modulo.js"></script>
 <modulo>
-    <load namespace="x" src="/components/layouts.html"> </load>
+    <load namespace="x" src="/components/layouts.html"></load>
 </modulo>
-<script>
-Modulo.defineAll()
-</script>
+<script>Modulo.defineAll()</script>
+
 
 <x-Page
     pagetitle="Start"
@@ -35,26 +34,46 @@ Modulo.defineAll()
     </section>
 </div>
 
+<br />
 <div class="Docs-squareInfo">
-    <h2>CDN</h2>
-    <p>Want to get started as quickly as possible? Copy &amp; paste one of
-    the following CDN links:</p>
+    <h2>Starting snippet (with CDN)</h2>
+    <p>Want to get started as quickly as possible? Copy &amp; paste
+    the following starting code:</p>
 
 <mws-Demo
 text='
-<!-- Use the latest version, served by GitHub pages -->
+<!-- Example custom component, using all core CParts -->
+<template modulo-embed>
+  <Component name="HelloWorld">
+    <Props txt></Props>
+    <Template> <a @click:=script.inc>{{ props.txt }} {{ state.num }}</a> </Template>
+    <State num:=1 ></State>
+    <Script> function inc() { state.num++; } </Script>
+    <Style> a { color: green; } </Style>
+  </Component>
+</template>
+
+<!-- Use it anywhere: -->
+<x-HelloWorld txt="Click to count:"></x-HelloWorld>
+
+<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
+<script src="https://modulojs.org/js/Modulo.js"></script>
+<script>Modulo.defineAll();</script>
+'></mws-Demo>
+
+
+<!--
+-- Use the latest version, served by GitHub pages --
 <script src="https://modulojs.org/js/Modulo.js"></script>
 
 
-<!-- COMING SOON: Use a proper CDN, such as Skypack -->
-<!-- Add ?min to the URL to get minified version. -->
-<!-- (Not yet functioning!) -->
+COMING SOON: Use a proper CDN, such as Skypack --
+Add ?min to the URL to get minified version. --
 <script src="https://cdn.skypack.dev/modulo"></script>
 
-<!-- Once included, use defineAll() to activate -->
+Once included, use defineAll() to activate
 <script>Modulo.defineAll()</script>
-'></mws-Demo>
-
+-->
 <!-- Better: Include integrity checksum:
 <script src="https://modulojs.org/js/Modulo.js"
 integrity="sha384-$modulojs_sha384_checksum$"
@@ -63,11 +82,24 @@ crossorigin="anonymous"></script>
 
 </div>
 
+<br />
+<!--
 <div class="Docs-squareInfo">
     <h2>NPM</h2>
     <p>Coming soon!</p>
 </div>
+-->
 
+
+<br />
+
+<div class="Docs-squareInfo">
+    <h2>Examples</h2>
+    <p>Prefer to learn from examples, to get an idea of what you can do?</p>
+    <p><a href="/docs/example-library.html">Play around in the "sandbox" of mini-examples &#187;</a></p>
+</div>
+
+<br />
 <div class="Docs-squareInfo">
     <h2>Download</h2>
     <a style="text-transform: none"
@@ -81,7 +113,6 @@ crossorigin="anonymous"></script>
 
     <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
 </div>
-
 
 
 </x-Page>

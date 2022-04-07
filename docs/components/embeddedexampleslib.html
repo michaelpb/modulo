@@ -64,9 +64,55 @@
     script.exports.title = "ModuloNews";
 </Script>
 
-<TestSuite
+<testsuite
     src="./examplelib-tests/Templating_1-tests.html"
-></TestSuite>
+></testsuite>
+
+</component>
+
+
+<component name="Templating_PrepareCallback">
+<Template>
+    <input name="perc" [state.bind] />% of
+    <input name="total" [state.bind] />
+    is: {{ script.calcResult }}
+</Template>
+
+<State
+    perc:=50
+    total:=30
+></State>
+
+<Script>
+    function prepareCallback() {
+        const calcResult = (state.perc / 100) * state.total;
+        return { calcResult };
+    }
+</Script>
+
+<Style>
+    input { display: inline; width: 25px }
+</Style>
+
+<testsuite>
+    <test name="renders with computed value as expected">
+        <template test-values name="initial render">
+          <input name="perc" value="50" [state.bind] />% of
+          <input name="total" value="30" [state.bind] />
+          is: 15
+        </template>
+
+        <state
+            perc:=55
+        ></state>
+
+        <template test-values name="rerenders correctly if changed">
+          <input name="perc" value="55" [state.bind] />% of
+          <input name="total" value="30" [state.bind] />
+          is: 16.5
+        </template>
+    </test>
+</testsuite>
 
 </component>
 
@@ -82,14 +128,14 @@
     <p>Below the greeting...</p>
 </Template>
 
-<TestSuite>
+<testsuite>
     <test name="Hides comments">
         <template>
             <h1>hello </h1>
             <p>Below the greeting...</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
@@ -119,7 +165,7 @@
     }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test name="Escapes HTML, safe works">
         <template>
             <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
@@ -129,7 +175,7 @@
             the risk of trusting <b>user inputted data</b></div>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
@@ -156,14 +202,14 @@ strong {
 }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template>
             Hello <strong>Modulo</strong> World!
             <p class="neat">Any HTML can be here!</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 
 </component>
@@ -184,7 +230,7 @@ strong {
     ></x-ExampleBtn>
 </Template>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template string-count=1>
             <p>Trying out the button...</p>
@@ -203,7 +249,7 @@ strong {
         </template>
         -->
     </test>
-</TestSuite>
+</testsuite>
 </component>
 
 
@@ -222,13 +268,13 @@ strong {
     ></x-ExampleBtn>
 </Template>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template string-count=1>
             <p>Trying out the button...</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 
 </component>
@@ -262,7 +308,7 @@ to {{ state.count }} {{ state.noun }}s.
     }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test>
         <template>
             <p>Nonsense poem:</p>
@@ -270,7 +316,7 @@ to {{ state.count }} {{ state.noun }}s.
             of Kazoo, to two kazoos. </pre>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
@@ -303,9 +349,9 @@ to {{ state.count }} {{ state.noun }}s.
     username="Testing_Username"
 ></State>
 
-<TestSuite
+<testsuite
     src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
-></TestSuite>
+></testsuite>
 
 </component>
 
@@ -321,42 +367,42 @@ to {{ state.count }} {{ state.noun }}s.
 examples to the Modulo framework, not as a examples themselves -->
 <!-- TODO: Remove, and move to tests/ -->
 <component name="TestBtn">
-    <props
+    <Props
         myclicky
         mytexty
-    ></props>
+    ></Props>
     <template>
         <button @click:=props.myclicky>{{ props.mytexty }}</button>
     </template>
 </component>
 
 <component name="CompositionTests">
-<props b></props>
-<template name="comptest2">
+<Props b></Props>
+<Template name="comptest2">
     <x-TestBtn
         mytexty="Test text"
         myclicky:=script.gotClickies
     >should be IGNORED</x-TestBtn>
     <p>state.a: {{ state.a }}</p>
-</template>
+</Template>
 
-<template name="comptest1">
+<Template name="comptest1">
     Testing
     <x-Tutorial_P1></x-Tutorial_P1>
     <x-Templating_Escaping></x-Templating_Escaping>
-</template>
+</Template>
 
 
 <!-- just add some random stuff here -->
-<state
+<State
     a:=1
-></state>
+></State>
 
-<script>
+<Script>
     function gotClickies() {
         state.a = 1337;
     }
-</script>
+</Script>
 
 <testsuite
     skip

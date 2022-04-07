@@ -1,4 +1,13 @@
-<script src="/m.js"></script>
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<!-- ... -->
+<script src="/js/Modulo.js"></script>
+<modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo>
+<script>Modulo.defineAll()</script>
+
 <x-Page
     docbarselected="directives.html"
     pagetitle="Templating Reference"
@@ -100,6 +109,36 @@ available whenever you attach an event, e.g. <code>@click</code>.</p>
 </ul>
 
 
+<h3>The mechanics of the factory lifecycle</h3>
+
+<p>The Factory lifecycle behaves slightly differently. Most lifecycle methods
+can be invoked by using the <code>lifecycle</code> method of
+<code>ModuloElement</code>, e.g.  <code>element.lifecycle('prepare')</code>.
+The "factory" lifecycle, however, is run with <code>runFactoryLifecycle</code>,
+a method of <code>ComponentFactory</code>, before any components or actual
+elements are created.</p>
+
+<p>The is a special lifecycle for any global or one-time setup, after component
+definitions are loaded, but before before any components are constructed.
+Examples: the Style CPart uses this stage to set up global CSS, the Template
+CPart uses this to compile the template and include it in a script tag in the
+head, and the Script CPart will actually wrap the script-tag and include into
+the head.</p>
+
+<p>Like every other "lifecycle" in Modulo, it passes around a "renderObj"
+called baseRenderObj. After this method, this baseRenderObj is not modified,
+but instead gets copied into every other renderObj to form, as the name
+implies, the "base" of future renderObj.</p>
+
+<p>In total, the <code>runFactoryLifecycle(cPartOpts)</code> method of
+<code>ComponentFactory</code> loops through all the CPart names, finding
+each relevant CPart Classes, and then invoking each CPart static method
+<code>factoryCallback</code>, which is what does the necessary preprocessing.
+If there are multiples of the same CPart, then whichever appears last will
+overwrite and/or merge data with the previous ones.  However, that particular
+behavior can be controlled from within each CPart factoryCallback itself.</p>
+
+
 
 <h3>Hooking into a lifecycle phase</h3>
 
@@ -128,13 +167,13 @@ in a later section</a>.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
 Hello <strong>Modulo</strong> World!
 Open your browser dev console to see messages...
 <button @click:=script.gotClicked>Click me to generate an event</button>
-</template>
+</Template>
 
-<script>
+<Script>
     function initializedCallback() {
         console.log("initalizedCallback: Got mounted");
     }
@@ -166,7 +205,7 @@ Open your browser dev console to see messages...
     function gotClicked() {
         console.log("(the button got clicked)");
     }
-</script>
+</Script>
 '></mws-Demo>
 
 
@@ -248,17 +287,17 @@ step:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
 <label>
 <input [state.bind] name="enabled" type="checkbox" />
 Show messages in console</label>
-</template>
+</Template>
 
-<state
+<State
     enabled:=false
-></state>
+></State>
 
-<script>
+<Script>
     function _logInfo(message, renderObj) {
         // Little helper function to do messages in console
         if (state.enabled) {
@@ -282,7 +321,7 @@ Show messages in console</label>
     function updatedCallback(renderObj) {
         _logInfo("updatedCallback:", renderObj);
     }
-</script>
+</Script>
 '></mws-Demo>
 
 
@@ -333,7 +372,7 @@ run into the limits of what Modulo is capable of doing.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
 {# [script.myinput] is a custom directive, defined below #}
 <input [script.myinput] />
 
@@ -341,9 +380,9 @@ text='
 <button [component.event]click:=script.showInfo>
     Click me
 </button>
-</template>
+</Template>
 
-<script>
+<Script>
     function myinputMount(mountOptions) {
         element.inputRef = mountOptions.el;
         // Try uncommenting the following to see data:
@@ -353,7 +392,7 @@ text='
         alert("Focusing on:" + String(element.inputRef));
         element.inputRef.focus();
     }
-</script>
+</Script>
 '></mws-Demo>
 
 <!--<mws-Section name="builtin">Built-in directives</mws-Section>-->
@@ -364,24 +403,24 @@ text='
 <em>CParts</em> (1 from <em>State</em> and 3 from <em>Component</em>).</p>
 
 <ul>
-    <li><code>[state.bind]</code> - Two-way binding with <em>State</em>
-    data, with the key determined by the <code>name=</code> property of
-    whatever it is attached to.</li>
-
-    <li><code>[component.children]</code> - Reattach the original child
-    elements that this component had when it was first mounted to a new DOM
-    element. (For React users, this is similar to doing
-    <code>{this.props.children}</code>.)</li>
+    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
+    Attach data to a DOM element's `.dataProp` object, which can be used to
+    directly pass <code>renderObj</code> values as <em>Props</em> or
+    events</li>
 
     <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
     Attach event listeners to DOM elements, and remove them when the DOM
     elements are removed. (For jQuery users, this is used for similar purposes
     as "live" (delegated) events, but is faster.)</li>
 
-    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
-    Attach data to a DOM element's `.dataProp` object, which can be used to
-    directly pass <code>renderObj</code> values as <em>Props</em> or
-    events</li>
+    <li><code>[component.slot]</code> - Reattach the original child elements
+    that this component had when it was first mounted to a new DOM element.
+    (For React users, this is similar to doing
+    <code>{this.props.children}</code>.)</li>
+
+    <li><code>[state.bind]</code> - Two-way binding with <em>State</em>
+    data, with the key determined by the <code>name=</code> property of
+    whatever it is attached to.</li>
 </ul>
 
 <h3>Directives vs templates</h3>
@@ -411,7 +450,7 @@ stricter structure.</p>
 
 <mws-Demo
 text='
-<template>
+<Template>
     {% for athlete in state.team %}
         {# (HTML Attributes) #}
         {# Broken, will not work: #}
@@ -429,7 +468,7 @@ text='
         <button @click:=script.selectOne payload="{{ athlete.id }}">
             {{ athlete.name }}</button>
     {% endfor %}
-</template>
+</Template>
 '></mws-Demo>
 
 <blockquote>
@@ -503,7 +542,7 @@ custom directives used (which should be avoided to begin with).</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     Game Shop: 31 moneys<br />
     Avg Movie Creeps: 10 moneys<br />
     <button @click:=script.toggle>
@@ -519,13 +558,13 @@ text='
         <button %%%long="AMC"></button>
         <button %%%short="AMC"></button>
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
     show:=false
-></state>
+></State>
 
-<script>
+<Script>
     Modulo.directiveShortcuts.push([/^%%%/, "script.example"]);
     /*
     // Correct way below:
@@ -546,7 +585,7 @@ text='
     function toggle() {
         state.show = !state.show;
     }
-</script>
+</Script>
 '></mws-Demo>
 
 <p><strong>Note:</strong> "Do as I say, not as I do": To keep the previous
