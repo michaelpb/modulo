@@ -125,7 +125,6 @@ Modulo.Loader = class Loader {
             : ('<script type="modulo/' + cleanWord(tagText) + '"' +
                 tagText[tagText.length - 1]);
         const scriptifiedText = text.replace(tagRegExp, changeToScript);
-        //console.log('scriptifiedText', scriptifiedText);
         //const elem = rec.loadString(text, {});
 
         const elem = rec.loadString(scriptifiedText, {});
@@ -408,7 +407,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         } else if (!this.isMounted) {
             this.originalHTML = this.innerHTML;
             this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
-            //console.log('getting original chidlren', this.originalHTML, this.originalChildren);
         }
         // /HACK
 
@@ -595,56 +593,22 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const { resolveDataProp } = Modulo.utils;
         const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
         const func = get(attrName);
-        //console.log('eventMount: el.textContent', [el.textContent.trim()], value, attrName, rawName, el.dataProps);
-        //console.log('eventMount: attrName, func', attrName, func);
-        //console.log('eventMount: attrName, func', attrName, get('click'));
         Modulo.assert(func, `Bad @${attrName} event: ${value} is falsy`);
         if (!el.moduloEvents) {
             el.moduloEvents = {};
         }
-        //console.log('eventMount #2: el.textContent', [el.textContent.trim()], func);
-        const plName = attrName + '.payload';
-        //const listen = ev => this.handleEvent(func, get(plName, 'payload'), ev);
-
-        //-----------------------
-        if (!Modulo._tmpCount) {
-            Modulo._tmpCount = 1;
-        } else {
-            Modulo._tmpCount++;
-        }
-        let contextCount = Modulo._tmpCount;
-        //-----------------------
-
-
-        //console.log(contextCount, 'eventSetup: el, el.dataProps', [el.textContent.trim()], el, el.dataProps);
         const listen = ev => {
-            //console.log(contextCount, 'eventHapps: el, el.dataProps', [el.textContent.trim()], el, el.dataProps);
-            const payload = get(plName, 'payload');
-            //console.log('eventHapps: el.textContent', [el.textContent.trim()], func);
+            const payload = get(attrName + '.payload', 'payload');
             const currentFunction = resolveDataProp(attrName, el);
             this.handleEvent(currentFunction, payload, ev);
         };
         el.moduloEvents[attrName] = listen;
         el.addEventListener(attrName, listen);
-
-        // el.moduloEvents[value] = listen; // TODO: Before it was this, but this makes no sense
-        //el.addEventListener(attrName, listen);
-        //console.log(contextCount, 'eventSetup: el, el.dataProps', [el.textContent.trim()], el, el.dataProps);
     }
-
-    /*
-    eventChange(info) {
-        // TODO: rm (keep Unmount / Mount only)
-        this.eventUnmount(info);
-        this.eventMount(info);
-    }
-    */
 
     eventUnmount({ el, attrName }) {
-        //const listen = el.moduloEvents[attrName];
-        //console.log('this is eventUnmount:', el.moduloEvents);
         el.removeEventListener(attrName, el.moduloEvents[attrName]);
-        Modulo.assert(el.moduloEvents[attrName], 'Invalid unmount');
+        // Modulo.assert(el.moduloEvents[attrName], 'Invalid unmount');
         delete el.moduloEvents[attrName];
     }
 
@@ -661,14 +625,11 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         el.dataProps[attrName] = val;
         el.dataPropsAttributeNames[rawName] = attrName;
 
-        //console.log('dataPropMount #1: el.textContent', [el.textContent.trim()],
-        //    value, attrName, rawName);//, JSON.stringify(el.dataProps));
         /*
         //const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {}; // not sure why I was doing it this way?
         // TODO: Refactor this:
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        //console.log('dataPropMount: val', val);
         //needs work for dataObj support (e.g. building objs with '.' syntax)
         const index = attrName.lastIndexOf('.') + 1;
         const key = attrName.slice(index);
@@ -676,8 +637,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
         dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
         */
-        //console.log('dataPropMount #2: el.textContent', [el.textContent.trim()],
-        //    value, attrName, rawName, el.dataProps)//, JSON.stringify(el.dataProps));
 
     }
 
@@ -1524,9 +1483,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (thisContext) { // If a directive matches...
                 const methodName = fullName.split('.')[1] || fullName;
                 Object.assign(directive, { value, el });
-                /*if (rawName === '@click:') { // XXX
-                    console.log('DIRECTIVEEEEEEE ', value, directive);
-                } // XXX */
                 this.patch(thisContext, 'directive-' + methodName, directive);
             }
         }
