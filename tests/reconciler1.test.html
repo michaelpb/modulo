@@ -433,7 +433,7 @@
 
 <test name="Supporting interactions with directives">
 
-    <script name="Complete page replacement with children">
+    <script name="Complete page replacement with slot">
         const { transformDOMCheck } = Modulo.utils;
         const componentIH = `<!DOCTYPE html>
             <html>
@@ -442,7 +442,7 @@
                 <main class="Main">
                     <aside class="TitleAside" >
                     </aside>
-                    <aside style="border: none" [component.children]>
+                    <aside style="border: none" [component.slot]>
                     </aside>
                 </main>
             </body>

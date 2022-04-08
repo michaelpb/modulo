@@ -23,9 +23,9 @@ New plan forward:
     - Clean-up / test tutorial
 5. Maybe:
     - Decide on Loader / Module / Config simplification
-            - Possibly: Rename Loader / Module to "Library"
-            - Rationale: Less visually similar to Modulo, more descriptive,
-              less confusing since "module" is a vanilla JS feature (import)
+        - Possibly: Rename Loader / Module to "Library"
+        - Rationale: Less visually similar to Modulo, more descriptive, less
+          confusing since "module" is a vanilla JS feature (import)
     - Finish bundle()?
     - Fix reconciler1 tests so they run on other Node versions (they rely on an
       older "[object Object]" style toString that no longer is the case)

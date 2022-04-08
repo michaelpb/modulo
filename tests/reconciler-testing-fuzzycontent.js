@@ -487,7 +487,7 @@ Modulo.utils.componentIH = `<!DOCTYPE html>
                 <mws-DocSidebar path="tutorial.html"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]>
+        <aside style="border: none" [component.slot]>
         </aside>
     </main>
 

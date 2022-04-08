@@ -1,33 +1,37 @@
 <script src="/js/Modulo.js"></script>
 
 <template modulo-embed>
-    <load namespace="x" src="/components/layouts.html" ></load>
+    <Load namespace="x" src="/components/layouts.html" ></Load>
 
-    <component name="MahBtn">
-        <props
+    <Component name="MahBtn" mode="shadow">
+        <Props
             txt
-        ></props>
+        ></Props>
 
-        <template>
+        <Template>
             <button @click:=script.clickies>{{ props.txt }}</button>
-        </template>
+            <p>ABC</p>
+            <!--<div [component.slot]></div>-->
+            <slot>abc</slot>
+            <p>DEF</p>
+        </Template>
 
-        <script>
+        <Script>
             function clickies() {
                 console.log('hi it is clickies');
                 const a = 123;
-                a();
+                //a();
             }
-        </script>
+        </Script>
 
-        <style>
+        <Style>
             button {
                 border: 3px solid orange;
                 color: orange;
                 background: black;
             }
-        </style>
-    </component>
+        </Style>
+    </Component>
 
 </template>
 
@@ -35,7 +39,7 @@
 
 
 <button>Before button</button>
-<x-MahBtn txt="Hello"></x-MahBtn>
+<x-MahBtn txt="Hello"><em>Testing stuff</em></x-MahBtn>
 <button>After button</button>
 
 

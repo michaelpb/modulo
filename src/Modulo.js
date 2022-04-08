@@ -455,11 +455,10 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     static factoryCallback(opts, factory, loadObj) {
-        const directiveShortcuts = [
+        opts.directiveShortcuts = [
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
         ];
-        return { directiveShortcuts };
     }
 
     headTagLoad({ el }) {
@@ -505,10 +504,18 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             'component.dataPropUnmount',
             'component.eventMount',
             'component.eventUnmount',
-            'component.childrenLoad',
+            //'component.childrenLoad',
+            'component.slotLoad',
         ];
         if (this.attrs.mode === 'vanish-into-document') {
             dirs.push('link', 'title', 'meta', 'script');
+        }
+        if (this.attrs.mode !== 'shadow') {
+            // TODO: clean up Load callbacks, either eliminate slotLoad (and
+            // discontinue [component.slot]) in favor of only slotTagLoad, or
+            // refactor somehow
+            dirs.push('slot');
+            this.slotTagLoad = this.slotLoad.bind(this);
         }
         return dirs;
     }
@@ -578,11 +585,16 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         }
     }
 
-    childrenLoad({ el, value }) {
+    slotLoad({ el, value }) {
         let chosenSlot = value || el.getAttribute('name') || null;
         const getSlot = c => c.getAttribute ? (c.getAttribute('slot') || null) : null;
         let childs = this.element.originalChildren;
         childs = childs.filter(child => getSlot(child) === chosenSlot);
+
+        if (!el.moduloSlotHasLoaded) { // clear innerHTML if this is first load
+            el.innerHTML = '';
+            el.moduloSlotHasLoaded = true;
+        }
         el.append(...childs);
     }
 
@@ -701,15 +713,26 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({ content }, { loader, name }, loadObj) {
-        // TODO: Add in support for shadow DOM
-        //if (loadObj.component.mode === 'shadow') {
-        //    return;
-        //}
+        if (loadObj.component.attrs.mode === 'shadow') {
+            return;
+        }
         const { prefixAllSelectors } = Modulo.cparts.style;
         content = prefixAllSelectors(loader.namespace, name, content);
         Modulo.assets.registerStylesheet(content);
-        //const { fullName } = factory;
-        //const id = `${ fullName }_Modulo_${ tagName.toUpperCase() }`;
+    }
+
+    initializedCallback(renderObj) {
+        const { component, style } = renderObj;
+        if (component.attrs.mode === 'shadow') {
+            console.log('Shadow styling!');
+            const style = Modulo.globals.document.createElement('style');
+            style.setAttribute('modulo-ignore', 'true');
+            style.textContent = style.content;// `<style modulo-ignore>${style.content}</style>`;
+            this.element.shadowRoot.append(style);
+            //this.element.shadowRoot.innerHTML = 
+            //console.log('Shadow styling!',
+             //`<style modulo-ignore>${style.content}</style>`);
+        }
     }
 
     static prefixAllSelectors(namespace, name, text='') {

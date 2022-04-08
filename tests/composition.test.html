@@ -5,7 +5,7 @@
 <component name="PassThrough">
     <template>
         <p>Before</p>
-        <div [component.children]>Defhij</div>
+        <div [component.slot]>Defhij</div>
         <p>After</p>
     </template>
 </component>
@@ -37,31 +37,41 @@
 </component>
 
 
+
 <component name="CompositionTester2">
 
-<template>
+<Template>
     <div>Abc</div>
     <PassThrough><p>123</p><p>456</p></PassThrough>
     <div>Def</div>
-</template>
+</Template>
 
-<testsuite skip>
+<testsuite>
 
     <test>
         <template name="Renders once as expected">
             <div>Abc</div>
             <x-PassThrough>
                 <p>Before</p>
-                <div [component.children]>
+                <div [component.slot]>
                     <p>123</p><p>456</p>
                 </div>
                 <p>After</p>
             </x-PassThrough>
             <div>Def</div>
         </template>
-        <script skip-rerender>
-            assert: true;
-        </script>
+
+        <template name="Renders another time as expected">
+            <div>Abc</div>
+            <x-PassThrough>
+                <p>Before</p>
+                <div [component.slot]>
+                    <p>123</p><p>456</p>
+                </div>
+                <p>After</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
     </test>
 
 </testsuite>

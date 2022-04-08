@@ -5,9 +5,7 @@ const { ModRec } = Modulo.reconcilers;
 
 function makeMockDirectives(mockElement) {
 
-    mockElement.childrenLoad = () => {}; // dummy
-    mockElement.childrenMount = () => {}; // dummy
-    mockElement.childrenUnmount = () => {}; // dummy
+    mockElement.slotLoad = () => {}; // dummy
     mockElement.dirMount = () => {}; // dummy
     mockElement.dirChange = () => {}; // dummy
     mockElement.dirUnmount = () => {}; // dummy
@@ -17,6 +15,10 @@ function makeMockDirectives(mockElement) {
     mockElement.dataPropUnmount = () => {}; // dummy
     mockElement.eventMount = () => {}; // dummy
     mockElement.eventUnmount = () => {}; // dummy
+
+    // Required by ReconcilerTester2
+    mockElement.slotMount = () => {}; // dummy
+    mockElement.slotUnmount = () => {}; // dummy
 
     return {
         'test.dirMount': mockElement, // more fake ones
@@ -30,9 +32,11 @@ function makeMockDirectives(mockElement) {
         'component.eventUnmount': mockElement,
         'component.dataPropMount': mockElement,
         'component.dataPropUnmount': mockElement,
-        'component.childrenLoad': mockElement,
-        'component.childrenMount': mockElement,
-        'component.childrenUnmount': mockElement,
+        'component.slotLoad': mockElement,
+
+        // Required by ReconcilerTester2
+        'component.slotMount': mockElement,
+        'component.slotUnmount': mockElement,
     };
 }
 

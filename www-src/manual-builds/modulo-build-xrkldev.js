@@ -1794,7 +1794,7 @@ examples to the Modulo framework, not as a examples themselves -->
 </head>
 <body>
 
-<div [component.children]="above-navbar">
+<div [component.slot]="above-navbar">
 </div>
 
 <nav class="Navbar">
@@ -1835,11 +1835,11 @@ examples to the Modulo framework, not as a examples themselves -->
                 <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]>
+        <aside style="border: none" [component.slot]>
         </aside>
     </main>
 {% else %}
-    <main class="Main" [component.children]>
+    <main class="Main" [component.slot]>
     </main>
 {% endif %}
 
@@ -4175,7 +4175,7 @@ return { "gotClickies": typeof gotClickies !== "undefined" ? gotClickies : undef
 var OUT=[];
 OUT.push("<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"); // "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"
 OUT.push(G.escapeHTML(CTX.props.pagetitle)); // "props.pagetitle"
-OUT.push(" - modulojs.org</title>\n    <link rel=\"stylesheet\" href=\"/css/style.css\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->\n    <!--<script src=\"/js/codemirror_5.63.0/codemirror_bundled.js\"></script>-->\n    <!--<link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />-->\n</head>\n<body>\n\n<div [component.children]=\"above-navbar\">\n</div>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/mono_logo.png\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\" "); // "- modulojs.org</title>\n    <link rel=\"stylesheet\" href=\"/css/style.css\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->\n    <!--<script src=\"/js/codemirror_5.63.0/codemirror_bundled.js\"></script>-->\n    <!--<link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />-->\n</head>\n<body>\n\n<div [component.children]=\"above-navbar\">\n</div>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/mono_logo.png\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\""
+OUT.push(" - modulojs.org</title>\n    <link rel=\"stylesheet\" href=\"/css/style.css\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->\n    <!--<script src=\"/js/codemirror_5.63.0/codemirror_bundled.js\"></script>-->\n    <!--<link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />-->\n</head>\n<body>\n\n<div [component.slot]=\"above-navbar\">\n</div>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/mono_logo.png\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\" "); // "- modulojs.org</title>\n    <link rel=\"stylesheet\" href=\"/css/style.css\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->\n    <!--<script src=\"/js/codemirror_5.63.0/codemirror_bundled.js\"></script>-->\n    <!--<link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />-->\n</head>\n<body>\n\n<div [component.slot]=\"above-navbar\">\n</div>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/mono_logo.png\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\""
 if (CTX.props.navbar === "about") { // "if props.navbar == \"about\""
 OUT.push("class=\"Navbar--selected\""); // "class=\"Navbar--selected\""
 } // "endif"
@@ -4201,9 +4201,9 @@ OUT.push("\n    </div>\n</nav>\n\n"); // "</div>\n</nav>"
 if (CTX.props.docbarselected) { // "if props.docbarselected"
 OUT.push("\n    <main class=\"Main Main--fluid Main--withSidebar\">\n        <aside class=\"TitleAside TitleAside--navBar\" >\n            <h3><span alt=\"Lower-case delta\">%</span></h3>\n            <nav class=\"TitleAside-navigation\">\n                <h3>Documentation</h3>\n                <mws-DocSidebar path=\""); // "<main class=\"Main Main--fluid Main--withSidebar\">\n        <aside class=\"TitleAside TitleAside--navBar\" >\n            <h3><span alt=\"Lower-case delta\">%</span></h3>\n            <nav class=\"TitleAside-navigation\">\n                <h3>Documentation</h3>\n                <mws-DocSidebar path=\""
 OUT.push(G.escapeHTML(CTX.props.docbarselected)); // "props.docbarselected"
-OUT.push("\"></mws-DocSidebar>\n            </nav>\n        </aside>\n        <aside style=\"border: none\" [component.children]>\n        </aside>\n    </main>\n"); // "\"></mws-DocSidebar>\n            </nav>\n        </aside>\n        <aside style=\"border: none\" [component.children]>\n        </aside>\n    </main>"
+OUT.push("\"></mws-DocSidebar>\n            </nav>\n        </aside>\n        <aside style=\"border: none\" [component.slot]>\n        </aside>\n    </main>\n"); // "\"></mws-DocSidebar>\n            </nav>\n        </aside>\n        <aside style=\"border: none\" [component.slot]>\n        </aside>\n    </main>"
 } else { // "else"
-OUT.push("\n    <main class=\"Main\" [component.children]>\n    </main>\n"); // "<main class=\"Main\" [component.children]>\n    </main>"
+OUT.push("\n    <main class=\"Main\" [component.slot]>\n    </main>\n"); // "<main class=\"Main\" [component.slot]>\n    </main>"
 } // "endif"
 OUT.push("\n\n<footer>\n    <main>\n        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>\n"); // "<footer>\n    <main>\n        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>"
 
