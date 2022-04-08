@@ -15,11 +15,15 @@ New plan forward:
     - (DONE) Hiding stuff that doesn't work (e.g.  spares are probably going to
       be removed)
     - (DONE) Move incomplete / nonessential docs into "experimental"
-    - Make lifecycle names consistent: "prepare, render, reconcile, update"
+    - (DONE) Make lifecycle names consistent: "prepare, render, reconcile, update"
+    - (DONE) Split Lifecycle and Directives
     - Finish Part 3 of Tutorial and ensure Part 1 - 2 works.
-4. Maybe: Decide on Loader / Module / Config simplification
-    - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'
+4. Final stuff
     - Investigate any outstanding issues, e.g. with nested components
+    - Clean-up / test tutorial
+5. Maybe: Decide on Loader / Module / Config simplification
+    - Finish bundle()?
+    - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'
 
 The goal is an early "feature / refactor freeze". Once everything works
 (mostly) as advertised, at least enough to get feedback, then reach out to

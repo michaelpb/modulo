@@ -359,7 +359,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     rerender() {
-        this.lifecycle([ 'prepare', 'render', 'update', 'updated' ]);
+        this.lifecycle([ 'prepare', 'render', 'reconcile', 'update' ]);
     }
 
     lifecycle(lifecycleNames, rObj={}) {
@@ -532,7 +532,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         return { originalHTML, innerHTML: null, patches: null };
     }
 
-    updateCallback(renderObj) {
+    reconcileCallback(renderObj) {
         let { innerHTML, patches, root } = renderObj.component;
         if (innerHTML !== null) {
 
@@ -554,7 +554,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         return { patches, innerHTML }; // TODO remove innerHTML from here
     }
 
-    updatedCallback(renderObj) {
+    updateCallback(renderObj) {
         const { patches, innerHTML } = renderObj.component;
         if (patches) {
             this.reconciler.applyPatches(patches);
@@ -668,7 +668,7 @@ Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
     }
     constructor(element, options) {
         super(element, options);
-        const renderLifeCycle = [ 'prepare', 'render', 'update', 'updated' ];
+        const renderLifeCycle = [ 'prepare', 'render', 'reconcile', 'update' ];
         for (const name of [ 'initialized' ].concat(renderLifeCycle)) {
             const methodName = name + 'Callback';
             this[methodName] = renderObj => {
@@ -684,7 +684,7 @@ Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
                     console.groupEnd();
                 }
                 console.groupEnd();
-                if (name === 'updated') {
+                if (name === 'update') {
                     console.groupEnd();
                 }
             }
