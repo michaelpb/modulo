@@ -59,6 +59,14 @@ colleagues for early feedback.
     - Think about supporting Dino for the CLI version (seems simpler, possibly
       better due to c% support!)
 
+- New SSG render steps:
+    - Better isolated, and 1:1 behavioral correspondence to browser (no preload)
+    - Every command is done in the context of a single HTML page
+    - Make a new simpler structure for building:
+        1. Load HTML page
+        2. Run command: e.g. build
+    - For now, do one at a time
+
 # 2022 Final, final To-Do:
 
 
