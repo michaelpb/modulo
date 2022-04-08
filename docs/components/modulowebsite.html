@@ -247,23 +247,34 @@
         },
 
         {
-            label: 'Lifecycle & Directives',
-            filename: '/docs/directives.html',
+            label: 'Lifecycle',
+            filename: '/docs/lifecycle.html',
             children: [
-                _child('Lifecycle', 'lifecycle',
+                _child('Lifecycle phases', 'phases',
                     ['lifestyle phases', 'lifestyle phase groups',
                      'load', 'factory', 'prepare', 'initialized',
-                     'render', 'update', 'updated',
+                     'render', 'reconcile', 'update',
                      'event', 'eventCleanup', 'hooking into lifecycle',
                      'lifecycle callbacks', 'script tag callbacks']),
+                _child('Factory lifecycle', 'factory',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
                 _child('renderObj', 'renderobj',
                     ['renderObj', 'baseRenderObj', 'loadObj',
                      'dependency injection', 'middleware']),
+            ],
+        },
+
+        {
+            label: 'Directives',
+            filename: '/docs/directives.html',
+            children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
                      'custom directives', 'refs', 'accessing dom',
                      'escape hatch', 'mount callback', 'unmount callback']),
-                //_child('Built-in directives', 'builtin'),
+                _child('Custom directives', 'custom'),
+                _child('Built-in directives', 'builtin'),
             ],
         },
 

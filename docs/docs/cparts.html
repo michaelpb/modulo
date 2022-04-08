@@ -125,7 +125,7 @@ them. This is where Templates come into play: They generate the
 during the <code>render</code> <a
 href="/docs/directives.html#lifecycle">lifecycle phase</a>, and setting that to
 the <code>renderObj.component.innerHTML</code>. The <em>Component</em>  CPart
-will take whatever is written there during the <code>updated</code> phase and
+will take whatever is written there during the <code>reconcile</code> phase and
 then "reconcile", modify it's contents to resemble the target innerHTML. (More
 on this is in <a href="#component">the Component CPart documentation below</a>.)</p>
 
@@ -611,8 +611,8 @@ interface with it.</p>
     default, it will then also apply those patches in the <code>update</code>
     lifecycle.</li>
 
-    <li><code>component.patches</code> - Between the <code>render</code> and
-    <code>updated</code> stages, the "patches" property is exposed to allow
+    <li><code>component.patches</code> - Between the <code>reconcile</code> and
+    <code>update</code> stages, the "patches" property is exposed to allow
     access to or modification of the patches that the Component intends to
     apply. This is an advanced feature that gives fine-grained control to how
     rendering works, and is rarely useful. For example, you could use this
