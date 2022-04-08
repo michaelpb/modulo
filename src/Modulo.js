@@ -1613,10 +1613,12 @@ Modulo.utils = class utils {
           </(state|props|template)> -> </script>*/
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = html;
+        /*
         if (inFrag) { // TODO: Don't think there's a reason for frags, actually
             const frag = new Modulo.globals.DocumentFragment();
             frag.appendChild(div);
         }
+        */
         return div;
     }
 

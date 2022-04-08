@@ -21,8 +21,14 @@ New plan forward:
 4. Final stuff
     - Investigate any outstanding issues, e.g. with nested components
     - Clean-up / test tutorial
-5. Maybe: Decide on Loader / Module / Config simplification
+5. Maybe:
+    - Decide on Loader / Module / Config simplification
+            - Possibly: Rename Loader / Module to "Library"
+            - Rationale: Less visually similar to Modulo, more descriptive,
+              less confusing since "module" is a vanilla JS feature (import)
     - Finish bundle()?
+    - Fix reconciler1 tests so they run on other Node versions (they rely on an
+      older "[object Object]" style toString that no longer is the case)
     - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'
 
 The goal is an early "feature / refactor freeze". Once everything works
@@ -60,11 +66,14 @@ colleagues for early feedback.
       better due to c% support!)
 
 - New SSG render steps:
-    - Better isolated, and 1:1 behavioral correspondence to browser (no preload)
-    - Every command is done in the context of a single HTML page
+    - Better isolated, and 1:1 behavioral correspondence to browser (eliminate
+      preload and other complications)
+    - Every command is done in the context of a single HTML page, should be
+      better isolated
     - Make a new simpler structure for building:
         1. Load HTML page
-        2. Run command: e.g. build
+        2. Run command: e.g. build, ssgpage
+        3. Run post-processing (e.g. build tag insertion)
     - For now, do one at a time
 
 # 2022 Final, final To-Do:

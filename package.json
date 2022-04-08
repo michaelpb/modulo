@@ -38,7 +38,8 @@
   },
   "dependencies": {
     "express": "4.17.1",
-    "linkedom": "0.12.1",
+    "happy-dom": "^2.55.0",
+    "linkedom": "0.14.5",
     "node-watch": "0.7.2"
   }
 }
