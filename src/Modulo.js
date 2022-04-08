@@ -662,6 +662,36 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     }
 }
 
+Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
+    static factoryCallback() {
+        return {}; // wipe contents
+    }
+    constructor(element, options) {
+        super(element, options);
+        const renderLifeCycle = [ 'prepare', 'render', 'update', 'updated' ];
+        for (const name of [ 'initialized' ].concat(renderLifeCycle)) {
+            const methodName = name + 'Callback';
+            this[methodName] = renderObj => {
+                if (name === 'prepare') {
+                    console.group(this.element.fullName + ' (rerender ' + (new Date().toLocaleTimeString()) + ')');
+                    console.log(this.element);
+                }
+                console.groupCollapsed(name);
+                for (const [ key, data ] of Object.entries(renderObj)) {
+                    console.groupCollapsed(key + ' (CPart)');
+                    //console.table(data);
+                    console.log(data);
+                    console.groupEnd();
+                }
+                console.groupEnd();
+                if (name === 'updated') {
+                    console.groupEnd();
+                }
+            }
+        }
+    }
+}
+
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static factoryCallback() {
         console.count('Ignored test-suite');
@@ -1883,10 +1913,15 @@ Modulo.CommandMenu = class CommandMenu {
     }
 
     target(elem) {
+        // DAED CODE
         if (!this.targeted) {
             this.targeted = [];
         }
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
+    }
+
+    debug(elem) {
+        elem.cparts.debug = new Modulo.cparts.debug(elem, {});
     }
 
     build(opts = {}) {

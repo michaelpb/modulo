@@ -15,6 +15,7 @@ New plan forward:
     - (DONE) Hiding stuff that doesn't work (e.g.  spares are probably going to
       be removed)
     - (DONE) Move incomplete / nonessential docs into "experimental"
+    - Make lifecycle names consistent: "prepare, render, reconcile, update"
     - Finish Part 3 of Tutorial and ensure Part 1 - 2 works.
 4. Maybe: Decide on Loader / Module / Config simplification
     - Think about 'Modulo.register('cpart', 'Template', class Template extends CPart { });'
@@ -39,7 +40,11 @@ colleagues for early feedback.
             - That way CParts are handled separately, anything that's
               `<Xyz` turns into `<script type="modulo/Xyz" ...`
 
-- debugger - Be able to table all variables in renderObj accross each lifecycle
+- debugger
+    - Be able to table all variables in renderObj accross each lifecycle
+    - Idea: "target" an element (m.debug(....) or m.target(....))
+    - It will consolelog it and then hook into cycle to spam after every
+      lifecycle
 - templatetag "prefilter" -- modifies the default prefilter for "text" mode
   output. Can be used also with "trim" to remove excess whitespace, or
   something like "trimBetweenTags" to avoid space around HTML text (By default,
