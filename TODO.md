@@ -11,19 +11,19 @@ New plan forward:
         - http://localhost:8081/docs/tutorial_part_test_tmp.html
     - (DONE) Currently: "state" doesn't get retained in embedded components in
       tutorial part 3 (e.g. state.num is undefined for the example buttons)
-3. Finish first pass at documentation
+3. (DONE) Finish first pass at documentation
     - (DONE) Hiding stuff that doesn't work (e.g.  spares are probably going to
       be removed)
     - (DONE) Move incomplete / nonessential docs into "experimental"
     - (DONE) Make lifecycle names consistent: "prepare, render, reconcile, update"
     - (DONE) Split Lifecycle and Directives
-    - Finish Part 3 of Tutorial and ensure Part 1 - 2 works.
+    - (DONE) Finish Part 3 of Tutorial
 4. Final stuff
     - (DONE-ish!) Investigate any outstanding issues, e.g. with nested components
     - Clean-up / test tutorial
 5. Maybe:
     - Decide on Loader / Module / Config simplification
-        - Possibly: Rename Loader / Module to "Library"
+        - Possibly: Rename + condense Loader / Module to only be "Library"
         - Rationale: Less visually similar to Modulo, more descriptive, less
           confusing since "module" is a vanilla JS feature (import)
     - Finish bundle()?

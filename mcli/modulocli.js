@@ -102,12 +102,13 @@ function doCommand(cliConfig, args) {
     }
     */
 
-    const vm = new ModuloVM(config);
+    const vm = new ModuloBrowser(config);
     if (positional.length > 1) {
         throw new Error('Only 1 file at a time for now')
     }
     vm.run(positional[0], () => {
         //console.log('this is innerHTML', vm.document.innerHTML);
+        console.log('AFTER RUNNING YO!');
     });
 }
 
