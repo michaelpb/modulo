@@ -22,6 +22,47 @@ change drastically in the future.</p>
 
 
 
+<mws-Section name="state">Debug</mws-Section>
+
+<p>Use the following code for a "debugger" CPart:</p>
+
+<pre>
+// add to ModuloCommand
+// debug(elem) {
+//     elem.cparts.debug = new Modulo.cparts.debug(elem, {});
+// }
+
+Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
+    static factoryCallback() {
+        return {}; // wipe contents
+    }
+    constructor(element, options) {
+        super(element, options);
+        const renderLifeCycle = [ 'prepare', 'render', 'reconcile', 'update' ];
+        for (const name of [ 'initialized' ].concat(renderLifeCycle)) {
+            const methodName = name + 'Callback';
+            this[methodName] = renderObj => {
+                if (name === 'prepare') {
+                    console.group(this.element.fullName + ' (rerender ' + (new Date().toLocaleTimeString()) + ')');
+                    console.log(this.element);
+                }
+                console.groupCollapsed(name);
+                for (const [ key, data ] of Object.entries(renderObj)) {
+                    console.groupCollapsed(key + ' (CPart)');
+                    //console.table(data);
+                    console.log(data);
+                    console.groupEnd();
+                }
+                console.groupEnd();
+                if (name === 'update') {
+                    console.groupEnd();
+                }
+            }
+        }
+    }
+}
+</pre>
+
 <mws-Section name="state">Store</mws-Section>
 
 <blockquote>

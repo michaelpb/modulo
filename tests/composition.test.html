@@ -17,9 +17,9 @@
     <LilTester></LilTester>
 </template>
 
-<testsuite>
+<TestSuite>
 
-    <test>
+    <Test>
         <template name="Renders as expected">
             <div>Abc</div>
             <x-LilTester><p>Defhij</p></x-LilTester>
@@ -32,9 +32,9 @@
             const ih = element.innerHTML.trim().replace(/\s+/g, '');
             assert: ih === expected
         </script>
-    </test>
-</testsuite>
-</component>
+    </Test>
+</TestSuite>
+</Component>
 
 
 
@@ -42,13 +42,18 @@
 
 <Template>
     <div>Abc</div>
-    <PassThrough><p>123</p><p>456</p></PassThrough>
+    <PassThrough><p>{{state.num1}}</p><p>{{state.num2}}</p></PassThrough>
     <div>Def</div>
 </Template>
 
-<testsuite>
+<State
+  num1:=123
+  num2:=456
+></State>
 
-    <test>
+<TestSuite>
+
+    <Test>
         <template name="Renders once as expected">
             <div>Abc</div>
             <x-PassThrough>
@@ -61,9 +66,37 @@
             <div>Def</div>
         </template>
 
-    </test>
+        <template name="Renders second time as expected">
+            <div>Abc</div>
+            <x-PassThrough>
+                <p>Before</p>
+                <div [component.slot]>
+                    <p>123</p><p>456</p>
+                </div>
+                <p>After</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
 
-</testsuite>
+        <state
+            num1:=789
+            num2:=234
+        ></state>
 
-</component>
+        <template name="Renders third time with state change">
+            <div>Abc</div>
+            <x-PassThrough>
+                <p>Before</p>
+                <div [component.slot]>
+                    <p>789</p><p>234</p>
+                </div>
+                <p>After</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+    </Test>
+
+</TestSuite>
+
+</Component>
 

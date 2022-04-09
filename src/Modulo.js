@@ -348,6 +348,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     initialize() {
         this.cparts = {};
         this.isMounted = false;
+        this.isModulo = true;
         this.originalHTML = null;
         this.originalChildren = [];
         this.fullName = this.factory().fullName;
@@ -674,36 +675,6 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     }
 }
 
-Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
-    static factoryCallback() {
-        return {}; // wipe contents
-    }
-    constructor(element, options) {
-        super(element, options);
-        const renderLifeCycle = [ 'prepare', 'render', 'reconcile', 'update' ];
-        for (const name of [ 'initialized' ].concat(renderLifeCycle)) {
-            const methodName = name + 'Callback';
-            this[methodName] = renderObj => {
-                if (name === 'prepare') {
-                    console.group(this.element.fullName + ' (rerender ' + (new Date().toLocaleTimeString()) + ')');
-                    console.log(this.element);
-                }
-                console.groupCollapsed(name);
-                for (const [ key, data ] of Object.entries(renderObj)) {
-                    console.groupCollapsed(key + ' (CPart)');
-                    //console.table(data);
-                    console.log(data);
-                    console.groupEnd();
-                }
-                console.groupEnd();
-                if (name === 'update') {
-                    console.groupEnd();
-                }
-            }
-        }
-    }
-}
-
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static factoryCallback() {
         console.count('Ignored test-suite');
@@ -984,28 +955,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             }
         }
         this._oldData = null;
-    }
-}
-
-Modulo.cparts.store = class Store extends Modulo.cparts.state {
-    initializedCallback(renderObj) {
-        // DEAD CODE
-        const cls = Modulo.cparts.store;
-        if (!('boundElements' in cls)) {
-            cls.storeData = {};
-            cls.boundElements = {};
-        }
-        super.initializedCallback(renderObj);
-
-        if (!(this.attrs.slice in cls.storeData)) {
-            cls.storeData[this.attrs.slice] = {};
-            cls.boundElements[this.attrs.slice] = {};
-        }
-        this.data = cls.storeData[this.attrs.slice];
-        // TODO: Make boundElements support Many to One (probably for state,
-        // why not) so that if one component changes Store, all components
-        // change Store.
-        this.boundElements = cls.boundElements[this.attrs.slice];
     }
 }
 
@@ -1408,8 +1357,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     reconcile(node, rival, tagTransforms) {
-        // Note: Always attempts to reconcile (even on first mount), in case
-        // it's been pre-rendered
         // TODO: should normalize <!DOCTYPE html>
         if (typeof rival === 'string') {
             rival = this.loadString(rival, tagTransforms);
@@ -1424,6 +1371,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         for (const node of elem.querySelectorAll('*')) {
             // legacy -v, TODO rm
             const newTag = tagTransforms[node.tagName.toLowerCase()];
+            //console.log('this is tagTransforms', tagTransforms);
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);
             }
@@ -1493,14 +1441,20 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
+
                 if (child.nodeType !== 1) { // text or comment node
                     if (child.nodeValue !== rival.nodeValue) { // update
                         this.patch(child, 'node-value', rival.nodeValue);
                     }
                 } else if (!child.isEqualNode(rival)) { // sync if not equal
                     this.reconcileAttributes(child, rival);
+
                     if (rival.hasAttribute('modulo-ignore')) {
                         //console.log('Skipping ignored node');
+                    } else if (child.isModulo) { // is a Modulo component
+                        child.originalChildren = Array.from(rival.children);
+                        child.originalHTML = rival.innerHTML;
+                        child.rerender();
                     } else if (!this.shouldNotDescend) {
                         cursor.saveToStack();
                         cursor.initialize(child, rival);
@@ -1828,7 +1782,6 @@ Modulo.FetchQueue = class FetchQueue {
     }
 }
 
-
 Modulo.INVALID_WORDS = new Set((`
     break case catch class const continue debugger default delete do else
     enum export extends finally for if implements import in instanceof
@@ -1943,10 +1896,6 @@ Modulo.CommandMenu = class CommandMenu {
             this.targeted = [];
         }
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
-    }
-
-    debug(elem) {
-        elem.cparts.debug = new Modulo.cparts.debug(elem, {});
     }
 
     build(opts = {}) {
