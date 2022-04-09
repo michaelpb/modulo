@@ -313,7 +313,7 @@ text='
 <mws-Demo
 text='
 <Template>
-    Hello <strong>Modulo</strong> World!
+    Hello <strong><slot></slot></strong> World!
     <p>Goal: {{ props.goal }}</p>
     <p>Amount: {{ props.amount }}</p>
 </Template>
@@ -367,7 +367,7 @@ text='
 <h3>Template filters</h3>
 
 <p>The Modulo templating language has two more big features: <em>filters</em>
-(for formatting values), and <em>templatetags</em> (for control-flow). We'll
+(for formatting values), and <em>template-tags</em> (for control-flow). We'll
 briefly introduce <em>filters</em> now, but for a more thorough introduction to
 the Modulo templating language, you should <a href="/docs/templating.html">read
 the Templating section</a>.</p>
@@ -403,6 +403,20 @@ script tags (covered in Part 3) you can easily author your own.
 The full <a href="/docs/templating-reference.html">Templating Reference</a> has
 examples of all filters available.</p>
 
+
+<h3>Template tags</h3>
+
+<p>In addition to filters, the Modulo templating language also support powerful
+"template tags", which allow for more complicated custom behavior. This
+includes the "if" template-tag, which allows for conditional rendering (e.g.
+"only show the submit button if a form is filled correctly"), and the "for"
+template-tag, which allows for HTML to be repeated for each item of some given
+data (e.g.  "every blog post get's it's own <code>&lt;li&gt;</code> element").
+The full <a href="/docs/templating-reference.html">Templating Reference</a> has
+examples of the different template tags available.</p>
+
+
+
 <!--
 <section class="Tutorial-tryit">
     <h4>Try it now</h4>
@@ -414,7 +428,7 @@ examples of all filters available.</p>
         (<code>&lt;Template&gt;</code>) to see how that affects the
         output</li>
         <li>Practice modifying the <strong>Style</strong> CPart
-        (<code>&lt;style&gt;</code>) to add or modify CSS</li>
+        (<code>&lt;Style&gt;</code>) to add or modify CSS</li>
         <li>Practice incorporating these CParts into your own components on
         a real page by copying the code here and pasting it within your
         component definition (that is, the one that you created in the
@@ -472,9 +486,9 @@ file, as such:</p>
 
 <p>Similarly, you can split off a <em>Style</em> as well:</p>
 
-<pre>&lt;style
+<pre>&lt;Style
     src="./some/other/path.css"
-&gt;&lt;/style&gt;</pre>
+&gt;&lt;/Style&gt;</pre>
 
 <p>The rules for <code>src=</code> relative paths are similar to HTML's rules:
 Any URI path can be specified, and use a dot (<code>.</code>) to specify a path
@@ -558,9 +572,9 @@ text='
 <script src="./modulo-build.(some hash goes here).js"></script>
 
 <!-- KEEP your old loading code: -->
-<modulo>
-    <load src="./components/my-component-lib.html" namespace="lib" ></load>
-</modulo>
+<Modulo>
+    <Load src="./components/my-component-lib.html" namespace="lib" ></Load>
+</Modulo>
 
 <!-- Make sure we defineAll (but only AFTER the script tags) -->
 <script>Modulo.defineAll();</script>
@@ -596,6 +610,8 @@ text='
 
 <h3>Modulo bundle: Packing up even further</h3>
 
+<p><em>NOTE: m.bundle is not yet fully implemented!</em></p>
+
 <p>So, we've learned how to "build" our components into a single JS file, which
 prevents extra requests. However, it doesn't solve the issue of having to do a
 separate request for the Modulo source code, or the possibly verbose or messy
@@ -619,7 +635,7 @@ text='
 
 <!-- Now, the components we define can be used just like before: -->
 <x-HelloWorld goal="10" amount="2" ></x-HelloWorld>
-<!-- (no need for <template modulo-embed> or <load> - already "bundled") -->
+<!-- (no need for <template modulo-embed> or <Load> - already "bundled") -->
 '></mws-Demo>
 
 <h3>Part 2: Summary</h3>
@@ -635,8 +651,8 @@ feature.</p>
 <h4>Key terms</h4>
 
 <ul>
-<li> <strong>Props</strong> - A CPart used to specify attributes that can be
-used to configure a Component</li>
+<li> <strong>Props</strong> - A CPart used to specify attributes, that the user
+of a component can use to configure that Component</li>
 
 <li><strong>Template variable</strong> and <strong>template filter</strong> -
 Modulo's Templating language can include template variables (e.g.  <code>{{
@@ -645,8 +661,8 @@ reformatted by attaching template filters (e.g. <code>{{ props.name|upper
 }}</code>)</li>
 
 <li><strong>build</strong> - Combining all your JS and CSS together into a
-single file that loads faster. "Bundling" will also "freeze" in the "load"
-commands along with any extra JS files.</li>
+single file that loads faster. "Bundling" will also "freeze" in the "Load"
+commands along with any extra JS or CSS files.</li>
 </ul>
 
 

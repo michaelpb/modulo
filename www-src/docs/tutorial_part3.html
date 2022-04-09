@@ -105,6 +105,8 @@ button changes when that button is clicked. Furthermore, this demonstrates how
 state is not shared: Each button is a totally separate instance that keeps it's
 own private state.</p>
 
+<p>By the end of this third part, we will have examined every detail that goes
+into this counting button, so you will be able understand it's code in full.</p>
 
 
 <h3>Initializing the <em>State</em> CPart</h3>
@@ -363,16 +365,200 @@ text='
 
 <mws-Section name="script">3. Script</mws-Section>
 
-
-<p>To be continued!</p>
-
-
-
-
+<p>While Modulo is designed to be useful even without JavaScript, sometimes you
+just need access to that extra power of custom JavaScript code. Using
+JavaScript, Modulo can be even used to develop more complicated interactive web
+applications.</p>
 
 
+<h3>The <em>Script</em> CPart</h3>
 
 
+<p>To add JavaScript, use the <em>Script</em> CPart.  This CPart will execute
+the JS code contained within once, immediately upon loading the component. See
+this example:</p>
+
+<pre>&lt;Script&gt;
+    console.log("Hello JavaScript world!");
+&lt;/Script&gt;</pre>
+
+
+<blockquote><p><strong>Event directives</strong> Let's break down that last
+event directive: <code>@click:=script.sayHello</code>. First, note the at-sign:
+<code>@</code>.  This is "syntactic sugar" for the
+<code>[component.event]</code> directive. This will attach a "click" event
+listener to the given element when that element is first mounted (i.e.
+displayed on the screen), and remove the listener if it leaves. In this case,
+we are using a <code>:=</code> style "data prop" style assignment, to assign
+the click event to point to the sayHello function of the <em>Script</em> CPart.
+All functions defined in a <em>Script</em> CPart will automatically be
+"exported" and available to click events, or in dataprops in general.
+</p></blockquote>
+
+<p>In this above example, the <em>Script</em> CPart will execute that JS code
+once, as soon as it's loaded, causing the "console.log" to log that message to
+the web browser's Developer Tools JavaScript console exactly once.</p>
+
+<h3>Attaching click events</h3>
+
+<p>Typically, it's more useful to execute code when a user performs an action.
+To do this, we must place the "console.log" into a function:</p>
+
+<pre>&lt;Script&gt;
+    function sayHello() {
+        console.log("Hello JavaScript world!");
+    }
+&lt;/Script&gt;</pre>
+
+<p>Then, attach a "click" event directive to a HTML tag, such as, for example,
+a button element:</p>
+
+<pre>&lt;button @click:=script.sayHello&gt;Click me&lt;/button&gt;</pre>
+
+<p>Now, whenever a user clicks on the button, it will run the "sayHello"
+function, logging the text into the JavaScript console.</p>
+
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <ol>
+
+        <li>Bring up the console: Press <code>Control+Shift+J</code> (Linux,
+        Windows) or <code>Command+Option+J</code> (macOS) on your keyboard to
+        open the Console. Alternatively, you can right-click with your mouse
+        and select "Inspect", and then go to the <em>Console</em> tab.</li>
+
+        <li>Do you see the "COMPONENT GOT LOADED!" text displayed in the
+        console? It is displayed once every time the component is loaded. By
+        clicking "RUN", you can "reload" the component, causing that message to
+        show (or count up) again.</li>
+
+        <li>Try now clicking on the button in the preview on the right. Do you
+        see how every time you click it shows (or counts) the text of the
+        console.log in the console?</li>
+
+        <li><em>Extra:</em> Any number of functions can be defined in a
+        <em>Script</em> CPart. Practice writing your own function that console
+        logs a different message, and then attaching it to a new button (or the
+        existing button).</li>
+
+        <li><em>Extra:</em> The "event" directive supports any event. Try
+        changing "@click" to "@mouseover", and then move your mouse over the
+        button (without clicking). (For the curious: <a
+    href="https://developer.mozilla.org/en-US/docs/Web/Events#event_listing">
+    MDN has a list of all events</a>)</li>
+
+    </ol>
+
+
+    <mws-Demo demotype="minipreview"
+text='
+<Template>
+    <button @click:=script.doLog>
+        Click to console.log
+    </button>
+</Template>
+
+<Script>
+    console.log("COMPONENT GOT LOADED!");
+    function doLog() {
+        console.log("THE <button> GOT CLICKED!");
+    }
+</Script>
+'
+></mws-Demo>
+
+</section>
+
+
+<h3>Interacting with state</h3>
+
+<p>The <em>Script</em> CPart is like the <em>Template</em> CPart in one way:
+You get variables referencing the other CParts.  Within functions defined in
+the <em>Script</em> CPart, variables will be available representing the other
+CParts that have been defined in the <em>Component</em>.  As with the
+<em>Template</em> CPart, the most useful variables are <code>state</code>, with
+the current data in <em>State</em> CPart (the "data" Object), and
+<code>props</code>, with the value of the attributes that were passed to this
+component.</p>
+
+<p>Remember our "Holmes-style" detective work we did in the beginning? We
+looked at a button which incremented a value when clicked. The JavaScript code
+to increment a variable is <code>num++</code>, and for state data it can be:
+<code>state.num++</code>. Also, by default, components will rerender after
+every event that you are listening to. With that in mind, examine the code of
+the Hello button:</p>
+
+<mws-Demo
+text='
+<Template>
+    <button @click:=script.countUp>Hello {{ state.num }}</button>
+</Template>
+<State
+    num:=42
+></State>
+<Script>
+    function countUp() {
+        state.num++;
+    }
+</Script>
+'
+></mws-Demo>
+
+<p>By clicking on the button, it will increment the state value. Since the
+component will rerender after the click, it will then change the DOM to show
+the new number.</p>
+
+<p>With the power of JavaScript, you can do all manner of things with the
+Script tag. The <a href="/docs/example-library.html">Example Library</a> has
+all sorts of examples of more complicated apps and applications. The typical
+use of a Script tag, thus, is to create custom logic that manipulates or
+"puppets" the state, which in turn is what controls the rendering of the
+component's HTML code by the Template CPart.</p>
+
+<p>Keep in mind that the Script CPart is intended to be limited. Serious
+JavaScript development should be split into separate JS files, or defined as
+custom CParts. Thus, think of the Script CPart as more "filling in the gaps"
+between CParts, which should do most of the heavy lifting (e.g. asynchronous
+code, complicated API calls or data transformation, etc).</p>
+
+
+
+<h4>Key terms</h4>
+
+<ul>
+<li> <strong>State</strong> - A CPart used to include changing data, which is
+used to render the HTML of the component</li>
+
+<li><strong>Directive</strong> - A special type of HTML attribute that "hooks
+in" functionality to otherwise plain HTML elements. Three built-in directives
+include:
+
+    <ul>
+        <li><code>[state.bind]</code> - two-way binds inputs to state variables, so
+        modifying the input modifies the variable, and vice-versa</li>
+
+        <li><code>:=</code> - "data-prop" assignment, allowing for assigning to
+        JavaScript values such as functions and/or primitive JavaScript data types in JSON syntax</li>
+
+        <li><code>@click</code> - attach event listener to element</li>
+    </ul>
+</li>
+
+<li>
+<strong>Script</strong> - CPart that enables embedding of arbitrary JavaScript
+code, and allowing for easy access to CPart interface, and exposing JS
+functions to be attached as events
+</li>
+</ul>
+
+
+<h4>Next step</h4>
+
+<p>That's all for the Modulo tutorial! Modulo is still in early development, so
+it's likely the tutorial will expand in the future to cover more aspects of
+Modulo development.</p>
 
 
 </x-Page>

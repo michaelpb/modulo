@@ -6,6 +6,48 @@
 <template modulo-embed>
     <load namespace="x" src="/components/layouts.html"></load>
     <!--<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>-->
+
+    <!--
+    <Component name="HelloWorldFinal">
+        <Props
+            goal
+        ></Props>
+
+        <Template>
+            Hello <strong>Modulo</strong> World!
+            <p>Goal: {{ props.goal }}</p>
+            <p>Amount: {{ state.amount }}</p>
+            <button @click:=script.countUp>
+                Click to count to the goal!
+            </button>
+            {% if props.goal gt state.amount %}
+                <p>Amount is lower than goal</p>
+            {% else %}
+                <p>Amount is higher than goal</p>
+            {% endif %}
+        </Template>
+
+        <State
+            amount:=0
+        ></State>
+
+        <Script>
+            function countUp() {
+                console.log('button got clicked!');
+                state.amount++;
+            }
+        </Script>
+
+        <Style>
+            :host {
+                background: gray;
+                width: 100px;
+                height: 100px;
+                border: 1px dotted black;
+            }
+        </Style>
+    </Component>
+    -->
 </template>
 <script> Modulo.defineAll() </script>
 
@@ -24,6 +66,13 @@ frameworks is helpful, but not required.</p></blockquote>
 
 <p>Welcome to the Modulo tutorial. By following this short tutorial, you can
 learn how to use Modulo in your own projects.</p>
+
+<!--
+<p>You'll also be creating a little "Hello World" program during this tutorial.
+The final version of the program is included below:</p>
+
+<x-HelloWorldFinal goal="100"></x-HelloWorldFinal>
+-->
 
 <h3>When to use Modulo</h3>
 
@@ -163,6 +212,89 @@ text='
     </ol>
 </section>
 
+<!-- TODO: Add section on "slot" and practice with that -->
+
+<h3>Adding component "slots"</h3>
+
+
+<blockquote> <p><strong>The origin of slots</strong> Slots are a feature of the
+"shadow DOM", a new-ish feature of web browsers. Modulo replicates the same
+behavior of these "shadow" slots, making slots even easier to use without
+JavaScript.</blockquote>
+
+<p>As we explored in the last section, <em>components</em> are "define once,
+re-use many times" bits of code. Often, it's useful for a component to "wrap
+around" other HTML, or contain other HTML. For example, a stylized button
+component might wrap around text, or a stylish "modal dialog" component would
+wrap around paragraphs and other arbitrary HTML content. You can thus imagine
+the button or modal in these examples as having "empty spots" or <em>slots</em>
+where this content would go. That is to say, the component is a sort of "empty
+picture frame", and the web developer using the component would be able to
+"slide content" into the frame's empty slot.</p>
+
+<p><em>Slots</em> allow there to be "empty spots" in your HTML that proceed to
+get filled by arbitrary content supplied when your component is used. Adding a
+slot is as simple as including a <code>&lt;slot&gt;&lt;/slot&gt;</code> HTML
+element in your component's <em>Template</em> definition.</p>
+
+<p>Here's an example that "wraps" a slot inside a div with a CSS class of
+"picture-frame":</p>
+
+<pre>
+&lt;div class="picture-frame"&gt;
+    &lt;slot&gt;&lt;/slot&gt;
+&lt;/div&gt;
+</pre>
+
+
+<p>To fill up a <em>slot</em> with HTML content, add the content between the
+opening and closing tags of your HTML element. Here's an example that might go
+with the above example:</p>
+
+<pre>
+&lt;x-PictureFrame&gt;
+    &lt;p&gt;My cat:&lt;/p&gt;
+    &lt;img src="./cat.jpg" /&gt;
+&lt;/x-PictureFrame&gt;
+</pre>
+
+
+
+<section class="Tutorial-tryit">
+    <h4>Try it now</h4>
+    <ol>
+        <li>Resume editing the HTML file you were working on in the previous
+        "TRY IT NOW" section.</li>
+
+        <li>Time to add a slot! Let's make our "HelloWorld" component be ready
+        to have a customized greeting. Edit your embedded component to look
+        like this:</li>
+
+<mws-Demo
+text='
+<Component name="HelloWorld">
+    <Template>
+        Hello <strong><slot></slot></strong> World!
+    </Template>
+</Component>
+'></mws-Demo></li>
+
+        <li>Now, let's fill the slot! Edit your usage to include text or even
+        other HTML between your <code>x-HelloWorld</code> opening and closing
+        tags:</li>
+<mws-Demo
+text='
+<x-HelloWorld>Learning</x-HelloWorld>
+<p>In a P tag: <x-HelloWorld>Small</x-HelloWorld></p>
+'></mws-Demo></li>
+
+    </ol>
+
+</section>
+
+
+
+
 
 <mws-Section name="cparts">2. CParts</mws-Section>
 
@@ -248,6 +380,7 @@ sample code editors only focus on the CPart definitions within.</p>
         fromlibrary="Tutorial_P1"
     ></mws-Demo>
 </section>
+
 
 
 <mws-Section name="load">3. Loading Libraries</mws-Section>
@@ -446,6 +579,11 @@ defined as a collection of CParts (e.g.  HTML <em>Template</em>, or
 <li><strong>customElement</strong> - The term used for a custom HTML5 web
 component, which is the underlying technology that Modulo is a thin wrapper
 over. They all have dashes (<code>-</code>) in the name.</li>
+
+<li><strong>slot</strong> - A placeholder for content to be inserted when a
+component is used. Useful for writing components that "wrap around" other
+content.</li>
+
 </ul>
 
 
