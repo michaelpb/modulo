@@ -24,10 +24,18 @@ change drastically in the future.</p>
 
 <mws-Section name="state">Debug</mws-Section>
 
+<p>Still in heavy development, there are various tools that work in consort
+with the Dev Tools console to make debugging of Components and CParts more
+convenient. Right now, there are plans for a basic "Debug" system, that logs
+the renderObj at various states in rendering.</p>
+
 <p>Use the following code for a "debugger" CPart:</p>
 
 <pre>
-// add to ModuloCommand
+<mws-Demo
+text="
+<script>
+// Add this to ModuloCommand to 'activate it' for certain elements:
 // debug(elem) {
 //     elem.cparts.debug = new Modulo.cparts.debug(elem, {});
 // }
@@ -61,7 +69,8 @@ Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
         }
     }
 }
-</pre>
+</script>
+"></mws-Demo>
 
 <mws-Section name="state">Store</mws-Section>
 

@@ -14,6 +14,118 @@
 </component>
 
 
+<component name="TestBtn">
+    <Props
+        myclicky
+        mytexty
+    ></Props>
+    <template>
+        <button @click:=props.myclicky>{{ props.mytexty }}</button>
+    </template>
+</component>
+
+<component name="CompositionTests">
+<Props b></Props>
+<Template name="comptest2">
+    <x-TestBtn
+        mytexty="Test text"
+        myclicky:=script.gotClickies
+    >should be IGNORED</x-TestBtn>
+    <p>state.a: {{ state.a }}</p>
+</Template>
+
+<Template name="comptest1">
+    Testing
+    <x-Tutorial_P1></x-Tutorial_P1>
+    <x-Templating_Escaping></x-Templating_Escaping>
+</Template>
+
+
+<!-- just add some random stuff here -->
+<State
+    a:=1
+></State>
+
+<Script>
+    function gotClickies() {
+        state.a = 1337;
+    }
+</Script>
+
+<TestSuite>
+    <!-- NOTE: There used to be a bug with the test runner or testing framework
+    such that including this test will cause other tests to fail, but running
+    it separately it succeeds. However, it seems to work now... -->
+    <Test name="Misc sub-components correctly render, using spares">
+        <script>
+            element.cparts.template =
+                element.cpartSpares.template
+                    .find(({attrs}) => attrs.name === 'comptest1')
+            assert: element.cparts.template
+        </script>
+
+        <template>
+            Testing
+            <x-Tutorial_P1>
+                Hello <strong>Modulo</strong> World!
+                <p class="neat">Any HTML can be here!</p>
+            </x-Tutorial_P1>
+            <x-templating_escaping>
+                <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
+                &amp;tables</em>" sent a message:</p>
+                <div class="msgcontent">
+                    I <i>love</i> the classic <a target="_blank"
+                    href="https://xkcd.com/327/">xkcd #327</a> on
+                    the risk of trusting <b>user inputted data</b>
+                </div>
+            </x-templating_escaping>
+        </template>
+    </Test>
+
+    <Test name="Button sub-component behavior">
+        <script>
+            element.cparts.template =
+                element.cpartSpares.template
+                    .find(({attrs}) => attrs.name === 'comptest2')
+        </script>
+
+        <!--
+        <template name="Renders">
+            <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+                <button @click:=props.myclicky>Test text</button>
+            </x-TestBtn>
+            <p>state.a: 1</p>
+        </template>
+        -->
+
+        <script>
+            event: click button
+            assert: state.a === 1337
+        </script>
+
+        <!--
+        <template name="Renders after click">
+            <x-TestBtn mytexty="Test text" myclicky:=script.gotClickies>
+                <button @click:=props.myclicky>Test text</button>
+            </x-TestBtn>
+            <p>state.a: 1337</p>
+        </template>
+
+        <template name="Shouldn't show subcomp children" string-count=0>
+            IGNORED
+        </template>
+
+        -->
+    </Test>
+
+</TestSuite>
+
+</component>
+
+
+
+
+
 <component name="CompositionTester1">
 <template>
     <div>Abc</div>
@@ -231,7 +343,6 @@
             <div>Def</div>
         </template>
 
-        <!--
         <state
           num1:=111
           num2:=222
@@ -250,10 +361,74 @@
             </x-PassThrough>
             <div>Def</div>
         </template>
-        -->
+
+        <state
+          suff="C"
+        ></state>
+
+        <template name="Renders with just prop change on subcomponent">
+            <div>Abc</div>
+            <x-PassThrough suffix="C">
+                <p>BeforeC</p>
+                <div [component.slot]>
+                    <p>111</p>
+                    <p>222</p>
+                </div>
+                <p>AfterC</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
     </Test>
 
 </TestSuite>
 
 </Component>
+
+
+
+<component name="CompositionTester5">
+
+<Template>
+    <div>Abc</div>
+    <PassThrough suffix="{{ state.suff }}">
+        <button @click:=script.outerInc>{{ state.num }}</button>
+    </PassThrough>
+    <div>Def</div>
+</Template>
+
+<State
+  num:=123
+  suff="AAA"
+></State>
+
+<Script>
+    function outerInc() {
+        state.num++;
+        state.suff = 'BBB';
+    }
+</Script>
+
+
+<TestSuite skip> <!-- TODO Composable directives broken -->
+
+    <Test>
+        <template name="Renders with passthrough attached event">
+            <div>Abc</div>
+            <x-PassThrough suffix="AAA">
+                <p>BeforeAAA</p>
+                <div [component.slot]>
+                    <button @click:=script.outerInc>123</button>
+                </div>
+                <p>AfterAAA</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+
+    </Test>
+
+</TestSuite>
+
+</Component>
+
+
 

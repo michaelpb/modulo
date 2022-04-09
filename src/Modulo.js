@@ -359,7 +359,15 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.factory().buildCParts(this);
     }
 
-    rerender() {
+    rerender(original = null) {
+        // TODO: For SSG: Need to move original children to "template" tag in
+        // head with a unique ID to squirrel away originalChildren DOM, then
+        // call rerender on the template.
+        if (original) {
+            this.originalHTML = original.innerHTML;
+            this.originalChildren = Array.from(original.hasChildNodes() ?
+                                               original.childNodes : []);
+        }
         this.lifecycle([ 'prepare', 'render', 'reconcile', 'update' ]);
     }
 
@@ -396,24 +404,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
     }
 
-
     parsedCallback() {
-        // HACKy code here
-        if (this.hasAttribute('modulo-innerhtml')) { // "modulo-innerhtml" pseudo-directive
-            // TODO: Broken SSG-only code: Need to instead move to "template"
-            // tag in head with a unique ID to squirrel away resulting DOM, or
-            // something similar (and SSG should delete all directives in
-            // resulting innerHTML so it forces attachment of them)
-            this.originalHTML = this.getAttribute('modulo-innerhtml');
-        } else if (!this.isMounted) {
-            this.originalHTML = this.innerHTML;
-            this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
-        }
-        // /HACK
-
         this.setupCParts();
-        this.lifecycle([ 'initialized' ])
-        this.rerender();
+        this.lifecycle([ 'initialized' ]);
+        this.rerender(this); // render and re-mount it's own childNodes
         this.isMounted = true;
     }
 }
@@ -1215,8 +1209,6 @@ Modulo.templating.defaultOptions.tags = {
 Modulo.reconcilers.DOMCursor = class DOMCursor {
     constructor(parentNode, parentRival) {
         this.initialize(parentNode, parentRival);
-
-        // (INP)
         this.instanceStack = [];
     }
 
@@ -1408,6 +1400,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             // custom!
             node.setAttribute('mm-ignore', 'mm-ignore');
         }
+
+        // TODO: hacky / leaky solution to attach like this
+        //for (const rivalChild of elem.querySelectorAll('*')) {
+        //    rivalChild.moduloDirectiveContext = this.directives;
+        //}
     }
 
     cleanRecDirectiveMarks(elem) {
@@ -1461,10 +1458,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                     if (rival.hasAttribute('modulo-ignore')) {
                         //console.log('Skipping ignored node');
                     } else if (child.isModulo) { // is a Modulo component
-                        // TODO: Create a rerender patch (!!!zomgwtfbbq???)
-                        child.originalChildren = Array.from(rival.childNodes);
-                        child.originalHTML = rival.innerHTML;
-                        child.rerender();
+                        // TODO: Instead of having one big "rerender" patch,
+                        // maybe run a "rerender" right away, but collect
+                        // patches, then insert in the patch list here?
+                        this.patch(child, 'rerender', rival);
                     } else if (!this.shouldNotDescend) {
                         cursor.saveToStack();
                         cursor.initialize(child, rival);
@@ -1502,7 +1499,15 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         for (const directive of foundDirectives) {
             const dName = directive.directiveName; // e.g. "state.bind", "link"
             const fullName = dName + suffix; // e.g. "state.bindMount"
-            const thisContext = this.directives[dName] || this.directives[fullName];
+
+            // Hacky: Check if this elem has a different moduloDirectiveContext than expected
+            //const directives = (copyFromEl || el).moduloDirectiveContext || this.directives;
+            //if (el.moduloDirectiveContext) {
+            //    console.log('el.moduloDirectiveContext', el.moduloDirectiveContext);
+            //}
+            const { directives } = this;
+
+            const thisContext = directives[dName] || directives[fullName];
             if (thisContext) { // If a directive matches...
                 const methodName = fullName.split('.')[1] || fullName;
                 Object.assign(directive, { value, el });
@@ -1521,13 +1526,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (myAttrs.has(rawName) && node.getAttribute(rawName) === attr.value) {
                 continue; // Already matches, on to next
             }
-
-            /*
-            const suffix = myAttrs.has(rawName) ? 'Change' : 'Mount';
-            //this.patchDirectives(rival, rawName, suffix); // TODO: Why was "rival" here?
-            this.patchDirectives(node, rawName, suffix);
-            this.patch(node, 'setAttributeNode', attr.cloneNode(true));
-            */
 
             if (myAttrs.has(rawName)) { // If exists, trigger Unmount first
                 this.patchDirectives(node, rawName, 'Unmount');

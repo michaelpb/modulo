@@ -19,7 +19,7 @@ New plan forward:
     - (DONE) Split Lifecycle and Directives
     - Finish Part 3 of Tutorial and ensure Part 1 - 2 works.
 4. Final stuff
-    - Investigate any outstanding issues, e.g. with nested components
+    - (DONE-ish!) Investigate any outstanding issues, e.g. with nested components
     - Clean-up / test tutorial
 5. Maybe:
     - Decide on Loader / Module / Config simplification
@@ -208,6 +208,12 @@ content, without replacing it, etc?
       >" for the "< FakeInstance >", and then reattach originalChildren
       and rerender or something
 
+                        // IDEA #1: Return element to original state, reconcile, then rerender
+                        //let childs = this.element.originalChildren;
+                        //child.innerHTML = '';
+                        //child.append(...childs);
+                        //cursor.saveToStack();
+                        //cursor.initialize(child, rival);
 ------
 
 
