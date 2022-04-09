@@ -673,6 +673,15 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
         }
         return props;
     }
+    prepareCallback(renderObj) {
+        const props = {};
+        const { resolveDataProp } = Modulo.utils;
+        for (const [ propName, def ] of Object.entries(this.attrs)) {
+            props[propName] = resolveDataProp(propName, this.element, def);
+            // TODO: Implement type-checked, and required
+        }
+        return props;
+    }
 }
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
@@ -1452,7 +1461,8 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                     if (rival.hasAttribute('modulo-ignore')) {
                         //console.log('Skipping ignored node');
                     } else if (child.isModulo) { // is a Modulo component
-                        child.originalChildren = Array.from(rival.children);
+                        // TODO: Create a rerender patch (!!!zomgwtfbbq???)
+                        child.originalChildren = Array.from(rival.childNodes);
                         child.originalHTML = rival.innerHTML;
                         child.rerender();
                     } else if (!this.shouldNotDescend) {

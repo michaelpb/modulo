@@ -3,10 +3,13 @@
 </component>
 
 <component name="PassThrough">
+    <Props
+        suffix
+    ></Props>
     <template>
-        <p>Before</p>
+        <p>Before{{ props.suffix }}</p>
         <div [component.slot]>Defhij</div>
-        <p>After</p>
+        <p>After{{ props.suffix }}</p>
     </template>
 </component>
 
@@ -51,7 +54,7 @@
   num2:=456
 ></State>
 
-<TestSuite>
+<TestSuite solo>
 
     <Test>
         <template name="Renders once as expected">
@@ -94,6 +97,159 @@
             </x-PassThrough>
             <div>Def</div>
         </template>
+
+        <state
+            num1:=234
+            num2:=234
+        ></state>
+
+        <template name="Renders forth time with state change">
+            <div>Abc</div>
+            <x-PassThrough>
+                <p>Before</p>
+                <div [component.slot]>
+                    <p>234</p><p>234</p>
+                </div>
+                <p>After</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+
+    </Test>
+
+</TestSuite>
+
+</Component>
+
+
+<component name="CompositionTester3">
+
+<Template>
+    <div>Abc</div>
+    <PassThrough>
+      <p>{{state.num1}}</p>
+      <PassThrough>
+        <p>{{state.num2}}</p>
+      </PassThrough>
+      <p>{{state.num3}}</p>
+    </PassThrough>
+    <div>Def</div>
+</Template>
+
+<State
+  num1:=123
+  num2:=456
+  num3:=789
+></State>
+
+<TestSuite solo>
+
+    <Test>
+        <template name="Renders with multiple layers of passthrough">
+            <div>Abc</div>
+            <x-PassThrough>
+                <p>Before</p>
+                <div [component.slot]>
+                    <p>123</p>
+                    <x-PassThrough>
+                        <p>Before</p>
+                        <div [component.slot]>
+                            <p>456</p>
+                        </div>
+                        <p>After</p>
+                    </x-PassThrough>
+                    <p>789</p>
+                </div>
+                <p>After</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+
+        <state
+          num1:=111
+          num2:=222
+          num3:=333
+        ></state>
+
+        <template name="Reflects state change with multiple layers of passthrough">
+            <div>Abc</div>
+            <x-PassThrough>
+                <p>Before</p>
+                <div [component.slot]>
+                    <p>111</p>
+                    <x-PassThrough>
+                        <p>Before</p>
+                        <div [component.slot]>
+                            <p>222</p>
+                        </div>
+                        <p>After</p>
+                    </x-PassThrough>
+                    <p>333</p>
+                </div>
+                <p>After</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+    </Test>
+
+</TestSuite>
+
+</Component>
+
+
+<component name="CompositionTester4">
+
+<Template>
+    <div>Abc</div>
+    <PassThrough suffix="{{ state.suff }}">
+        <p>{{state.num1}}</p>
+        <p>{{state.num2}}</p>
+    </PassThrough>
+    <div>Def</div>
+</Template>
+
+<State
+  num1:=123
+  num2:=456
+  suff="AAA"
+></State>
+
+<TestSuite solo>
+
+    <Test>
+
+        <template name="Renders with prop on subcomponent">
+            <div>Abc</div>
+            <x-PassThrough suffix="AAA">
+                <p>BeforeAAA</p>
+                <div [component.slot]>
+                    <p>123</p>
+                    <p>456</p>
+                </div>
+                <p>AfterAAA</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+
+        <state
+          num1:=111
+          num2:=222
+          suff="BBB"
+        ></state>
+
+        <template name="Renders with prop and subdom change on subcomponent">
+            <div>Abc</div>
+            <x-PassThrough suffix="BBB">
+                <p>BeforeBBB</p>
+                <div [component.slot]>
+                    <p>111</p>
+                    <p>222</p>
+                </div>
+                <p>AfterBBB</p>
+            </x-PassThrough>
+            <div>Def</div>
+        </template>
+
     </Test>
 
 </TestSuite>
