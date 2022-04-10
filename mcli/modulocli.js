@@ -69,6 +69,31 @@ function doCommand(cliConfig, args) {
     hackPrerender(config);
 }
 
+function hackPostprocess(html) {
+    // TODO: Remove in favor of a consistent treatment, once m.bundle() is done
+    if (!/^<!doctype html>/i.test(html)) {
+        // Ensure all documents start with doctype
+        html = '<!DOCTYPE HTML>\n' + html;
+    }
+
+    // Inject hacky script after loading Modulo.js
+    html = html.replace('<script src="/js/Modulo.js"></script>', `
+        <script src="/js/Modulo.js"></script>
+        <script>
+        if (!Modulo.fetchQ) {
+            Modulo.fetchQ = new Modulo.FetchQueue();
+            Modulo.assets = new Modulo.AssetManager();
+        }
+        window.onload = () => {
+            Modulo.fetchQ.wait(() => {
+                Modulo.defineAll();
+            });
+        };
+        </script>
+    `);
+    return html;
+}
+
 async function hackPrerender(config) {
     modBrowser = new ModuloBrowser(config);
     const files = walkSync(config.input, config);
@@ -87,15 +112,16 @@ async function hackPrerender(config) {
             console.log('custom:', file);
         } else if (action === ACTIONS.GENERATE) {
             console.log('generate:', file);
-            const html = await modBrowser.runAsync(file);
+            let html = await modBrowser.runAsync(file);
             const output = path.resolve(config.output, relPath);
-            await fs.fsPromises.writeFile(output, html);
+            html = hackPostprocess(html);
+            await fs.promises.writeFile(output, html);
+            /*if (count > 50) {
+                break;
+            }*/
         }
         logStatusBar('HCKBLD', count, files.length);
         count++;
-        /*
-        break;
-        */
     }
     modBrowser.close();
 

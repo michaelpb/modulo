@@ -3,6 +3,6 @@
     "testLog": true,
     "domEngine": "jsdom",
     "testLogPath": "modulo.testlog.json",
-    "output": "tmp-www-out",
+    "output": "docs",
     "input": "www-src"
 }

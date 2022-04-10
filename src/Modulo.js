@@ -360,11 +360,10 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     rerender(original = null) {
-        // TODO: For SSG: Need to move original children to "template" tag in
-        // head with a unique ID to squirrel away originalChildren DOM, then
-        // call rerender on the template.
-        if (original) {
-            this.originalHTML = original.innerHTML;
+        if (original) { // TODO: this logic needs refactor
+            if (this.originalHTML === null) {
+                this.originalHTML = original.innerHTML;
+            }
             this.originalChildren = Array.from(original.hasChildNodes() ?
                                                original.childNodes : []);
         }
@@ -407,7 +406,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     parsedCallback() {
         let original = this;
         if (this.hasAttribute('modulo-original-html')) {
-            original  = Modulo.utils.makeDiv(this.getAttribute('modulo-original-html'));
+            original = Modulo.utils.makeDiv(this.getAttribute('modulo-original-html'));
         }
         this.setupCParts();
         this.lifecycle([ 'initialized' ]);
@@ -489,6 +488,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     initializedCallback(renderObj) {
+        console.log('initializing', renderObj);
         this.localNameMap = this.element.factory().loader.localNameMap;
         this.mode = this.attrs.mode || 'regular'; // TODO rm and check tests
         if (this.mode === 'shadow') {
@@ -542,9 +542,15 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         let { innerHTML, patches, root } = renderObj.component;
         if (innerHTML !== null) {
 
-            //if (!this.reconciler) { // XXX (Delete this, only needed for SSG)
-            //    this.newReconciler(renderObj);
-            //}
+            // XXX ----------------
+            // HACK for vanish-into-document to preserve Modulo stuff
+            if (this.mode === 'vanish-into-document') {
+                const dE = this.element.ownerDocument.documentElement;
+                const elems = dE.querySelectorAll('template[modulo-embed],modulo');
+                this.element.ownerDocument.head.append(...Array.from(elems));
+            }
+            // XXX ----------------
+
 
             if (this.mode === 'regular' || this.mode === 'vanish') {
                 root = this.element; // default, use element as root
@@ -701,7 +707,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
     initializedCallback(renderObj) {
         const { component, style } = renderObj;
-        if (component.attrs.mode === 'shadow') {
+        if (component.attrs && component.attrs.mode === 'shadow') { // TODO Finish
             console.log('Shadow styling!');
             const style = Modulo.globals.document.createElement('style');
             style.setAttribute('modulo-ignore', 'true');
@@ -1979,6 +1985,7 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
+
 
 // End of Modulo.js source code. Below is the latest Modulo project:
 // ------------------------------------------------------------------

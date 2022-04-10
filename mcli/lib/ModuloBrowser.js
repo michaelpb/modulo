@@ -54,7 +54,7 @@ class ModuloVM {
             await this._startBrowser();
             const page = await this._browser.newPage();
             await page.goto(this.getURL(htmlPath), { waitUntil });
-            await page.screenshot({ path: 'testing.png' });
+            //await page.screenshot({ path: 'testing.png' });
             await page.evaluate(() => {
                 // Scan document for modulo elements, attaching modulo-original-html as needed
                 for (const elem of document.querySelectorAll('*')) {
