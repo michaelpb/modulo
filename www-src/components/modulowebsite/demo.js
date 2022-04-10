@@ -2,6 +2,8 @@ let componentTexts = null;
 let componentTexts2 = null;
 let exCounter = 0; // global variable
 
+//console.log('this is demo.js');
+
 function _setupGlobalVariables() {
     // TODO: Refactor this, obvs
     // Get text from the two example component libraries
@@ -32,6 +34,8 @@ function tmpGetDirectives() {
 }
 
 function codemirrorMount({ el }) {
+    //console.log('codeMirrorMount', { el });
+    el.innerHTML = ''; // clear inner HTML before mounting
     const demoType = props.demotype || 'snippet';
     //_setupCodemirror(el, demoType, element, state);
     _setupCodemirrorSync(el, demoType, element, state);
@@ -69,7 +73,7 @@ function _setupCodemirrorSync(el, demoType, myElement, myState) {
 function _setupCodemirror(el, demoType, myElement, myState) {
     //console.log('_setupCodemirror DISABLED'); return; ///////////////////
     let expBackoff = 10;
-    console.log('this is codemirror', Modulo.globals.CodeMirror);
+    //console.log('this is codemirror', Modulo.globals.CodeMirror);
     const mountCM = () => {
         // TODO: hack, allow JS deps or figure out loader or something
         if (!Modulo.globals.CodeMirror) {
@@ -142,7 +146,8 @@ function doCopy() {
     }
 }
 
-function initializedCallback({ el }) {
+function initializedCallback() {
+    console.log('initializedCallback');
     if (componentTexts === null) {
         _setupGlobalVariables();
     }
@@ -214,7 +219,7 @@ function initializedCallback({ el }) {
 
 function doRun() {
     exCounter++;
-    //console.log('There are ', exCounter, ' examples on this page. Gee!')
+    console.log('There are ', exCounter, ' examples on this page. Gee!')
     const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
     state.nscounter++;
     const attrs = { src: '', namespace };

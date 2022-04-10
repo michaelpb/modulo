@@ -348,6 +348,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     initialize() {
         this.cparts = {};
         this.isMounted = false;
+        this.isModulo = true;
         this.originalHTML = null;
         this.originalChildren = [];
         this.fullName = this.factory().fullName;
@@ -358,7 +359,14 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.factory().buildCParts(this);
     }
 
-    rerender() {
+    rerender(original = null) {
+        if (original) { // TODO: this logic needs refactor
+            if (this.originalHTML === null) {
+                this.originalHTML = original.innerHTML;
+            }
+            this.originalChildren = Array.from(original.hasChildNodes() ?
+                                               original.childNodes : []);
+        }
         this.lifecycle([ 'prepare', 'render', 'reconcile', 'update' ]);
     }
 
@@ -395,24 +403,24 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         }
     }
 
-
     parsedCallback() {
-        // HACKy code here
-        if (this.hasAttribute('modulo-innerhtml')) { // "modulo-innerhtml" pseudo-directive
-            // TODO: Broken SSG-only code: Need to instead move to "template"
-            // tag in head with a unique ID to squirrel away resulting DOM, or
-            // something similar (and SSG should delete all directives in
-            // resulting innerHTML so it forces attachment of them)
-            this.originalHTML = this.getAttribute('modulo-innerhtml');
-        } else if (!this.isMounted) {
-            this.originalHTML = this.innerHTML;
-            this.originalChildren = Array.from(this.hasChildNodes() ? this.childNodes : []);
+        let original = this;
+        if (this.hasAttribute('modulo-original-html')) {
+            original = Modulo.utils.makeDiv(this.getAttribute('modulo-original-html'));
         }
-        // /HACK
-
         this.setupCParts();
-        this.lifecycle([ 'initialized' ])
-        this.rerender();
+        this.lifecycle([ 'initialized' ]);
+        this.rerender(original); // render and re-mount it's own childNodes
+
+        // XXX - TODO: Needs refactor, should do this somewhere else:
+        if (this.hasAttribute('modulo-original-html')) {
+            console.log('reapplying patches');
+            const { reconciler } = this.cparts.component;
+            reconciler.patch = reconciler.applyPatch; // Apply patches immediately
+            reconciler.patchAndDescendants(this, 'Mount');
+            reconciler.patch = reconciler.pushPatch;
+        }
+        // XXX --------------------------
         this.isMounted = true;
     }
 }
@@ -455,11 +463,10 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     static factoryCallback(opts, factory, loadObj) {
-        const directiveShortcuts = [
+        opts.directiveShortcuts = [
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
         ];
-        return { directiveShortcuts };
     }
 
     headTagLoad({ el }) {
@@ -491,6 +498,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     initializedCallback(renderObj) {
+        console.log('initializing', renderObj);
         this.localNameMap = this.element.factory().loader.localNameMap;
         this.mode = this.attrs.mode || 'regular'; // TODO rm and check tests
         if (this.mode === 'shadow') {
@@ -505,10 +513,18 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             'component.dataPropUnmount',
             'component.eventMount',
             'component.eventUnmount',
-            'component.childrenLoad',
+            //'component.childrenLoad',
+            'component.slotLoad',
         ];
         if (this.attrs.mode === 'vanish-into-document') {
             dirs.push('link', 'title', 'meta', 'script');
+        }
+        if (this.attrs.mode !== 'shadow') {
+            // TODO: clean up Load callbacks, either eliminate slotLoad (and
+            // discontinue [component.slot]) in favor of only slotTagLoad, or
+            // refactor somehow
+            dirs.push('slot');
+            this.slotTagLoad = this.slotLoad.bind(this);
         }
         return dirs;
     }
@@ -536,9 +552,15 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         let { innerHTML, patches, root } = renderObj.component;
         if (innerHTML !== null) {
 
-            //if (!this.reconciler) { // XXX (Delete this, only needed for SSG)
-            //    this.newReconciler(renderObj);
-            //}
+            // XXX ----------------
+            // HACK for vanish-into-document to preserve Modulo stuff
+            if (this.mode === 'vanish-into-document') {
+                const dE = this.element.ownerDocument.documentElement;
+                const elems = dE.querySelectorAll('template[modulo-embed],modulo');
+                this.element.ownerDocument.head.append(...Array.from(elems));
+            }
+            // XXX ----------------
+
 
             if (this.mode === 'regular' || this.mode === 'vanish') {
                 root = this.element; // default, use element as root
@@ -578,11 +600,16 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         }
     }
 
-    childrenLoad({ el, value }) {
+    slotLoad({ el, value }) {
         let chosenSlot = value || el.getAttribute('name') || null;
         const getSlot = c => c.getAttribute ? (c.getAttribute('slot') || null) : null;
         let childs = this.element.originalChildren;
         childs = childs.filter(child => getSlot(child) === chosenSlot);
+
+        if (!el.moduloSlotHasLoaded) { // clear innerHTML if this is first load
+            el.innerHTML = '';
+            el.moduloSlotHasLoaded = true;
+        }
         el.append(...childs);
     }
 
@@ -660,35 +687,14 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
         }
         return props;
     }
-}
-
-Modulo.cparts.debug = class Debug extends Modulo.ComponentPart {
-    static factoryCallback() {
-        return {}; // wipe contents
-    }
-    constructor(element, options) {
-        super(element, options);
-        const renderLifeCycle = [ 'prepare', 'render', 'reconcile', 'update' ];
-        for (const name of [ 'initialized' ].concat(renderLifeCycle)) {
-            const methodName = name + 'Callback';
-            this[methodName] = renderObj => {
-                if (name === 'prepare') {
-                    console.group(this.element.fullName + ' (rerender ' + (new Date().toLocaleTimeString()) + ')');
-                    console.log(this.element);
-                }
-                console.groupCollapsed(name);
-                for (const [ key, data ] of Object.entries(renderObj)) {
-                    console.groupCollapsed(key + ' (CPart)');
-                    //console.table(data);
-                    console.log(data);
-                    console.groupEnd();
-                }
-                console.groupEnd();
-                if (name === 'update') {
-                    console.groupEnd();
-                }
-            }
+    prepareCallback(renderObj) {
+        const props = {};
+        const { resolveDataProp } = Modulo.utils;
+        for (const [ propName, def ] of Object.entries(this.attrs)) {
+            props[propName] = resolveDataProp(propName, this.element, def);
+            // TODO: Implement type-checked, and required
         }
+        return props;
     }
 }
 
@@ -701,15 +707,26 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({ content }, { loader, name }, loadObj) {
-        // TODO: Add in support for shadow DOM
-        //if (loadObj.component.mode === 'shadow') {
-        //    return;
-        //}
+        if (loadObj.component.attrs.mode === 'shadow') {
+            return;
+        }
         const { prefixAllSelectors } = Modulo.cparts.style;
         content = prefixAllSelectors(loader.namespace, name, content);
         Modulo.assets.registerStylesheet(content);
-        //const { fullName } = factory;
-        //const id = `${ fullName }_Modulo_${ tagName.toUpperCase() }`;
+    }
+
+    initializedCallback(renderObj) {
+        const { component, style } = renderObj;
+        if (component.attrs && component.attrs.mode === 'shadow') { // TODO Finish
+            console.log('Shadow styling!');
+            const style = Modulo.globals.document.createElement('style');
+            style.setAttribute('modulo-ignore', 'true');
+            style.textContent = style.content;// `<style modulo-ignore>${style.content}</style>`;
+            this.element.shadowRoot.append(style);
+            //this.element.shadowRoot.innerHTML = 
+            //console.log('Shadow styling!',
+             //`<style modulo-ignore>${style.content}</style>`);
+        }
     }
 
     static prefixAllSelectors(namespace, name, text='') {
@@ -964,28 +981,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 }
 
-Modulo.cparts.store = class Store extends Modulo.cparts.state {
-    initializedCallback(renderObj) {
-        // DEAD CODE
-        const cls = Modulo.cparts.store;
-        if (!('boundElements' in cls)) {
-            cls.storeData = {};
-            cls.boundElements = {};
-        }
-        super.initializedCallback(renderObj);
-
-        if (!(this.attrs.slice in cls.storeData)) {
-            cls.storeData[this.attrs.slice] = {};
-            cls.boundElements[this.attrs.slice] = {};
-        }
-        this.data = cls.storeData[this.attrs.slice];
-        // TODO: Make boundElements support Many to One (probably for state,
-        // why not) so that if one component changes Store, all components
-        // change Store.
-        this.boundElements = cls.boundElements[this.attrs.slice];
-    }
-}
-
 // ModuloTemplate
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
@@ -1234,8 +1229,6 @@ Modulo.templating.defaultOptions.tags = {
 Modulo.reconcilers.DOMCursor = class DOMCursor {
     constructor(parentNode, parentRival) {
         this.initialize(parentNode, parentRival);
-
-        // (INP)
         this.instanceStack = [];
     }
 
@@ -1385,8 +1378,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 
     reconcile(node, rival, tagTransforms) {
-        // Note: Always attempts to reconcile (even on first mount), in case
-        // it's been pre-rendered
         // TODO: should normalize <!DOCTYPE html>
         if (typeof rival === 'string') {
             rival = this.loadString(rival, tagTransforms);
@@ -1401,6 +1392,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         for (const node of elem.querySelectorAll('*')) {
             // legacy -v, TODO rm
             const newTag = tagTransforms[node.tagName.toLowerCase()];
+            //console.log('this is tagTransforms', tagTransforms);
             if (newTag) {
                 Modulo.utils.transformTag(node, newTag);
             }
@@ -1428,6 +1420,11 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             // custom!
             node.setAttribute('mm-ignore', 'mm-ignore');
         }
+
+        // TODO: hacky / leaky solution to attach like this
+        //for (const rivalChild of elem.querySelectorAll('*')) {
+        //    rivalChild.moduloDirectiveContext = this.directives;
+        //}
     }
 
     cleanRecDirectiveMarks(elem) {
@@ -1470,14 +1467,21 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
+
                 if (child.nodeType !== 1) { // text or comment node
                     if (child.nodeValue !== rival.nodeValue) { // update
                         this.patch(child, 'node-value', rival.nodeValue);
                     }
                 } else if (!child.isEqualNode(rival)) { // sync if not equal
                     this.reconcileAttributes(child, rival);
+
                     if (rival.hasAttribute('modulo-ignore')) {
                         //console.log('Skipping ignored node');
+                    } else if (child.isModulo) { // is a Modulo component
+                        // TODO: Instead of having one big "rerender" patch,
+                        // maybe run a "rerender" right away, but collect
+                        // patches, then insert in the patch list here?
+                        this.patch(child, 'rerender', rival);
                     } else if (!this.shouldNotDescend) {
                         cursor.saveToStack();
                         cursor.initialize(child, rival);
@@ -1515,7 +1519,15 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         for (const directive of foundDirectives) {
             const dName = directive.directiveName; // e.g. "state.bind", "link"
             const fullName = dName + suffix; // e.g. "state.bindMount"
-            const thisContext = this.directives[dName] || this.directives[fullName];
+
+            // Hacky: Check if this elem has a different moduloDirectiveContext than expected
+            //const directives = (copyFromEl || el).moduloDirectiveContext || this.directives;
+            //if (el.moduloDirectiveContext) {
+            //    console.log('el.moduloDirectiveContext', el.moduloDirectiveContext);
+            //}
+            const { directives } = this;
+
+            const thisContext = directives[dName] || directives[fullName];
             if (thisContext) { // If a directive matches...
                 const methodName = fullName.split('.')[1] || fullName;
                 Object.assign(directive, { value, el });
@@ -1534,13 +1546,6 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (myAttrs.has(rawName) && node.getAttribute(rawName) === attr.value) {
                 continue; // Already matches, on to next
             }
-
-            /*
-            const suffix = myAttrs.has(rawName) ? 'Change' : 'Mount';
-            //this.patchDirectives(rival, rawName, suffix); // TODO: Why was "rival" here?
-            this.patchDirectives(node, rawName, suffix);
-            this.patch(node, 'setAttributeNode', attr.cloneNode(true));
-            */
 
             if (myAttrs.has(rawName)) { // If exists, trigger Unmount first
                 this.patchDirectives(node, rawName, 'Unmount');
@@ -1613,10 +1618,12 @@ Modulo.utils = class utils {
           </(state|props|template)> -> </script>*/
         const div = Modulo.globals.document.createElement('div');
         div.innerHTML = html;
+        /*
         if (inFrag) { // TODO: Don't think there's a reason for frags, actually
             const frag = new Modulo.globals.DocumentFragment();
             frag.appendChild(div);
         }
+        */
         return div;
     }
 
@@ -1803,7 +1810,6 @@ Modulo.FetchQueue = class FetchQueue {
     }
 }
 
-
 Modulo.INVALID_WORDS = new Set((`
     break case catch class const continue debugger default delete do else
     enum export extends finally for if implements import in instanceof
@@ -1920,10 +1926,6 @@ Modulo.CommandMenu = class CommandMenu {
         this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
     }
 
-    debug(elem) {
-        elem.cparts.debug = new Modulo.cparts.debug(elem, {});
-    }
-
     build(opts = {}) {
         // Base bundle is fetchQ + CSS only
         this.buildcss(opts);
@@ -1993,6 +1995,7 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
+
 
 // End of Modulo.js source code. Below is the latest Modulo project:
 // ------------------------------------------------------------------

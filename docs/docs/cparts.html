@@ -1,17 +1,2038 @@
-<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<!DOCTYPE HTML>
+<head><link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
 <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
 <!-- ... -->
-<script src="/js/Modulo.js"></script>
-<modulo>
-    <Load namespace="x" src="/components/layouts.html"> </Load>
-</modulo>
-<script>Modulo.defineAll()</script>
 
-<x-Page
-    docbarselected="cparts.html"
-    pagetitle="CParts"
-    navbar="docs">
+        <meta charset="utf8" />
+        <script src="/js/Modulo.js"></script>
+        <script>
+        if (!Modulo.fetchQ) {
+            Modulo.fetchQ = new Modulo.FetchQueue();
+            Modulo.assets = new Modulo.AssetManager();
+        }
+        window.onload = () => {
+            Modulo.fetchQ.wait(() => {
+                Modulo.defineAll();
+            });
+        };
+        </script>
+    
+<script>"use strict";Modulo.assets.functions["x11m00cs"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        let txt;
+
+        function sloccount() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            return Modulo.require('sloc')(txt, 'js').source;
+        }
+
+        function checksum() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            const CryptoJS = Modulo.require("crypto-js");
+            const hash = CryptoJS['SHA384'](txt);
+            return hash.toString(CryptoJS.enc.Base64);
+            //const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
+
+            //shaObj.update(txt);
+            //const hash = shaObj.getHash("B64");
+            //return hash;
+        }
+
+        function getGlobalInfo() {
+            // Only do once to speed up SSG
+            //console.log('this is Modulo', Object.keys(Modulo));
+            if (!Modulo.isBackend) {
+                return;
+            }
+            if (!Modulo.ssgStore.versionInfo) {
+                const bytes = Modulo.require('fs').readFileSync('./package.json');
+                const data = JSON.parse(bytes);
+                Modulo.ssgStore.versionInfo = {
+                    version: data.version,
+                    sloc: sloccount(),
+                    checksum: checksum(),
+                };
+            }
+            return Modulo.ssgStore.versionInfo;
+        }
+
+        // https://stackoverflow.com/questions/400212/
+        const {document, navigator} = Modulo.globals;
+        function fallbackCopyTextToClipboard(text) {
+            console.count('fallbackCopyTextToClipboard');
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                //console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                //console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                //console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    
+return { "sloccount": typeof sloccount !== "undefined" ? sloccount : undefined,
+"checksum": typeof checksum !== "undefined" ? checksum : undefined,
+"getGlobalInfo": typeof getGlobalInfo !== "undefined" ? getGlobalInfo : undefined,
+"fallbackCopyTextToClipboard": typeof fallbackCopyTextToClipboard !== "undefined" ? fallbackCopyTextToClipboard : undefined,
+"copyTextToClipboard": typeof copyTextToClipboard !== "undefined" ? copyTextToClipboard : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["x16km8ma"]= function (Modulo, factory, module, component, props, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        function initializedCallback() {
+            console.log('this is module', module);
+            if (Modulo.isBackend && module) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                console.log('Warning: Couldnt get global info');
+            }
+        }
+    
+return { "initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["x1gol8eg"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        // Splits up own source-code to get source for each example
+        const mySrc = '/components/examplelib.html';
+        const myText = Modulo.fetchQ.data[mySrc];
+        const componentTexts = {};
+        if (myText) {
+            let name = '';
+            let currentComponent = '';
+            let inTestSuite = false;
+            for (const line of myText.split('\n')) {
+                const lower = line.toLowerCase();
+                if (lower.startsWith('</component>')) {
+                    componentTexts[name] = currentComponent;
+                    currentComponent = '';
+                    name = null;
+                } else if (lower.startsWith('<component')) {
+                    name = line.split(' name="')[1].split('"')[0];
+                } else if (lower.startsWith('<testsuite')) {
+                    inTestSuite = true;
+                } else if (lower.includes('</testsuite>')) {
+                    inTestSuite = false;
+                } else if (name && !inTestSuite) {
+                    currentComponent += line + '\n';
+                }
+            }
+        }
+        script.exports.componentTexts = componentTexts;
+    
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["1n5m36a"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function countUp() {
+        state.num++;
+    }
+
+return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-Simple em { color: darkgreen; }
+eg-Simple * { text-decoration: underline; }
+</style><script>"use strict";Modulo.assets.functions["x1cdn50g"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function addItem() {
+        state.list.push(state.text); // add to list
+        state.text = ""; // clear input
+    }
+
+return { "addItem": typeof addItem !== "undefined" ? addItem : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["dfca1k"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function fetchGitHub() {
+        fetch(`https://api.github.com/users/${state.search}`)
+            .then(response => response.json())
+            .then(githubCallback);
+    }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
+    }
+
+return { "fetchGitHub": typeof fetchGitHub !== "undefined" ? fetchGitHub : undefined,
+"githubCallback": typeof githubCallback !== "undefined" ? githubCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["o25k49"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    // Because this variable is created "loose" in the script tag, it becomes a
+    // static variable global to all instances of this class (though,
+    // thankfully, not global in general -- it's still in an "IFFE")
+    // (If we had wanted individual components to be debounced, we'd have
+    // needed to attach it to state in the initializedCallback)
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+
+    function typingCallback() {
+        state.loading = true;
+        const apiBase = 'http://openlibrary.org/search.json'
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    // Puting this long URL down here to declutter
+    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
+                                 'semantic-ui/0.16.1/images/loader-large.gif');
+
+return { "_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
+"typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
+"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-SearchBox SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</style><script>"use strict";Modulo.assets.functions["1iu3f2i"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    // Getting big a range of numbers in JS. Use "script.exports"
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 63}, (x, i) => i + 2);
+    function setNum(payload, ev) {
+        state.number = Number(ev.target.textContent);
+    }
+
+return { "setNum": typeof setNum !== "undefined" ? setNum : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-PrimeSieve .grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    color: #ccc;
+    font-weight: bold;
+    width: 100%;
+    margin: -5px;
+}
+eg-PrimeSieve .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-PrimeSieve div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-PrimeSieve div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-PrimeSieve div.number { background: green; }
+eg-PrimeSieve div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-PrimeSieve If found, then hide asterisk and green */
+eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
+eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
+</style><script>"use strict";Modulo.assets.functions["x1as77n0"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
+function setup(payload) {
+    const count = Number(payload);
+    let symbols = symbolsStr.substr(0, count/2).split("");
+    symbols = symbols.concat(symbols); // duplicate cards
+    let id = 0;
+    while (id < count) {
+        const index = Math.floor(Math.random()
+                                    * symbols.length);
+        const symbol = symbols.splice(index, 1)[0];
+        state.cards.push({symbol, id});
+        id++;
+    }
+}
+
+function failedFlipCallback() {
+    // Remove both from revealed array & set to null
+    state.revealed = state.revealed.filter(
+            id => id !== state.failedflip
+                    && id !== state.lastflipped);
+    state.failedflip = null;
+    state.lastflipped = null;
+    state.message = "";
+    element.rerender();
+}
+
+function flip(id) {
+    if (state.failedflip !== null) {
+        return;
+    }
+    id = Number(id);
+    if (state.revealed.includes(id)) {
+        return; // double click
+    } else if (state.lastflipped === null) {
+        state.lastflipped = id;
+        state.revealed.push(id);
+    } else {
+        state.revealed.push(id);
+        const {symbol} = state.cards[id];
+        const lastCard = state.cards[state.lastflipped];
+        if (symbol === lastCard.symbol) {
+            // Successful match! Check for win.
+            const {revealed, cards} = state;
+            if (revealed.length === cards.length) {
+                state.message = "You win!";
+                state.win = true;
+            } else {
+                state.message = "Nice match!";
+            }
+            state.lastflipped = null;
+        } else {
+            state.message = "No match.";
+            state.failedflip = id;
+            setTimeout(failedFlipCallback, 1000);
+        }
+    }
+}
+
+return { "setup": typeof setup !== "undefined" ? setup : undefined,
+"failedFlipCallback": typeof failedFlipCallback !== "undefined" ? failedFlipCallback : undefined,
+"flip": typeof flip !== "undefined" ? flip : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style><script>"use strict";Modulo.assets.functions["13lid16"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function toggle([ i, j ]) {
+        if (!state.cells[i]) {
+            state.cells[i] = {};
+        }
+        state.cells[i][j] = !state.cells[i][j];
+    }
+
+    function play() {
+        state.playing = true;
+        setTimeout(() => {
+            if (state.playing) {
+                updateNextFrame();
+                element.rerender(); // manually rerender
+                play(); // cue next frame
+            }
+        }, 2000 / state.speed);
+    }
+
+    function pause() {
+        state.playing = false;
+    }
+
+    function clear() {
+        state.cells = {};
+    }
+
+    function randomize() {
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!state.cells[i]) {
+                    state.cells[i] = {};
+                }
+                state.cells[i][j] = (Math.random() > 0.5);
+            }
+        }
+    }
+
+    // Helper function for getting a cell from data
+    const get = (i, j) => Boolean(state.cells[i] && state.cells[i][j]);
+    function updateNextFrame() {
+        const nextData = {};
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!nextData[i]) {
+                    nextData[i] = {};
+                }
+                const count = countNeighbors(i, j);
+                nextData[i][j] = get(i, j) ?
+                    (count === 2 || count === 3) : // stays alive
+                    (count === 3); // comes alive
+            }
+        }
+        state.cells = nextData;
+    }
+
+    function countNeighbors(i, j) {
+        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),
+                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),
+                get(i + 1, j - 1), get(i - 1, j + 1)];
+        return neighbors.filter(v => v).length;
+    }
+    script.exports.range = Array.from({length: 24}, (x, i) => i);
+
+return { "toggle": typeof toggle !== "undefined" ? toggle : undefined,
+"play": typeof play !== "undefined" ? play : undefined,
+"pause": typeof pause !== "undefined" ? pause : undefined,
+"clear": typeof clear !== "undefined" ? clear : undefined,
+"randomize": typeof randomize !== "undefined" ? randomize : undefined,
+"updateNextFrame": typeof updateNextFrame !== "undefined" ? updateNextFrame : undefined,
+"countNeighbors": typeof countNeighbors !== "undefined" ? countNeighbors : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-ConwayGameOfLife {
+        display: flex;
+    }
+eg-ConwayGameOfLife .grid {
+        display: grid;
+        grid-template-columns: repeat(24, 5px);
+        margin: -2px;
+        grid-gap: 1px;
+    }
+eg-ConwayGameOfLife .grid > div {
+        background: white;
+        width: 5px;
+        height: 5px;
+    }
+eg-ConwayGameOfLife input,eg-ConwayGameOfLife button {
+        width: 40px;
+    }
+</style><script>"use strict";Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        // Splits up own source-code to get source for each example
+        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
+        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
+        //console.log('this si myText', myText);
+        const componentTexts = {};
+        if (!myText) {
+            console.error('ERROR: Could not load own text :(');
+            myText = '';
+        }
+        let name = '';
+        let currentComponent = '';
+        let inTestSuite = false;
+        for (const line of myText.split('\n')) {
+            const lower = line.toLowerCase();
+            if (lower.startsWith('</component>')) {
+                componentTexts[name] = currentComponent;
+                currentComponent = '';
+                name = null;
+            } else if (lower.startsWith('<component')) {
+                name = line.split(' name="')[1].split('"')[0];
+            } else if (lower.startsWith('<testsuite')) {
+                inTestSuite = true;
+            } else if (lower.includes('</testsuite>')) {
+                inTestSuite = false;
+            } else if (name && !inTestSuite) {
+                currentComponent += line + '\n';
+            }
+        }
+        script.exports.componentTexts = componentTexts;
+    
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["x648bme"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    script.exports.title = "ModuloNews";
+
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["xa49eup"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function prepareCallback() {
+        const calcResult = (state.perc / 100) * state.total;
+        return { calcResult };
+    }
+
+return { "prepareCallback": typeof prepareCallback !== "undefined" ? prepareCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+docseg-Templating_PrepareCallback input { display: inline; width: 25px }
+</style><style>
+docseg-Templating_Escaping .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style><style>
+/* ...and any CSS here! */
+docseg-Tutorial_P1 strong {
+    color: blue;
+}
+docseg-Tutorial_P1 .neat {
+    font-variant: small-caps;
+}
+docseg-Tutorial_P1 { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style><style>
+docseg-Tutorial_P3_state_demo {
+        font-size: 0.8rem;
+    }
+</style><style>
+mws-Section Section {
+            position: relative;
+        }
+mws-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mws-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mws-Section Section:hover .Section-helper {
+            opacity: 1.0;
+        }
+    </style><script>"use strict";Modulo.assets.functions["1v5dd34"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        console.info('factory method of ErrorCauser');
+        function countUp() {
+            state.num++;
+        }
+
+        function makeError() {
+            console.info('makeError callback happening');
+            const a = 10;
+            a(); // cause error
+        }
+    
+return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
+"makeError": typeof makeError !== "undefined" ? makeError : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+mws-ErrorCauser * {
+            color: orangered !important;
+            background: black !important;
+            border: blue 5px solid;
+            padding: 10px;
+        }
+    </style><script>"use strict";Modulo.assets.functions["xo2attf"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+let componentTexts = null;
+let componentTexts2 = null;
+let exCounter = 0; // global variable
+
+//console.log('this is demo.js');
+
+function _setupGlobalVariables() {
+    // TODO: Refactor this, obvs
+    // Get text from the two example component libraries
+    //console.log('this is registered Modulo instances', Object.keys(Modulo.factoryInstances));
+    try {
+        componentTexts = Modulo.factoryInstances['eg-eg']
+                .baseRenderObj.script.exports.componentTexts;
+    } catch (err) {
+        console.log('couldnt get componentTexts:', err);
+        componentTexts = null;
+    }
+
+    try {
+        componentTexts2 = Modulo.factoryInstances['docseg-docseg']
+                .baseRenderObj.script.exports.componentTexts;
+    } catch (err) {
+        console.log('couldnt get componentTexts2:', err);
+        componentTexts2 = null;
+    }
+
+    if (componentTexts) {
+        componentTexts = Object.assign({}, componentTexts, componentTexts2);
+    }
+}
+
+function tmpGetDirectives() {
+    return [ 'script.codemirror' ];
+}
+
+function codemirrorMount({ el }) {
+    //console.log('codeMirrorMount', { el });
+    el.innerHTML = ''; // clear inner HTML before mounting
+    const demoType = props.demotype || 'snippet';
+    //_setupCodemirror(el, demoType, element, state);
+    _setupCodemirrorSync(el, demoType, element, state);
+}
+
+function _setupCodemirrorSync(el, demoType, myElement, myState) {
+      let readOnly = false;
+      let lineNumbers = true;
+      if (demoType === 'snippet') {
+          readOnly = true;
+          lineNumbers = false;
+      }
+
+      const conf = {
+          value: myState.text,
+          mode: 'django',
+          theme: 'eclipse',
+          indentUnit: 4,
+          readOnly,
+          lineNumbers,
+      };
+
+      if (demoType === 'snippet') {
+          myState.showclipboard = true;
+      } else if (demoType === 'minipreview') {
+          myState.showpreview = true;
+      }
+
+      if (!myElement.codeMirrorEditor) {
+          myElement.codeMirrorEditor = Modulo.globals.CodeMirror(el, conf);
+      }
+      myElement.codeMirrorEditor.refresh()
+}
+
+function _setupCodemirror(el, demoType, myElement, myState) {
+    //console.log('_setupCodemirror DISABLED'); return; ///////////////////
+    let expBackoff = 10;
+    //console.log('this is codemirror', Modulo.globals.CodeMirror);
+    const mountCM = () => {
+        // TODO: hack, allow JS deps or figure out loader or something
+        if (!Modulo.globals.CodeMirror) {
+            expBackoff *= 2;
+            setTimeout(mountCM, expBackoff); // poll again
+            return;
+        }
+
+        let readOnly = false;
+        let lineNumbers = true;
+        if (demoType === 'snippet') {
+            readOnly = true;
+            lineNumbers = false;
+        }
+
+        const conf = {
+            value: myState.text,
+            mode: 'django',
+            theme: 'eclipse',
+            indentUnit: 4,
+            readOnly,
+            lineNumbers,
+        };
+
+        if (demoType === 'snippet') {
+            myState.showclipboard = true;
+        } else if (demoType === 'minipreview') {
+            myState.showpreview = true;
+        }
+
+        if (!myElement.codeMirrorEditor) {
+            myElement.codeMirrorEditor = Modulo.globals.CodeMirror(el, conf);
+        }
+        myElement.codeMirrorEditor.refresh()
+        //myElement.rerender();
+    };
+    mountCM();
+    return;
+    const {isBackend} = Modulo;
+    if (!isBackend) {
+        // TODO: Ugly hack, need better tools for working with legacy
+        setTimeout(mountCM, expBackoff);
+    }
+}
+
+function selectTab(newTitle) {
+    //console.log('tab getting selected!', newTitle);
+    if (!element.codeMirrorEditor) {
+        return; // not ready yet
+    }
+    const currentTitle = state.selected;
+    state.selected = newTitle;
+    for (const tab of state.tabs) {
+        if (tab.title === currentTitle) { // save text back to state
+            tab.text = element.codeMirrorEditor.getValue();
+        } else if (tab.title === newTitle) {
+            state.text = tab.text;
+        }
+    }
+    element.codeMirrorEditor.setValue(state.text);
+    doRun();
+}
+
+function doCopy() {
+    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
+    if (!mod || !mod.script || !mod.script.copyTextToClipboard) {
+        console.log('no mod!');
+    } else {
+        mod.script.copyTextToClipboard(state.text);
+    }
+}
+
+function initializedCallback() {
+    console.log('initializedCallback');
+    if (componentTexts === null) {
+        _setupGlobalVariables();
+    }
+
+    let text;
+    state.tabs = [];
+    if (props.fromlibrary) {
+        if (!componentTexts) {
+            componentTexts = false;
+            throw new Error('Couldnt load:', props.fromlibrary)
+        }
+
+        const componentNames = props.fromlibrary.split(',');
+        for (const title of componentNames) {
+            if (title in componentTexts) {
+                text = componentTexts[title].trim();
+                text = text.replace(/&#39;/g, "'"); // correct double escape
+                state.tabs.push({ text, title });
+            } else {
+                console.error('invalid fromlibrary:', title);
+                console.log(componentTexts);
+                return;
+            }
+        }
+    } else if (props.text) {
+        let title = props.ttitle || 'Example';
+        text = props.text.trim();
+        state.tabs.push({title, text});
+        // hack -v
+        if (props.text2) {
+            title = props.ttitle2 || 'Example';
+            text = props.text2.trim();
+            state.tabs.push({title, text});
+        }
+        if (props.text3) {
+            title = props.ttitle3 || 'Example';
+            text = props.text3.trim();
+            state.tabs.push({title, text});
+        }
+        //console.log('this is props', props);
+    }
+
+    const demoType = props.demotype || 'snippet';
+    if (demoType === 'snippet') {
+        state.showclipboard = true;
+    } else if (demoType === 'minipreview') {
+        state.showpreview = true;
+    }
+
+    state.text = state.tabs[0].text; // load first
+
+    state.selected = state.tabs[0].title; // set first as tab title
+    //setupShaChecksum();
+    if (demoType === 'minipreview') {
+        doRun();
+    }
+
+    const myElem = element;
+    const myState = state;
+    const {isBackend} = Modulo;
+    return;
+    if (!isBackend) {
+        setTimeout(() => {
+            const div = myElem.querySelector('.editor-wrapper > div');
+            _setupCodemirror(div, demoType, myElem, myState);
+        }, 0); // put on queue
+    }
+}
+
+function doRun() {
+    exCounter++;
+    console.log('There are ', exCounter, ' examples on this page. Gee!')
+    const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
+    state.nscounter++;
+    const attrs = { src: '', namespace };
+    const tagName = 'Example';
+
+    if (element.codeMirrorEditor) {
+        state.text = element.codeMirrorEditor.getValue(); // make sure most up-to-date
+    }
+    let componentDef = state.text;
+    componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
+    const loader = new Modulo.Loader(null, { attrs } );
+    loader.loadString(componentDef);
+    const fullname = `${namespace}-${tagName}`;
+    const factory = Modulo.factoryInstances[fullname];
+    state.preview = `<${fullname}></${fullname}>`;
+
+    // Hacky way to mount, required due to buggy dom resolver
+    const {isBackend} = Modulo;
+    if (!isBackend) {
+        setTimeout(() => {
+            const div = element.querySelector('.editor-minipreview > div');
+            if (div) {
+                div.innerHTML = state.preview;
+            } else {
+                console.log('warning, cant update minipreview', div);
+            }
+        }, 0);
+    }
+}
+
+function countUp() {
+    // TODO: Remove this when resolution context bug is fixed so that children
+    // no longer can reference parents
+    console.count('PROBLEM: Child event bubbling to parent!');
+}
+
+function doFullscreen() {
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
+    if (state.fullscreen) {
+        state.fullscreen = false;
+        document.querySelector('html').style.overflow = "auto";
+        if (element.codeMirrorEditor) {
+            element.codeMirrorEditor.refresh()
+        }
+    } else {
+        state.fullscreen = true;
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+
+        // TODO: way to share variables in CSS
+        if (vw > 768) {
+              document.querySelector('html').style.overflow = "hidden";
+              if (element.codeMirrorEditor) {
+                  element.codeMirrorEditor.refresh()
+              }
+        }
+    }
+    if (element.codeMirrorEditor) {
+        //element.codeMirrorEditor.refresh()
+    }
+}
+
+/*
+function previewspotMount({ el }) {
+    element.previewSpot = el;
+    if (!element.isMounted) {
+        doRun(); // mount after first render
+    }
+}
+
+
+function setupShaChecksum() {
+    console.log('setupShaChecksum DISABLED'); return; ///////////////////
+
+    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
+    if (Modulo.isBackend && state && state.text.includes('$modulojs_sha384_checksum$')) {
+        if (!mod || !mod.script || !mod.script.getVersionInfo) {
+            console.log('no mod!');
+        } else {
+            const info = mod.script.getVersionInfo();
+            const checksum = info.checksum || '';
+            state.text = state.text.replace('$modulojs_sha384_checksum$', checksum)
+            element.setAttribute('text', state.text);
+        }
+    }
+}
+*/
+
+/*
+const component = factory.createTestElement();
+component.remove()
+console.log(component);
+element.previewSpot.innerHTML = '';
+element.previewSpot.appendChild(component);
+*/
+
+
+return { "_setupGlobalVariables": typeof _setupGlobalVariables !== "undefined" ? _setupGlobalVariables : undefined,
+"tmpGetDirectives": typeof tmpGetDirectives !== "undefined" ? tmpGetDirectives : undefined,
+"codemirrorMount": typeof codemirrorMount !== "undefined" ? codemirrorMount : undefined,
+"_setupCodemirrorSync": typeof _setupCodemirrorSync !== "undefined" ? _setupCodemirrorSync : undefined,
+"_setupCodemirror": typeof _setupCodemirror !== "undefined" ? _setupCodemirror : undefined,
+"selectTab": typeof selectTab !== "undefined" ? selectTab : undefined,
+"doCopy": typeof doCopy !== "undefined" ? doCopy : undefined,
+"initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+"doRun": typeof doRun !== "undefined" ? doRun : undefined,
+"countUp": typeof countUp !== "undefined" ? countUp : undefined,
+"doFullscreen": typeof doFullscreen !== "undefined" ? doFullscreen : undefined,
+"previewspotMount": typeof previewspotMount !== "undefined" ? previewspotMount : undefined,
+"setupShaChecksum": typeof setupShaChecksum !== "undefined" ? setupShaChecksum : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    height: 200px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror {
+    height: auto;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
+    height: 87vh;
+}
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+mws-Demo .demo-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
+    /* Make look better in Docs */
+    max-width: 900px;
+}
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {
+    /* ...except if full screen */
+    max-width: 100vw;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+    position: absolute;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 20px;
+    background: white;
+}
+
+/* No tabs sitch: */
+mws-Demo .demo-wrapper__notabs .editor-minipreview {
+    margin-top: 40px;
+    margin-left: 5px;
+    border: 1px solid #999;
+    height: 160px;
+}
+
+mws-Demo .demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {
+    margin-top: 65px;
+}
+
+mws-Demo .editor-toolbar {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    width: auto;
+    /*right: -70px;*/
+    right: 30px;
+    top: 0;
+    height: 35px;
+    padding: 2px;
+    border: #ddd 1px solid;
+}
+
+
+
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+    height: 60px;
+    padding: 10px;
+}
+
+
+mws-Demo .demo-wrapper__minipreview  .editor-wrapper {
+    width: 78%;
+    border: 1px solid black;
+}
+mws-Demo .Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
+    border: 1px dotted #ddd;
+    width: 100%;
+}
+
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .editor-minipreview {
+    border: 1px solid black;
+    border-radius: 1px;
+    background: #eee;
+    padding: 5px;
+    border-left: none;
+    width: 200px;
+    height: 200px;
+    overflow-y: auto;
+}
+mws-Demo .editor-minipreview > div > * > input {
+  max-width: 175px;
+}
+
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+    width: 30vw;
+    height: auto;
+    border: 1px solid black;
+    margin: 20px;
+    padding: 30px;
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .side-by-side-panes {
+    display: flex;
+    justify-content: space-between;
+}
+
+mws-Demo .TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+
+
+mws-Demo .TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+
+mws-Demo .TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    /*border-bottom-width: 0;*/
+    margin-bottom: -2px;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
+}
+
+mws-Demo .TabNav-title a,
+mws-Demo .TabNav-title a:visited,
+mws-Demo .TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+mws-Demo .TabNav-title:hover {
+    border-color: var(--highlight-color);
+}
+
+mws-Demo .TabNav-title--selected {
+    border-color: var(--highlight-color);
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
+}
+mws-Demo .TabNav-title--selected a {
+    color: white !important;
+}
+
+
+@media (max-width: 992px) {
+mws-Demo .TabNav > ul {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+@media (max-width: 768px) {
+mws-Demo .TabNav-title {
+        padding: 7px;
+    }
+}
+
+
+
+@media (max-width: 768px) {
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: auto;
+        z-index: 1;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-toolbar {
+        position: static;
+        padding: 10px;
+        margin: 20px;
+        height: 60px;
+        font-size: 1.1rem;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+        margin: 5px;
+        height: 60px;
+        padding: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .side-by-side-panes {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+mws-Demo .editor-minipreview {
+        width: 100%;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+        width: 90%;
+    }
+}
+
+
+@media (min-width: 768px) {
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+        height: auto;
+        width: 70vw;
+        min-height: 87vh;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-wrapper {
+        width: 100%;
+        border: 1px solid black;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
+        width: 100%;
+    }
+}
+
+</style><script>"use strict";Modulo.assets.functions["19ln1d0"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function _child(label, hash, keywords=[], filepath=null) {
+        if (!hash) {
+            hash = label.toLowerCase()
+        }
+        if (hash.endsWith('.html') && filepath === null) {
+            filepath = hash;
+        }
+        return {label, hash, keywords, filepath};
+    }
+    let componentTexts;
+    try {
+        //console.log('this is', Object.keys(Modulo.factoryInstances));
+        //console.log('this is', Modulo.factoryInstances);
+        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    } catch {
+        console.log('couldnt get componentTexts');
+        componentTexts = {};
+    }
+    script.exports.menu = [
+        {
+            label: 'Table of Contents',
+            filename: '/docs/',
+        },
+
+        {
+            label: 'Tutorial',
+            filename: '/docs/tutorial_part1.html',
+            children: [
+                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
+                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
+                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
+            ],
+        },
+
+        {
+            label: 'Templating',
+            filename: '/docs/templating.html',
+            children: [
+                _child('Templates', null, ['templating philosophy', 'templating overview']),
+                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
+                _child('Filters', null, ['filter syntax', 'example filters']),
+                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
+                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
+                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
+            ],
+        },
+
+        {
+            label: 'Template Reference',
+            filename: '/docs/templating-reference.html',
+            children: [
+                _child('Built-in Template Tags', 'templatetags', [
+                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
+                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
+                    'comparison', 'control-flow',
+                ]),
+                _child('Built-in Filters', 'filters', [
+                    'add', 'allow', 'capfirst', 'concat', 'default',
+                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
+                    'length', 'lower', 'number', 'pluralize', 'subtract',
+                    'truncate', 'renderas', 'reversed', 'upper',
+                ]),
+            ],
+        },
+
+        {
+            label: 'CParts',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Props', 'props', ['accessing props', 'defining props',
+                                    'setting props', 'using props']),
+                _child('Template', 'template', ['custom template', 'templating engine']),
+                _child('State', 'state', ['state definition', 'state data types',
+                                'json', 'state variables', 'state.bind directive']),
+                _child('Script', 'script', ['javascript', 'events', 'computed properties',
+                                'static execution', 'custom lifecycle methods',
+                                    'script callback execution context', 'script exports']),
+                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
+                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
+                                    'rendering mode', 'manual rerender', 'shadow',
+                                    'vanish', 'vanish-into-document', 'component.event',
+                                    'component.slot', 'component.dataProp']),
+                //_child('Module'),
+            ],
+        },
+
+        {
+            label: 'Lifecycle',
+            filename: '/docs/lifecycle.html',
+            children: [
+                _child('Lifecycle phases', 'phases',
+                    ['lifestyle phases', 'lifestyle phase groups',
+                     'load', 'factory', 'prepare', 'initialized',
+                     'render', 'reconcile', 'update',
+                     'event', 'eventCleanup', 'hooking into lifecycle',
+                     'lifecycle callbacks', 'script tag callbacks']),
+                _child('Factory lifecycle', 'factory',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+                _child('renderObj', 'renderobj',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+            ],
+        },
+
+        {
+            label: 'Directives',
+            filename: '/docs/directives.html',
+            children: [
+                _child('Directives', 'directives',
+                    ['built-in directives', 'directive shortcuts',
+                     'custom directives', 'refs', 'accessing dom',
+                     'escape hatch', 'mount callback', 'unmount callback']),
+                _child('Custom directives', 'custom'),
+                _child('Built-in directives', 'builtin'),
+            ],
+        },
+
+        /*
+        {
+            label: 'API & Extension',
+            filename: '/docs/api.html',
+            children: [
+                _child('Custom CParts', 'cparts'),
+                _child('CPart Spares', 'spares'),
+                _child('Custom Templating', 'template'),
+                _child('Custom Filters', 'customfilters'),
+                _child('Custom Template Tags', 'customtags'),
+                _child('Custom Template Syntax', 'customtags'),
+                _child('ModRec', 'modrec'),
+                _child('DOMCursor', 'cursor'),
+            ],
+        },
+        */
+
+        {
+            label: 'Example Library',
+            filename: '/docs/example-library.html',
+            children: Object.keys(componentTexts).map(name => _child(name)),
+        },
+
+        {
+            label: 'Project Info',
+            filename: '/docs/project-info.html',
+            children: [
+                _child('FAQ', 'faq'),
+                _child('Framework Design Philosophy', 'philosophy'),
+            ],
+        },
+    ];
+
+    function initializedCallback() {
+        const { path, showall } = props;
+        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
+        for (const groupObj of state.menu) {
+            if (showall) {
+                groupObj.active = true;
+            }
+            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
+                groupObj.active = true;
+            }
+        }
+    }
+
+return { "_child": typeof _child !== "undefined" ? _child : undefined,
+"initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+mws-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+mws-DocSidebar li.ginactive > ul::before,
+mws-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+mws-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+</style><style>
+mws-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mws-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mws-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mws-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mws-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mws-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+mws-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mws-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mws-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mws-CodeExample .split { display: block; }
+        }
+    </style><script>"use strict";Modulo.assets.functions["ki6eec"]= function (Modulo, factory, module, component, template, style, props, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'style') style = value; if (name === 'props') props = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        let egTexts = null;
+        try {
+            if ('eg-eg' in Modulo.factoryInstances) {
+                egTexts = Modulo.factoryInstances['eg-eg']
+                    .baseRenderObj.script.exports.componentTexts;
+            }
+        } catch {
+            console.log('couldnt get egTexts');
+        }
+
+        let exCounter = 0; // global variable
+        //console.log('gettin script tagged');
+        /* Configure loader: */
+        function initializedCallback() {
+            //console.log('hey i am getting initialized wow');
+            //console.log('initialized callback', element.innerHTML);
+            if (Modulo.isBackend) {
+                let html;
+                if (egTexts && props.cname) {
+                    Modulo.assert(props.cname in egTexts, `${props.cname} not found`);
+                    html = egTexts[props.cname];
+                } else {
+                    html = (element.innerHTML || '').trim();
+                    html = html.replace(/([\w\[\]\._-]+):="(\w+)"/, '$1:=$2'); // clean up due to DOM
+                }
+
+                if (props.textsrc) {
+                    const html = Modulo.require('fs')
+                        .readFileSync('./docs-src/' + props.textsrc, 'utf8');
+                    element.setAttribute('text', html);
+                } else if (html && !element.getAttribute('text')) {
+                    element.setAttribute('text', html);
+                }
+            }
+        }
+
+        function previewspotMount({el}) {
+            element.previewSpot = el.firstElementChild;
+            run(); // mount after first render
+        }
+
+        function codemirrorMount({el}) {
+            if (Modulo.globals.CodeMirror) {
+                //console.log('this is props', props);
+                // TODO: Debug this, should not use textarea, should not need
+                // extra refreshes or anything
+                const cm = CodeMirror.fromTextArea(el, {
+                    lineNumbers: true,
+                    mode: 'django',
+                    theme: 'eclipse',
+                    indentUnit: 4,
+                });
+                element.codeMirrorEditor = cm;
+                window.cm = cm;
+
+                const height = props.vsize ? Number(props.vsize) : 170;
+                cm.setValue('');
+                cm.setSize(null, height);
+                cm.refresh();
+
+                let text = props.text.trim();
+                text = text.replace(/&#39;/g, "'"); // correct double escape
+                cm.setValue(text);
+                setTimeout(() => {
+                    cm.setValue(text);
+                    cm.setSize(null, height);
+                    cm.refresh();
+                }, 1);
+                el.setAttribute('modulo-ignore', 'y');
+            } else {
+                //console.log('Code mirror not found'); // probably SSG
+            }
+        }
+
+        function run() {
+            if (!Modulo.globals.CodeMirror) {
+                return;
+            }
+            exCounter++;
+            //console.log('There are ', exCounter, ' examples on this page. Gee!')
+            const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
+            state.nscounter++;
+            const loadOpts = {src: '', namespace};
+            const loader = new Modulo.Loader(null, {options: loadOpts});
+            const tagName = 'Example';
+            let text = element.codeMirrorEditor.getValue();
+            text = `<template mod-component="${tagName}">${text}</template>`;
+            //console.log('Creating component from text:', text)
+            loader.loadString(text);
+            const tag = `${namespace}-${tagName}`;
+            let extraPropsStr = '';
+            /*
+            const extraProps =  props.extraprops ? JSON.parse(props.extraprops) : {};
+            for (const [key, value] of Object.entries(extraProps)) {
+                const escValue = value.replace(/"/g, , '&quot;');
+                extraPropsStr += ` ${key}="${escValue}"`;
+            }
+            */
+
+            const preview = `<${tag}${extraPropsStr}></${tag}>`;
+            element.previewSpot.innerHTML = preview;
+            //state.preview = preview;
+            //document.querySelector('#previewSpot').innerHTML = preview;
+            //console.log('adding preview', preview);
+        }
+    
+return { "initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+"previewspotMount": typeof previewspotMount !== "undefined" ? previewspotMount : undefined,
+"codemirrorMount": typeof codemirrorMount !== "undefined" ? codemirrorMount : undefined,
+"run": typeof run !== "undefined" ? run : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["xnjq9ng"]= function (CTX, G){
+var OUT=[];
+OUT.push("<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"); // "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"
+OUT.push(G.escapeHTML(CTX.props.pagetitle)); // "props.pagetitle"
+OUT.push(" - modulojs.org</title>\n    <link rel=\"stylesheet\" href=\"/css/style.css\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->\n    <!--<script src=\"/js/codemirror_5.63.0/codemirror_bundled.js\"></script>-->\n    <!--<link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />-->\n</head>\n<body>\n\n<div [component.slot]=\"above-navbar\">\n</div>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/mono_logo.png\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\" "); // "- modulojs.org</title>\n    <link rel=\"stylesheet\" href=\"/css/style.css\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->\n    <!--<script src=\"/js/codemirror_5.63.0/codemirror_bundled.js\"></script>-->\n    <!--<link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />-->\n</head>\n<body>\n\n<div [component.slot]=\"above-navbar\">\n</div>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/mono_logo.png\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\""
+if (CTX.props.navbar === "about") { // "if props.navbar == \"about\""
+OUT.push("class=\"Navbar--selected\""); // "class=\"Navbar--selected\""
+} // "endif"
+OUT.push(">About</a>\n        </li>\n        <li>\n            <a href=\"/start.html\" "); // ">About</a>\n        </li>\n        <li>\n            <a href=\"/start.html\""
+if (CTX.props.navbar === "start") { // "if props.navbar == \"start\""
+OUT.push("class=\"Navbar--selected\""); // "class=\"Navbar--selected\""
+} // "endif"
+OUT.push(">Start</a>\n        </li>\n        <li>\n            <a href=\"/docs/\" "); // ">Start</a>\n        </li>\n        <li>\n            <a href=\"/docs/\""
+if (CTX.props.navbar === "docs") { // "if props.navbar == \"docs\""
+OUT.push("class=\"Navbar--selected\""); // "class=\"Navbar--selected\""
+} // "endif"
+OUT.push(">Docs</a>\n        </li>\n    </ul>\n\n    <div class=\"Navbar-rightInfo\">\n        "); // ">Docs</a>\n        </li>\n    </ul>\n\n    <div class=\"Navbar-rightInfo\">"
+if (CTX.script.exports.version) { // "if script.exports.version"
+OUT.push("\n            v: "); // "v:"
+OUT.push(G.escapeHTML(CTX.script.exports.version)); // "script.exports.version"
+OUT.push("<br />\n            SLOC: "); // "<br />\n            SLOC:"
+OUT.push(G.escapeHTML(CTX.script.exports.sloc)); // "script.exports.sloc"
+OUT.push(" lines<br />\n            <a href=\"https://github.com/michaelpb/modulo/\">github</a> | \n            <a href=\"https://npmjs.com/michaelpb/modulo/\">npm</a> \n        "); // "lines<br />\n            <a href=\"https://github.com/michaelpb/modulo/\">github</a> | \n            <a href=\"https://npmjs.com/michaelpb/modulo/\">npm</a>"
+} else { // "else"
+OUT.push("\n            <a href=\"https://github.com/michaelpb/modulo/\">Source Code\n                <br />\n                (on GitHub)\n            </a>\n        "); // "<a href=\"https://github.com/michaelpb/modulo/\">Source Code\n                <br />\n                (on GitHub)\n            </a>"
+} // "endif"
+OUT.push("\n    </div>\n</nav>\n\n"); // "</div>\n</nav>"
+if (CTX.props.docbarselected) { // "if props.docbarselected"
+OUT.push("\n    <main class=\"Main Main--fluid Main--withSidebar\">\n        <aside class=\"TitleAside TitleAside--navBar\" >\n            <h3><span alt=\"Lower-case delta\">%</span></h3>\n            <nav class=\"TitleAside-navigation\">\n                <h3>Documentation</h3>\n                <mws-DocSidebar path=\""); // "<main class=\"Main Main--fluid Main--withSidebar\">\n        <aside class=\"TitleAside TitleAside--navBar\" >\n            <h3><span alt=\"Lower-case delta\">%</span></h3>\n            <nav class=\"TitleAside-navigation\">\n                <h3>Documentation</h3>\n                <mws-DocSidebar path=\""
+OUT.push(G.escapeHTML(CTX.props.docbarselected)); // "props.docbarselected"
+OUT.push("\"></mws-DocSidebar>\n            </nav>\n        </aside>\n        <aside style=\"border: none\" [component.slot]>\n        </aside>\n    </main>\n"); // "\"></mws-DocSidebar>\n            </nav>\n        </aside>\n        <aside style=\"border: none\" [component.slot]>\n        </aside>\n    </main>"
+} else { // "else"
+OUT.push("\n    <main class=\"Main\" [component.slot]>\n    </main>\n"); // "<main class=\"Main\" [component.slot]>\n    </main>"
+} // "endif"
+OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>\n"); // "<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>"
+
+return OUT.join("");
+};</script><modulo>
+    <load namespace="x" src="/components/layouts.html"> </load>
+</modulo><meta charset="utf8"><title>CParts - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["pqput6"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n        <a class=\"secanchor\" title=\"Click to focus on this section.\" id=\""); // "<a class=\"secanchor\" title=\"Click to focus on this section.\" id=\""
+OUT.push(G.escapeHTML(CTX.props.name)); // "props.name"
+OUT.push("\" name=\""); // "\" name=\""
+OUT.push(G.escapeHTML(CTX.props.name)); // "props.name"
+OUT.push("\" href=\"#"); // "\" href=\"#"
+OUT.push(G.escapeHTML(CTX.props.name)); // "props.name"
+OUT.push("\">#</a>\n        <h2>"); // "\">#</a>\n        <h2>"
+OUT.push(G.escapeHTML(G.filters["safe"](CTX.component.originalHTML))); // "component.originalHTML|safe"
+OUT.push("</h2>\n    "); // "</h2>"
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["xvdjht9"]= function (CTX, G){
+var OUT=[];
+OUT.push("<div class=\"demo-wrapper\n        "); // "<div class=\"demo-wrapper"
+if (CTX.state.showpreview) { // "if state.showpreview"
+OUT.push("     demo-wrapper__minipreview"); // "demo-wrapper__minipreview"
+} // "endif"
+OUT.push("\n        "); // ""
+if (CTX.state.showclipboard) { // "if state.showclipboard"
+OUT.push("   demo-wrapper__clipboard  "); // "demo-wrapper__clipboard"
+} // "endif"
+OUT.push("\n        "); // ""
+if (CTX.state.fullscreen) { // "if state.fullscreen"
+OUT.push("      demo-wrapper__fullscreen "); // "demo-wrapper__fullscreen"
+} // "endif"
+OUT.push("\n        "); // ""
+if (CTX.state.tabs.length === 1) { // "if state.tabs.length == 1"
+OUT.push("demo-wrapper__notabs     "); // "demo-wrapper__notabs"
+} // "endif"
+OUT.push("\n    \">\n    "); // "\">"
+if (CTX.state.tabs.length > 1) { // "if state.tabs.length gt 1"
+OUT.push("\n        <nav class=\"TabNav\">\n            <ul>\n                "); // "<nav class=\"TabNav\">\n            <ul>"
+var ARR1=CTX.state.tabs;for (var KEY in ARR1) {CTX. tab=ARR1[KEY]; // "for tab in state.tabs"
+OUT.push("\n                    <li class=\"TabNav-title\n                        "); // "<li class=\"TabNav-title"
+if (CTX.tab.title === CTX.state.selected) { // "if tab.title == state.selected"
+OUT.push("\n                            TabNav-title--selected\n                        "); // "TabNav-title--selected"
+} // "endif"
+OUT.push("\n                    \"><a @click:=script.selectTab\n                            payload=\""); // "\"><a @click:=script.selectTab\n                            payload=\""
+OUT.push(G.escapeHTML(CTX.tab.title)); // "tab.title"
+OUT.push("\"\n                        >"); // "\"\n                        >"
+OUT.push(G.escapeHTML(CTX.tab.title)); // "tab.title"
+OUT.push("</a></li>\n                "); // "</a></li>"
+} // "endfor"
+OUT.push("\n            </ul>\n        </nav>\n    "); // "</ul>\n        </nav>"
+} // "endif"
+OUT.push("\n\n    <div class=\"editor-toolbar\">\n        <p style=\"font-size: 11px; width: 120px; margin-right: 10px; text-align: right;\n                    "); // "<div class=\"editor-toolbar\">\n        <p style=\"font-size: 11px; width: 120px; margin-right: 10px; text-align: right;"
+if (!(CTX.state.fullscreen)) { // "if not state.fullscreen"
+OUT.push(" display: none; "); // "display: none;"
+} // "endif"
+OUT.push("\">\n            <em>Note: This is meant for exploring features. Your work will not be saved.</em>\n        </p>\n\n        "); // "\">\n            <em>Note: This is meant for exploring features. Your work will not be saved.</em>\n        </p>"
+if (CTX.state.showclipboard) { // "if state.showclipboard"
+OUT.push("\n            <button class=\"m-Btn m-Btn--sm m-Btn--faded\"\n                    title=\"Copy this code\" @click:=script.doCopy>\n                Copy <span alt=\"Clipboard\">&#128203;</span>\n            </button>\n        "); // "<button class=\"m-Btn m-Btn--sm m-Btn--faded\"\n                    title=\"Copy this code\" @click:=script.doCopy>\n                Copy <span alt=\"Clipboard\">&#128203;</span>\n            </button>"
+} // "endif"
+OUT.push("\n\n        "); // ""
+if (CTX.state.showpreview) { // "if state.showpreview"
+OUT.push("\n            <button class=\"m-Btn\"\n                    title=\"Toggle full screen view of code\" @click:=script.doFullscreen>\n                "); // "<button class=\"m-Btn\"\n                    title=\"Toggle full screen view of code\" @click:=script.doFullscreen>"
+if (CTX.state.fullscreen) { // "if state.fullscreen"
+OUT.push("\n                    <span alt=\"Shrink\">&swarr;</span>\n                "); // "<span alt=\"Shrink\">&swarr;</span>"
+} else { // "else"
+OUT.push("\n                    <span alt=\"Go Full Screen\">&nearr;</span>\n                "); // "<span alt=\"Go Full Screen\">&nearr;</span>"
+} // "endif"
+OUT.push("\n            </button>\n            &nbsp;\n            <button class=\"m-Btn\"\n                    title=\"Run a preview of this code\" @click:=script.doRun>\n                Run <span alt=\"Refresh\">&#10227;</span>\n            </button>\n        "); // "</button>\n            &nbsp;\n            <button class=\"m-Btn\"\n                    title=\"Run a preview of this code\" @click:=script.doRun>\n                Run <span alt=\"Refresh\">&#10227;</span>\n            </button>"
+} // "endif"
+OUT.push("\n\n    </div>\n\n    <div class=\"side-by-side-panes\">\n        <div class=\"editor-wrapper\">\n            <div [script.codemirror] modulo-ignore>\n            </div>\n        </div>\n\n        "); // "</div>\n\n    <div class=\"side-by-side-panes\">\n        <div class=\"editor-wrapper\">\n            <div [script.codemirror] modulo-ignore>\n            </div>\n        </div>"
+if (CTX.state.showpreview) { // "if state.showpreview"
+OUT.push("\n            <div class=\"editor-minipreview\">\n                <div modulo-ignore>\n                    "); // "<div class=\"editor-minipreview\">\n                <div modulo-ignore>"
+OUT.push(G.escapeHTML(G.filters["safe"](CTX.state.preview))); // "state.preview|safe"
+OUT.push("\n                </div>\n            </div>\n        "); // "</div>\n            </div>"
+} // "endif"
+OUT.push("\n\n    </div>\n</div>\n\n"); // "</div>\n</div>"
+
+return OUT.join("");
+};</script><style>
+e3g1-Example input { display: inline; width: 25px }
+</style><script>"use strict";Modulo.assets.functions["1sqqsbm"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function fetchMe() {
+        fetch("https://api.github.com/users/michaelpb")
+            .then(response => response.json())
+            .then(cparts.script.cb(data => {
+                // Note that this callback is "wrapped" with
+                // "cparts.script.cb(  ...  )"
+                state.data = data; // update state
+                element.rerender(); // force rerender
+            }));
+    }
+
+return { "fetchMe": typeof fetchMe !== "undefined" ? fetchMe : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["sogcqp"]= function (Modulo, factory, module, component, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    script.exports.bigArray =
+        Array.from({ length: 100 })
+        .map((val, i) => `i liek ${i} turtles`);
+
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><style>
+/* ...and any CSS here! */
+e6g1-Example strong {
+    color: blue;
+}
+e6g1-Example .neat {
+    font-variant: small-caps;
+}
+e6g1-Example { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style><script>"use strict";Modulo.assets.functions["x1ttadi3"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n<ul>\n    "); // "<ul>"
+var ARR0=CTX.state.menu;for (var KEY in ARR0) {CTX. linkGroup=ARR0[KEY]; // "for linkGroup in state.menu"
+OUT.push("\n        <li class=\"\n            "); // "<li class=\""
+if (CTX.linkGroup.children) { // "if linkGroup.children"
+OUT.push("\n                "); // ""
+if (CTX.linkGroup.active) { // "if linkGroup.active"
+OUT.push("gactive"); // "gactive"
+} else { // "else"
+OUT.push("ginactive"); // "ginactive"
+} // "endif"
+OUT.push("\n            "); // ""
+} // "endif"
+OUT.push("\n            \"><a href=\""); // "\"><a href=\""
+OUT.push(G.escapeHTML(CTX.linkGroup.filename)); // "linkGroup.filename"
+OUT.push("\">"); // "\">"
+OUT.push(G.escapeHTML(CTX.linkGroup.label)); // "linkGroup.label"
+OUT.push("</a>\n            "); // "</a>"
+if (CTX.linkGroup.active) { // "if linkGroup.active"
+OUT.push("\n                "); // ""
+if (CTX.linkGroup.children) { // "if linkGroup.children"
+OUT.push("\n                    <ul>\n                    "); // "<ul>"
+var ARR3=CTX.linkGroup.children;for (var KEY in ARR3) {CTX. childLink=ARR3[KEY]; // "for childLink in linkGroup.children"
+OUT.push("\n                        <li><a href=\""); // "<li><a href=\""
+if (CTX.childLink.filepath) { // "if childLink.filepath"
+OUT.push(G.escapeHTML(CTX.childLink.filepath)); // "childLink.filepath"
+} else { // "else"
+OUT.push(G.escapeHTML(CTX.linkGroup.filename)); // "linkGroup.filename"
+OUT.push("#"); // "#"
+OUT.push(G.escapeHTML(CTX.childLink.hash)); // "childLink.hash"
+} // "endif"
+OUT.push("\">"); // "\">"
+OUT.push(G.escapeHTML(CTX.childLink.label)); // "childLink.label"
+OUT.push("</a>\n                        "); // "</a>"
+if (CTX.props.showall) { // "if props.showall"
+OUT.push("\n                            "); // ""
+if (CTX.childLink.keywords.length > 0) { // "if childLink.keywords.length gt 0"
+OUT.push("\n                                <span style=\"margin-left: 10px; color: #aaa\">(<em>Topics: "); // "<span style=\"margin-left: 10px; color: #aaa\">(<em>Topics:"
+OUT.push(G.escapeHTML(G.filters["join"](CTX.childLink.keywords,", "))); // "childLink.keywords|join:', '"
+OUT.push("</em>)</span>\n                            "); // "</em>)</span>"
+} // "endif"
+OUT.push("\n                        "); // ""
+} // "endif"
+OUT.push("\n                        </li>\n                    "); // "</li>"
+} // "endfor"
+OUT.push("\n                    </ul>\n                "); // "</ul>"
+} // "endif"
+OUT.push("\n            "); // ""
+} // "endif"
+OUT.push("\n        </li>\n    "); // "</li>"
+} // "endfor"
+OUT.push("\n\n\n    <!--\n    <li>\n        Other resources:\n\n        <ul>\n            <li>\n                <a href=\"/docs/faq.html\">FAQ</a>\n            <li title=\"Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.\">\n                Literate Source*<br /><em>* Coming soon!</em>\n            </li>\n        </ul>\n\n    </li>\n    -->\n    <!--<a href=\"/literate/src/Modulo.html\">Literate source</a>-->\n</ul>\n"); // "<!--\n    <li>\n        Other resources:\n\n        <ul>\n            <li>\n                <a href=\"/docs/faq.html\">FAQ</a>\n            <li title=\"Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.\">\n                Literate Source*<br /><em>* Coming soon!</em>\n            </li>\n        </ul>\n\n    </li>\n    -->\n    <!--<a href=\"/literate/src/Modulo.html\">Literate source</a>-->\n</ul>"
+
+return OUT.join("");
+};</script><style>
+e9g1-Example input { display: inline; width: 25px }
+</style><style>
+/* ...and any CSS here! */
+e12g1-Example strong {
+    color: blue;
+}
+e12g1-Example .neat {
+    font-variant: small-caps;
+}
+e12g1-Example { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style><script>"use strict";Modulo.assets.functions["x1k5ujh9"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n\n<div>\n    <label>Username:\n        <input [state.bind] name=\"username\" /></label>\n    <label>Color (\"green\" or \"blue\"):\n        <input [state.bind] name=\"color\" /></label>\n    <label>Opacity: <input [state.bind]\n        name=\"opacity\"\n        type=\"number\" min=\"0\" max=\"1\" step=\"0.1\" /></label>\n\n    <h5 style=\"\n            opacity: "); // "<div>\n    <label>Username:\n        <input [state.bind] name=\"username\" /></label>\n    <label>Color (\"green\" or \"blue\"):\n        <input [state.bind] name=\"color\" /></label>\n    <label>Opacity: <input [state.bind]\n        name=\"opacity\"\n        type=\"number\" min=\"0\" max=\"1\" step=\"0.1\" /></label>\n\n    <h5 style=\"\n            opacity:"
+OUT.push(G.escapeHTML(CTX.state.opacity)); // "state.opacity"
+OUT.push(";\n            color: "); // ";\n            color:"
+OUT.push(G.escapeHTML(G.filters["default"](G.filters["allow"](CTX.state.color,"green,blue"),"red"))); // "state.color|allow:'green,blue'|default:'red'"
+OUT.push(";\n        \">\n        "); // ";\n        \">"
+OUT.push(G.escapeHTML(G.filters["lower"](CTX.state.username))); // "state.username|lower"
+OUT.push("\n    </h5>\n</div>\n\n"); // "</h5>\n</div>"
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["q6b5d2"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    <button @click:=script.countUp>Hello "); // "<button @click:=script.countUp>Hello"
+OUT.push(G.escapeHTML(CTX.state.num)); // "state.num"
+OUT.push("</button>\n"); // "</button>"
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["1dm0d02"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    <input name=\"perc\" [state.bind] />% of\n    <input name=\"total\" [state.bind] />\n    is: "); // "<input name=\"perc\" [state.bind] />% of\n    <input name=\"total\" [state.bind] />\n    is:"
+OUT.push(G.escapeHTML(CTX.script.calcResult)); // "script.calcResult"
+OUT.push("\n"); // ""
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["78vnsm"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    API data: <pre>"); // "API data: <pre>"
+OUT.push(G.escapeHTML(G.filters["truncate"](G.filters["json"](CTX.state.data),80))); // "state.data|json|truncate:80"
+OUT.push("</pre>\n    <button @click:=script.fetchMe>Get API data</button>\n"); // "</pre>\n    <button @click:=script.fetchMe>Get API data</button>"
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["xn064s4"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    <p>"); // "<p>"
+var ARR0=CTX.script.exports.bigArray;for (var KEY in ARR0) {CTX. item=ARR0[KEY]; // "for item in script.exports.bigArray"
+OUT.push("\n        "); // ""
+OUT.push(G.escapeHTML(CTX.item)); // "item"
+OUT.push(",\n    "); // ","
+} // "endfor"
+OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["1125s79"]= function (CTX, G){
+var OUT=[];
+OUT.push("\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n"); // "Hello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>"
+
+return OUT.join("");
+};</script></head><body>
+
+
+    
+    
+    
+    
+    <!-- Moving this to individual pages for faster / blocking load, at least for now: -->
+    <!--<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>-->
+    <!--<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />-->
+
+
+
+<div [component.slot]="above-navbar"></div>
+
+<nav class="Navbar">
+    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <ul>
+        <li>
+            <a href="/index.html#about">About</a>
+        </li>
+        <li>
+            <a href="/start.html">Start</a>
+        </li>
+        <li>
+            <a href="/docs/" class="Navbar--selected">Docs</a>
+        </li>
+    </ul>
+
+    <div class="Navbar-rightInfo">
+        
+            <a href="https://github.com/michaelpb/modulo/">Source Code
+                <br>
+                (on GitHub)
+            </a>
+        
+    </div>
+</nav>
+
+
+    <main class="Main Main--fluid Main--withSidebar">
+        <aside class="TitleAside TitleAside--navBar">
+            <h3><span alt="Lower-case delta">%</span></h3>
+            <nav class="TitleAside-navigation">
+                <h3>Documentation</h3>
+                <mws-docsidebar path="cparts.html" modulo-original-html="">
+<ul>
+    
+        <li class="
+            
+            "><a href="/docs/">Table of Contents</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/tutorial_part1.html">Tutorial</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating.html">Templating</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/templating-reference.html">Template Reference</a>
+            
+        </li>
+    
+        <li class="
+            
+                gactive
+            
+            "><a href="/docs/cparts.html">CParts</a>
+            
+                
+                    <ul>
+                    
+                        <li><a href="/docs/cparts.html#props">Props</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#template">Template</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#state">State</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#script">Script</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#style">Style</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/cparts.html#component">Component</a>
+                        
+                        </li>
+                    
+                    </ul>
+                
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/lifecycle.html">Lifecycle</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/directives.html">Directives</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/example-library.html">Example Library</a>
+            
+        </li>
+    
+        <li class="
+            
+                ginactive
+            
+            "><a href="/docs/project-info.html">Project Info</a>
+            
+        </li>
+    
+
+
+    <!--
+    <li>
+        Other resources:
+
+        <ul>
+            <li>
+                <a href="/docs/faq.html">FAQ</a>
+            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
+                Literate Source*<br /><em>* Coming soon!</em>
+            </li>
+        </ul>
+
+    </li>
+    -->
+    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
+</ul>
+</mws-docsidebar>
+            </nav>
+        </aside>
+        <aside style="border: none" [component.slot]="">
 
 <h1>CParts</h1>
 
@@ -54,7 +2075,10 @@ typically what takes precedence (although for custom CParts that may be
 different).</p>
 
 
-<mws-Section name="props">Props</mws-Section>
+<mws-section name="props" modulo-original-html="Props">
+        <a class="secanchor" title="Click to focus on this section." id="props" name="props" href="#props">#</a>
+        <h2>Props</h2>
+    </mws-section>
 
 <blockquote>
 <p><strong>Read-only</strong> Props are read-only within a component, and only
@@ -81,9 +2105,9 @@ directive syntax for (e.g.
 
 <h3>renderObj</h3>
 
-<p>Props contributes it's received values to the renderObj. Examples:<p>
+<p>Props contributes it's received values to the renderObj. Examples:</p><p>
 
-<ol>
+</p><ol>
     <li>Prop set like: <code>&lt;x-Btn design="round"&gt;</code> will be
     accessible on the renderObj like <code>renderObj.props.design</code>, and
     in the Script or Template CParts like <code>props.design</code>.</li>
@@ -108,7 +2132,10 @@ definition and use of the component.
 -->
 
 
-<mws-Section name="template">Template</mws-Section>
+<mws-section name="template" modulo-original-html="Template">
+        <a class="secanchor" title="Click to focus on this section." id="template" name="template" href="#template">#</a>
+        <h2>Template</h2>
+    </mws-section>
 
 <p>The <em>Template</em> CPart allow components to render their HTML content
 using a small domain-specific language, called the "templating engine". The
@@ -122,8 +2149,7 @@ them. This is where Templates come into play: They generate the
 <code>innerHTML</code> of a component.</p>
 
 <p>Templates are not DOM-based, but instead render synchronously to a String
-during the <code>render</code> <a
-href="/docs/directives.html#lifecycle">lifecycle phase</a>, and setting that to
+during the <code>render</code> <a href="/docs/directives.html#lifecycle">lifecycle phase</a>, and setting that to
 the <code>renderObj.component.innerHTML</code>. The <em>Component</em>  CPart
 will take whatever is written there during the <code>reconcile</code> phase and
 then "reconcile", modify it's contents to resemble the target innerHTML. (More
@@ -138,13 +2164,15 @@ that can be inserted into the HTML.  For more discussion of Template, see
 
 
 
-<mws-Section name="state">State</mws-Section>
+<mws-section name="state" modulo-original-html="State">
+        <a class="secanchor" title="Click to focus on this section." id="state" name="state" href="#state">#</a>
+        <h2>State</h2>
+    </mws-section>
 
 <p>The <em>State</em> is for component instances to store changing data. This
 could include anything from text a user entered into a form, data received from
 an API, or data that represents UI flow changes, such as the visibility of a
-modal. For more discussion of State, see <a
-href="/docs/tutorial_part3.html#state">Tutorial Part 3</a>.</p>
+modal. For more discussion of State, see <a href="/docs/tutorial_part3.html#state">Tutorial Part 3</a>.</p>
 
 <p>State data is unique to every component instance, and components can never
 directly access each-others data. It is possible to indirectly reference it,
@@ -169,30 +2197,63 @@ contents.</p>
 
 <p>See below for an example of defining a <em>State</em> CPart:</p>
 
-<mws-Demo
-text='
+<mws-demo text="
 <!-- Example 1: Two variables specified -->
 <State
-    name="Luiz"
+    name=&quot;Luiz&quot;
     faveratenum:=13
 ></State>
 
 <!-- Example 2: Many variables of different types -->
 <State
-    color="blue"      (String)
+    color=&quot;blue&quot;      (String)
     count:=1          (Number)
     ready:=true       (Boolean)
     speed:=null       (null value)
-    items:=&apos;[         (JSON Array)
-        "abc",
-        "def"
-    ]&apos;
-    data_obj:=&apos;{      (JSON Object)
-        "a": "b",
-        "c": "d"
-    }&apos;
+    items:='[         (JSON Array)
+        &quot;abc&quot;,
+        &quot;def&quot;
+    ]'
+    data_obj:='{      (JSON Object)
+        &quot;a&quot;: &quot;b&quot;,
+        &quot;c&quot;: &quot;d&quot;
+    }'
 ></State>
-'></mws-Demo>
+" modulo-original-html=""><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 512px; min-width: 515.891px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 18px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Example 1: Two variables specified --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">State</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">name</span>=<span class="cm-string">"Luiz"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">faveratenum:</span>=<span class="cm-string">13</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">State</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Example 2: Many variables of different types --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">State</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">color</span>=<span class="cm-string">"blue"</span>      <span class="cm-attribute">(String)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">count:</span>=<span class="cm-string">1</span>          <span class="cm-attribute">(Number)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">ready:</span>=<span class="cm-string">true</span>       <span class="cm-attribute">(Boolean)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">speed:</span>=<span class="cm-string">null</span>       <span class="cm-attribute">(null</span> <span class="cm-attribute">value)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">items:</span>=<span class="cm-string">'[         (JSON Array)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">"abc",</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">"def"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-string">]'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">data_obj:</span>=<span class="cm-string">'{      (JSON Object)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">"a": "b",</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">"c": "d"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-string">}'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">State</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 512px;"></div><div class="CodeMirror-gutters" style="display: none; height: 562px;"></div></div></div></div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>Note that all "state variables" <em>must</em> have an initial value. It's
 okay to make the initial value be <code>null</code> (as in the "speed" example
@@ -230,9 +2291,9 @@ would be required to save state to localStorage).</p>
 
 <h3>renderObj</h3>
 
-<p>State contributes it's current data values to the renderObj. Examples:<p>
+<p>State contributes it's current data values to the renderObj. Examples:</p><p>
 
-<ul>
+</p><ul>
     <li>State initialized like: <code>&lt;state name="Luiz"&gt;</code> will be
     accessible on the renderObj like <code>renderObj.state.name</code>, and in
     the Script or Template CParts like <code>state.name</code>.</li>
@@ -260,10 +2321,70 @@ would be required to save state to localStorage).</p>
     <code>"change"</code> event, the state variable will be updated (along
     with, typically, a re-render of the component).
 
-        <mws-Demo
-            demotype="minipreview"
-            fromlibrary="Tutorial_P3_state_bind"
-        ></mws-Demo>
+        <mws-demo demotype="minipreview" fromlibrary="Tutorial_P3_state_bind" modulo-original-html=""><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="display: block; bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 534px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 30px; height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 595px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 534px; min-width: 595.219px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>26</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 16px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">label</span><span class="cm-tag cm-bracket">&gt;</span>Username:</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">input</span> <span class="cm-attribute">[state.bind]</span> <span class="cm-attribute">name</span>=<span class="cm-string">"username"</span> <span class="cm-tag cm-bracket">/&gt;&lt;/</span><span class="cm-tag">label</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">label</span><span class="cm-tag cm-bracket">&gt;</span>Color ("green" or "blue"):</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">input</span> <span class="cm-attribute">[state.bind]</span> <span class="cm-attribute">name</span>=<span class="cm-string">"color"</span> <span class="cm-tag cm-bracket">/&gt;&lt;/</span><span class="cm-tag">label</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">label</span><span class="cm-tag cm-bracket">&gt;</span>Opacity: <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">input</span> <span class="cm-attribute">[state.bind]</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">name</span>=<span class="cm-string">"opacity"</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">type</span>=<span class="cm-string">"number"</span> <span class="cm-attribute">min</span>=<span class="cm-string">"0"</span> <span class="cm-attribute">max</span>=<span class="cm-string">"1"</span> <span class="cm-attribute">step</span>=<span class="cm-string">"0.1"</span> <span class="cm-tag cm-bracket">/&gt;&lt;/</span><span class="cm-tag">label</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">11</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">12</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">h5</span> <span class="cm-attribute">style</span>=<span class="cm-string">"</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">13</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-string">opacity: </span><span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">state</span><span class="cm-null">.</span><span class="cm-property">opacity</span><span class="cm-null"> </span><span class="cm-tag">}}</span><span class="cm-string">;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">14</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-string">color: </span><span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">state</span><span class="cm-null">.</span><span class="cm-property">color</span><span class="cm-null">|</span><span class="cm-variable">allow</span><span class="cm-null">:</span><span class="cm-string">'green,blue'</span><span class="cm-null">|</span><span class="cm-variable">default</span><span class="cm-null">:</span><span class="cm-string">'red'</span><span class="cm-null"> </span><span class="cm-tag">}}</span><span class="cm-string">;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">15</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">"</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">16</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">state</span><span class="cm-null">.</span><span class="cm-property">username</span><span class="cm-null">|</span><span class="cm-variable-2">lower</span><span class="cm-null"> </span><span class="cm-tag">}}</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">17</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">h5</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">18</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">19</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">20</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">21</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">22</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">State</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 534px;"></div><div class="CodeMirror-gutters" style="height: 584px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e1g1-example modulo-original-html="">
+
+<div>
+    <label>Username:
+        <input [state.bind]="" name="username"></label>
+    <label>Color ("green" or "blue"):
+        <input [state.bind]="" name="color"></label>
+    <label>Opacity: <input [state.bind]="" name="opacity" type="number" min="0" max="1" step="0.1"></label>
+
+    <h5 style="
+            opacity: 0.5;
+            color: blue;
+        ">
+        testing_username
+    </h5>
+</div>
+
+</e1g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
     </li>
 </ul>
@@ -275,7 +2396,10 @@ would be required to save state to localStorage).</p>
 
 
 
-<mws-Section name="script">Script</mws-Section>
+<mws-section name="script" modulo-original-html="Script">
+        <a class="secanchor" title="Click to focus on this section." id="script" name="script" href="#script">#</a>
+        <h2>Script</h2>
+    </mws-section>
 
 
 <blockquote><p><strong>Custom vs Script CPart</strong> - The general rule of
@@ -307,10 +2431,55 @@ expected attributes, but instead only has a text-content.</p>
 <p>The most common purpose of a Script CPart is to add custom behavior when
 certain "events" occur to your component. Consider the following example:</p>
 
-<mws-Demo
-    fromlibrary="Hello"
-    demotype="minipreview"
-></mws-Demo>
+<mws-demo fromlibrary="Hello" demotype="minipreview" modulo-original-html=""><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none; display: block; bottom: 0px;"><div style="min-width: 1px; height: 239px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none; display: block; right: 0px; left: 30px;"><div style="height: 100%; min-height: 1px; width: 553px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 239px; min-width: 553.234px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>11</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 16px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">button</span> <span class="cm-attribute">@click:</span>=<span class="cm-string">script.countUp</span><span class="cm-tag cm-bracket">&gt;</span>Hello <span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">state</span><span class="cm-null">.</span><span class="cm-property">num</span><span class="cm-null"> </span><span class="cm-tag">}}</span><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">button</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">State</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">num:</span>=<span class="cm-string">42</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">State</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-keyword">function</span> <span class="cm-def">countUp</span>() {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">state</span>.<span class="cm-property">num</span><span class="cm-operator">++</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    }</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">11</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 239px;"></div><div class="CodeMirror-gutters" style="height: 289px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e2g1-example modulo-original-html="">
+    <button @click:="script.countUp">Hello 42</button>
+</e2g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>In this, the <em>Script</em> CPart defines a function named
 <code>countUp</code>. The <code>@click:=</code> attribute on the button
@@ -346,28 +2515,61 @@ you should avoid direct DOM manipulation whenever you can, instead using a
 "factory" phase. This means that that any loose variables defined will be
 "static", or shared between all instances of that component.</p>
 
-<mws-Demo
-text='
+<mws-demo text="
 <Template>
     <button @click:=script.increment>Click me</button>
 </Template>
 <Script>
-    // "Static" execution context. We have access to 3 variables:
-    console.log("Modulo library instance:", Modulo);
-    console.log("Any modules defined above in this file, or null:", module);
-    console.log("My factory instance:", factory);
+    // &quot;Static&quot; execution context. We have access to 3 variables:
+    console.log(&quot;Modulo library instance:&quot;, Modulo);
+    console.log(&quot;Any modules defined above in this file, or null:&quot;, module);
+    console.log(&quot;My factory instance:&quot;, factory);
 
     // (Note: CParts are processed top-to-bottom, meaning CParts defined after
     // the <script> tag will not have been initialized.)
 
-    // Variables defined in this "static" context are shared:
+    // Variables defined in this &quot;static&quot; context are shared:
     let count = 0;
     function increment() {
         count++;
-        console.log("Shared count between buttons:", count);
+        console.log(&quot;Shared count between buttons:&quot;, count);
     }
 </Script>
-'></mws-Demo>
+" modulo-original-html=""><div class="demo-wrapper
+        
+           demo-wrapper__clipboard  
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
+                Copy <span alt="Clipboard">📋</span>
+            </button>
+        
+
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none; display: block; right: 0px; left: 0px;"><div style="height: 100%; min-height: 1px; width: 756px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 464px; min-width: 755.922px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 18px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">button</span> <span class="cm-attribute">@click:</span>=<span class="cm-string">script.increment</span><span class="cm-tag cm-bracket">&gt;</span>Click me<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">button</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-comment">// "Static" execution context. We have access to 3 variables:</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-string">"Modulo library instance:"</span>, <span class="cm-variable">Modulo</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-string">"Any modules defined above in this file, or null:"</span>, <span class="cm-variable">module</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-string">"My factory instance:"</span>, <span class="cm-variable">factory</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-comment">// (Note: CParts are processed top-to-bottom, meaning CParts defined after</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-comment">// the &lt;script&gt; tag will not have been initialized.)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-comment">// Variables defined in this "static" context are shared:</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-keyword">let</span> <span class="cm-def">count</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-keyword">function</span> <span class="cm-def">increment</span>() {</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">count</span><span class="cm-operator">++</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-string">"Shared count between buttons:"</span>, <span class="cm-variable">count</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    }</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 464px;"></div><div class="CodeMirror-gutters" style="display: none; height: 514px;"></div></div></div></div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 
@@ -375,18 +2577,64 @@ text='
 
 <p>By naming functions with certain names, you can "hook into" the component
 rendering lifecycle with callbacks. You can also create "custom directives"
-from within the Script tag. Read more about this in the section on <a
-href="/docs/directives.html">Lifecycle & Directives</a></p>
+from within the Script tag. Read more about this in the section on <a href="/docs/directives.html">Lifecycle &amp; Directives</a></p>
 
 <p>See below for an example of defining a custom <code>prepareCallback</code>
 in order to "hook into" the component rendering lifecycle to execute custom
 code. The return value of this function is available to the <em>Template</em>
 CPart when it renders during the <code>render</code> lifecycle.</p>
 
-<mws-Demo
-    demotype="minipreview"
-    fromlibrary="Templating_PrepareCallback"
-></mws-Demo>
+<mws-demo demotype="minipreview" fromlibrary="Templating_PrepareCallback" modulo-original-html=""><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="display: block; bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 449px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 449px; min-width: 511.219px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>21</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 16px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">input</span> <span class="cm-attribute">name</span>=<span class="cm-string">"perc"</span> <span class="cm-attribute">[state.bind]</span> <span class="cm-tag cm-bracket">/&gt;</span>% of</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">input</span> <span class="cm-attribute">name</span>=<span class="cm-string">"total"</span> <span class="cm-attribute">[state.bind]</span> <span class="cm-tag cm-bracket">/&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    is: <span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">script</span><span class="cm-null">.</span><span class="cm-property">calcResult</span><span class="cm-null"> </span><span class="cm-tag">}}</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">State</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">perc:</span>=<span class="cm-string">50</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">total:</span>=<span class="cm-string">30</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">State</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">11</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">12</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">13</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-keyword">function</span> <span class="cm-def">prepareCallback</span>() {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">14</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-keyword">const</span> <span class="cm-def">calcResult</span> <span class="cm-operator">=</span> (<span class="cm-variable">state</span>.<span class="cm-property">perc</span> <span class="cm-operator">/</span> <span class="cm-number">100</span>) <span class="cm-operator">*</span> <span class="cm-variable">state</span>.<span class="cm-property">total</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">15</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-keyword">return</span> { <span class="cm-property">calcResult</span> };</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">16</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    }</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">17</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">18</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">19</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Style</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">20</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag">input</span> { <span class="cm-property">display</span>: <span class="cm-atom">inline</span>; <span class="cm-property">width</span>: <span class="cm-number">25px</span> }</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">21</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Style</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 449px;"></div><div class="CodeMirror-gutters" style="height: 499px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e3g1-example modulo-original-html="">
+    <input name="perc" [state.bind]="">% of
+    <input name="total" [state.bind]="">
+    is: 15
+</e3g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 <p>All "group 2" and "group 3" lifecycle phase can be specified. This means
 you can define a function with any of the following names and expect it to be
@@ -407,7 +2655,7 @@ Modulo has a rule: "Explicit is better than implicit". Modulo has another rule:
 "It's okay to break rules for good reasons". The <em>Script</em> CPart is one
 such case. It has an implicit or "magical" feature of setting up execution
 context for each callback function before that callback function is run.</p>
-</blockquote></p>
+</blockquote><p></p>
 
 <p>The Script CPart's "callback wrapper" is what enables us to write
 <code>state.count</code> in the <code>countUp</code> function.  Magically, the
@@ -435,31 +2683,78 @@ use <code>element.rerender</code> to manually rerender. See below for an
 example of this:</p>
 
 
-<mws-Demo
-demotype="minipreview"
-text='
+<mws-demo demotype="minipreview" text="
 <Template>
     API data: <pre>{{ state.data|json|truncate:80 }}</pre>
     <button @click:=script.fetchMe>Get API data</button>
 </Template>
 
 <state
-    data:=&apos;{}&apos;
+    data:='{}'
 ></state>
 
 <Script>
     function fetchMe() {
-        fetch("https://api.github.com/users/michaelpb")
+        fetch(&quot;https://api.github.com/users/michaelpb&quot;)
             .then(response => response.json())
             .then(cparts.script.cb(data => {
-                // Note that this callback is "wrapped" with
-                // "cparts.script.cb(  ...  )"
+                // Note that this callback is &quot;wrapped&quot; with
+                // &quot;cparts.script.cb(  ...  )&quot;
                 state.data = data; // update state
                 element.rerender(); // force rerender
             }));
     }
 </Script>
-'></mws-Demo>
+" modulo-original-html=""><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="display: block; bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 449px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 449px; min-width: 511.094px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>21</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 16px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    API data: <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">pre</span><span class="cm-tag cm-bracket">&gt;</span><span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">state</span><span class="cm-null">.</span><span class="cm-property">data</span><span class="cm-null">|</span><span class="cm-variable">json</span><span class="cm-null">|</span><span class="cm-variable">truncate</span><span class="cm-null">:</span><span class="cm-number">80</span><span class="cm-null"> </span><span class="cm-tag">}}</span><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">pre</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">button</span> <span class="cm-attribute">@click:</span>=<span class="cm-string">script.fetchMe</span><span class="cm-tag cm-bracket">&gt;</span>Get API data<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">button</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">state</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">data:</span>=<span class="cm-string">'{}'</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">state</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">11</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-keyword">function</span> <span class="cm-def">fetchMe</span>() {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">12</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">fetch</span>(<span class="cm-string">"https://api.github.com/users/michaelpb"</span>)</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">13</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            .<span class="cm-property">then</span>(<span class="cm-def">response</span> <span class="cm-operator">=&gt;</span> <span class="cm-variable-2">response</span>.<span class="cm-property">json</span>())</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">14</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            .<span class="cm-property">then</span>(<span class="cm-variable">cparts</span>.<span class="cm-property">script</span>.<span class="cm-property">cb</span>(<span class="cm-def">data</span> <span class="cm-operator">=&gt;</span> {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">15</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">                <span class="cm-comment">// Note that this callback is "wrapped" with</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">16</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">                <span class="cm-comment">// "cparts.script.cb(  ...  )"</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">17</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">                <span class="cm-variable">state</span>.<span class="cm-property">data</span> <span class="cm-operator">=</span> <span class="cm-variable-2">data</span>; <span class="cm-comment">// update state</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">18</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">                <span class="cm-variable">element</span>.<span class="cm-property">rerender</span>(); <span class="cm-comment">// force rerender</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">19</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            }));</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">20</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    }</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">21</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 449px;"></div><div class="CodeMirror-gutters" style="height: 499px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e4g1-example modulo-original-html="">
+    API data: <pre>{}</pre>
+    <button @click:="script.fetchMe">Get API data</button>
+</e4g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
 
 
 <p>Ideally, however, asynchronous coding should be written into the features of
@@ -496,9 +2791,7 @@ assumptions about using a synchronous or asynchronous coding style.</p>
     instances of this component, which can then be accessed in the template.
     This <em>should not</em> be used as a store or state variable (use the
     <em>Store</em> CPart for that). For example:
-<mws-Demo
-demotype="minipreview"
-text='
+<mws-demo demotype="minipreview" text="
 <Template>
     <p>{% for item in script.exports.bigArray %}
         {{ item }},
@@ -509,13 +2802,264 @@ text='
         Array.from({ length: 100 })
         .map((val, i) => `i liek ${i} turtles`);
 </Script>
-'></mws-Demo>
+" modulo-original-html=""><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
+
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none; display: block; bottom: 0px;"><div style="min-width: 1px; height: 218px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 218px; min-width: 410.391px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>10</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 16px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span><span class="cm-tag">{%</span><span class="cm-null"> </span><span class="cm-keyword">for</span><span class="cm-null"> </span><span class="cm-variable">item</span><span class="cm-null"> </span><span class="cm-keyword">in</span><span class="cm-null"> </span><span class="cm-variable">script</span><span class="cm-null">.</span><span class="cm-property">exports</span><span class="cm-null">.</span><span class="cm-property">bigArray</span><span class="cm-null"> </span><span class="cm-tag">%}</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">item</span><span class="cm-null"> </span><span class="cm-tag">}}</span>,</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag">{%</span><span class="cm-null"> </span><span class="cm-keyword">endfor</span><span class="cm-null"> </span><span class="cm-tag">%}</span><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable">script</span>.<span class="cm-property">exports</span>.<span class="cm-property">bigArray</span> <span class="cm-operator">=</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">Array</span>.<span class="cm-property">from</span>({ <span class="cm-property">length</span>: <span class="cm-number">100</span> })</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        .<span class="cm-property">map</span>((<span class="cm-def">val</span>, <span class="cm-def">i</span>) <span class="cm-operator">=&gt;</span> <span class="cm-string-2">`i liek ${</span><span class="cm-variable-2">i</span><span class="cm-string-2">}</span> <span class="cm-string-2">turtles`</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 218px;"></div><div class="CodeMirror-gutters" style="height: 268px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore="">
+                    <e5g1-example modulo-original-html="">
+    <p>
+        i liek 0 turtles,
+    
+        i liek 1 turtles,
+    
+        i liek 2 turtles,
+    
+        i liek 3 turtles,
+    
+        i liek 4 turtles,
+    
+        i liek 5 turtles,
+    
+        i liek 6 turtles,
+    
+        i liek 7 turtles,
+    
+        i liek 8 turtles,
+    
+        i liek 9 turtles,
+    
+        i liek 10 turtles,
+    
+        i liek 11 turtles,
+    
+        i liek 12 turtles,
+    
+        i liek 13 turtles,
+    
+        i liek 14 turtles,
+    
+        i liek 15 turtles,
+    
+        i liek 16 turtles,
+    
+        i liek 17 turtles,
+    
+        i liek 18 turtles,
+    
+        i liek 19 turtles,
+    
+        i liek 20 turtles,
+    
+        i liek 21 turtles,
+    
+        i liek 22 turtles,
+    
+        i liek 23 turtles,
+    
+        i liek 24 turtles,
+    
+        i liek 25 turtles,
+    
+        i liek 26 turtles,
+    
+        i liek 27 turtles,
+    
+        i liek 28 turtles,
+    
+        i liek 29 turtles,
+    
+        i liek 30 turtles,
+    
+        i liek 31 turtles,
+    
+        i liek 32 turtles,
+    
+        i liek 33 turtles,
+    
+        i liek 34 turtles,
+    
+        i liek 35 turtles,
+    
+        i liek 36 turtles,
+    
+        i liek 37 turtles,
+    
+        i liek 38 turtles,
+    
+        i liek 39 turtles,
+    
+        i liek 40 turtles,
+    
+        i liek 41 turtles,
+    
+        i liek 42 turtles,
+    
+        i liek 43 turtles,
+    
+        i liek 44 turtles,
+    
+        i liek 45 turtles,
+    
+        i liek 46 turtles,
+    
+        i liek 47 turtles,
+    
+        i liek 48 turtles,
+    
+        i liek 49 turtles,
+    
+        i liek 50 turtles,
+    
+        i liek 51 turtles,
+    
+        i liek 52 turtles,
+    
+        i liek 53 turtles,
+    
+        i liek 54 turtles,
+    
+        i liek 55 turtles,
+    
+        i liek 56 turtles,
+    
+        i liek 57 turtles,
+    
+        i liek 58 turtles,
+    
+        i liek 59 turtles,
+    
+        i liek 60 turtles,
+    
+        i liek 61 turtles,
+    
+        i liek 62 turtles,
+    
+        i liek 63 turtles,
+    
+        i liek 64 turtles,
+    
+        i liek 65 turtles,
+    
+        i liek 66 turtles,
+    
+        i liek 67 turtles,
+    
+        i liek 68 turtles,
+    
+        i liek 69 turtles,
+    
+        i liek 70 turtles,
+    
+        i liek 71 turtles,
+    
+        i liek 72 turtles,
+    
+        i liek 73 turtles,
+    
+        i liek 74 turtles,
+    
+        i liek 75 turtles,
+    
+        i liek 76 turtles,
+    
+        i liek 77 turtles,
+    
+        i liek 78 turtles,
+    
+        i liek 79 turtles,
+    
+        i liek 80 turtles,
+    
+        i liek 81 turtles,
+    
+        i liek 82 turtles,
+    
+        i liek 83 turtles,
+    
+        i liek 84 turtles,
+    
+        i liek 85 turtles,
+    
+        i liek 86 turtles,
+    
+        i liek 87 turtles,
+    
+        i liek 88 turtles,
+    
+        i liek 89 turtles,
+    
+        i liek 90 turtles,
+    
+        i liek 91 turtles,
+    
+        i liek 92 turtles,
+    
+        i liek 93 turtles,
+    
+        i liek 94 turtles,
+    
+        i liek 95 turtles,
+    
+        i liek 96 turtles,
+    
+        i liek 97 turtles,
+    
+        i liek 98 turtles,
+    
+        i liek 99 turtles,
+    </p>
+</e5g1-example>
+                </div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
    </li>
 
 </ul>
 
 
-<mws-Section name="style">Style</mws-Section>
+<mws-section name="style" modulo-original-html="Style">
+        <a class="secanchor" title="Click to focus on this section." id="style" name="style" href="#style">#</a>
+        <h2>Style</h2>
+    </mws-section>
 
 <p>The <em>Style</em> CPart allows us to write CSS for our component. This
 allows us to group styles within our component, and keep them isolated from
@@ -530,7 +3074,7 @@ than prefixing or scoping CSS.</p>
 <p>In general, you can freely write any number of CSS rules for your
 components. They will be prefixed based on a few regular expression replacement
 steps, such that they only apply to the elements within your component. For
-example, a rule like <code>a&nsp;{&nsp;color:&nsbsp;blue&nbsp;}</code> in a
+example, a rule like <code>a&amp;nsp;{&amp;nsp;color:&amp;nsbsp;blue&nbsp;}</code> in a
 component named <code>name="HelloBtn"</code> that has been imported with
 <code>namespace="mylib"</code> would result in the following, fully-prefixed
 rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
@@ -542,7 +3086,7 @@ rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
     component itself. This will work for both "regular" and "shadow" rendering
     mode. For example, in regular rendering mode, if you have a button called
     For example, a rule like
-    <code>:host&nsp;{&nsp;color:&nsbsp;red&nbsp;}</code> in a component named
+    <code>:host&amp;nsp;{&amp;nsp;color:&amp;nsbsp;red&nbsp;}</code> in a component named
     <code>name="MyChart"</code> that has been imported with
     <code>namespace="mws"</code> would result in the following, fully-prefixed
     rule:
@@ -553,20 +3097,66 @@ rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
     use "Shadow DOM" rendering to protect it from getting outside CSS applied
     to it, then the <em>Style</em> CPart's stylesheet will be "encapsulated" or
     inserted in the "shadow root" of component instances, as opposed to the
-    document root.  (More on this here: <a
-    href="https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/styleSheets">MDN's
+    document root.  (More on this here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/styleSheets">MDN's
     "ShadowRoot.styleSheets"</a>)</li>
 </ul>
 
 
 <h3>Usage Example</h3>
 
-<mws-Demo
-    demotype="minipreview"
-    fromlibrary="Tutorial_P1"
-></mws-Demo>
+<mws-demo demotype="minipreview" fromlibrary="Tutorial_P1" modulo-original-html=""><div class="demo-wrapper
+             demo-wrapper__minipreview
+        
+        
+        demo-wrapper__notabs     
+    ">
+    
 
-<mws-Section name="component">Component</mws-Section>
+    <div class="editor-toolbar">
+        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
+                     display: none; ">
+            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
+        </p>
+
+        
+
+        
+            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+                
+                    <span alt="Go Full Screen">↗</span>
+                
+            </button>
+            &nbsp;
+            <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
+                Run <span alt="Refresh">⟳</span>
+            </button>
+        
+
+    </div>
+
+    <div class="side-by-side-panes">
+        <div class="editor-wrapper">
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="display: block; bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 407px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 407px; min-width: 351.531px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>19</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 16px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">Hello <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">strong</span><span class="cm-tag cm-bracket">&gt;</span>Modulo<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">strong</span><span class="cm-tag cm-bracket">&gt;</span> World!</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span> <span class="cm-attribute">class</span>=<span class="cm-string">"neat"</span><span class="cm-tag cm-bracket">&gt;</span>Any HTML can be here!<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Style</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">/* ...and any CSS here! */</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag">strong</span> {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-property">color</span>: <span class="cm-keyword">blue</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-qualifier">.neat</span> {</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">11</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-property">font-variant</span>: <span class="cm-atom">small-caps</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">12</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">13</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">:<span class="cm-variable-3">host</span> { <span class="cm-comment">/* styles the entire component */</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">14</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-property">display</span>: <span class="cm-atom">inline-block</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">15</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-property">background-color</span>: <span class="cm-keyword">cornsilk</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">16</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-property">padding</span>: <span class="cm-number">5px</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">17</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-property">box-shadow</span>: <span class="cm-number">10px</span> <span class="cm-number">10px</span> <span class="cm-number">0</span> <span class="cm-number">0</span> <span class="cm-keyword">turquoise</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">18</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">}</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">19</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Style</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 407px;"></div><div class="CodeMirror-gutters" style="height: 457px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+        </div>
+
+        
+            <div class="editor-minipreview">
+                <div modulo-ignore=""><e12g1-example modulo-original-html="">
+Hello <strong>Modulo</strong> World!
+<p class="neat">Any HTML can be here!</p>
+</e12g1-example></div>
+            </div>
+        
+
+    </div>
+</div>
+
+</mws-demo>
+
+<mws-section name="component" modulo-original-html="Component">
+        <a class="secanchor" title="Click to focus on this section." id="component" name="component" href="#component">#</a>
+        <h2>Component</h2>
+    </mws-section>
 
 <blockquote>
 <p><strong>Low-level interface</strong> - Component developers will typically
@@ -752,8 +3342,7 @@ They take the following attributes:</p>
     (For React users, this is similar to doing
     <code>{this.props.children}</code>.) This can be used in addition to or
     instead of the <code>&lt;slot&gt;</code> interface. For more on the slot
-    interface, see Mozilla's <a
-    href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">"The
+    interface, see Mozilla's <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">"The
     Web Component Slot element"</a>.  Note that Modulo uses this interface for
     both <code>mode="shadow"</code> (e.g. using <code>shadowRoot</code> as the
     root element for reconciliation) and all the other DOM rendering modes
@@ -768,4 +3357,16 @@ They take the following attributes:</p>
 
 
 
-</x-Page>
+</aside>
+    </main>
+
+
+<footer>
+    <main>
+        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0
+    </main>
+</footer>
+
+
+
+</body>

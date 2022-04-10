@@ -1,25 +1,27 @@
-<Component name="MiniExcel">
+<!DOCTYPE HTML>
+<head></head><body><component name="MiniExcel">
   <!--<Debug></Debug>-->
-  <Template>
-      <label>${{ state.col }}${{ state.row }}=<input [state.bind] name="formula" /></label>
-      <table>
+  <template>
+      <label>${{ state.col }}${{ state.row }}=<input [state.bind]="" name="formula"></label>
+      
+                  {% for col in state.columns %}
+                      
+                  {% endfor %}
+              
+              {% for row in state.rows %}
+                  
+                      {% for col in state.columns %}
+                          
+                      {% endfor %}
+                  
+              {% endfor %}
+          <table>
           <thead>
               <tr>
-                  <th></th>
-                  {% for col in state.columns %}
-                      <th>{{ col }}</th>
-                  {% endfor %}
-              </tr>
+                  <th></th><th>{{ col }}</th></tr>
           </thead>
-          <tbody>
-              {% for row in state.rows %}
-                  <tr>
-                      <th>{{ row }}</th>
-                      {% for col in state.columns %}
-                          <td
-                            @click:=script.cellClick
-                            payload:='[ "{{ col }}", "{{ row }}" ]'
-                            class="
+          <tbody><tr>
+                      <th>{{ row }}</th><td @click:="script.cellClick" payload:="[ &quot;{{ col }}&quot;, &quot;{{ row }}&quot; ]" class="
                               {% if state.row == row %}
                                   active-row
                               {% endif %}
@@ -28,25 +30,13 @@
                               {% endif %}
                             ">
                               {{ state.output|get:row|get:col }}
-                          </td>
-                      {% endfor %}
-                  </tr>
-              {% endfor %}
-          </tbody>
+                          </td></tr></tbody>
       </table>
-  </Template>
+  </template>
 
-  <State
-      col="A"
-      row="1"
-      formula="Hello world!"
-      columns:=[]
-      rows:=[]
-      cellformulas:={}
-      output:={}
-  ></State>
+  <state col="A" row="1" formula="Hello world!" columns:="[]" rows:="[]" cellformulas:="{}" output:="{}"></state>
 
-  <Script>
+  <script>
       console.log('factory for miniexcel');
 
       // TODO: fix with proper extension
@@ -93,9 +83,9 @@
           const key = '$' + state.col + '$' + state.row;
           state.formula = key in state.cellformulas ? state.cellformulas[key] : '';
       }
-  </Script>
+  </script>
 
-  <Style>
+  <style>
       :host {
           border: 2px solid pink;
           overflow: auto;
@@ -122,7 +112,8 @@
       td.active-row.active-col {
           background: var(--accent);
       }
-  </Style>
+  </style>
 
-</Component>
+</component>
 
+</body>

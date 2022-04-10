@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<div [component.children]="above-navbar">
+<div [component.slot]="above-navbar">
 </div>
 
 <nav class="Navbar">
@@ -52,17 +52,17 @@
                 <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.children]>
+        <aside style="border: none" [component.slot]>
         </aside>
     </main>
 {% else %}
-    <main class="Main" [component.children]>
+    <main class="Main" [component.slot]>
     </main>
 {% endif %}
 
 <footer>
     <main>
-        (C) 2021 - Michael Bethencourt - Documentation under LGPL 3.0
+        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0
     </main>
 </footer>
 

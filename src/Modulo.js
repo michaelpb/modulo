@@ -411,6 +411,16 @@ Modulo.Element = class ModuloElement extends HTMLElement {
         this.setupCParts();
         this.lifecycle([ 'initialized' ]);
         this.rerender(original); // render and re-mount it's own childNodes
+
+        // XXX - TODO: Needs refactor, should do this somewhere else:
+        if (this.hasAttribute('modulo-original-html')) {
+            console.log('reapplying patches');
+            const { reconciler } = this.cparts.component;
+            reconciler.patch = reconciler.applyPatch; // Apply patches immediately
+            reconciler.patchAndDescendants(this, 'Mount');
+            reconciler.patch = reconciler.pushPatch;
+        }
+        // XXX --------------------------
         this.isMounted = true;
     }
 }

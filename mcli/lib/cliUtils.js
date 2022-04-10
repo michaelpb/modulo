@@ -135,6 +135,38 @@ function copyIfDifferent(inputPath, outputPath, callback) {
     }, callback);
 }
 
+async function ifDifferentAsync(inputPath, outputPath) {
+    let inputStats = null;
+    let outputStats = null;
+    let shouldCopy = false;
+    try {
+        outputStats = await fs.promises.stat(outputPath);
+        inputStats = await fs.promises.stat(inputPath);
+    } catch { }
+
+    if (!inputStats || !outputStats) {
+        shouldCopy = true; // if doesn't exist or inaccessible
+    } else if (String(inputStats.mtime) !== String(outputStats.mtime)) {
+        shouldCopy = true;
+    }
+    return [ shouldCopy, inputStats ];
+}
+
+
+async function copyIfDifferentAsync(inputPath, outputPath) {
+    const [ shouldCopy, inputStats ] = await ifDifferentAsync(inputPath, outputPath);
+    if (!shouldCopy) {
+        return false;
+    }
+    mkdirToContain(outputPath);
+    await fs.promises.copyFile(inputPath, outputPath);
+    // Copy over mtime to new file
+    if (inputStats) {
+        await fs.promises.utimes(outputPath, inputStats.atime, inputStats.mtime);
+    }
+    return true;
+}
+
 
 const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
 
@@ -265,6 +297,7 @@ module.exports = {
     assert,
     ifDifferent,
     copyIfDifferent,
+    copyIfDifferentAsync,
     mkdirToContain,
     parseArgs,
     findConfig,

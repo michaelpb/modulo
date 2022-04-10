@@ -3,7 +3,7 @@ const path = require('path');
 
 const ModuloVM = require('./lib/ModuloVM');
 const ModuloBrowser = require('./lib/ModuloBrowser');
-const { ACTIONS, TERM, walkSync, findConfig, parseArgs, getAction, logStatusBar } = require('./lib/cliUtils');
+const { ACTIONS, TERM, walkSync, findConfig, parseArgs, getAction, logStatusBar, copyIfDifferentAsync, mkdirToContain } = require('./lib/cliUtils');
 
 const defaultConfig = require('./lib/defaultConfig');
 
@@ -57,12 +57,9 @@ function doCommand(cliConfig, args) {
         skipFlags = true;
     }
 
-
-    /*
-    if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
+    /* if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
         command = 'help';
-    }
-    */
+    } */
 
     // For now, just doing a hardcoded SSG, until we refactor the old CLI code
     // to the new structure
@@ -78,6 +75,7 @@ function hackPostprocess(html) {
 
     // Inject hacky script after loading Modulo.js
     html = html.replace('<script src="/js/Modulo.js"></script>', `
+        <meta charset="utf8" />
         <script src="/js/Modulo.js"></script>
         <script>
         if (!Modulo.fetchQ) {
@@ -95,27 +93,35 @@ function hackPostprocess(html) {
 }
 
 async function hackPrerender(config) {
+    const { verbose } = config
+    const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
+
     modBrowser = new ModuloBrowser(config);
     const files = walkSync(config.input, config);
     let count = 0;
     let copiesNeeded = 0;
     for (const file of files) {
-        console.log('loading file', file);
         const relPath = path.relative(config.input, file);
-
         const action = getAction(file, config);
+        const outputPath = path.resolve(config.output, relPath);
         if (action === ACTIONS.SKIP) {
-            console.log('skipping:', file);
+            log('SKIPPING ' + file);
         } else if (action === ACTIONS.COPY) {
-            console.log('copying:', file);
+            const wasCopied = await copyIfDifferentAsync(file, outputPath);
+            if (wasCopied) {
+                log('COPY     ' + file + ' -> ' + outputPath);
+            } else {
+                log('(SAME)   ' + file + ' -> ' + outputPath);
+            }
         } else if (action === ACTIONS.CUSTOM) {
-            console.log('custom:', file);
+            log('CUSTOM   ' + file);
         } else if (action === ACTIONS.GENERATE) {
-            console.log('generate:', file);
+            log('GENERATE ' + file);
+            //console.log("SKIPPPPPPPPPPP", file);continue;
             let html = await modBrowser.runAsync(file);
-            const output = path.resolve(config.output, relPath);
             html = hackPostprocess(html);
-            await fs.promises.writeFile(output, html);
+            mkdirToContain(outputPath);
+            await fs.promises.writeFile(outputPath, html, 'utf8');
             /*if (count > 50) {
                 break;
             }*/
@@ -134,8 +140,8 @@ async function hackPrerender(config) {
         //console.log('this is innerHTML', vm.document.innerHTML);
     });
     */
-
 }
+
 
 let modBrowser = null;
 
