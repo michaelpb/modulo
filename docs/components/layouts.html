@@ -103,7 +103,7 @@
 
     <script>
         function initializedCallback() {
-            console.log('this is module', module);
+            //console.log('this is module', module);
             if (Modulo.isBackend && module) {
                 //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
                 //Object.assign(script.exports, Modulo.ssgStore.navbar);
@@ -116,7 +116,7 @@
                 const dataStr = element.getAttribute('script-exports');
                 Object.assign(script.exports, JSON.parse(dataStr));
             } else {
-                console.log('Warning: Couldnt get global info');
+                //console.log('Warning: Couldnt get global info');
             }
         }
     </script>

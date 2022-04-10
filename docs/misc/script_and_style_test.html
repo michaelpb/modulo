@@ -156,10 +156,10 @@ return { "sloccount": typeof sloccount !== "undefined" ? sloccount : undefined,
 "fallbackCopyTextToClipboard": typeof fallbackCopyTextToClipboard !== "undefined" ? fallbackCopyTextToClipboard : undefined,
 "copyTextToClipboard": typeof copyTextToClipboard !== "undefined" ? copyTextToClipboard : undefined,
  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["x16km8ma"]= function (Modulo, factory, module, component, props, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+};</script><script>"use strict";Modulo.assets.functions["x1kg0tea"]= function (Modulo, factory, module, component, props, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         function initializedCallback() {
-            console.log('this is module', module);
+            //console.log('this is module', module);
             if (Modulo.isBackend && module) {
                 //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
                 //Object.assign(script.exports, Modulo.ssgStore.navbar);
@@ -172,7 +172,7 @@ return { "sloccount": typeof sloccount !== "undefined" ? sloccount : undefined,
                 const dataStr = element.getAttribute('script-exports');
                 Object.assign(script.exports, JSON.parse(dataStr));
             } else {
-                console.log('Warning: Couldnt get global info');
+                //console.log('Warning: Couldnt get global info');
             }
         }
     
@@ -674,9 +674,9 @@ mws-Section a.secanchor {
 mws-Section Section:hover .Section-helper {
             opacity: 1.0;
         }
-    </style><script>"use strict";Modulo.assets.functions["1v5dd34"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+    </style><script>"use strict";Modulo.assets.functions["nienp6"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
-        console.info('factory method of ErrorCauser');
+        // console.info('factory method of ErrorCauser');
         function countUp() {
             state.num++;
         }
@@ -697,7 +697,7 @@ mws-ErrorCauser * {
             border: blue 5px solid;
             padding: 10px;
         }
-    </style><script>"use strict";Modulo.assets.functions["xo2attf"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+    </style><script>"use strict";Modulo.assets.functions["xpmo3gd"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 let componentTexts = null;
 let componentTexts2 = null;
 let exCounter = 0; // global variable
@@ -847,7 +847,7 @@ function doCopy() {
 }
 
 function initializedCallback() {
-    console.log('initializedCallback');
+    // console.log('initializedCallback');
     if (componentTexts === null) {
         _setupGlobalVariables();
     }
@@ -919,7 +919,7 @@ function initializedCallback() {
 
 function doRun() {
     exCounter++;
-    console.log('There are ', exCounter, ' examples on this page. Gee!')
+    //console.log('There are ', exCounter, ' examples on this page. Gee!')
     const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
     state.nscounter++;
     const attrs = { src: '', namespace };

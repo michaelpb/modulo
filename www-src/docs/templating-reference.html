@@ -5,7 +5,7 @@
 <script src="/js/Modulo.js"></script>
 <template modulo-embed>
     <load namespace="x" src="/components/layouts.html"></load>
-</template>
+</Template>
 <script> Modulo.defineAll() </script>
 
 <x-Page
@@ -42,14 +42,14 @@ nesting comment tags.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>Before comment</p>
     {% comment "Optional note" %}
         <p>Commented out text that will be ignored
           {{ nonExistingVar|brokenFilter:"abc" }}</p>
     {% endcomment %}
     <p>After comment</p>
-</template>
+</Template>
 '></mws-Demo>
 
 <h3>for</h3>
@@ -67,21 +67,21 @@ API. Examine the following example:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <ul>
         {% for athlete in state.athletes %}
             <li>{{ athlete.name }}</li>
         {% endfor %}
     </ul>
-</template>
+</Template>
 
-<state
+<State
   athletes:=&apos;[
     {"name": "Devante Adams"},
     {"name": "Steph Curry"},
     {"name": "Megan Rapinoe"}
   ]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 <p>Note that your for loops should conventionally follow the pattern of
@@ -106,21 +106,21 @@ of points:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <ul>
         {% for name, color in state.fave_colors %}
             <li><strong>{{ name }}</strong>: {{ color }}</li>
         {% endfor %}
     </ul>
-</template>
+</Template>
 
-<state
+<State
     fave_colors:=&apos;{
       "Devante Adams": "Green",
       "Steph Curry": "Golden",
       "Megan Rapinoe": "Blue"
     }&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -135,7 +135,7 @@ were run). Observe the following example:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <ul>
         {% for name, color in state.fave_colors %}
             <li><strong>{{ name }}</strong>: {{ color }}</li>
@@ -143,11 +143,11 @@ text='
             No colors were found.
         {% endfor %}
     </ul>
-</template>
+</Template>
 
-<state
+<State
     fave_colors:=&apos;{}&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -174,29 +174,29 @@ variables from <code>true</code> to <code>false</code>, or vice-versa:</p>
 <mws-Demo demotype="minipreview"
 ttitle="SimpleIf"
 text='
-<template>
+<Template>
     {% if state.show %}
         Hello testing template world!
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   show:=true
-></state>
+></State>
 '
 ttitle2="IfElse"
 text2='
-<template>
+<Template>
     {% if state.hello %}
         Hello testing template world!
     {% else %}
         Goodbye testing template world!
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   hello:=false
-></state>
+></State>
 '></mws-Demo>
 
 <h4>elif</h4>
@@ -218,7 +218,7 @@ same "chain".</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if state.athletes %}
         Athletes exists. Total athletes: {{ state.athletes|length }}
     {% elif state.benched %}
@@ -226,13 +226,13 @@ text='
     {% else %}
         No athletes.
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   benched:=&apos;[
     {"name": "Steph Curry"}
   ]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 <p>In the above, if <code>state.athletes</code> exists, the number of athletes will be
@@ -258,15 +258,15 @@ to JavaScript's triple-equals <code>===</code> operator.  The syntax variants
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if state.somevar == "x" %}
         This appears if variable somevar equals the string "x"
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   somevar="x"
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -279,15 +279,15 @@ JavaScript's triple-not-equals <code>!==</code> operator. The syntax variants
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if state.somevar != "x" %}
         This appears if variable state.somevar does not equal the string "x".
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   somevar="y"
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -297,17 +297,17 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if not state.show %}
         Do not show it!
     {% else %}
         Show it!
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   show:=false
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -320,15 +320,15 @@ if its equal.  Example:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if state.somevar lt 100 %}
         This appears if variable somevar is less than 100.
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   somevar:=50
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -343,15 +343,15 @@ it if its equal.  Example:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if state.somevar gt 100 %}
         This appears if variable somevar is greater than 100.
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   somevar:=2600
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -370,26 +370,26 @@ interpreted in different contexts:</p>
 <mws-Demo demotype="minipreview"
 ttitle="String"
 text='
-<template>
+<Template>
     {% if "B.C.E." in state.era %}
         This appears since "B.C.E." is a substring of "{{ state.era }}"
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   era="3rd Century B.C.E. (Macedonia)"
-></state>
+></State>
 '
 
 ttitle2="Array"
 text2='
-<template>
+<Template>
     {% if state.word in state.greetings %}
         "{{ state.word }}" was found in: {{ state.greetings|join:", " }}
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   word="hello"
   greetings:=&apos;[
     "hallo",
@@ -397,17 +397,17 @@ text2='
     "hola",
     "óla"
   ]&apos;
-></state>'
+></State>'
 
 ttitle3="Object"
 text3='
-<template>
+<Template>
     {% if "author" in state.article %}
         Author was specified: {{ state.article.author }}
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
   article:=&apos;{
     "author": "Albert Einstein",
     "year": 1949,
@@ -415,7 +415,7 @@ text3='
     "publication": "Monthly Review",
     "title": "Why Socialism?"
   }&apos;
-></state>
+></State>
 '></mws-Demo>
 
 <p>Note that in these examples, some use hardcoded strings in places (e.g.
@@ -430,19 +430,19 @@ example:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {% if state.athletes|length gt 2 %}
         <p>There are more than 2 athletes!</p>
     {% endif %}
-</template>
+</Template>
 
-<state
+<State
     athletes:=&apos;[
         {"name": "Devante Adams"},
         {"name": "Steph Curry"},
         {"name": "Megan Rapinoe"}
     ]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -455,15 +455,15 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {{ state.value|add:7 }} hacks <br />
     {{ state.value|add:state.another }} hz
-</template>
+</Template>
 
-<state
+<State
     value:=1330
     another:=1270
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -486,15 +486,15 @@ demonstrated in the third example. Examples:</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     Valid: {{ state.value|allow:"orange,apple,pear" }} <br />
     Invalid: {{ state.value|allow:"a,b,c" }} <br />
     Invalid + default: {{ state.value|allow:"a,b,c"|default:"Oops!" }}
-</template>
+</Template>
 
-<state
+<State
     value="apple"
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -507,13 +507,13 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     The {{ state.value|capfirst }} framework is my favorite
-</template>
+</Template>
 
-<state
+<State
     value="modulo.js"
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -526,16 +526,16 @@ the given default. Otherwise, use the value.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     Fave snack: {{ state.snack|default:"icecream" }} <br />
     Snack count: {{ state.count|default:"none" }} <br />
     Fave soda: {{ state.soda|default:"Cola" }}
-</template>
-<state
+</Template>
+<State
     snack=""
     count:=0
     soda="guarana"
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -546,16 +546,16 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     Can {{ state.value }} divide by 3? <br />
     {{ state.value|divisibleby:3 }} <br />
     {% if state.value|divisibleby:2 %}
         {{ state.value }} is even
     {% endif %}
-</template>
-<state
+</Template>
+<State
     value:=4
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -578,16 +578,16 @@ the HTML escaping is sufficient. The only use is embedded JS strings.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     Result: {{ state.value|escapejs }} <br />
-</template>
+</Template>
 
-<state
+<State
     value="Just
 trying
 \stuff\
 out"
-></state>
+></State>
 '></mws-Demo>
 
 <h4>first</h4>
@@ -596,13 +596,13 @@ out"
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>{{ state.athletes|first }}</p>
-</template>
+</Template>
 
-<state
+<State
   athletes:=&apos;["Neymar", "Maradona"]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -613,14 +613,14 @@ can be specified as an argument.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>{{ state.athletes|join }}</p>
     <p>{{ state.athletes|join:" + " }}</p>
-</template>
+</Template>
 
-<state
+<State
   athletes:=&apos;["Neymar", "Maradona"]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -631,18 +631,18 @@ specified, will cause indentation by the given amount.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <pre>{{ state.athletes|json }}</pre>
     <pre>{{ state.athletes|json:2 }}</pre>
-</template>
+</Template>
 
-<state
+<State
     athletes:=&apos;[
         {"name": "Devante Adams"},
         {"name": "Steph Curry"},
         {"name": "Megan Rapinoe"}
     ]&apos;
-></state>
+></State>
 
 '></mws-Demo>
 
@@ -654,13 +654,13 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>{{ state.athletes|last }}</p>
-</template>
+</Template>
 
-<state
+<State
   athletes:=&apos;["Neymar", "Maradona"]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -672,17 +672,17 @@ Objects. For Objects, it will return the number of properties on the object.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>Sentence length: {{ state.sentence|length }}</p>
     <p>Flowers length: {{ state.flowers|length }}</p>
     <p>Flights length: {{ state.flights|length }}</p>
-</template>
+</Template>
 
-<state
+<State
     sentence="The sweat wis lashing oafay Sick Boy; he wis trembling."
     flowers:=&apos;["Marigolds", "Sunflowers"]&apos;
     flights:=&apos;{"SFO": "LAX", "BAI": "MEX", "MEX": "MVD"}&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -693,14 +693,14 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>Without: {{ state.word }}</p>
     <p>Lower: {{ state.word|lower }}</p>
-</template>
+</Template>
 
-<state
+<State
     word="rAndOm cAPitalS"
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -723,18 +723,18 @@ word "flower" to make it's plural "flowers".</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     We visited {{ state.citynames|length}} 
     {{ state.citynames|length|pluralize:"cities,city" }}
 
     and picked {{ state.flowers|length}} 
     flower{{ state.flowers|length|pluralize:"s" }}
-</template>
+</Template>
 
-<state
+<State
     flowers:=&apos;["Marigolds", "Sunflowers"]&apos;
     citynames:=&apos;["Oakland", "Berkeley", "Richmond", "Concord"]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -746,15 +746,15 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     {{ state.value|subtract:3 }} hacks <br />
     {{ state.value|subtract:state.another }} is the answer
-</template>
+</Template>
 
-<state
+<State
     value:=1340
     another:=1298
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -768,15 +768,15 @@ character.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>Long sentence: {{ state.sentence|truncate:20 }}</p>
     <p>Short word: {{ state.word|truncate:20 }}</p>
-</template>
+</Template>
 
-<state
+<State
     sentence="The sweat wis lashing oafay Sick Boy; he wis trembling."
     word="Bird."
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -815,7 +815,8 @@ scope. For an example, if we have a <code>name="modalInfo"</code> template, we
 might write: <code>{{&nbsp;renderObj|renderas:template.modalInfo&nbsp;}}</code>
 
 
-<mws-Demo demotype="minipreview"
+<!--<mws-Demo demotype="minipreview"-->
+<mws-Demo
 text='
 <Template name="trow">
     <tr><td>{{ name }}</td> <td>{{ type }}</td> <td>{{ level }}</td></tr>
@@ -862,17 +863,17 @@ type, it will attempt to first convert to an Array.</p>
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>{{ state.flowers|reversed|join }}</p>
     {% for city in state.cities|reversed %}
         <p>{{ city }}</p>
     {% endfor %}
-</template>
+</Template>
 
-<state
+<State
     flowers:=&apos;["Marigolds", "Sunflowers"]&apos;
     cities:=&apos;["Oakland", "Berkeley", "Richmond", "Concord"]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 
@@ -883,14 +884,14 @@ text='
 
 <mws-Demo demotype="minipreview"
 text='
-<template>
+<Template>
     <p>Without: {{ state.word }}</p>
     <p>Upper: {{ state.word|upper }}</p>
-</template>
+</Template>
 
-<state
+<State
     word="rAndOm cAPitalS"
-></state>
+></State>
 '></mws-Demo>
 
 
