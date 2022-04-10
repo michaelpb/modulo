@@ -226,12 +226,19 @@ content, without replacing it, etc?
     - Building on that, perhaps a way to configure markdown "handlers" for
       different types, e.g. using x-EmbedImg instead of img.
     - Could create and register custom tags using a configuration layer over
-      TagLex
+      TagLex, incorporating TaxLex
 
-# Ideas for better CPart development:
 
-- Script should allow "export-as-cpart" or "cpart-name", which creates a
-  one-off CPart class that can be reused
+# MDU - Ideas for Script CPart features:
+
+- We can make it async friendly: Allow only "await"
+    - E.g. < Script await >
+    - Then do parse JS and replace-all `" await "` with:
+        - `" cparts.script.prepareLocalVariables() ** 1 && await ..."`
+        - Since ** is right associative, it will resolve the
+          prepareLocalVariables exactly after the await
+- Some utility for Script should allow "export-as-cpart" or "cpart-name", which
+  creates a one-off CPart class that can be reused for easier CPart development
 
 # Broad idea for increased code re-use around coniguration:
 

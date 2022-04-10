@@ -405,9 +405,13 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     parsedCallback() {
+        let original = this;
+        if (this.hasAttribute('modulo-original-html')) {
+            original  = Modulo.utils.makeDiv(this.getAttribute('modulo-original-html'));
+        }
         this.setupCParts();
         this.lifecycle([ 'initialized' ]);
-        this.rerender(this); // render and re-mount it's own childNodes
+        this.rerender(original); // render and re-mount it's own childNodes
         this.isMounted = true;
     }
 }

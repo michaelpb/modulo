@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ModuloVM = require('./lib/ModuloVM');
+const ModuloBrowser = require('./lib/ModuloBrowser');
 const cliutils = require('./lib/cliUtils');
 
 const defaultConfig = require('./lib/defaultConfig');
@@ -102,19 +103,29 @@ function doCommand(cliConfig, args) {
     }
     */
 
-    const vm = new ModuloBrowser(config);
     if (positional.length > 1) {
         throw new Error('Only 1 file at a time for now')
     }
+    modBrowser = new ModuloBrowser(config);
+    modBrowser.run(positional[0], (resultingHTML) => {
+        console.log('AFTER RUNNING!', resultingHTML);
+        modBrowser.close();
+    });
+    /*
+    const vm = new ModuloVM(config);
     vm.run(positional[0], () => {
         //console.log('this is innerHTML', vm.document.innerHTML);
         console.log('AFTER RUNNING YO!');
     });
+    */
 }
+
+let modBrowser = null;
 
 function main(argv, shiftFirst=false) {
     const args = cliutils.parseArgs(argv, shiftFirst);
     process.on('SIGINT', () => {
+        /*
         if (modulo.commands._watcher) {
             modulo.commands._watcher.close(); // stop node-watch
         }
@@ -124,7 +135,12 @@ function main(argv, shiftFirst=false) {
         if (modulo.commands._serverSrc) {
             modulo.commands._serverSrc.close(); // stop express #2
         }
-        process.exit(0);
+        */
+        if (modBrowser) {
+            modBrowser.close(() => process.exit(0));
+        } else {
+            process.exit(0);
+        }
     });
     findConfig(args, doCommand);
 }
