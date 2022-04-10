@@ -817,28 +817,28 @@ might write: <code>{{&nbsp;renderObj|renderas:template.modalInfo&nbsp;}}</code>
 
 <mws-Demo demotype="minipreview"
 text='
-<template name="trow">
+<Template name="trow">
     <tr><td>{{ name }}</td> <td>{{ type }}</td> <td>{{ level }}</td></tr>
-</template>
+</Template>
 
-<template>
+<Template>
     <table>
+        <thead><tr><th>Name</th> <th>Type</th> <th>Level</th></tr></thead>
         <tbody>
             {% for info in state.pokemon %}
                 {{ info|renderas:template.trow }}
             {% endfor %}
         </tbody>
-        <thead><tr><th>Name</th> <th>Type</th> <th>Level</th></tr></thead>
     </table>
-</template>
+</Template>
 
-<state
+<State
     pokemon:=&apos;[
         {"name": "Jigglypuff", "type": "Normal", "level": 13},
         {"name": "Pikachu", "type": "Electric", "level": 10},
         {"name": "Ghastly", "type": "Ghost", "level": 8}
     ]&apos;
-></state>
+></State>
 '></mws-Demo>
 
 

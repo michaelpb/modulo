@@ -205,412 +205,7 @@ return { "sloccount": typeof sloccount !== "undefined" ? sloccount : undefined,
     
 return { "initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["x1gol8eg"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-        // Splits up own source-code to get source for each example
-        const mySrc = '/components/examplelib.html';
-        const myText = Modulo.fetchQ.data[mySrc];
-        const componentTexts = {};
-        if (myText) {
-            let name = '';
-            let currentComponent = '';
-            let inTestSuite = false;
-            for (const line of myText.split('\n')) {
-                const lower = line.toLowerCase();
-                if (lower.startsWith('</component>')) {
-                    componentTexts[name] = currentComponent;
-                    currentComponent = '';
-                    name = null;
-                } else if (lower.startsWith('<component')) {
-                    name = line.split(' name="')[1].split('"')[0];
-                } else if (lower.startsWith('<testsuite')) {
-                    inTestSuite = true;
-                } else if (lower.includes('</testsuite>')) {
-                    inTestSuite = false;
-                } else if (name && !inTestSuite) {
-                    currentComponent += line + '\n';
-                }
-            }
-        }
-        script.exports.componentTexts = componentTexts;
-    
-return {  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["1n5m36a"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function countUp() {
-        state.num++;
-    }
-
-return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><style>
-eg-Simple em { color: darkgreen; }
-eg-Simple * { text-decoration: underline; }
-</style><script>"use strict";Modulo.assets.functions["x1cdn50g"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function addItem() {
-        state.list.push(state.text); // add to list
-        state.text = ""; // clear input
-    }
-
-return { "addItem": typeof addItem !== "undefined" ? addItem : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["dfca1k"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function fetchGitHub() {
-        fetch(`https://api.github.com/users/${state.search}`)
-            .then(response => response.json())
-            .then(githubCallback);
-    }
-    function githubCallback(apiData) {
-        state.name = apiData.name;
-        state.location = apiData.location;
-        state.bio = apiData.bio;
-        element.rerender();
-    }
-
-return { "fetchGitHub": typeof fetchGitHub !== "undefined" ? fetchGitHub : undefined,
-"githubCallback": typeof githubCallback !== "undefined" ? githubCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["o25k49"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    // Because this variable is created "loose" in the script tag, it becomes a
-    // static variable global to all instances of this class (though,
-    // thankfully, not global in general -- it's still in an "IFFE")
-    // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state in the initializedCallback)
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
-
-    function typingCallback() {
-        state.loading = true;
-        const apiBase = 'http://openlibrary.org/search.json'
-        const search = `q=${state.search}`;
-        const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = `${apiBase}?${search}&${opts}`;
-        _globalDebounce(() => {
-            fetch(url)
-                .then(response => response.json())
-                .then(dataBackCallback);
-        });
-    }
-
-    function dataBackCallback(data) {
-        state.results = data.docs;
-        state.loading = false;
-        element.rerender();
-    }
-
-    // Puting this long URL down here to declutter
-    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
-                                 'semantic-ui/0.16.1/images/loader-large.gif');
-
-return { "_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
-"typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
-"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><style>
-eg-SearchBox SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-eg-SearchBox input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-eg-SearchBox input::after {
-        content: '\1F50E';
-    }
-eg-SearchBox .results-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-eg-SearchBox .results {
-        position: absolute;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        display: block;
-        border: 2px solid coral;
-        border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
-        background: white;
-    }
-eg-SearchBox .results.visible {
-        height: 200px;
-        width: 200px;
-    }
-eg-SearchBox .result {
-        padding: 10px;
-        width: 80px;
-        position: relative;
-    }
-eg-SearchBox .result label {
-        position: absolute;
-        width: 80px;
-        background: rgba(255, 255, 255, 0.5);
-        font-size: 0.7rem;
-        top: 0;
-        left: 0;
-    }
-</style><script>"use strict";Modulo.assets.functions["1iu3f2i"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    // Getting big a range of numbers in JS. Use "script.exports"
-    // to export this as a one-time global constant.
-    // (Hint: Curious how it calculates prime? See CSS!)
-    script.exports.range = 
-        Array.from({length: 63}, (x, i) => i + 2);
-    function setNum(payload, ev) {
-        state.number = Number(ev.target.textContent);
-    }
-
-return { "setNum": typeof setNum !== "undefined" ? setNum : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><style>
-eg-PrimeSieve .grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    color: #ccc;
-    font-weight: bold;
-    width: 100%;
-    margin: -5px;
-}
-eg-PrimeSieve .grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-eg-PrimeSieve div.whole {
-    color: white;
-    background: #B90183;
-}
-eg-PrimeSieve div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-eg-PrimeSieve div.number { background: green; }
-eg-PrimeSieve div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-eg-PrimeSieve If found, then hide asterisk and green */
-eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
-eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
-</style><script>"use strict";Modulo.assets.functions["x1as77n0"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
-function setup(payload) {
-    const count = Number(payload);
-    let symbols = symbolsStr.substr(0, count/2).split("");
-    symbols = symbols.concat(symbols); // duplicate cards
-    let id = 0;
-    while (id < count) {
-        const index = Math.floor(Math.random()
-                                    * symbols.length);
-        const symbol = symbols.splice(index, 1)[0];
-        state.cards.push({symbol, id});
-        id++;
-    }
-}
-
-function failedFlipCallback() {
-    // Remove both from revealed array & set to null
-    state.revealed = state.revealed.filter(
-            id => id !== state.failedflip
-                    && id !== state.lastflipped);
-    state.failedflip = null;
-    state.lastflipped = null;
-    state.message = "";
-    element.rerender();
-}
-
-function flip(id) {
-    if (state.failedflip !== null) {
-        return;
-    }
-    id = Number(id);
-    if (state.revealed.includes(id)) {
-        return; // double click
-    } else if (state.lastflipped === null) {
-        state.lastflipped = id;
-        state.revealed.push(id);
-    } else {
-        state.revealed.push(id);
-        const {symbol} = state.cards[id];
-        const lastCard = state.cards[state.lastflipped];
-        if (symbol === lastCard.symbol) {
-            // Successful match! Check for win.
-            const {revealed, cards} = state;
-            if (revealed.length === cards.length) {
-                state.message = "You win!";
-                state.win = true;
-            } else {
-                state.message = "Nice match!";
-            }
-            state.lastflipped = null;
-        } else {
-            state.message = "No match.";
-            state.failedflip = id;
-            setTimeout(failedFlipCallback, 1000);
-        }
-    }
-}
-
-return { "setup": typeof setup !== "undefined" ? setup : undefined,
-"failedFlipCallback": typeof failedFlipCallback !== "undefined" ? failedFlipCallback : undefined,
-"flip": typeof flip !== "undefined" ? flip : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><style>
-eg-MemoryGame h3 {
-    background: #B90183;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-eg-MemoryGame .board {
-    display: grid;
-    grid-template-rows: repeat(4, 1fr);
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 2px;
-    width: 100%;
-    height: 150px;
-    width: 150px;
-}
-eg-MemoryGame .board.hard {
-    grid-gap: 1px;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-}
-eg-MemoryGame .board > .card {
-    background: #B90183;
-    border: 2px solid black;
-    border-radius: 1px;
-    cursor: pointer;
-    text-align: center;
-    min-height: 15px;
-    transition: background 0.3s, transform 0.3s;
-    transform: scaleX(-1);
-    padding-top: 2px;
-    color: #B90183;
-}
-eg-MemoryGame .board.hard > .card {
-    border: none !important;
-    padding: 0;
-}
-eg-MemoryGame .board > .card.flipped {
-    background: #FFFFFF;
-    border: 2px solid #B90183;
-    transform: scaleX(1);
-}
-
-@keyframes flipping {
-from { transform: scaleX(-1.1); background: #B90183; }
-to {   transform: scaleX(1.0);  background: #FFFFFF; }
-}
-</style><script>"use strict";Modulo.assets.functions["13lid16"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function toggle([ i, j ]) {
-        if (!state.cells[i]) {
-            state.cells[i] = {};
-        }
-        state.cells[i][j] = !state.cells[i][j];
-    }
-
-    function play() {
-        state.playing = true;
-        setTimeout(() => {
-            if (state.playing) {
-                updateNextFrame();
-                element.rerender(); // manually rerender
-                play(); // cue next frame
-            }
-        }, 2000 / state.speed);
-    }
-
-    function pause() {
-        state.playing = false;
-    }
-
-    function clear() {
-        state.cells = {};
-    }
-
-    function randomize() {
-        for (const i of script.exports.range) {
-            for (const j of script.exports.range) {
-                if (!state.cells[i]) {
-                    state.cells[i] = {};
-                }
-                state.cells[i][j] = (Math.random() > 0.5);
-            }
-        }
-    }
-
-    // Helper function for getting a cell from data
-    const get = (i, j) => Boolean(state.cells[i] && state.cells[i][j]);
-    function updateNextFrame() {
-        const nextData = {};
-        for (const i of script.exports.range) {
-            for (const j of script.exports.range) {
-                if (!nextData[i]) {
-                    nextData[i] = {};
-                }
-                const count = countNeighbors(i, j);
-                nextData[i][j] = get(i, j) ?
-                    (count === 2 || count === 3) : // stays alive
-                    (count === 3); // comes alive
-            }
-        }
-        state.cells = nextData;
-    }
-
-    function countNeighbors(i, j) {
-        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),
-                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),
-                get(i + 1, j - 1), get(i - 1, j + 1)];
-        return neighbors.filter(v => v).length;
-    }
-    script.exports.range = Array.from({length: 24}, (x, i) => i);
-
-return { "toggle": typeof toggle !== "undefined" ? toggle : undefined,
-"play": typeof play !== "undefined" ? play : undefined,
-"pause": typeof pause !== "undefined" ? pause : undefined,
-"clear": typeof clear !== "undefined" ? clear : undefined,
-"randomize": typeof randomize !== "undefined" ? randomize : undefined,
-"updateNextFrame": typeof updateNextFrame !== "undefined" ? updateNextFrame : undefined,
-"countNeighbors": typeof countNeighbors !== "undefined" ? countNeighbors : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><style>
-eg-ConwayGameOfLife {
-        display: flex;
-    }
-eg-ConwayGameOfLife .grid {
-        display: grid;
-        grid-template-columns: repeat(24, 5px);
-        margin: -2px;
-        grid-gap: 1px;
-    }
-eg-ConwayGameOfLife .grid > div {
-        background: white;
-        width: 5px;
-        height: 5px;
-    }
-eg-ConwayGameOfLife input,eg-ConwayGameOfLife button {
-        width: 40px;
-    }
-</style><script>"use strict";Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+};</script><script>"use strict";Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         // Splits up own source-code to get source for each example
         let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
@@ -1671,7 +1266,412 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 "codemirrorMount": typeof codemirrorMount !== "undefined" ? codemirrorMount : undefined,
 "run": typeof run !== "undefined" ? run : undefined,
  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["xgr3fcp"]= function (CTX, G){
+};</script><script>"use strict";Modulo.assets.functions["x1gol8eg"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        // Splits up own source-code to get source for each example
+        const mySrc = '/components/examplelib.html';
+        const myText = Modulo.fetchQ.data[mySrc];
+        const componentTexts = {};
+        if (myText) {
+            let name = '';
+            let currentComponent = '';
+            let inTestSuite = false;
+            for (const line of myText.split('\n')) {
+                const lower = line.toLowerCase();
+                if (lower.startsWith('</component>')) {
+                    componentTexts[name] = currentComponent;
+                    currentComponent = '';
+                    name = null;
+                } else if (lower.startsWith('<component')) {
+                    name = line.split(' name="')[1].split('"')[0];
+                } else if (lower.startsWith('<testsuite')) {
+                    inTestSuite = true;
+                } else if (lower.includes('</testsuite>')) {
+                    inTestSuite = false;
+                } else if (name && !inTestSuite) {
+                    currentComponent += line + '\n';
+                }
+            }
+        }
+        script.exports.componentTexts = componentTexts;
+    
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["1n5m36a"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function countUp() {
+        state.num++;
+    }
+
+return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-Simple em { color: darkgreen; }
+eg-Simple * { text-decoration: underline; }
+</style><script>"use strict";Modulo.assets.functions["x1cdn50g"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function addItem() {
+        state.list.push(state.text); // add to list
+        state.text = ""; // clear input
+    }
+
+return { "addItem": typeof addItem !== "undefined" ? addItem : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["dfca1k"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function fetchGitHub() {
+        fetch(`https://api.github.com/users/${state.search}`)
+            .then(response => response.json())
+            .then(githubCallback);
+    }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
+    }
+
+return { "fetchGitHub": typeof fetchGitHub !== "undefined" ? fetchGitHub : undefined,
+"githubCallback": typeof githubCallback !== "undefined" ? githubCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["o25k49"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    // Because this variable is created "loose" in the script tag, it becomes a
+    // static variable global to all instances of this class (though,
+    // thankfully, not global in general -- it's still in an "IFFE")
+    // (If we had wanted individual components to be debounced, we'd have
+    // needed to attach it to state in the initializedCallback)
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+
+    function typingCallback() {
+        state.loading = true;
+        const apiBase = 'http://openlibrary.org/search.json'
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    // Puting this long URL down here to declutter
+    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
+                                 'semantic-ui/0.16.1/images/loader-large.gif');
+
+return { "_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
+"typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
+"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-SearchBox SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</style><script>"use strict";Modulo.assets.functions["1iu3f2i"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    // Getting big a range of numbers in JS. Use "script.exports"
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 63}, (x, i) => i + 2);
+    function setNum(payload, ev) {
+        state.number = Number(ev.target.textContent);
+    }
+
+return { "setNum": typeof setNum !== "undefined" ? setNum : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-PrimeSieve .grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    color: #ccc;
+    font-weight: bold;
+    width: 100%;
+    margin: -5px;
+}
+eg-PrimeSieve .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-PrimeSieve div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-PrimeSieve div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-PrimeSieve div.number { background: green; }
+eg-PrimeSieve div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-PrimeSieve If found, then hide asterisk and green */
+eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
+eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
+</style><script>"use strict";Modulo.assets.functions["x1as77n0"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
+function setup(payload) {
+    const count = Number(payload);
+    let symbols = symbolsStr.substr(0, count/2).split("");
+    symbols = symbols.concat(symbols); // duplicate cards
+    let id = 0;
+    while (id < count) {
+        const index = Math.floor(Math.random()
+                                    * symbols.length);
+        const symbol = symbols.splice(index, 1)[0];
+        state.cards.push({symbol, id});
+        id++;
+    }
+}
+
+function failedFlipCallback() {
+    // Remove both from revealed array & set to null
+    state.revealed = state.revealed.filter(
+            id => id !== state.failedflip
+                    && id !== state.lastflipped);
+    state.failedflip = null;
+    state.lastflipped = null;
+    state.message = "";
+    element.rerender();
+}
+
+function flip(id) {
+    if (state.failedflip !== null) {
+        return;
+    }
+    id = Number(id);
+    if (state.revealed.includes(id)) {
+        return; // double click
+    } else if (state.lastflipped === null) {
+        state.lastflipped = id;
+        state.revealed.push(id);
+    } else {
+        state.revealed.push(id);
+        const {symbol} = state.cards[id];
+        const lastCard = state.cards[state.lastflipped];
+        if (symbol === lastCard.symbol) {
+            // Successful match! Check for win.
+            const {revealed, cards} = state;
+            if (revealed.length === cards.length) {
+                state.message = "You win!";
+                state.win = true;
+            } else {
+                state.message = "Nice match!";
+            }
+            state.lastflipped = null;
+        } else {
+            state.message = "No match.";
+            state.failedflip = id;
+            setTimeout(failedFlipCallback, 1000);
+        }
+    }
+}
+
+return { "setup": typeof setup !== "undefined" ? setup : undefined,
+"failedFlipCallback": typeof failedFlipCallback !== "undefined" ? failedFlipCallback : undefined,
+"flip": typeof flip !== "undefined" ? flip : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</style><script>"use strict";Modulo.assets.functions["13lid16"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function toggle([ i, j ]) {
+        if (!state.cells[i]) {
+            state.cells[i] = {};
+        }
+        state.cells[i][j] = !state.cells[i][j];
+    }
+
+    function play() {
+        state.playing = true;
+        setTimeout(() => {
+            if (state.playing) {
+                updateNextFrame();
+                element.rerender(); // manually rerender
+                play(); // cue next frame
+            }
+        }, 2000 / state.speed);
+    }
+
+    function pause() {
+        state.playing = false;
+    }
+
+    function clear() {
+        state.cells = {};
+    }
+
+    function randomize() {
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!state.cells[i]) {
+                    state.cells[i] = {};
+                }
+                state.cells[i][j] = (Math.random() > 0.5);
+            }
+        }
+    }
+
+    // Helper function for getting a cell from data
+    const get = (i, j) => Boolean(state.cells[i] && state.cells[i][j]);
+    function updateNextFrame() {
+        const nextData = {};
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!nextData[i]) {
+                    nextData[i] = {};
+                }
+                const count = countNeighbors(i, j);
+                nextData[i][j] = get(i, j) ?
+                    (count === 2 || count === 3) : // stays alive
+                    (count === 3); // comes alive
+            }
+        }
+        state.cells = nextData;
+    }
+
+    function countNeighbors(i, j) {
+        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),
+                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),
+                get(i + 1, j - 1), get(i - 1, j + 1)];
+        return neighbors.filter(v => v).length;
+    }
+    script.exports.range = Array.from({length: 24}, (x, i) => i);
+
+return { "toggle": typeof toggle !== "undefined" ? toggle : undefined,
+"play": typeof play !== "undefined" ? play : undefined,
+"pause": typeof pause !== "undefined" ? pause : undefined,
+"clear": typeof clear !== "undefined" ? clear : undefined,
+"randomize": typeof randomize !== "undefined" ? randomize : undefined,
+"updateNextFrame": typeof updateNextFrame !== "undefined" ? updateNextFrame : undefined,
+"countNeighbors": typeof countNeighbors !== "undefined" ? countNeighbors : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+eg-ConwayGameOfLife {
+        display: flex;
+    }
+eg-ConwayGameOfLife .grid {
+        display: grid;
+        grid-template-columns: repeat(24, 5px);
+        margin: -2px;
+        grid-gap: 1px;
+    }
+eg-ConwayGameOfLife .grid > div {
+        background: white;
+        width: 5px;
+        height: 5px;
+    }
+eg-ConwayGameOfLife input,eg-ConwayGameOfLife button {
+        width: 40px;
+    }
+</style><script>"use strict";Modulo.assets.functions["xgr3fcp"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n        <a @click:=\"script.makeError\">Click me to cause a traceback</a>\n        <a @click:=\"script.countUp\">Click me to count: "); // "<a @click:=\"script.makeError\">Click me to cause a traceback</a>\n        <a @click:=\"script.countUp\">Click me to count:"
 OUT.push(G.escapeHTML(CTX.state.num)); // "state.num"

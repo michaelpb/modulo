@@ -414,7 +414,6 @@ Modulo.Element = class ModuloElement extends HTMLElement {
 
         // XXX - TODO: Needs refactor, should do this somewhere else:
         if (this.hasAttribute('modulo-original-html')) {
-            console.log('reapplying patches');
             const { reconciler } = this.cparts.component;
             reconciler.patch = reconciler.applyPatch; // Apply patches immediately
             reconciler.patchAndDescendants(this, 'Mount');
@@ -498,7 +497,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     initializedCallback(renderObj) {
-        console.log('initializing', renderObj);
         this.localNameMap = this.element.factory().loader.localNameMap;
         this.mode = this.attrs.mode || 'regular'; // TODO rm and check tests
         if (this.mode === 'shadow') {
@@ -700,7 +698,7 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
 
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static factoryCallback() {
-        console.count('Ignored test-suite');
+        //console.count('Ignored test-suite');
         return {}; // wipe contents
     }
 }

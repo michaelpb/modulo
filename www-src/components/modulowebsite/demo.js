@@ -147,7 +147,7 @@ function doCopy() {
 }
 
 function initializedCallback() {
-    console.log('initializedCallback');
+    // console.log('initializedCallback');
     if (componentTexts === null) {
         _setupGlobalVariables();
     }
@@ -219,7 +219,7 @@ function initializedCallback() {
 
 function doRun() {
     exCounter++;
-    console.log('There are ', exCounter, ' examples on this page. Gee!')
+    //console.log('There are ', exCounter, ' examples on this page. Gee!')
     const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
     state.nscounter++;
     const attrs = { src: '', namespace };

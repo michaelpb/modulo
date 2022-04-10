@@ -48,27 +48,10 @@ class ModuloVM {
     }
 
     run(htmlPath, callback) {
-        const waitUntil = 'networkidle0';
         (async () => {
             await this._startExpress();
             await this._startBrowser();
-            const page = await this._browser.newPage();
-            await page.goto(this.getURL(htmlPath), { waitUntil });
-            //await page.screenshot({ path: 'testing.png' });
-            await page.evaluate(() => {
-                // Scan document for modulo elements, attaching modulo-original-html as needed
-                for (const elem of document.querySelectorAll('*')) {
-                    if (!elem.isModulo) {
-                        continue;
-                    }
-                    if (elem.originalHTML !== elem.innerHTML) {
-                        elem.setAttribute('modulo-original-html', elem.originalHTML);
-                    }
-                }
-            });
-            const html = await page.evaluate(() => {
-                return document.documentElement.innerHTML;
-            });
+            const html = await this.runAsync(htmlPath);
             callback(html);
         })();
     }
@@ -79,7 +62,6 @@ class ModuloVM {
         await this._startBrowser();
         const page = await this._browser.newPage();
         await page.goto(this.getURL(htmlPath), { waitUntil });
-        await page.screenshot({ path: 'testing.png' });
         await page.evaluate(() => {
             // Scan document for modulo elements, attaching modulo-original-html as needed
             for (const elem of document.querySelectorAll('*')) {
