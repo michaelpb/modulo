@@ -3,47 +3,11 @@ const path = require('path');
 
 const ModuloVM = require('./lib/ModuloVM');
 const ModuloBrowser = require('./lib/ModuloBrowser');
-const cliutils = require('./lib/cliUtils');
+const { ACTIONS, TERM, walkSync, findConfig, parseArgs, getAction, logStatusBar } = require('./lib/cliUtils');
 
 const defaultConfig = require('./lib/defaultConfig');
 
 let modulo = null;
-
-const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
-
-function findConfig(args, callback) {
-    if ('config' in args.flags) {
-        if (args.flags.config === 'default') {
-            callback({}, args);
-            return;
-        }
-
-        fs.readFile(args.flags.config, 'utf8', (data, err) => {
-            if (err) {
-                console.log('Could not read path:', args.flags.config);
-                throw err;
-            }
-
-            callback(JSON.parse(data), args);
-        });
-        return;
-    }
-
-    fs.readFile(CONFIG_PATH, 'utf8', (err1, data1) => {
-        if (err1) {
-            fs.readFile('./package.json', (err2, data2) => {
-                if (err2) {
-                    callback({}, args);
-                } else {
-                    const jsonData = JSON.parse(data2);
-                    callback(jsonData.modulo || {}, args);
-                }
-            });
-        } else {
-            callback(JSON.parse(data1), args);
-        }
-    });
-}
 
 function getConfig(cliConfig, flags) {
     // Using PORT is so it "does the right thing" on herokulike platforms
@@ -72,11 +36,6 @@ function getConfig(cliConfig, flags) {
             }
         }
     }
-
-    // TODO: With this implementation, defaultConfig must include all flags
-    // before preload. Later, allow preload (eg of CParts, or management cmds)
-    // to add new flags.  Expose registerDefaultConfig interface to preloaded
-    // files, and then do a 2nd getConfig step after.
     return config;
 }
 
@@ -85,7 +44,7 @@ function doCommand(cliConfig, args) {
     let { command, positional, flags } = args;
 
     // Console log command right away, before loading anything
-    console.log(cliutils.TERM.LOGOLINE, command, cliutils.TERM.RESET);
+    console.log(TERM.LOGOLINE, command, TERM.RESET);
 
     // Configure (blocking)
     const config = getConfig(cliConfig, flags);
@@ -97,33 +56,65 @@ function doCommand(cliConfig, args) {
         command = 'help';
         skipFlags = true;
     }
+
+
     /*
     if (!(command in modulo.commands) || 'h' in args.flags || 'help' in args.flags) {
         command = 'help';
     }
     */
 
+    // For now, just doing a hardcoded SSG, until we refactor the old CLI code
+    // to the new structure
+    hackPrerender(config);
+}
+
+async function hackPrerender(config) {
+    modBrowser = new ModuloBrowser(config);
+    const files = walkSync(config.input, config);
+    let count = 0;
+    let copiesNeeded = 0;
+    for (const file of files) {
+        console.log('loading file', file);
+        const relPath = path.relative(config.input, file);
+
+        const action = getAction(file, config);
+        if (action === ACTIONS.SKIP) {
+            console.log('skipping:', file);
+        } else if (action === ACTIONS.COPY) {
+            console.log('copying:', file);
+        } else if (action === ACTIONS.CUSTOM) {
+            console.log('custom:', file);
+        } else if (action === ACTIONS.GENERATE) {
+            console.log('generate:', file);
+            const html = await modBrowser.runAsync(file);
+            const output = path.resolve(config.output, relPath);
+            await fs.fsPromises.writeFile(output, html);
+        }
+        logStatusBar('HCKBLD', count, files.length);
+        count++;
+        /*
+        break;
+        */
+    }
+    modBrowser.close();
+
+    /*
     if (positional.length > 1) {
         throw new Error('Only 1 file at a time for now')
     }
-    modBrowser = new ModuloBrowser(config);
-    modBrowser.run(positional[0], (resultingHTML) => {
-        console.log('AFTER RUNNING!', resultingHTML);
-        modBrowser.close();
-    });
-    /*
     const vm = new ModuloVM(config);
     vm.run(positional[0], () => {
         //console.log('this is innerHTML', vm.document.innerHTML);
-        console.log('AFTER RUNNING YO!');
     });
     */
+
 }
 
 let modBrowser = null;
 
 function main(argv, shiftFirst=false) {
-    const args = cliutils.parseArgs(argv, shiftFirst);
+    const args = parseArgs(argv, shiftFirst);
     process.on('SIGINT', () => {
         /*
         if (modulo.commands._watcher) {
@@ -155,7 +146,6 @@ if (require.main === module) {
 
 module.exports = {
     doCommand,
-    findConfig,
     getModuloInstance,
     main,
 };

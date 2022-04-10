@@ -92,36 +92,6 @@ function checkArgs(args, commands) {
     }
 }
 
-function patchModuloWithSSGFeatures(Modulo, path, subpath, outputPath) {
-    Modulo.isBackend = true;
-    Modulo.require = require;
-    Modulo.ssgStore = ssgStore;
-
-    Modulo.ssgCurrentPath = path.replace('//', '/'); // remove accidental double slashes
-    Modulo.ssgCurrentOutputPath = outputPath.replace('//', '/'); // remove accidental double slashes
-    Modulo.ssgCurrentSubPath = subpath ? subpath.replace('//', '/') : null; // remove accidental double slashes
-
-    Modulo.ssgSubPaths = null;
-    Modulo.ssgRegisterSubPath = function (newFilePath) {
-        if (!Modulo.ssgSubPaths) {
-            Modulo.ssgSubPaths = [];
-        }
-        Modulo.ssgSubPaths.push(newFilePath);
-    }
-
-    /*
-    // Reconsider these features. Only include in core modulo if has space
-    const {factoryCallback} = Modulo.cparts.script;
-    Modulo.cparts.script.factoryCallback = (partOptions, factory, renderObj) => {
-        const results = factoryCallback(partOptions, factory, renderObj);
-        const {exports} = results;
-        if (exports) {
-            element.setAttribute('script-exports', JSON.stringify(exports));
-        }
-        return results;
-    };
-    */
-}
 
 function mkdirToContain(path) {
     const pathPrefix = path.slice(0, path.lastIndexOf('/'));
@@ -165,46 +135,46 @@ function copyIfDifferent(inputPath, outputPath, callback) {
     }, callback);
 }
 
-function renderModuloHtml(rootPath, inputPath, outputPath, callback) {
-    fs.readFile(inputPath, (err, inputContents) => {
-        if (err) {
-            console.error('ERROR', err);
+
+const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
+
+function findConfig(args, callback) {
+    if ('config' in args.flags) {
+        if (args.flags.config === 'default') {
+            callback({}, args);
             return;
         }
 
-        const Modulo = loadModuloDocument(inputPath, inputContents, null, rootPath, outputPath);
-        const {document, ssgSubPaths} = Modulo;
-        let html = document.documentElement.innerHTML;
-        if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
-            // generating "quirks mode" document, do not want
-            html = '<!DOCTYPE HTML>' + html;
-        }
-        fs.writeFile(outputPath, html, {encoding: 'utf8'}, err => {
+        fs.readFile(args.flags.config, 'utf8', (data, err) => {
             if (err) {
-                console.error('ERROR', err);
-            } else if (callback) {
-                callback(ssgSubPaths, inputContents);
+                console.log('Could not read path:', args.flags.config);
+                throw err;
             }
+
+            callback(JSON.parse(data), args);
         });
+        return;
+    }
+
+    fs.readFile(CONFIG_PATH, 'utf8', (err1, data1) => {
+        if (err1) {
+            fs.readFile('./package.json', (err2, data2) => {
+                if (err2) {
+                    callback({}, args);
+                } else {
+                    const jsonData = JSON.parse(data2);
+                    callback(jsonData.modulo || {}, args);
+                }
+            });
+        } else {
+            callback(JSON.parse(data1), args);
+        }
     });
 }
 
-function renderModuloHtmlForSubpath(rootPath, inputContents, inputPath, outputPath, callback) {
-    //console.log('loadModuloDocument', inputPath, outputPath, rootPath);
-    const {document} = loadModuloDocument(inputPath, inputContents, outputPath, rootPath, outputPath);
-    let html = document.documentElement.innerHTML;
-    if (!html.toUpperCase().startsWith('<!DOCTYPE HTML>')) {
-        // generating "quirks mode" document, do not want
-        html = '<!DOCTYPE HTML>' + html;
-    }
-    fs.writeFile(outputPath, html, {encoding: 'utf8'}, err => {
-        if (err) { console.error('ERROR', err);
-        } else if (callback) { callback(); }
-    });
-}
 
 function walkSync(basePath, config) {
-    const {isSkip, verbose} = config;
+    const { isSkip, verbose } = config;
     let results = [];
     const bareFileNames = fs.readdirSync(basePath);
     const regexp = new RegExp(isSkip);
@@ -226,23 +196,49 @@ function walkSync(basePath, config) {
     return results;
 }
 
-function doSSG(inputFile, outputFile) {
-    mkdirToContain(outputFile);
-    renderModuloHtml(rootPath, inputFile, outputFile, (subPaths, inputContents) => {
-        console.log('RENDERED:', inputFile, '->', outputFile);
-        if (subPaths) {
-            console.log('         ', Array.from(inputFile.length).join(' '),
-                        `-> NOTE: ${subPaths.length} subpaths`);
-            for (const newFilePath of subPaths) {
-                mkdirToContain(newFilePath);
-                renderModuloHtmlForSubpath(rootPath,
-                        inputContents, inputFile, newFilePath, () => {
-                    console.log('RENDERED SUB-PATH:', inputFile, '->', newFilePath);
-                });
-            }
-        }
-    });
+let lastStatusBar = '';
+
+function logStatusBar(shoutyWord, finishedFiles, generateCount, maxCount=8) {
+    const charCent = Math.round((finishedFiles / generateCount) * maxCount);
+    const perCent = Math.round((finishedFiles / generateCount) * 100);
+    const statusBar = '%'.repeat(charCent) + ' '.repeat(maxCount - charCent);
+    const str = TERM.MAGENTA_FG + shoutyWord + TERM.RESET +
+                    '  |' + statusBar + '|' + TERM.RESET + ` ${perCent}%`;
+    if (lastStatusBar !== statusBar) { // never repeat the bars
+        console.log(str);
+    }
+    lastStatusBar = statusBar;
 }
+
+const CUSTOM = 'CUSTOM';
+const SKIP = 'SKIP';
+const GENERATE = 'GENERATE';
+const COPY = 'COPY';
+
+const ACTIONS = { CUSTOM, SKIP, GENERATE, COPY };
+
+function getAction(inputFile, config) {
+    const { isGenerate, isSkip, isCopyOnly, isCustomFilter } = config;
+    if (isCustomFilter && isCustomFilter(inputFile)) {
+        return CUSTOM;  // isCustomFilter is a function checked against entire path
+    }
+
+    const check = (re, part) => (new RegExp(re, 'i').test(part));
+    const contains = re => inputFile.split('/').find(part => check(re, part));
+    if (contains(isSkip)) { // isSkip is applied to every path part
+        return SKIP;
+    }
+    if (contains(isCopyOnly)) { // isCopyOnly is also applied to every path part
+        return COPY;
+    }
+
+
+    if (check(isGenerate, inputFile)) { // isGenerate is applied to entire path
+        return GENERATE;
+    }
+    return COPY; // default (i.e. copy every file from input -> output)
+}
+
 
 const TERM = {
     MAGENTA_BG: '\x1b[45m',
@@ -262,65 +258,17 @@ const TERM = {
 TERM.LOGO = TERM.MAGENTA_FG + '[%]' + TERM.RESET;
 TERM.LOGOLINE = TERM.MAGENTA_FG + '[%]' + TERM.RESET + TERM.UNDERSCORE;
 
-function doGenerate(config, modulo, text, outputFile, callback) {
-    // TODO: Clean up subpaths, probably remove
-    const {
-        newGlobalsBeforeGenerate,
-        clearBeforeGenerate,
-        verbose,
-        inputFile,
-    } = config;
-
-    modulo.fetchPrefix = config.input;
-
-    if (newGlobalsBeforeGenerate) {
-        // TODO force reload Modulo.js & run main('generate', ...)
-        throw new Error('newGlobalsBeforeGenerate: Not implemented yet');
-    } else {
-        //modulo.fetchQ.data = {}; // TODO: Need to figure out best times to clear
-        if (clearBeforeGenerate) { // TODO: try with this disabled
-            throw new Error('clearBeforeGenerate: Not implemented yet');
-            modulo.clearAll(config);
-        }
-    }
-
-    //modulo.fetchQ.data = {}; // Maybe do received callback here?
-    modulo.loadText(text, inputFile);
-    modulo.defineAll(config);
-
-    modulo.fetchQ.wait(() => {
-
-        modulo.resolveCustomComponents(config.ssgRenderDepth, () => {
-            let html = modulo.getHTML();
-            modulo.assert(html, 'Generate results cannot be falsy');
-
-            mkdirToContain(outputFile); // todo, make async (?)
-            fs.writeFile(outputFile, html, {encoding: 'utf8'}, err => {
-                if (err) {
-                    if (config.fail) {
-                        throw err;
-                    }
-                    console.error('Modulo - writeFile ERROR: ', err);
-                    console.error('(fail with --fail)');
-                }
-                callback();
-            });
-        });
-    });
-}
-
 
 module.exports = {
+    ACTIONS,
+    TERM,
     assert,
-    checkArgs,
     ifDifferent,
     copyIfDifferent,
     mkdirToContain,
     parseArgs,
-    renderModuloHtml,
-    renderModuloHtmlForSubpath,
-    patchModuloWithSSGFeatures,
-    TERM,
-    doGenerate,
+    findConfig,
+    getAction,
     walkSync,
+    logStatusBar,
 }
