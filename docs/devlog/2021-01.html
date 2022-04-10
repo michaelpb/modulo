@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <head><link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css">
 <script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-<!-- ... -->
+
 
         <meta charset="utf8" />
         <script src="/js/Modulo.js"></script>
@@ -17,6 +17,7 @@
         };
         </script>
     
+
 <script>"use strict";Modulo.assets.functions["x11m00cs"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         let txt;
@@ -1632,133 +1633,33 @@ OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Doc
 return OUT.join("");
 };</script><modulo>
     <load namespace="x" src="/components/layouts.html"></load>
-</modulo><meta charset="utf8"><title>Modulo Project Information - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["pqput6"]= function (CTX, G){
+</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["xe8loir"]= function (CTX, G){
 var OUT=[];
-OUT.push("\n        <a class=\"secanchor\" title=\"Click to focus on this section.\" id=\""); // "<a class=\"secanchor\" title=\"Click to focus on this section.\" id=\""
-OUT.push(G.escapeHTML(CTX.props.name)); // "props.name"
-OUT.push("\" name=\""); // "\" name=\""
-OUT.push(G.escapeHTML(CTX.props.name)); // "props.name"
-OUT.push("\" href=\"#"); // "\" href=\"#"
-OUT.push(G.escapeHTML(CTX.props.name)); // "props.name"
-OUT.push("\">#</a>\n        <h2>"); // "\">#</a>\n        <h2>"
-OUT.push(G.escapeHTML(G.filters["safe"](CTX.component.originalHTML))); // "component.originalHTML|safe"
-OUT.push("</h2>\n    "); // "</h2>"
-
-return OUT.join("");
-};</script><script>"use strict";Modulo.assets.functions["xvdjht9"]= function (CTX, G){
-var OUT=[];
-OUT.push("<div class=\"demo-wrapper\n        "); // "<div class=\"demo-wrapper"
-if (CTX.state.showpreview) { // "if state.showpreview"
-OUT.push("     demo-wrapper__minipreview"); // "demo-wrapper__minipreview"
-} // "endif"
-OUT.push("\n        "); // ""
-if (CTX.state.showclipboard) { // "if state.showclipboard"
-OUT.push("   demo-wrapper__clipboard  "); // "demo-wrapper__clipboard"
-} // "endif"
-OUT.push("\n        "); // ""
-if (CTX.state.fullscreen) { // "if state.fullscreen"
-OUT.push("      demo-wrapper__fullscreen "); // "demo-wrapper__fullscreen"
-} // "endif"
-OUT.push("\n        "); // ""
-if (CTX.state.tabs.length === 1) { // "if state.tabs.length == 1"
-OUT.push("demo-wrapper__notabs     "); // "demo-wrapper__notabs"
-} // "endif"
-OUT.push("\n    \">\n    "); // "\">"
-if (CTX.state.tabs.length > 1) { // "if state.tabs.length gt 1"
-OUT.push("\n        <nav class=\"TabNav\">\n            <ul>\n                "); // "<nav class=\"TabNav\">\n            <ul>"
-var ARR1=CTX.state.tabs;for (var KEY in ARR1) {CTX. tab=ARR1[KEY]; // "for tab in state.tabs"
-OUT.push("\n                    <li class=\"TabNav-title\n                        "); // "<li class=\"TabNav-title"
-if (CTX.tab.title === CTX.state.selected) { // "if tab.title == state.selected"
-OUT.push("\n                            TabNav-title--selected\n                        "); // "TabNav-title--selected"
-} // "endif"
-OUT.push("\n                    \"><a @click:=script.selectTab\n                            payload=\""); // "\"><a @click:=script.selectTab\n                            payload=\""
-OUT.push(G.escapeHTML(CTX.tab.title)); // "tab.title"
-OUT.push("\"\n                        >"); // "\"\n                        >"
-OUT.push(G.escapeHTML(CTX.tab.title)); // "tab.title"
-OUT.push("</a></li>\n                "); // "</a></li>"
-} // "endfor"
-OUT.push("\n            </ul>\n        </nav>\n    "); // "</ul>\n        </nav>"
-} // "endif"
-OUT.push("\n\n    <div class=\"editor-toolbar\">\n        <p style=\"font-size: 11px; width: 120px; margin-right: 10px; text-align: right;\n                    "); // "<div class=\"editor-toolbar\">\n        <p style=\"font-size: 11px; width: 120px; margin-right: 10px; text-align: right;"
-if (!(CTX.state.fullscreen)) { // "if not state.fullscreen"
-OUT.push(" display: none; "); // "display: none;"
-} // "endif"
-OUT.push("\">\n            <em>Note: This is meant for exploring features. Your work will not be saved.</em>\n        </p>\n\n        "); // "\">\n            <em>Note: This is meant for exploring features. Your work will not be saved.</em>\n        </p>"
-if (CTX.state.showclipboard) { // "if state.showclipboard"
-OUT.push("\n            <button class=\"m-Btn m-Btn--sm m-Btn--faded\"\n                    title=\"Copy this code\" @click:=script.doCopy>\n                Copy <span alt=\"Clipboard\">&#128203;</span>\n            </button>\n        "); // "<button class=\"m-Btn m-Btn--sm m-Btn--faded\"\n                    title=\"Copy this code\" @click:=script.doCopy>\n                Copy <span alt=\"Clipboard\">&#128203;</span>\n            </button>"
-} // "endif"
-OUT.push("\n\n        "); // ""
-if (CTX.state.showpreview) { // "if state.showpreview"
-OUT.push("\n            <button class=\"m-Btn\"\n                    title=\"Toggle full screen view of code\" @click:=script.doFullscreen>\n                "); // "<button class=\"m-Btn\"\n                    title=\"Toggle full screen view of code\" @click:=script.doFullscreen>"
-if (CTX.state.fullscreen) { // "if state.fullscreen"
-OUT.push("\n                    <span alt=\"Shrink\">&swarr;</span>\n                "); // "<span alt=\"Shrink\">&swarr;</span>"
-} else { // "else"
-OUT.push("\n                    <span alt=\"Go Full Screen\">&nearr;</span>\n                "); // "<span alt=\"Go Full Screen\">&nearr;</span>"
-} // "endif"
-OUT.push("\n            </button>\n            &nbsp;\n            <button class=\"m-Btn\"\n                    title=\"Run a preview of this code\" @click:=script.doRun>\n                Run <span alt=\"Refresh\">&#10227;</span>\n            </button>\n        "); // "</button>\n            &nbsp;\n            <button class=\"m-Btn\"\n                    title=\"Run a preview of this code\" @click:=script.doRun>\n                Run <span alt=\"Refresh\">&#10227;</span>\n            </button>"
-} // "endif"
-OUT.push("\n\n    </div>\n\n    <div class=\"side-by-side-panes\">\n        <div class=\"editor-wrapper\">\n            <div [script.codemirror] modulo-ignore>\n            </div>\n        </div>\n\n        "); // "</div>\n\n    <div class=\"side-by-side-panes\">\n        <div class=\"editor-wrapper\">\n            <div [script.codemirror] modulo-ignore>\n            </div>\n        </div>"
-if (CTX.state.showpreview) { // "if state.showpreview"
-OUT.push("\n            <div class=\"editor-minipreview\">\n                <div modulo-ignore>\n                    "); // "<div class=\"editor-minipreview\">\n                <div modulo-ignore>"
-OUT.push(G.escapeHTML(G.filters["safe"](CTX.state.preview))); // "state.preview|safe"
-OUT.push("\n                </div>\n            </div>\n        "); // "</div>\n            </div>"
-} // "endif"
-OUT.push("\n\n    </div>\n</div>\n\n"); // "</div>\n</div>"
-
-return OUT.join("");
-};</script><script>"use strict";Modulo.assets.functions["x1ttadi3"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n<ul>\n    "); // "<ul>"
-var ARR0=CTX.state.menu;for (var KEY in ARR0) {CTX. linkGroup=ARR0[KEY]; // "for linkGroup in state.menu"
-OUT.push("\n        <li class=\"\n            "); // "<li class=\""
-if (CTX.linkGroup.children) { // "if linkGroup.children"
-OUT.push("\n                "); // ""
-if (CTX.linkGroup.active) { // "if linkGroup.active"
-OUT.push("gactive"); // "gactive"
-} else { // "else"
-OUT.push("ginactive"); // "ginactive"
+OUT.push("\n\n        <div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>\n            "); // "<div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>"
+var ARR0=CTX.state.data;for (var KEY in ARR0) {CTX. pair=ARR0[KEY]; // "for pair in state.data"
+OUT.push("\n                <a href=\"/devlog/"); // "<a href=\"/devlog/"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(".html\">"); // ".html\">"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(" ("); // "("
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
+OUT.push(")</a>\n                "); // ")</a>"
+if (G.filters["get"](CTX.pair,1) != "FAQ") { // "if pair|get:1 != \"FAQ\""
+OUT.push("\n                    |\n                "); // "|"
 } // "endif"
 OUT.push("\n            "); // ""
-} // "endif"
-OUT.push("\n            \"><a href=\""); // "\"><a href=\""
-OUT.push(G.escapeHTML(CTX.linkGroup.filename)); // "linkGroup.filename"
-OUT.push("\">"); // "\">"
-OUT.push(G.escapeHTML(CTX.linkGroup.label)); // "linkGroup.label"
-OUT.push("</a>\n            "); // "</a>"
-if (CTX.linkGroup.active) { // "if linkGroup.active"
-OUT.push("\n                "); // ""
-if (CTX.linkGroup.children) { // "if linkGroup.children"
-OUT.push("\n                    <ul>\n                    "); // "<ul>"
-var ARR3=CTX.linkGroup.children;for (var KEY in ARR3) {CTX. childLink=ARR3[KEY]; // "for childLink in linkGroup.children"
-OUT.push("\n                        <li><a href=\""); // "<li><a href=\""
-if (CTX.childLink.filepath) { // "if childLink.filepath"
-OUT.push(G.escapeHTML(CTX.childLink.filepath)); // "childLink.filepath"
-} else { // "else"
-OUT.push(G.escapeHTML(CTX.linkGroup.filename)); // "linkGroup.filename"
-OUT.push("#"); // "#"
-OUT.push(G.escapeHTML(CTX.childLink.hash)); // "childLink.hash"
-} // "endif"
-OUT.push("\">"); // "\">"
-OUT.push(G.escapeHTML(CTX.childLink.label)); // "childLink.label"
-OUT.push("</a>\n                        "); // "</a>"
-if (CTX.props.showall) { // "if props.showall"
-OUT.push("\n                            "); // ""
-if (CTX.childLink.keywords.length > 0) { // "if childLink.keywords.length gt 0"
-OUT.push("\n                                <span style=\"margin-left: 10px; color: #aaa\">(<em>Topics: "); // "<span style=\"margin-left: 10px; color: #aaa\">(<em>Topics:"
-OUT.push(G.escapeHTML(G.filters["join"](CTX.childLink.keywords,", "))); // "childLink.keywords|join:', '"
-OUT.push("</em>)</span>\n                            "); // "</em>)</span>"
-} // "endif"
-OUT.push("\n                        "); // ""
-} // "endif"
-OUT.push("\n                        </li>\n                    "); // "</li>"
 } // "endfor"
-OUT.push("\n                    </ul>\n                "); // "</ul>"
+OUT.push("\n            "); // ""
+var ARR0=CTX.state.data;for (var KEY in ARR0) {CTX. pair=ARR0[KEY]; // "for pair in state.data"
+OUT.push("\n                "); // ""
+if (G.filters["get"](CTX.pair,0) === CTX.props.fn) { // "if pair|get:0 == props.fn"
+OUT.push("\n                    <h1>"); // "<h1>"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
+OUT.push("</h1>\n                "); // "</h1>"
 } // "endif"
 OUT.push("\n            "); // ""
-} // "endif"
-OUT.push("\n        </li>\n    "); // "</li>"
 } // "endfor"
-OUT.push("\n\n\n    <!--\n    <li>\n        Other resources:\n\n        <ul>\n            <li>\n                <a href=\"/docs/faq.html\">FAQ</a>\n            <li title=\"Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.\">\n                Literate Source*<br /><em>* Coming soon!</em>\n            </li>\n        </ul>\n\n    </li>\n    -->\n    <!--<a href=\"/literate/src/Modulo.html\">Literate source</a>-->\n</ul>\n"); // "<!--\n    <li>\n        Other resources:\n\n        <ul>\n            <li>\n                <a href=\"/docs/faq.html\">FAQ</a>\n            <li title=\"Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.\">\n                Literate Source*<br /><em>* Coming soon!</em>\n            </li>\n        </ul>\n\n    </li>\n    -->\n    <!--<a href=\"/literate/src/Modulo.html\">Literate source</a>-->\n</ul>"
+OUT.push("\n        </div>\n\n    "); // "</div>"
 
 return OUT.join("");
 };</script></head><body>
@@ -1780,13 +1681,13 @@ return OUT.join("");
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
     <ul>
         <li>
-            <a href="/index.html#about">About</a>
+            <a href="/index.html#about" class="Navbar--selected">About</a>
         </li>
         <li>
             <a href="/start.html">Start</a>
         </li>
         <li>
-            <a href="/docs/" class="Navbar--selected">Docs</a>
+            <a href="/docs/">Docs</a>
         </li>
     </ul>
 
@@ -1801,135 +1702,50 @@ return OUT.join("");
 </nav>
 
 
-    <main class="Main Main--fluid Main--withSidebar">
-        <aside class="TitleAside TitleAside--navBar">
-            <h3><span alt="Lower-case delta">%</span></h3>
-            <nav class="TitleAside-navigation">
-                <h3>Documentation</h3>
-                <mws-docsidebar path="project-info.html" modulo-original-html="">
-<ul>
-    
-        <li class="
+    <main class="Main" [component.slot]="">
+
+
+
+        <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
+            <strong>DEV LOG:</strong>
             
-            "><a href="/docs/">Table of Contents</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/tutorial_part1.html">Tutorial</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/templating.html">Templating</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/templating-reference.html">Template Reference</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/cparts.html">CParts</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/lifecycle.html">Lifecycle</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/directives.html">Directives</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/example-library.html">Example Library</a>
-            
-        </li>
-    
-        <li class="
-            
-                gactive
-            
-            "><a href="/docs/project-info.html">Project Info</a>
-            
+                <a href="/devlog/2022-03.html">2022-03 (Remaining tasks for alpha)</a>
                 
-                    <ul>
-                    
-                        <li><a href="/docs/project-info.html#faq">FAQ</a>
-                        
-                        </li>
-                    
-                        <li><a href="/docs/project-info.html#philosophy">Framework Design Philosophy</a>
-                        
-                        </li>
-                    
-                    </ul>
+                    |
                 
             
-        </li>
+                <a href="/devlog/2021-09.html">2021-09 (Framework goals)</a>
+                
+                    |
+                
+            
+                <a href="/devlog/2021-01.html">2021-01 (FAQ)</a>
+                
+            
+            
+                
+            
+                
+            
+                
+                    <h1>FAQ</h1>
+                
+            
+        </div>
+
     
 
-
-    <!--
-    <li>
-        Other resources:
-
-        <ul>
-            <li>
-                <a href="/docs/faq.html">FAQ</a>
-            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                Literate Source*<br /><em>* Coming soon!</em>
-            </li>
-        </ul>
-
-    </li>
-    -->
-    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-</ul>
-</mws-docsidebar>
-            </nav>
-        </aside>
-        <aside style="border: none" [component.slot]="">
-
-
-<mws-section modulo-original-html="FAQ">
-        <a class="secanchor" title="Click to focus on this section." id="" name="" href="#">#</a>
-        <h2>FAQ</h2>
-    </mws-section>
 
 <h3><span alt="Question mark">?</span></h3>
+
+<h3>FAQ</h3>
 
 <p>This FAQ, like every FAQ, is an imaginary conversation between the creator
 (myself) of Modulo and imaginary people who apparently are invested in Modulo
 enough to ask probing questions about it. That said, if you are a non-imaginary
 person (I should hope so!) with questions about Modulo, they are welcome even
-more!<!--: Contact via email, submit a pull request to this page, or add an issue to
-the project on GitHub.--></p>
+more: Contact via email, submit a pull request to this page, or add an issue to
+the project on GitHub.</p>
 
 <p>By reading this FAQ, you will get a better understanding of the motivation
 of building Modulo and it's design philosophy.</p>
@@ -1958,25 +1774,16 @@ another JavaScript component framework.</p>
 
 <hr>
 <p><strong>Q: Any future plans?</strong></p>
-<p>A: Yes, plenty! The goal of Modulo.js itself is to stabilize the API, polish
-and bug-fix, and then not really change much or grow much after that (keep it
-short and sweet). In addition to that, there is another project that is still
-"experimental", and that is called <a href="/docs/mdu.html">MDU: Modulo
-Developer Utilities</a>. This
-project has two parts: <code>modulocli</code> and <code>mdulib</code>.
-
-<br>
-The modulocli tool is useful for both static-site generation (e.g. this site!),
-and for "JAM stack" live sites. It's also useful as a companion tool for modulo
-development, allows for the running of running test suites and testing of configurations.
-<br>
-However, it's still being documented, and the code quality requires
-refactoring, so it still needs work before it's released externally. This modulocli
-similar note, I have plans for a JAMstack-style SSG + server-side combo, with
-live-refresh inspired by Phoenix LiveView. Finally, the goal of
-<code>mdulib</code> will be to provide a standard library of useful reusable
-Modulo components, CParts, and middleware, written in idiomatic Modulo
-code.</p>
+<p>A: Yes, plenty! The three main ones: SSG, server-side, and MDU.
+Currently, this site is already getting generated with a
+Modulo-based SSG. However, it's undocumented and messy, so it still
+needs work before it's released externally. On a similar note,
+there are plans for a JAMstack-style SSG + server-side combo, with
+live-refresh inspired by Phoenix LiveView. Finally, developing this
+site requires developing some key components, so I also hope to
+have time to document and release "mdu", which will be a standard
+library of Modulo components, including a Router system inspired by
+React Router.</p>
 
 <hr>
 <p><strong>Q: Why do you care so much about short source code
@@ -2008,15 +1815,15 @@ over-engineering.</p>
 can't you have a big, extensive framework with big and extensive
 documentation?</strong></p>
 
-<p>Sure, it's possible, and for many situations a better choice, so you could
-always use such a framework as well.  Modulo plays well with others! However,
-Modulo takes a different approach.  See <a href="#philosophy">the design
-philosophy "thought experiment"</a> below for for further and more thorough
-discussion of Modulo's approach and it's motivation.</p>
+<p>Sure, it's possible, in some cases situations better, and you can use always
+that too.  Modulo plays well with others! However, Modulo takes a different approach.
+See <a href="#philosophy">the design philosophy "thought experiment"</a> below for
+for further and more thorough discussion of Modulo's approach and it's
+motivation.</p>
 
 <hr>
 <p><strong>Q: 80 char line limit? 4 space indentation? Imperative
-coding? What is this, Java code from the 90's?</strong></p>
+coding? What is this, the 90's?</strong></p>
 
 <p>A: Another motivating factor for developing Modulo was how much I
 appreciates libraries such as Django that maintain high quality docs and code,
@@ -2055,409 +1862,19 @@ to integrate the new and the old! Or maybe it sounded cool. Maybe that!</p>
 
 <hr>
 <p><strong>Q: Isn't <em>Modulo</em> already a thing in
-JavaScript?</strong></p>
-<p>A: Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
+JavaScript?</strong>
+</p><p>Ironically, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder">JavaScript does not have a modulo operator</a>!
 Instead, it uses the percent sign as a <em>remainder operator</em>,
 which behaves similarly for some numbers, but differs for negative
 numbers. So, while Modulo.js is not the first thing to be called
 <abbr title="At the time of picking the name, there were a couple
 similarly named projects, though none seem to be in active use or
 development for years.">"Modulo" in JS</abbr> it <em>is not</em>
-named after the <code>%</code> operator in JavaScript, making both the logo and
-the name a bit of a pedantic and tongue-in-cheek jab at our favorite (but
-sometimes deficient) computer language.</p>
-
-
-
-<mws-section name="workflow" modulo-original-html="Learning and workflow">
-        <a class="secanchor" title="Click to focus on this section." id="workflow" name="workflow" href="#workflow">#</a>
-        <h2>Learning and workflow</h2>
-    </mws-section>
-
-<p>In this section, I'll explain how Modulo was designed with learners and dev
-shops in mind. Modulo was designed observing the pitfalls involved with 1)
-ramping up new coders, 2) new coder learning component frameworks, and 3)
-industry workflow patterns.</p>
-
-
-
-<h3>1. Ramping up new coders</h3>
-
-<p>The first task that Modulo was designed to tackle was the task of ramping up
-novice engineers or junior hires, such as coders who only know HTML and
-CSS.</p>
-
-<p>It used to be that the cutting-edge of software development offered easy
-"ramp ups" from HTML and CSS: PHP, jQuery, and even stacks like ColdFusion or
-old-school ASP, all enabled HTML and CSS developers to "spice up" their static
-sites with backend logic or frontend behavior, only by sprinkling in some
-cut-and-paste examples or learning a few concepts at a time.  This is how I
-learned coding web app coding: One tiny bit of PHP at a time. However, this is
-no longer an option. Even modern PHP with an MVC framework typically resembles
-other backend development more (in other words, does not provide this ramp-up),
-and jQuery is largely obsoleted by built-in browser features (notably,
-<code>querySelector</code>) and more sophisticated frontend frameworks such as
-React. This is good, since the previous approaches were completely
-unmaintainable as web-app behavior grows in complexity. Any dev shop without a
-more sophisticated MVC framework either ended up developing their own informal,
-chaotic MVC framework out of pure necessity, or just suffered from paralyzing
-technical debt, spending time hunting down SQL statements scattered throughout
-their sprawling directory tree of PHP files.</p>
-
-<p>So, how do we provide this ramp-up today, without falling into the traps of
-yesterday? Modulo provides a clear ramp-up from static HTML to JavaScript apps.
-Even with the ramp-up, it still keeps components encapsulated, and permits
-code-sharing via component libraries. It's basis on simple web-standards even
-permits a "final ramp-up" to another JavaScript framework all together, if
-Modulo's immature feature-set falls short.</p>
-
-<p>While still in heavy development and undocumented, the
-<code>modulocli</code> static-site generator used to generate this page is also
-based on that ramp-up concept, with a rule of 1:1 correspondence between input
-and output.  This enables people only familiar with manually built static sites
-to more easily reason with and understand the purpose of static site
-generation.  Furthermore, if static sites fall short, the option for a full
-stack app is always available, since <code>modulocli</code> also permits
-spinning up a backend server too as a convenience.</p>
-
-
-
-<h3>2. Novices learning component frameworks</h3>
-
-<p>At this point, I've taught <em>a lot</em> of novice engineers to code using
-React JavaScript <a href="https://kickstartcoding.com/">at my coding school
-Kickstart Coding</a>. I've learned that JavaScript is more difficult for
-newbies than other languages such as Python, generally due to confusion around
-async topics and the large number of variants, versions, and coding styles
-resulting in code snippets they find online being harder to integrate.  I've
-also learned that React in particular is tricky for beginners, and can even be
-difficult for more intermediate programmers who are just not used to thinking
-in terms of directional data-flow, state, and so on.</p>
-
-<p>When designing Modulo, I wanted to create a framework that resembled React,
-but designed from the ground-up to be easier to learn. When teaching React, I
-found that learners benefit most when they see clear, explicit connections. For
-example, I found it easier to explain the concept and use of state data when
-there was an explicit state object (i.e. <code>this.state</code>) to point to
-instead of various variables or properties (as with React Hooks, or other
-frameworks like Vue.js or Svelte). Other challenges I noticed were with JSX:
-The idea of mixing XML and embedded JavaScript is extremely powerful, but
-perhaps too powerful for newer developers who are also learning JavaScript for
-the first time. Using a Liquid-style templating language makes component HTML
-development resemble templating, which is more easily understood than DOM-tree
-building with a XML/JS syntax hybrid, and is more widely familiar, as some
-email template software uses similar syntax.  Similarly, moving "click event"
-functions to their own "zone" in the component definition (the <em>Script</em>
-CPart), makes it easier for new developers to find, and distinguish what is
-custom functionality from general boilerplate.</p>
-
-
-
-<h3>3. Industry workflow patterns</h3>
-
-<p>A common software team structure might consist of designers who produce
-mockups, with specs often written in CSS units (e.g. 3px margin, color is of a
-certain pallet, etc), frontend developers turn these into React JavaScript
-components, and finally backend developers developing APIs to permit the
-features. There exists several clear "separations" or "gaps" in skillsets in
-this workflow which can result in unfortunate amounts of back-and-forth,
-especially between the frontend developer and the designer. Many designers are
-comfortable with the basics of CSS, but have trouble with a modern frontend
-stack. This, I think, is a core problem that many "no code" solutions seek to
-solve: How can we give the designers more control so there's less
-back-and-forth between them and developers?</p>
-
-<p>The goal of Modulo is to enable designers who may only have comfort with
-HTML and CSS to begin developing components directly. By combining a simple
-templating language with components that "ramp up" from plain HTML and CSS,
-designers can give component development a "first pass" before even handing it
-off to JavaScript developers for any more custom aspects. While not finished
-yet, there is also plans to make sure it integrates well with <a href="https://storybook.js.org/">Storybook</a> and similar "component library
-show-cases". Modulo's declarative style of CParts is unusually well suited to
-this, enabling more easily categorized behavior of components.</p>
-
-<p>Perhaps more importantly, the "CPart" abstraction enables an entirely new
-alternative structure for a frontend team: Designers, component developers, and
-CPart developers. In this structure, designers focus on mockups, component
-developers use HTML and CSS to bring those mockups to life, and CPart
-developers do all the heavy JavaScript development, writing an internal library
-of custom CParts that interface with necessary APIs or code certain behavior.
-Using this model, the component developers might never use the <em>Script</em>
-CPart: Instead, all custom JavaScript behavior is coded in custom CParts by the
-CPart developers, and then re-used by the component developers wherever that
-custom behavior is needed. This enables cleaner separation of duties: CPart
-developers are the only role that requires JavaScript coding chops, developing
-CParts that handle the nitty-gritty of interfacing with backend APIs, but not
-needing to know anything about styling or even UX or user-facing behavior.
-Similarly, Component developers can avoid needing to know much about the
-backend, about API usage, or even JavaScript at all: They just need to be
-comfortable "snapping together" CParts.</p>
-
-<p>Finally, from a big picture framework design perspective, I think this sort
-of "ramp up" is a sign of good framework design in general. I think writing
-documentation for newbies makes it easier for pros to pick up as well, and
-forces complex ideas into simpler packages.  When deadlines aren't pressing
-down on us, I often view software library development, including development of
-internal libraries, as sort of like creating a mini-framework (or even a sort
-of domain-specific language that happens to be a subset of the original
-language), that is especially suited to solving the task at hand. Eventually,
-as you build upon layers of abstraction, you have created a "DSL" that enables
-an expression or statement that solves the problem, expressed in a very
-high-level way. Good frameworks, in my opinion, are both written with this in
-mind, but also expose that to framework extenders, in the form of middleware
-interfaces.  CParts are basically a form of powerful middleware.  In this case,
-that's what Modulo enables you to do: You can develop a collection of CParts
-that turn your configured version of Modulo into a sort of "DSL" to solve
-specific issues in your specific problem domain.</p>
-
-
-
-
-<hr>
-
-<mws-section name="philosophy" modulo-original-html="Framework design philosophy">
-        <a class="secanchor" title="Click to focus on this section." id="philosophy" name="philosophy" href="#philosophy">#</a>
-        <h2>Framework design philosophy</h2>
-    </mws-section>
-
-<p>In this section, I'll give some of my design philosophy and opinions on what
-makes a good framework. I don't think my opinions are particularly unusual or
-novel, but I thought I'd lay them out here nonetheless.</p>
-
-<p>Let's do a thought experiment. Imagine the most minimalist JS component
-framework possible. Let's call it "Fish" (probably already a thing, but bare
-with me), by Tux the Penguin (because hey, why not?). Here is the complete code
-for the "Fish" framework:</p>
-
-<mws-demo text="
-<script>
-// Fish Framework - (C) 2091 - Tux the Penguin
-function Fish(el, key, value) {
-    el.state = el.state || JSON.parse(el.getAttribute(&quot;x-state&quot;) || &quot;{}&quot;)
-    el.state[key] = value;
-    el.innerHTML = el.innerHTML.replace(/\$\{([^\)]+)?\}/g, (a, b) => el.state[b]);
-}
-</script>
-" modulo-original-html=""><div class="demo-wrapper
-        
-           demo-wrapper__clipboard  
-        
-        demo-wrapper__notabs     
-    ">
-    
-
-    <div class="editor-toolbar">
-        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
-                     display: none; ">
-            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
-        </p>
-
-        
-            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-                Copy <span alt="Clipboard">📋</span>
-            </button>
-        
-
-        
-
-    </div>
-
-    <div class="side-by-side-panes">
-        <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 0px; height: 18px; pointer-events: auto;"><div style="height: 100%; min-height: 1px; width: 804.078px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 152px; min-width: 804.078px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 18px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">// Fish Framework - (C) 2091 - Tux the Penguin</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">function</span> <span class="cm-def">Fish</span>(<span class="cm-def">el</span>, <span class="cm-def">key</span>, <span class="cm-def">value</span>) {</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable-2">el</span>.<span class="cm-property">state</span> <span class="cm-operator">=</span> <span class="cm-variable-2">el</span>.<span class="cm-property">state</span> <span class="cm-operator">||</span> <span class="cm-variable">JSON</span>.<span class="cm-property">parse</span>(<span class="cm-variable-2">el</span>.<span class="cm-property">getAttribute</span>(<span class="cm-string">"x-state"</span>) <span class="cm-operator">||</span> <span class="cm-string">"{}"</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable-2">el</span>.<span class="cm-property">state</span>[<span class="cm-variable-2">key</span>] <span class="cm-operator">=</span> <span class="cm-variable-2">value</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable-2">el</span>.<span class="cm-property">innerHTML</span> <span class="cm-operator">=</span> <span class="cm-variable-2">el</span>.<span class="cm-property">innerHTML</span>.<span class="cm-property">replace</span>(<span class="cm-string-2">/\$\{([^\)]+)?\}/g</span>, (<span class="cm-def">a</span>, <span class="cm-def">b</span>) <span class="cm-operator">=&gt;</span> <span class="cm-variable-2">el</span>.<span class="cm-property">state</span>[<span class="cm-variable-2">b</span>]);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">}</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 152px;"></div><div class="CodeMirror-gutters" style="display: none; height: 202px;"></div></div></div></div>
-        </div>
-
-        
-
-    </div>
-</div>
-
-</mws-demo>
-
-<p>Now, Tux could just publish this by itself, and no one would ever want to
-use it, since it it's just several lines of useless, undocumented code. People
-copy &amp; paste far more code from Stack Overflow just for simple tasks!</p>
-
-<p>However, now imagine Tux wrote documentation for it. Imagine Tux wrote a
-massive recipe book of hundreds of examples, ranging from API usage to common
-UI tasks.  For an example, skim (no need to actually thoroughly read) the
-following "excerpt" of the imaginary "Fish" documentation:</p>
-
-<mws-demo text="
-<!-- Fish Framework - Documentation -->
-
-<!-- BEGINNER EXAMPLE: BUTTON -->
-<!-- Look how easy it is to make a button that counts: -->
-<button
-        onClick='Fish(this, &quot;count&quot;, this.state.count++)'
-        x-state='{&quot;count&quot;: 3}'>
-    <p>I ate {count} delicious herrings</p>
-</button>
-
-<!-- Okay, lets break it down:
-        - By using the x-state directive, the core directive of Fish (see
-          Chapter 2 on directives and how to create your own), we can set the
-          initial state of an element.
-        - What is state? An object that you can mutate to affect how your
-          elements are displayed. Use it to store data from the DB, or
-          elsewhere.
-        - ... snip ...
--->
-
-<!-- ADVANCED EXAMPLE: API -->
-<!-- Lets see another example of state, this time with API: -->
-<div x-state='{&quot;search&quot;: &quot;&quot;}'>
-    <p>Information about account found: Their name is {name}</p>
-    <input onChange='Fish(this.parentNode, &quot;search&quot;, this.value)'
-        placholder=&quot;Type in a GitHub username...&quot;
-    />
-    <button onClick='
-        fetch(`https://api.github.com/users/${this.parentNode.state.search}`)
-            .then(response => response.json())
-            .then(({name}) => Fish(this.parentNode, &quot;name&quot;, name))
-        '>Search GitHub</button>
-</div>
-
-<!-- Okay, lets break it down:
-        - In this example, you can see how ........... (- snip -) -->
-
-
-
-<!-- UI TOOLKIT EXAMPLE: ACCORDIAN TOGGLE -->
-<!-- Or, look how you can make toggle accordians elements just by using .... -->
-<nav x-state='{}'>
-    <li onClick='Fish(this.parentNode, &quot;info_class&quot;, &quot;visible&quot;)'>
-        Show Info
-    </li>
-    <li onClick='Fish(this.parentNode, &quot;contact_class&quot;, &quot;visible&quot;)'>
-        Show Contact
-    </li>
-    <li onClick='Fish(this.parentNode, &quot;blog_class&quot;, &quot;visible&quot;)'>
-        Show Blog
-    </li>
-    <div class=&quot;{info_active}&quot;>Hi, this is info about my website...</div>
-    <div class=&quot;{contact_class}&quot;>I live in Antarctica and write free software...</div>
-    <div class=&quot;{blog_class}&quot;>Thoughts on fish: Why fish is actually...</div>
-</nav>
-" modulo-original-html=""><div class="demo-wrapper
-        
-           demo-wrapper__clipboard  
-        
-        demo-wrapper__notabs     
-    ">
-    
-
-    <div class="editor-toolbar">
-        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
-                     display: none; ">
-            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
-        </p>
-
-        
-            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-                Copy <span alt="Clipboard">📋</span>
-            </button>
-        
-
-        
-
-    </div>
-
-    <div class="side-by-side-panes">
-        <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 0px; height: 18px; pointer-events: auto;"><div style="height: 100%; min-height: 1px; width: 832.812px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 998px; min-width: 832.812px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 18px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Fish Framework - Documentation --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- BEGINNER EXAMPLE: BUTTON --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Look how easy it is to make a button that counts: --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">button</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">onClick</span>=<span class="cm-string">'Fish(this, "count", this.state.count++)'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">x-state</span>=<span class="cm-string">'{"count": 3}'</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span>I ate {count} delicious herrings<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">button</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Okay, lets break it down:</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-comment">- By using the x-state directive, the core directive of Fish (see</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">          <span class="cm-comment">Chapter 2 on directives and how to create your own), we can set the</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">          <span class="cm-comment">initial state of an element.</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-comment">- What is state? An object that you can mutate to affect how your</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">          <span class="cm-comment">elements are displayed. Use it to store data from the DB, or</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">          <span class="cm-comment">elsewhere.</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-comment">- ... snip ...</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">--&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- ADVANCED EXAMPLE: API --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Lets see another example of state, this time with API: --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span> <span class="cm-attribute">x-state</span>=<span class="cm-string">'{"search": ""}'</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span>Information about account found: Their name is {name}<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">input</span> <span class="cm-attribute">onChange</span>=<span class="cm-string">'Fish(this.parentNode, "search", this.value)'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">placholder</span>=<span class="cm-string">"Type in a GitHub username..."</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">/&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">button</span> <span class="cm-attribute">onClick</span>=<span class="cm-string">'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">fetch(`https://api.github.com/users/${this.parentNode.state.search}`)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-string">.then(response =&gt; response.json())</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-string">.then(({name}) =&gt; Fish(this.parentNode, "name", name))</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-string">'</span><span class="cm-tag cm-bracket">&gt;</span>Search GitHub<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">button</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Okay, lets break it down:</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-comment">- In this example, you can see how ........... (- snip -) --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- UI TOOLKIT EXAMPLE: ACCORDIAN TOGGLE --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Or, look how you can make toggle accordians elements just by using .... --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">nav</span> <span class="cm-attribute">x-state</span>=<span class="cm-string">'{}'</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">li</span> <span class="cm-attribute">onClick</span>=<span class="cm-string">'Fish(this.parentNode, "info_class", "visible")'</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        Show Info</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">li</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">li</span> <span class="cm-attribute">onClick</span>=<span class="cm-string">'Fish(this.parentNode, "contact_class", "visible")'</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        Show Contact</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">li</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">li</span> <span class="cm-attribute">onClick</span>=<span class="cm-string">'Fish(this.parentNode, "blog_class", "visible")'</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        Show Blog</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">li</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span> <span class="cm-attribute">class</span>=<span class="cm-string">"{info_active}"</span><span class="cm-tag cm-bracket">&gt;</span>Hi, this is info about my website...<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span> <span class="cm-attribute">class</span>=<span class="cm-string">"{contact_class}"</span><span class="cm-tag cm-bracket">&gt;</span>I live in Antarctica and write free software...<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span> <span class="cm-attribute">class</span>=<span class="cm-string">"{blog_class}"</span><span class="cm-tag cm-bracket">&gt;</span>Thoughts on fish: Why fish is actually...<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">nav</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 998px;"></div><div class="CodeMirror-gutters" style="display: none; height: 1048px;"></div></div></div></div>
-        </div>
-
-        
-
-    </div>
-</div>
-
-</mws-demo>
-
-<p>Now this is looking more and more like a complete framework! The missing
-ingredient was documentation and examples. In fact, that was even more
-important than the original code: The original code could be anything, just
-setting up a stack, checking up some attributes, whatever, but without the
-patterns  of usage around the original code it is meaningless nonsense.</p>
-
-<p>In other words, when people think of a framework, they don't think of how
-it's coded, they think what they can do with it. Thus, a framework can be
-better thought of as a bundle of best practices and workflow, or a recipe book.
-The "code" of the framework is immaterial, as long as the documented examples
-work. In this case, the code was only a few lines long, yet the examples showed
-that it could be used for a myriad of tasks.  In fact, these sorts of snippets
-in the documentation can be thought of as being as much part of the framework
-as anything else: That is how "best practices" and "common patterns" are
-established.</p>
-
-<p>In my view, non-opinionated frameworks are incomplete to the extent they
-don't have opinions. That's not to say they are bad or useless, "unopinionated"
-has it's time and place, but it's just to acknowledge that they are BYO ("bring
-your own") for anything that the documentation doesn't explicitly establish
-patterns of usage.  Just look at the dozens of ways that Redux is implemented
-in the industry, for an example. Just saying that you use "Redux" tells little
-about the code structure or practices, or the myriad of middleware that is
-typically incorporated to handle various common use-patterns. Redux Toolkit
-(which <em>is</em> actually opinionated) can make projects look entirely
-different than the "BYO" Redux projects! Once you "bring your own" patterns to
-fill in these gaps, only then the framework is "truly complete", using the
-nomenclature I'm using in this document, at least. One Redux setup might be so
-different than another due to patterns of usage, that the lines defining them
-are a bit fuzzier, in some cases to the point where it's difficult to share
-code between different interpretations of the same framework, making it almost
-like a different framework altogether.</p>
-
-<p>With any project, very quickly the "userland" (e.g. developer's)
-code eclipses the framework code in size and performance impact, which means
-these best practices and pattern recipes can have a much bigger impact on the
-resulting product than internal implementations. If the documentation shows
-many slow performing examples, or if it doesn't suggest anything at all and
-developers tend to go for slow implementations, I think it's perfectly fair to
-say that the framework is "slow", regardless of the internal operations. (An
-adjective that no doubt applies to Modulo as well, to be fair!)</p>
-
-
-<p>Modulo's goal is short code and long docs. It's basically "Fish", but
-multiplied times 250. It's as though Tux continued hacking away, bringing it
-from 5 lines to about 1000 lines, and then kept on hacking away at docs,
-examples, and use-patterns, keeping them still proportionally much longer.</p>
-
-<p>Coincidentally, this is actually somewhat how various parts of Modulo
-originally were developed.  Modulo itself had an earlier incarnation called
-MoEdCo (Modular Editor Components), which was a Web Components framework in
-less than 500 lines for Electron.js. That, in turn, evolved out of a demo that
-I live coded for a class I was teaching on React JavaScript back in 2017. The
-in-class demo was a "React-like" in just a few dozen lines of code, to explain
-the core philosophy and patterns used by React without the extra baggage of the
-new JSX syntax and complicated build environment (webpack, babel, etc).
-Similarly, the Modulo Template Language evolved out of <a href="https://www.npmjs.com/package/tinytiny">TinyTiny</a>, which was an
-expanded version of an even shorter "codegolf" challenge that I had done for
-fun (now about a decade ago).</p>
-
-<hr>
-
-<p>Summary: A framework isn't just code, it's an entire workflow and way of
-doing things. The code is important, but less important than the other
-aspects.</p>
-
-<p>Also, for clarity's sake: The "Fish" code above is untested, incomplete, and
-almost certainly has deal-breaking bugs, but could work in principle with a
-tweak or two and the right context. This doesn't matter either way for our
-purposes.  Also, I'm very far from the first person to approach framework
-development this way — in fact, the increasingly popular Alpine.js
-follows a similar principle! It also happens to resemble my silly "Fish"
-example, but is actually real and truly useful, so if you want an actually
-production-ready version of this, <a href="https://alpinejs.dev/">check it
-out</a>. If the "component-oriented" structure of Modulo is not your cup of
-tea, but you still want a tiny, modern, drop-in JS framework, Apline.js could
-be a good option!</p>
-
-
-
-
-</aside>
-    </main>
+named after the <code>%</code> operator in JavaScript, making both
+the logo and name are a bit of a tongue-in-cheek jab at our
+favorite (but often deficient) computer language.</p>
+
+</main>
 
 
 <footer>

@@ -1639,7 +1639,36 @@ OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Doc
 return OUT.join("");
 };</script><modulo>
     <load namespace="x" src="/components/layouts.html"></load>
-</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["xvdjht9"]= function (CTX, G){
+</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["xe8loir"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n\n        <div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>\n            "); // "<div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>"
+var ARR0=CTX.state.data;for (var KEY in ARR0) {CTX. pair=ARR0[KEY]; // "for pair in state.data"
+OUT.push("\n                <a href=\"/devlog/"); // "<a href=\"/devlog/"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(".html\">"); // ".html\">"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(" ("); // "("
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
+OUT.push(")</a>\n                "); // ")</a>"
+if (G.filters["get"](CTX.pair,1) != "FAQ") { // "if pair|get:1 != \"FAQ\""
+OUT.push("\n                    |\n                "); // "|"
+} // "endif"
+OUT.push("\n            "); // ""
+} // "endfor"
+OUT.push("\n            "); // ""
+var ARR0=CTX.state.data;for (var KEY in ARR0) {CTX. pair=ARR0[KEY]; // "for pair in state.data"
+OUT.push("\n                "); // ""
+if (G.filters["get"](CTX.pair,0) === CTX.props.fn) { // "if pair|get:0 == props.fn"
+OUT.push("\n                    <h1>"); // "<h1>"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
+OUT.push("</h1>\n                "); // "</h1>"
+} // "endif"
+OUT.push("\n            "); // ""
+} // "endfor"
+OUT.push("\n        </div>\n\n    "); // "</div>"
+
+return OUT.join("");
+};</script><script>"use strict";Modulo.assets.functions["xvdjht9"]= function (CTX, G){
 var OUT=[];
 OUT.push("<div class=\"demo-wrapper\n        "); // "<div class=\"demo-wrapper"
 if (CTX.state.showpreview) { // "if state.showpreview"
@@ -1850,6 +1879,35 @@ return OUT.join("");
 
 
 
+        <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
+            <strong>DEV LOG:</strong>
+            
+                <a href="/devlog/2022-03.html">2022-03 (Remaining tasks for alpha)</a>
+                
+                    |
+                
+            
+                <a href="/devlog/2021-09.html">2021-09 (Framework goals)</a>
+                
+                    |
+                
+            
+                <a href="/devlog/2021-01.html">2021-01 (FAQ)</a>
+                
+            
+            
+                
+            
+                
+            
+                
+            
+        </div>
+
+    
+
+
+
 
 
 <section class="SideBySide">
@@ -1944,58 +2002,6 @@ return OUT.join("");
         "batteries-included" for your own!</p>
     </aside>
 </section>
-
-<div id="project_status" style="height: 120px; clear: both; display: block;"></div>
-
-
-<section class="Tutorial-tryit">
-    <h4>Project Status</h4>
-
-    <p><strong>Current status:</strong> <code>prealpha</code></p>
-    <p><em>Prealpha means... shhhhh! This site is not yet ready to be released.</em></p>
-
-    <section class="SideBySide">
-        <aside>
-            <h4>Roadmap:</h4>
-
-            <p><code>alpha</code></p>
-            <p><strong>Completed:</strong> core functionality, under 2000 SLOC,
-            ssg to generate website via JSDOM, partial documentation, unit
-            tests for examples, directives, new DOM resolver, Script-tag
-            insertion,Browser builds, CSS bundling </p>
-            <p><strong>Incomplete Features:</strong> "Modulo" object
-            instantiation and config system</p>
-
-            <p><strong>Remaining Tasks &amp; Bugs:</strong> debugged SSG, tutorial
-            part 3, documentation (CParts and core API), unit tests for core
-            CParts, some light performance profiling &amp; improvement</p>
-            <br>
-
-            <p><code>beta</code></p>
-            <p><strong>Incomplete:</strong> Nested namespaces, hot-reloading
-            server, under 1000 SLOC (?), fully literate source code, MDU
-            development and documentation, swappable DOM for node.js (linkedom
-            and headless Chromium), SSG refactor, full interactive "cookbook"
-            of recipes, React &amp; jQuery examples, deterministic SSG builds,
-            more performance profiling &amp; improvement</p>
-            <br>
-
-            <p><code>v1.0</code></p>
-            <p><strong>Incomplete:</strong> Fully stabilized API, Full browser
-            testing matrix, generate .map files, several recommended minified
-            and shimmed versions, example rollup and webpack configs, split-off
-            SSG and MDU</p>
-
-        </aside>
-
-        <aside>
-            <h4>News:</h4>
-            <p>Noticias</p>
-        </aside>
-    </section>
-
-</section>
-
 
 </main>
 

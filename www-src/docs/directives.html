@@ -240,9 +240,9 @@ text='
     Avg Movie Creeps: 10 moneys<br />
     <button @click:=script.toggle>
         {% if state.show %}
-        Show controls (and trigger mount directive callbacks)
-        {% else %}
         Hide controls (and trigger unmount callbacks)
+        {% else %}
+        Show controls (and trigger mount directive callbacks)
         {% endif %}
     </button> <br />
     {% if state.show %}
@@ -258,14 +258,9 @@ text='
 ></State>
 
 <Script>
-    Modulo.directiveShortcuts.push([/^%%%/, "script.example"]);
-    // TODO: Fix this with "tmpGetDirectives"
-    /*
-    // Correct way below:
     function factoryCallback(partOptions, factory, loadObj)  {
         loadObj.component.directiveShortcuts.push([/^%%%/, "script.example"]);
     }
-    */
 
     function exampleMount(info) {
         console.log("Mounting directive:", info);

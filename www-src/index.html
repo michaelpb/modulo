@@ -19,6 +19,8 @@
     pagetitle="Modulo"
     navbar="about">
 
+<x-DevLogNav></x-DevLogNav>
+
 <div class="IndexWrapper" slot="above-navbar">
     <div class="Tagline">
         <!--<h1 class="Tagline-logo"><span alt="Modulo operator">%</span></h1>-->
@@ -140,57 +142,5 @@
         "batteries-included" for your own!</p>
     </aside>
 </section>
-
-<div id="project_status" style="height: 120px; clear: both; display: block;"></div>
-
-
-<section class="Tutorial-tryit">
-    <h4>Project Status</h4>
-
-    <p><strong>Current status:</strong> <code>prealpha</code></p>
-    <p><em>Prealpha means... shhhhh! This site is not yet ready to be released.</em></p>
-
-    <section class="SideBySide">
-        <aside>
-            <h4>Roadmap:</h4>
-
-            <p><code>alpha</code></p>
-            <p><strong>Completed:</strong> core functionality, under 2000 SLOC,
-            ssg to generate website via JSDOM, partial documentation, unit
-            tests for examples, directives, new DOM resolver, Script-tag
-            insertion,Browser builds, CSS bundling </p>
-            <p><strong>Incomplete Features:</strong> "Modulo" object
-            instantiation and config system</p>
-
-            <p><strong>Remaining Tasks & Bugs:</strong> debugged SSG, tutorial
-            part 3, documentation (CParts and core API), unit tests for core
-            CParts, some light performance profiling &amp; improvement</p>
-            <br/>
-
-            <p><code>beta</code></p>
-            <p><strong>Incomplete:</strong> Nested namespaces, hot-reloading
-            server, under 1000 SLOC (?), fully literate source code, MDU
-            development and documentation, swappable DOM for node.js (linkedom
-            and headless Chromium), SSG refactor, full interactive "cookbook"
-            of recipes, React &amp; jQuery examples, deterministic SSG builds,
-            more performance profiling &amp; improvement</p>
-            <br/>
-
-            <p><code>v1.0</code></p>
-            <p><strong>Incomplete:</strong> Fully stabilized API, Full browser
-            testing matrix, generate .map files, several recommended minified
-            and shimmed versions, example rollup and webpack configs, split-off
-            SSG and MDU</p>
-
-        </aside>
-
-        <aside>
-            <h4>News:</h4>
-            <p>Noticias</p>
-        </aside>
-    </section>
-
-</section>
-
 
 </x-Page>

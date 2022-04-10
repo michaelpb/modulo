@@ -721,9 +721,6 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
             style.setAttribute('modulo-ignore', 'true');
             style.textContent = style.content;// `<style modulo-ignore>${style.content}</style>`;
             this.element.shadowRoot.append(style);
-            //this.element.shadowRoot.innerHTML = 
-            //console.log('Shadow styling!',
-             //`<style modulo-ignore>${style.content}</style>`);
         }
     }
 

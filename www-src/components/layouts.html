@@ -122,3 +122,37 @@
     </script>
 </component>
 
+<component name="DevLogNav" mode="vanish">
+    <props
+        fn
+    ></props>
+
+    <Template>
+
+        <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
+            <strong>DEV LOG:</strong>
+            {% for pair in state.data %}
+                <a href="/devlog/{{ pair|get:0 }}.html">{{ pair|get:0 }} ({{ pair|get:1 }})</a>
+                {% if pair|get:1 != "FAQ" %}
+                    |
+                {% endif %}
+            {% endfor %}
+            {% for pair in state.data %}
+                {% if pair|get:0 == props.fn %}
+                    <h1>{{ pair|get:1 }}</h1>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </Template>
+
+    <State
+        data:='[
+            ["2022-03", "Remaining tasks for alpha"],
+            ["2021-09", "Framework goals"],
+            ["2021-01", "FAQ"]
+        ]'
+    ></State>
+
+</component>
+
