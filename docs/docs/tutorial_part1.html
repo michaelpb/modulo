@@ -1250,7 +1250,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
     }
 }
 
-</style><script>"use strict";Modulo.assets.functions["19ln1d0"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+</style><script>"use strict";Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
@@ -1363,10 +1363,20 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
-                     'custom directives', 'refs', 'accessing dom',
-                     'escape hatch', 'mount callback', 'unmount callback']),
-                _child('Custom directives', 'custom'),
-                _child('Built-in directives', 'builtin'),
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
             ],
         },
 
@@ -1393,6 +1403,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
 
+        /*
         {
             label: 'Project Info',
             filename: '/docs/project-info.html',
@@ -1401,6 +1412,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
                 _child('Framework Design Philosophy', 'philosophy'),
             ],
         },
+        */
     ];
 
     function initializedCallback() {
@@ -1966,14 +1978,6 @@ return OUT.join("");
                 ginactive
             
             "><a href="/docs/example-library.html">Example Library</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/project-info.html">Project Info</a>
             
         </li>
     
@@ -2560,6 +2564,17 @@ that needs them.</p>
     <h4>Try it now</h4>
     <p>It's time to "promote" your beginner embedded component into a
     full-fledged loaded component!</p>
+    <p><strong>Warning:</strong> This step of the tutorial, where we load from
+    separate libraries, <em>might not work</em> unless you have a server
+    running. This is because if you just double-click on an HTML file, it opens
+    in the browser with the <code>file://</code> protocol, which, as a security
+    precaution, doesn't support loading any subsequent files. Consult your IDE
+    on how to run a development server (e.g. VS Code seems to have a popular
+    3rd party add-on:
+    <a href="https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer">Live
+    Server for VSCode</a>). Consider saving this step for later if you do not
+    have such a server ready.</p>
+
     <ol>
         <li>Optional: Create a new "components" directory to house your
         component library files.</li>
@@ -2649,7 +2664,7 @@ that needs them.</p>
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: auto;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 116px; min-width: 467.891px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 18px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">template</span> <span class="cm-attribute">modulo-embed</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Load</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">src</span>=<span class="cm-string">"./components/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">namespace</span>=<span class="cm-string">"lib"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">Load</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 116px;"></div><div class="CodeMirror-gutters" style="display: none; height: 166px;"></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 116px; min-width: 467.891px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 18px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">template</span> <span class="cm-attribute">modulo-embed</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Load</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">src</span>=<span class="cm-string">"./components/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">namespace</span>=<span class="cm-string">"lib"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">Load</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 116px;"></div><div class="CodeMirror-gutters" style="display: none; height: 166px;"></div></div></div></div>
         </div>
 
         

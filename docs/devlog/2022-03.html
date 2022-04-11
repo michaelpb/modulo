@@ -1247,7 +1247,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
     }
 }
 
-</style><script>"use strict";Modulo.assets.functions["19ln1d0"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+</style><script>"use strict";Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
@@ -1360,10 +1360,20 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
-                     'custom directives', 'refs', 'accessing dom',
-                     'escape hatch', 'mount callback', 'unmount callback']),
-                _child('Custom directives', 'custom'),
-                _child('Built-in directives', 'builtin'),
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
             ],
         },
 
@@ -1390,6 +1400,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
 
+        /*
         {
             label: 'Project Info',
             filename: '/docs/project-info.html',
@@ -1398,6 +1409,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
                 _child('Framework Design Philosophy', 'philosophy'),
             ],
         },
+        */
     ];
 
     function initializedCallback() {
@@ -1633,17 +1645,27 @@ OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Doc
 return OUT.join("");
 };</script><modulo>
     <load namespace="x" src="/components/layouts.html"></load>
-</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["xe8loir"]= function (CTX, G){
+</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["1f2r1p6"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n\n        <div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>\n            "); // "<div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>"
 var ARR0=CTX.state.data;for (var KEY in ARR0) {CTX. pair=ARR0[KEY]; // "for pair in state.data"
-OUT.push("\n                <a href=\"/devlog/"); // "<a href=\"/devlog/"
-OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
-OUT.push(".html\">"); // ".html\">"
+OUT.push("\n                "); // ""
+if (G.filters["get"](CTX.pair,0) === CTX.props.fn) { // "if pair|get:0 == props.fn"
+OUT.push("\n                    <span style=\"text-decoration: overline underline;\">\n                        "); // "<span style=\"text-decoration: overline underline;\">"
 OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
 OUT.push(" ("); // "("
 OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
-OUT.push(")</a>\n                "); // ")</a>"
+OUT.push(")\n                    </span>\n                "); // ")\n                    </span>"
+} else { // "else"
+OUT.push("\n                    <a href=\"/devlog/"); // "<a href=\"/devlog/"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(".html\">\n                        "); // ".html\">"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(" ("); // "("
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
+OUT.push(")\n                    </a>\n                "); // ")\n                    </a>"
+} // "endif"
+OUT.push("\n                "); // ""
 if (G.filters["get"](CTX.pair,1) != "FAQ") { // "if pair|get:1 != \"FAQ\""
 OUT.push("\n                    |\n                "); // "|"
 } // "endif"
@@ -1709,22 +1731,34 @@ return OUT.join("");
         <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
             <strong>DEV LOG:</strong>
             
-                <a href="/devlog/2022-03.html">2022-03 (Remaining tasks for alpha)</a>
+                
+                    <span style="text-decoration: overline underline;">
+                        2022-03 (Next steps for alpha)
+                    </span>
+                
                 
                     |
                 
             
-                <a href="/devlog/2021-09.html">2021-09 (Framework goals)</a>
+                
+                    <a href="/devlog/2021-09.html">
+                        2021-09 (Thoughts on design)
+                    </a>
+                
                 
                     |
                 
             
-                <a href="/devlog/2021-01.html">2021-01 (FAQ)</a>
+                
+                    <a href="/devlog/2021-01.html">
+                        2021-01 (FAQ)
+                    </a>
+                
                 
             
             
                 
-                    <h1>Remaining tasks for alpha</h1>
+                    <h1>Next steps for alpha</h1>
                 
             
                 
@@ -1737,14 +1771,50 @@ return OUT.join("");
 
 
 
-<div id="project_status" style="height: 120px; clear: both; display: block;"></div>
 
+<p>After years of development as a side-project, Modulo is close to an "alpha"
+release. The plan for the alpha release is to get early feedback before we
+finalize the external API, or spend time optimizing for DOM performance or
+readability of source-code.</p>
+
+<h3>After alpha?</h3>
+
+<p>Once the API is more or less finalized, and the library itself has enjoyed
+some limited ("dogfooding") production usage, then it's time for the "beta"
+release. Finally, as it gets more production usage, it's time for the
+<code>v1.0</code> release, which is intended to be a highly stable release for
+the future, with few, if any new features.</p>
+
+<h3>Known bugs</h3>
+
+<p><strong>Directives nested in child components are broken</strong>: Directive
+resolution context for child components with non-shadow slots still has issues,
+resolving to the immediate parent (the child component) instead of the more
+expected parent (the parent doing the nesting).</p>
+
+<p><strong>m.bundle</strong>: Incomplete</p>
+
+
+<h3>Major incomplete aspects of API</h3>
+
+<p>Library / Load / Loader / Module / Config / Modulo configuration refactor:
+Currently, a variety of CParts do similar tasks. We want to condense them all
+into a new "Library" CPart, and abandon "Module" terminology, since it can
+easily be confused with the unrelated concept of JavaScript modules.</p>
+
+<p>Read below for a more complete project status summary or "roadmap"!</p>
+
+
+
+
+<div id="project_status" style="height: 120px; clear: both; display: block;"></div>
 
 <section class="Tutorial-tryit">
     <h4>Project Status</h4>
 
     <p><strong>Current status:</strong> <code>prealpha</code></p>
-    <p><em>Prealpha means... shhhhh! This site is not yet ready to be released.</em></p>
+    <p><em>Prealpha means... shhhhh! This site is not yet ready to be
+    released.</em></p>
 
     <section class="SideBySide">
         <aside>
@@ -1754,22 +1824,20 @@ return OUT.join("");
             <p><strong>Completed:</strong> core functionality, under 2000 SLOC,
             ssg to generate website via JSDOM, partial documentation, unit
             tests for examples, directives, new DOM resolver, Script-tag
-            insertion,Browser builds, CSS bundling </p>
-            <p><strong>Incomplete Features:</strong> "Modulo" object
-            instantiation and config system</p>
-
-            <p><strong>Remaining Tasks &amp; Bugs:</strong> debugged SSG, tutorial
-            part 3, documentation (CParts and core API), unit tests for core
-            CParts, some light performance profiling &amp; improvement</p>
+            insertion,Browser builds, CSS bundling, basic SSG for site,
+            tutorial part 3, documentation (CParts and core API)</p>
+            <p><strong>Incomplete:</strong> "Modulo" object instantiation and
+            config system, module / Library refactor and documentation,
+            reconciliation directives refactor, some light performance
+            profiling &amp; improvement</p>
             <br>
 
             <p><code>beta</code></p>
             <p><strong>Incomplete:</strong> Nested namespaces, hot-reloading
             server, under 1000 SLOC (?), fully literate source code, MDU
-            development and documentation, swappable DOM for node.js (linkedom
-            and headless Chromium), SSG refactor, full interactive "cookbook"
-            of recipes, React &amp; jQuery examples, deterministic SSG builds,
-            more performance profiling &amp; improvement</p>
+            development and documentation, SSG refactor, full interactive
+            "cookbook" of recipes, React &amp; jQuery examples, deterministic
+            SSG builds, more performance profiling &amp; improvement</p>
             <br>
 
             <p><code>v1.0</code></p>
@@ -1781,7 +1849,7 @@ return OUT.join("");
         </aside>
 
         <aside>
-            <h4>%</h4>
+            <h4>% % % % % % % % % % % %</h4>
         </aside>
     </section>
 

@@ -1247,7 +1247,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
     }
 }
 
-</style><script>"use strict";Modulo.assets.functions["19ln1d0"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+</style><script>"use strict";Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
@@ -1360,10 +1360,20 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
-                     'custom directives', 'refs', 'accessing dom',
-                     'escape hatch', 'mount callback', 'unmount callback']),
-                _child('Custom directives', 'custom'),
-                _child('Built-in directives', 'builtin'),
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
             ],
         },
 
@@ -1390,6 +1400,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
 
+        /*
         {
             label: 'Project Info',
             filename: '/docs/project-info.html',
@@ -1398,6 +1409,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
                 _child('Framework Design Philosophy', 'philosophy'),
             ],
         },
+        */
     ];
 
     function initializedCallback() {
@@ -1633,17 +1645,27 @@ OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Doc
 return OUT.join("");
 };</script><modulo>
     <load namespace="x" src="/components/layouts.html"></load>
-</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["xe8loir"]= function (CTX, G){
+</modulo><meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/css/style.css"><link rel="icon" type="image/png" href="/img/mono_logo.png"><script>"use strict";Modulo.assets.functions["1f2r1p6"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n\n        <div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>\n            "); // "<div id=\"news\" style=\"height: 100px; padding-top: 25px; clear: both; display: block; text-align: center\">\n            <strong>DEV LOG:</strong>"
 var ARR0=CTX.state.data;for (var KEY in ARR0) {CTX. pair=ARR0[KEY]; // "for pair in state.data"
-OUT.push("\n                <a href=\"/devlog/"); // "<a href=\"/devlog/"
-OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
-OUT.push(".html\">"); // ".html\">"
+OUT.push("\n                "); // ""
+if (G.filters["get"](CTX.pair,0) === CTX.props.fn) { // "if pair|get:0 == props.fn"
+OUT.push("\n                    <span style=\"text-decoration: overline underline;\">\n                        "); // "<span style=\"text-decoration: overline underline;\">"
 OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
 OUT.push(" ("); // "("
 OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
-OUT.push(")</a>\n                "); // ")</a>"
+OUT.push(")\n                    </span>\n                "); // ")\n                    </span>"
+} else { // "else"
+OUT.push("\n                    <a href=\"/devlog/"); // "<a href=\"/devlog/"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(".html\">\n                        "); // ".html\">"
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,0))); // "pair|get:0"
+OUT.push(" ("); // "("
+OUT.push(G.escapeHTML(G.filters["get"](CTX.pair,1))); // "pair|get:1"
+OUT.push(")\n                    </a>\n                "); // ")\n                    </a>"
+} // "endif"
+OUT.push("\n                "); // ""
 if (G.filters["get"](CTX.pair,1) != "FAQ") { // "if pair|get:1 != \"FAQ\""
 OUT.push("\n                    |\n                "); // "|"
 } // "endif"
@@ -1709,17 +1731,29 @@ return OUT.join("");
         <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
             <strong>DEV LOG:</strong>
             
-                <a href="/devlog/2022-03.html">2022-03 (Remaining tasks for alpha)</a>
+                
+                    <a href="/devlog/2022-03.html">
+                        2022-03 (Next steps for alpha)
+                    </a>
+                
                 
                     |
                 
             
-                <a href="/devlog/2021-09.html">2021-09 (Framework goals)</a>
+                
+                    <a href="/devlog/2021-09.html">
+                        2021-09 (Thoughts on design)
+                    </a>
+                
                 
                     |
                 
             
-                <a href="/devlog/2021-01.html">2021-01 (FAQ)</a>
+                
+                    <span style="text-decoration: overline underline;">
+                        2021-01 (FAQ)
+                    </span>
+                
                 
             
             
@@ -1738,14 +1772,20 @@ return OUT.join("");
 
 <h3><span alt="Question mark">?</span></h3>
 
-<h3>FAQ</h3>
 
-<p>This FAQ, like every FAQ, is an imaginary conversation between the creator
-(myself) of Modulo and imaginary people who apparently are invested in Modulo
-enough to ask probing questions about it. That said, if you are a non-imaginary
-person (I should hope so!) with questions about Modulo, they are welcome even
-more: Contact via email, submit a pull request to this page, or add an issue to
-the project on GitHub.</p>
+<p>I wrote this FAQ in late 2020 and early 2021 when I began to "resurrect" the
+Modulo project around a new set of goals: Choosing the name <em>Modulo</em>,
+relaxing the 500-line limit I had imposed previously, and making it much more
+modular and beginner friendly, and thus more strongly adhering to "KISS"
+principles. This FAQ, like every FAQ, is an imaginary conversation between the
+creator (myself) of Modulo and imaginary people who apparently are invested in
+Modulo enough to ask probing questions about it. That said, if you are a
+non-imaginary person (I should hope so!) with questions about Modulo, they are
+welcome even more: Contact via email, submit a pull request to this page, or
+add an issue to the project on GitHub.</p>
+
+
+<h3>FAQ</h3>
 
 <p>By reading this FAQ, you will get a better understanding of the motivation
 of building Modulo and it's design philosophy.</p>
@@ -1816,10 +1856,10 @@ can't you have a big, extensive framework with big and extensive
 documentation?</strong></p>
 
 <p>Sure, it's possible, in some cases situations better, and you can use always
-that too.  Modulo plays well with others! However, Modulo takes a different approach.
-See <a href="#philosophy">the design philosophy "thought experiment"</a> below for
-for further and more thorough discussion of Modulo's approach and it's
-motivation.</p>
+that too.  Modulo plays well with others! However, Modulo takes a different
+approach.  See the <a href="/devlog/2021-09.html">the design philosophy "thought
+experiment"</a> article for for further and more thorough discussion of
+Modulo's approach and it's motivation.</p>
 
 <hr>
 <p><strong>Q: 80 char line limit? 4 space indentation? Imperative
@@ -1847,6 +1887,8 @@ functions. It might not be "pleasant" to write under these conditions, but code
 is written once and read 1000 times. Modulo code was written to be easily read,
 not easily written.</p>
 
+<p>Note: Linting configs are still an unresolved bug, meaning this coding
+standard is partially aspirational.</p>
 
 
 <hr>

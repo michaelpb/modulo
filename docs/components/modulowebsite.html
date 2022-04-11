@@ -271,10 +271,20 @@
             children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
-                     'custom directives', 'refs', 'accessing dom',
-                     'escape hatch', 'mount callback', 'unmount callback']),
-                _child('Custom directives', 'custom'),
-                _child('Built-in directives', 'builtin'),
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
             ],
         },
 
@@ -301,6 +311,7 @@
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
 
+        /*
         {
             label: 'Project Info',
             filename: '/docs/project-info.html',
@@ -309,6 +320,7 @@
                 _child('Framework Design Philosophy', 'philosophy'),
             ],
         },
+        */
     ];
 
     function initializedCallback() {

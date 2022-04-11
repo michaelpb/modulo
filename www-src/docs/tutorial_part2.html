@@ -322,13 +322,13 @@ text='
         <li>Refresh the web browser to view the results. Assuming you still
         have the component displaying somewhere on your page, if done
         correctly, you will see your component update to reflect the changes
-        you made to your template, possibly something  like "Goal: undefined"
-        and "Amount: undefined".</li>
+        you made to your template, possibly something  like "Goal: "
+        and "Amount: ".</li>
 
-        <li><strong>Comprehension question: If you see the text "undefined",
-        why do you think that is?</strong></li>
+        <li><strong>Comprehension question: Why doesn't it show any text after
+        "Goal:" and "Amount:"?</strong></li>
 
-        <li>Answer: If you are seeing "undefined", it's probably because you
+        <li>Answer: If you are seeing blanks, it's probably because you
         are not passing in the Props that are required.</li>
 
         <li>To fix this, we need to specify the props in the location where we
@@ -346,12 +346,12 @@ text='
     <x-HelloWorld
         goal="10"
         amount="2"
-    ></x-HelloWorld>
+    >Learning</x-HelloWorld>
     <p>In a P tag:
         <x-HelloWorld
-            goal="10"
-            amount="2"
-        ></x-HelloWorld>
+            goal="5"
+            amount="1000"
+        >Small</x-HelloWorld>
     </p>
 </div>
 '></mws-Demo>
@@ -555,7 +555,8 @@ by typing <code>m.build()</code> and hitting enter.</p>
         <li>Ensuring that the "Console" tab is selected, now type
         <code>m.build()</code> and hit enter.</li>
 
-        <li>It should either immediately download a CSS and JS file, or offer
+        <li>It should either immediately download a CSS and JS file, or prompt
+        you about "Allowing multiple downloads", or in some other way offer
         to download them. These are the "build" files, and contain the contents
         of all libraries that were loaded on this page, with underlying
         JavaScript pre-compiled for speed and security. Save these files
@@ -581,8 +582,8 @@ text='
 
 <!-- Now, the components we define can be used just like before: -->
 <div>
-    <x-HelloWorld goal="10" amount="2" ></x-HelloWorld>
-    <p>In a P tag: <x-HelloWorld goal="10" amount="2" ></x-HelloWorld> </p>
+    <x-HelloWorld goal="10" amount="2">Learning</x-HelloWorld>
+    <p>In a P tag: <x-HelloWorld goal="5" amount="1000">Small</x-HelloWorld> </p>
 </div>
 '></mws-Demo></li>
 

@@ -1246,7 +1246,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
     }
 }
 
-</style><script>"use strict";Modulo.assets.functions["19ln1d0"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+</style><script>"use strict";Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
@@ -1359,10 +1359,20 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
-                     'custom directives', 'refs', 'accessing dom',
-                     'escape hatch', 'mount callback', 'unmount callback']),
-                _child('Custom directives', 'custom'),
-                _child('Built-in directives', 'builtin'),
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
             ],
         },
 
@@ -1389,6 +1399,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
 
+        /*
         {
             label: 'Project Info',
             filename: '/docs/project-info.html',
@@ -1397,6 +1408,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
                 _child('Framework Design Philosophy', 'philosophy'),
             ],
         },
+        */
     ];
 
     function initializedCallback() {
@@ -1975,14 +1987,6 @@ return OUT.join("");
             
         </li>
     
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/project-info.html">Project Info</a>
-            
-        </li>
-    
 
 
     <!--
@@ -2158,7 +2162,7 @@ developers. This is so that you can write custom code in each component to
 execute during any one of the phases. Note that you cannot hook into Group 1
 phases this way, since those need to happen before your script tag is even
 ready (in fact, it's the <code>factoryCallback</code> of <em>Script</em> that
-hooks your custom methods into the component lifecycle.</p>
+hooks your custom methods into the component lifecycle).</p>
 
 <p>Directives also have callback functions, <a href="#directives">covered
 in a later section</a>.</p>

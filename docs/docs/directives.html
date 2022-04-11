@@ -1246,7 +1246,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
     }
 }
 
-</style><script>"use strict";Modulo.assets.functions["19ln1d0"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+</style><script>"use strict";Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function _child(label, hash, keywords=[], filepath=null) {
         if (!hash) {
@@ -1359,10 +1359,20 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: [
                 _child('Directives', 'directives',
                     ['built-in directives', 'directive shortcuts',
-                     'custom directives', 'refs', 'accessing dom',
-                     'escape hatch', 'mount callback', 'unmount callback']),
-                _child('Custom directives', 'custom'),
-                _child('Built-in directives', 'builtin'),
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
             ],
         },
 
@@ -1389,6 +1399,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
             children: Object.keys(componentTexts).map(name => _child(name)),
         },
 
+        /*
         {
             label: 'Project Info',
             filename: '/docs/project-info.html',
@@ -1397,6 +1408,7 @@ mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
                 _child('Framework Design Philosophy', 'philosophy'),
             ],
         },
+        */
     ];
 
     function initializedCallback() {
@@ -1929,11 +1941,11 @@ return OUT.join("");
                         
                         </li>
                     
-                        <li><a href="/docs/directives.html#custom">Custom directives</a>
+                        <li><a href="/docs/directives.html#builtin">Built-in directives</a>
                         
                         </li>
                     
-                        <li><a href="/docs/directives.html#builtin">Built-in directives</a>
+                        <li><a href="/docs/directives.html#custom">Custom directives</a>
                         
                         </li>
                     
@@ -1947,14 +1959,6 @@ return OUT.join("");
                 ginactive
             
             "><a href="/docs/example-library.html">Example Library</a>
-            
-        </li>
-    
-        <li class="
-            
-                ginactive
-            
-            "><a href="/docs/project-info.html">Project Info</a>
             
         </li>
     
@@ -2029,15 +2033,42 @@ directives in a component to access the DOM after rendering.</p>
 <em>CParts</em> (1 from <em>State</em> and 3 from <em>Component</em>).</p>
 
 <ul>
-    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
+    <li><code>[component.dataProp]</code> (<em>shortcut:</em> suffix <code>:</code>) -
     Attach data to a DOM element's `.dataProp` object, which can be used to
     directly pass <code>renderObj</code> values as <em>Props</em> or
-    events</li>
+    events
+        <ul>
+            <li>Symbols: <code>ev:=script.gotClicked</code>,
+                <code>data:=state.dataArray</code>,
+                <code>blogs:=props.blogArray</code> etc - Data-props can attach
+                any values that are exposed in the
+                <code>renderObj</code> by any CPart in your component. Use
+                JavaScript reference notation, e.g.
+                <code>state.objdata.prop1</code> would access something like
+                <code>&lt;State&nbsp;objdata:='{"prop1":&nbsp;"my&nbsp;data"}'&gt;</code>
+            </li>
+            <li>Primitives: <code>arr:=[]</code>, <code>obj:={}</code>
+            <code>boo:=true</code>, <code>num:=3</code>, etc -
+            The data-prop can also be used to attach any data in JSON format
+            (whatever "JSON.parse" can parse).</li>
+        </ul>
+    </li>
 
-    <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
+    <li><code>[component.event]</code> (<em>shortcut:</em> prefix <code>@</code>) -
     Attach event listeners to DOM elements, and remove them when the DOM
     elements are removed. (For jQuery users, this is used for similar purposes
-    as "live" (delegated) events, but is faster.)</li>
+    as "live" (delegated) events, but is faster.)
+        <ul>
+            <li><code>payload=...</code> - By assigning to the "payload"
+            property, either with a regular HTML attribute or a <code>:=</code>
+            data-prop, you can provide extra arguments to events.</li>
+            <li><code>click.payload=...</code>,
+            <code>mouseover.payload=...</code>, etc - If you have multiple
+            events attached, you can attach separate payloads by prefixing the
+            "payload" attribute with the name of the event followed by a
+            dot.</li>
+        </ul>
+    </li>
 
     <li><code>[component.slot]</code> - Reattach the original child elements
     that this component had when it was first mounted to a new DOM element.
@@ -2057,20 +2088,41 @@ of the <em>Template</em> CPart: You can have a component that has no
 <em>Template</em> but still may employ directives, e.g. if it generates HTML
 contents some other way.</p>
 
+
+
+
+<mws-section name="custom" modulo-original-html="Custom directives">
+        <a class="secanchor" title="Click to focus on this section." id="custom" name="custom" href="#custom">#</a>
+        <h2>Custom directives</h2>
+    </mws-section>
+
+<p>Before we dive into custom directives, let's see some pitfalls with using
+directives (such as dataProp) in conjunction with <em>Template</em>
+variables.</p>
+
+<h3>Directives and/or DOM manipulation vs Template variables</h3>
+
 <p>Not sure which to use? Short answer: Templates! Long answer: Directives deal
 with direct DOM references, and thus are almost always messier to use. The <a href="/docs/templating.html">design philosophy of Modulo's templating
 system</a> is to generate a string of HTML code as a purposeful limitation
 during the <code>render</code> phase, and thus prevents this messiness with a
 stricter structure.</p>
 
+<p>So, when you can, try to make the DOM the "source of truth", and attach data
+to DOM elements via regular HTML properties (or dataProp properties). In other
+words, avoid using directives too much as an "escape hatch" to vanilla JS DOM
+manipulation. It's a last resort for interoperability as opposed to the
+recommended way of development.</p>
+
 
 <div class="InfoBox">
     <h2>Directives and template variables</h2>
 
-    <p>Never attempt to mix <em>Template</em> CPart variables with directives.
-    Directives cannot access template variables, since directives are only are
-    applied after the template is fully rendered and all template variables are
-    already forgotten. As an example, consider the following code:</p>
+    <p>Don't get confused when attempting to mix <em>Template</em> CPart
+    variables with directives.  Directives cannot access template variables,
+    since directives are only are applied after the template is fully rendered
+    and all template variables are already forgotten. As an example, consider
+    the following code:</p>
 
 <mws-demo text="
 <Template>
@@ -2185,14 +2237,6 @@ stricter structure.</p>
     predictable in behavior, with no "hidden" functions getting attached.</p>
 
 </div>
-
-
-
-
-<mws-section name="custom" modulo-original-html="Custom directives">
-        <a class="secanchor" title="Click to focus on this section." id="custom" name="custom" href="#custom">#</a>
-        <h2>Custom directives</h2>
-    </mws-section>
 
 <p>A quick word of caution on custom directives: If you find yourself using
 custom directives to do vanilla JS DOM manipulation often, you are probably
