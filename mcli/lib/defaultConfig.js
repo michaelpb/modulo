@@ -137,6 +137,9 @@ const defaultConfig = {
 
     // Undocumented:
 
+    generateCheckDeps: true,
+        // Whether to in turn generate other files based on dependencies
+
     domEngine: 'jsdom',
         // Which DOM engine to use.
 
@@ -160,6 +163,10 @@ const defaultConfig = {
         // Override the current working directory to specify a new base path.
         // This will be used when loading relative file paths from the file
         // system. The default is "CWD" for the current directory.
+
+    force: false,
+        // [alias: -f] Forces certain actions. For SSG builds and server-side
+        // rendering will force rebuild pages.
 
     /*
     // TODO:

@@ -10,6 +10,7 @@ class ModuloVM {
         this.port = process.env.MODULO_BROWSER_E2E_PORT || 6627;
         const { verbose } = config
         this.log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
+        this.dependencyGraph = {};
     }
 
     _startExpress(callback) {
@@ -56,12 +57,31 @@ class ModuloVM {
         })();
     }
 
+    getDependencies(htmlPath) {
+        const url = this.getURL(htmlPath);
+        return Object.keys(this.dependencyGraph[url] || {})
+    }
+
     async runAsync(htmlPath) {
         const waitUntil = 'networkidle0';
-        await this._startExpress();
+        const url = this.getURL(htmlPath);
+
+        await this._startExpress(); // setup stuff
         await this._startBrowser();
+
         const page = await this._browser.newPage();
-        await page.goto(this.getURL(htmlPath), { waitUntil });
+
+        page.on('response', (response) => {
+            // Keep track of all requests, and then save relation in dependencyGraph
+            const request = response.request();
+            const reqUrl = request.url();
+            if (!(reqUrl in this.dependencyGraph)) {
+                this.dependencyGraph[reqUrl] = {};
+            }
+            this.dependencyGraph[reqUrl][url] = true;
+        });
+
+        await page.goto(url, { waitUntil });
         await page.evaluate(() => {
             // Scan document for modulo elements, attaching modulo-original-html as needed
             for (const elem of document.querySelectorAll('*')) {
@@ -93,17 +113,5 @@ class ModuloVM {
         })();
     }
 }
-/*
-await page.waitFor(2000);
-await page.waitForFunction(() => {
-    console.log('setting timeout!');
-    setTimeout(() => {
-      console.log('waiting for fetchq!');
-      Modulo.fetchQ.wait(() => {
-          document.body.classList.add('modulo-finished-loading');
-      });
-    }, 1);
-});
-await page.waitForSelector('body.modulo-finished-loading');
-*/
+
 module.exports = ModuloVM;
