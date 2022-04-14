@@ -583,6 +583,79 @@ eg-ConwayGameOfLife .grid > div {
 eg-ConwayGameOfLife input,eg-ConwayGameOfLife button {
         width: 40px;
     }
+</style><script>"use strict";Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+        // Splits up own source-code to get source for each example
+        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
+        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
+        //console.log('this si myText', myText);
+        const componentTexts = {};
+        if (!myText) {
+            console.error('ERROR: Could not load own text :(');
+            myText = '';
+        }
+        let name = '';
+        let currentComponent = '';
+        let inTestSuite = false;
+        for (const line of myText.split('\n')) {
+            const lower = line.toLowerCase();
+            if (lower.startsWith('</component>')) {
+                componentTexts[name] = currentComponent;
+                currentComponent = '';
+                name = null;
+            } else if (lower.startsWith('<component')) {
+                name = line.split(' name="')[1].split('"')[0];
+            } else if (lower.startsWith('<testsuite')) {
+                inTestSuite = true;
+            } else if (lower.includes('</testsuite>')) {
+                inTestSuite = false;
+            } else if (name && !inTestSuite) {
+                currentComponent += line + '\n';
+            }
+        }
+        script.exports.componentTexts = componentTexts;
+    
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["x648bme"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    script.exports.title = "ModuloNews";
+
+return {  setLocalVariable: __set, exports: script.exports}
+};</script><script>"use strict";Modulo.assets.functions["xa49eup"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function prepareCallback() {
+        const calcResult = (state.perc / 100) * state.total;
+        return { calcResult };
+    }
+
+return { "prepareCallback": typeof prepareCallback !== "undefined" ? prepareCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
+};</script><style>
+docseg-Templating_PrepareCallback input { display: inline; width: 25px }
+</style><style>
+docseg-Templating_Escaping .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+</style><style>
+/* ...and any CSS here! */
+docseg-Tutorial_P1 strong {
+    color: blue;
+}
+docseg-Tutorial_P1 .neat {
+    font-variant: small-caps;
+}
+docseg-Tutorial_P1 { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+</style><style>
+docseg-Tutorial_P3_state_demo {
+        font-size: 0.8rem;
+    }
 </style><style>
 mws-Section Section {
             position: relative;
@@ -1583,80 +1656,7 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 "codemirrorMount": typeof codemirrorMount !== "undefined" ? codemirrorMount : undefined,
 "run": typeof run !== "undefined" ? run : undefined,
  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-        // Splits up own source-code to get source for each example
-        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
-        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
-        //console.log('this si myText', myText);
-        const componentTexts = {};
-        if (!myText) {
-            console.error('ERROR: Could not load own text :(');
-            myText = '';
-        }
-        let name = '';
-        let currentComponent = '';
-        let inTestSuite = false;
-        for (const line of myText.split('\n')) {
-            const lower = line.toLowerCase();
-            if (lower.startsWith('</component>')) {
-                componentTexts[name] = currentComponent;
-                currentComponent = '';
-                name = null;
-            } else if (lower.startsWith('<component')) {
-                name = line.split(' name="')[1].split('"')[0];
-            } else if (lower.startsWith('<testsuite')) {
-                inTestSuite = true;
-            } else if (lower.includes('</testsuite>')) {
-                inTestSuite = false;
-            } else if (name && !inTestSuite) {
-                currentComponent += line + '\n';
-            }
-        }
-        script.exports.componentTexts = componentTexts;
-    
-return {  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["x648bme"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    script.exports.title = "ModuloNews";
-
-return {  setLocalVariable: __set, exports: script.exports}
-};</script><script>"use strict";Modulo.assets.functions["xa49eup"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function prepareCallback() {
-        const calcResult = (state.perc / 100) * state.total;
-        return { calcResult };
-    }
-
-return { "prepareCallback": typeof prepareCallback !== "undefined" ? prepareCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
-};</script><style>
-docseg-Templating_PrepareCallback input { display: inline; width: 25px }
-</style><style>
-docseg-Templating_Escaping .msgcontent {
-        background: #999;
-        padding: 10px;
-        margin: 10px;
-    }
-</style><style>
-/* ...and any CSS here! */
-docseg-Tutorial_P1 strong {
-    color: blue;
-}
-docseg-Tutorial_P1 .neat {
-    font-variant: small-caps;
-}
-docseg-Tutorial_P1 { /* styles the entire component */
-    display: inline-block;
-    background-color: cornsilk;
-    padding: 5px;
-    box-shadow: 10px 10px 0 0 turquoise;
-}
-</style><style>
-docseg-Tutorial_P3_state_demo {
-        font-size: 0.8rem;
-    }
-</style></head><body><button>Before button</button>
+};</script></head><body><button>Before button</button>
 <x-mahbtn txt="Hello"><em>Testing stuff</em></x-mahbtn>
 <button>After button</button>
 

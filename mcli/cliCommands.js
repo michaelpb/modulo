@@ -62,6 +62,11 @@ async function doGenerate(moduloWrapper, config) {
     // Not skipping, doing COPY, CUSTOM, or GENERATE
     if (action === ACTIONS.COPY) {
         log('COPY     ' + inputRelPath + ' -> ' + outputRelPath);
+        try {
+            await fs.promises.chmod(outputFile, 0777); // unlock, if exists
+        } catch {
+            log('Could not unlock ' + outputFile);
+        }
         await fs.promises.copyFile(inputFile, outputFile);
     } else if (action === ACTIONS.CUSTOM) {
         log('CUSTOM   ' + inputRelPath + ' -> ' + outputRelPath);
@@ -71,6 +76,11 @@ async function doGenerate(moduloWrapper, config) {
         let html = await moduloWrapper.runAsync(inputFile);
         html = hackPostprocess(html);
         mkdirToContain(outputFile);
+        try {
+            await fs.promises.chmod(outputFile, 0777); // unlock, if exists
+        } catch {
+            log('Could not unlock ' + outputFile);
+        }
         await fs.promises.writeFile(outputFile, html, 'utf8');
     } else {
         throw new Error('Invalid action');
