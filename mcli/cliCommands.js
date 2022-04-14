@@ -7,21 +7,21 @@ const {
     walkSync,
     getAction,
     logStatusBar,
-    copyIfDifferentAsync,
-    copyAsync,
+    unlockToWrite,
     ifDifferentAsync,
     mirrorMTimesAsync,
     mkdirToContain,
 } = require('./lib/cliUtils');
 
-function hackPostprocess(html) {
-    // TODO: Remove in favor of a consistent treatment, once m.bundle() is done
+function hackPostprocess(html, buildArtifacts) {
     if (!/^<!doctype html>/i.test(html)) {
         // Ensure all documents start with doctype
         html = '<!DOCTYPE HTML>\n' + html;
     }
 
+    // --- XXX --- HACK
     // Inject hacky script after loading Modulo.js
+    // TODO: Remove in favor of a consistent treatment, once m.bundle() is done
     html = html.replace('<script src="/js/Modulo.js"></script>', `
         <meta charset="utf8" />
         <script src="/js/Modulo.js"></script>
@@ -37,11 +37,24 @@ function hackPostprocess(html) {
         };
         </script>
     `);
+    // --- XXX --- HACK
+
+    for (const { absUriPath, filename } of buildArtifacts) {
+        if (filename.toLowerCase().endsWith('.js')) {
+            // JS File, insert at end of body
+            html = html.replace('</body>', `<script src="${absUriPath}"></script>\n</body>`);
+        } else if (filename.toLowerCase().endsWith('.css')) {
+            // JS File, insert at end of body
+            html = html.replace('</head>', `<link rel="stylesheet" href="${absUriPath}">\n</head>`);
+        } else {
+            console.log('ERROR: Unknown build artifact type: ', filename);
+        }
+    }
     return html;
 }
 
 async function doGenerate(moduloWrapper, config) {
-    const { inputFile, outputFile, verbose, force } = config;
+    const { inputFile, output, outputFile, verbose, force, buildPath } = config;
     const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
     const action = getAction(inputFile, config);
     const inputRelPath = path.relative('.', inputFile);
@@ -72,16 +85,22 @@ async function doGenerate(moduloWrapper, config) {
         log('CUSTOM   ' + inputRelPath + ' -> ' + outputRelPath);
         throw new Error('Custom inputFile generators not implemented');
     } else if (action === ACTIONS.GENERATE) {
+
         log('GENERATE ' + inputRelPath + ' -> ' + outputRelPath);
-        let html = await moduloWrapper.runAsync(inputFile);
-        html = hackPostprocess(html);
-        mkdirToContain(outputFile);
-        try {
-            await fs.promises.chmod(outputFile, 0777); // unlock, if exists
-        } catch {
-            log('Could not unlock ' + outputFile);
+        let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'build');
+
+        // First, write buildArtifacts (result of build / bundle cmd)
+        for (let artifactInfo of buildArtifacts) {
+            const { filename, text } = artifactInfo;
+            artifactInfo.outputPath = path.resolve(output, './' + buildPath, filename);
+            artifactInfo.absUriPath = (`/${buildPath}/${filename}`).replace(/\/\//g, '/');
+            await unlockToWrite(artifactInfo.outputPath, text);
         }
-        await fs.promises.writeFile(outputFile, html, 'utf8');
+
+        // Then, do post processing and write main HTML
+        html = hackPostprocess(html, buildArtifacts);
+        await unlockToWrite(outputFile, html);
+
     } else {
         throw new Error('Invalid action');
     }
@@ -106,7 +125,11 @@ async function generate(moduloWrapper, config) {
     }
 
     // Now check for dependencies, and regenerate those
-    const deps = moduloWrapper.getDependencies;
+
+    // TODO: Move dep stuff to a new class, make it relative, and serialize to
+    // disk, then auto "force build" if it's not found, to regenerate full dep
+    // structure
+    const deps = moduloWrapper.getDependencies(inputFile);
     log(`GENERATE: Found ${deps.length} dependencies for ${inputFile}`);
     for (const outputRelPath of deps) {
         const outputFile = path.resolve(output, outputRelPath);
@@ -115,26 +138,26 @@ async function generate(moduloWrapper, config) {
     }
 }
 
-async function fullssg(moduloWrapper, config) {
+async function ssg(moduloWrapper, config) {
     const files = walkSync(config.input, config);
     let count = 0;
     for (const inputFile of files) {
         const extra = { inputFile, generateCheckDeps: false };
         const conf = Object.assign({}, config, extra);
         await generate(moduloWrapper, conf);
-        logStatusBar('FULLSSG', count, files.length);
+        logStatusBar('SSG', count, files.length);
         count++;
     }
     moduloWrapper.close();
 }
 
 async function watch(moduloWrapper, config) {
-    await fullssg(moduloWrapper, config);
+    await ssg(moduloWrapper, config);
     await doWatch(moduloWrapper, config);
 }
 
 async function doWatch(moduloWrapper, config) {
-    const {isSkip, isCopyOnly, isGenerate, verbose, input, output} = config;
+    const { isSkip, verbose, input, output } = config;
     const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
     const nodeWatch = require('node-watch');
 
@@ -225,7 +248,7 @@ function help(moduloWrapper, config, args) {
 
 module.exports = {
     help,
-    fullssg,
+    ssg,
     watch,
     generate,
 }

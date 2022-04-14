@@ -9,7 +9,7 @@ let moduloWrapper = null;
 
 function getConfig(cliConfig, flags) {
     // Using PORT is so it "does the right thing" on herokulike platforms
-    const envFlags = {port: process.env.PORT};
+    const envFlags = { port: process.env.PORT };
     envFlags.host = envFlags.port ? '0.0.0.0' : undefined;
     // Allow -p, -a, and -v as short-flags from CLI (but not conf):
     const shortFlags = {

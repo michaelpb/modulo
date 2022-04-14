@@ -29,19 +29,9 @@ const defaultConfig = {
         // is the one that should be served up as your site (e.g. for sites
         // hosted on GitHub Pages, this should be "docs").
 
-    buildOutput: './modulo-build-{{versiondate}}-{{hash}}.js',
-        // Use this to specify the path of the BUILD JS bundle output during
-        // the SSG step. This file will contain the Modulo source code, all of
-        // your components, preloads, and any extra bundled JS files. Also,
-        // during the postprocessing step, each GENERATE'd page will be
-        // revisited and get a script-tag inserted with the path to this file.
-        // This path gets templated using MTL syntax and the following
-        // variables available:
-        // input, output (the same as config)
-        // versiondate (an Ubuntu-esque version number, e.g. 1.10 for a release
-        //              in the 10th month of 2021)
-        // hash        (the hash uniquely identifying the new build)
-
+    buildPath: '/_modulo_builds/',
+        // Path prefix used for built JS and CSS files, when building or
+        // bundling JS and CSS during SSG step.
 
     serverApp: null,
         // If you are building a JAMstack-style app, you can use point this
@@ -80,28 +70,6 @@ const defaultConfig = {
         // configure this with your static host. Many hosts support this,
         // in fact GitHub Pages does this automatically already, so no
         // configuration necessary there.
-
-    ssgRenderDepth: 10,
-        // During the SSG step, this important setting specifies how many times
-        // GENERATE will rerender, discovering and attaching Modulo components,
-        // before deciding that the page is "good enough" and copying over the
-        // results. How many steps do you need? Each time a component renders a
-        // subcomponent, or renders in an unpredictable manner (e.g. produces
-        // random output), Modulo will need to do another rendering step, since
-        // it will keep on rendering until the HTML "stabilizes". Thus, if you
-        // expect many nested components, you should set this to a high number.
-        // The purpose of this limit is to prevent infinite recursion caused by
-        // non-deterministic components. However, you should still avoid
-        // non-deterministic components for other reasons.
-
-    ssgBuildOutput: '{{output}}/js/modulo-build-{{versiondate}}-{{hash}}.js',
-        // Use this to specify the path of the BUILD JS bundle output during
-        // the SSG step. This file will contain the Modulo source code, all of
-        // your components, preloads, and any extra bundled JS files. Also,
-        // during the postprocessing step, each GENERATE'd page will be
-        // revisited and get a script-tag inserted with the path to this file.
-        // As with other BUILD paths, this path gets templated using MTL syntax
-        // with the same variables available (see buildPath)
 
     testLog: false,
         // Enable the test log file will keep track of the maximum number of
@@ -169,6 +137,41 @@ const defaultConfig = {
         // This will be used when loading relative file paths from the file
         // system. The default is "CWD" for the current directory.
 
+
+    buildOutput: './modulo-build-{{versiondate}}-{{hash}}.js',
+        // Use this to specify the path of the BUILD JS bundle output during
+        // the SSG step. This file will contain the Modulo source code, all of
+        // your components, and any extra bundled JS files. Also,
+        // during the postprocessing step, each GENERATE'd page will be
+        // revisited and get a script-tag inserted with the path to this file.
+        // This path gets templated using MTL syntax and the following
+        // variables available:
+        // input, output (the same as config)
+        // versiondate (an Ubuntu-esque version number, e.g. 1.10 for a release
+        //              in the 10th month of 2021)
+        // hash        (the hash uniquely identifying the new build)
+
+    ssgBuildOutput: '{{output}}/js/modulo-build-{{versiondate}}-{{hash}}.js',
+        // Use this to specify the path of the BUILD JS bundle output during
+        // the SSG step. This file will contain the Modulo source code, all of
+        // your components, and any extra bundled JS files. Also,
+        // during the postprocessing step, each GENERATE'd page will be
+        // revisited and get a script-tag inserted with the path to this file.
+        // As with other BUILD paths, this path gets templated using MTL syntax
+        // with the same variables available (see buildPath)
+
+    ssgRenderDepth: 10,
+        // During the SSG step, this important setting specifies how many times
+        // GENERATE will rerender, discovering and attaching Modulo components,
+        // before deciding that the page is "good enough" and copying over the
+        // results. How many steps do you need? Each time a component renders a
+        // subcomponent, or renders in an unpredictable manner (e.g. produces
+        // random output), Modulo will need to do another rendering step, since
+        // it will keep on rendering until the HTML "stabilizes". Thus, if you
+        // expect many nested components, you should set this to a high number.
+        // The purpose of this limit is to prevent infinite recursion caused by
+        // non-deterministic components. However, you should still avoid
+        // non-deterministic components for other reasons.
     /*
     // TODO:
     tests: '(^tests$|*.test.html$)',

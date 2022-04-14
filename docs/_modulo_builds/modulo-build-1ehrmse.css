@@ -1,0 +1,539 @@
+
+/* ...and any CSS here! */
+docseg-Tutorial_P1 strong {
+    color: blue;
+}
+docseg-Tutorial_P1 .neat {
+    font-variant: small-caps;
+}
+docseg-Tutorial_P1 { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+
+docseg-Templating_Escaping .msgcontent {
+        background: #999;
+        padding: 10px;
+        margin: 10px;
+    }
+
+docseg-Templating_PrepareCallback input { display: inline; width: 25px }
+
+docseg-Tutorial_P3_state_demo {
+        font-size: 0.8rem;
+    }
+
+e1g1-Example {
+        font-size: 0.8rem;
+    }
+
+e4g1-Example {
+        font-size: 0.8rem;
+    }
+
+eg-ConwayGameOfLife {
+        display: flex;
+    }
+eg-ConwayGameOfLife .grid {
+        display: grid;
+        grid-template-columns: repeat(24, 5px);
+        margin: -2px;
+        grid-gap: 1px;
+    }
+eg-ConwayGameOfLife .grid > div {
+        background: white;
+        width: 5px;
+        height: 5px;
+    }
+eg-ConwayGameOfLife input,eg-ConwayGameOfLife button {
+        width: 40px;
+    }
+
+eg-MemoryGame h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+eg-MemoryGame .board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+eg-MemoryGame .board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+eg-MemoryGame .board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+eg-MemoryGame .board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+eg-MemoryGame .board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+from { transform: scaleX(-1.1); background: #B90183; }
+to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+
+eg-PrimeSieve .grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    color: #ccc;
+    font-weight: bold;
+    width: 100%;
+    margin: -5px;
+}
+eg-PrimeSieve .grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+eg-PrimeSieve div.whole {
+    color: white;
+    background: #B90183;
+}
+eg-PrimeSieve div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+eg-PrimeSieve div.number { background: green; }
+eg-PrimeSieve div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+eg-PrimeSieve If found, then hide asterisk and green */
+eg-PrimeSieve div.whole ~ div.number { background: #B90183; }
+eg-PrimeSieve div.whole ~ div.number::after { opacity: 0; }
+
+eg-SearchBox SearchBox {
+        position: relative;
+        display: block;
+        width: 300px;
+    }
+eg-SearchBox input {
+        padding: 8px;
+        background: coral;
+        color: white;
+        width: 200px;
+        border: none;
+    }
+eg-SearchBox input::after {
+        content: '\1F50E';
+    }
+eg-SearchBox .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+eg-SearchBox .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid coral;
+        border-radius: 0 0 20px 20px;
+        transition: height 2s;
+        z-index: 1;
+        background: white;
+    }
+eg-SearchBox .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+eg-SearchBox .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+eg-SearchBox .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+
+eg-Simple em { color: darkgreen; }
+eg-Simple * { text-decoration: underline; }
+
+mws-CodeExample .toolbar {
+            display: flex;
+            justify-content: space-between;
+        }
+mws-CodeExample .toolbar > button {
+            border: 2px solid black;
+            border-top-width: 1px;
+            border-bottom-width: 3px;
+            border-radius: 3px;
+            background: white;
+            font-weight: lighter;
+            text-transform: uppercase;
+        }
+mws-CodeExample .toolbar > button:active {
+            border-top-width: 3px;
+            border-bottom-width: 1px;
+        }
+mws-CodeExample .toolbar > button:hover {
+            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
+        }
+mws-CodeExample .split > div:last-child {
+            padding: 5px;
+            background: whiteSmoke;
+        }
+mws-CodeExample .split > div:first-child{
+            border: 1px solid black;
+            /*overflow-y: scroll;*/
+        }
+
+mws-CodeExample .preview-wrapper {
+            margin-top: 4px;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border: 1px solid black;
+        }
+
+mws-CodeExample .split > div > textarea {
+            width: 100%;
+            min-height: 10px;
+        }
+mws-CodeExample .split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+@media (max-width: 992px) {
+mws-CodeExample .split { display: block; }
+        }
+    
+mws-DocSidebar li {
+      margin-left: 20px;
+  }
+  /*
+mws-DocSidebar li.ginactive > ul::before,
+mws-DocSidebar li.gactive > ul::before {
+      content: ' - ';
+      background: var(--highlight-color);
+      color: white;
+      text-decoration: none;
+  }
+  */
+mws-DocSidebar li.ginactive > a::before {
+      content: '+ ';
+  }
+
+mws-ErrorCauser * {
+            color: orangered !important;
+            background: black !important;
+            border: blue 5px solid;
+            padding: 10px;
+        }
+    
+mws-Section Section {
+            position: relative;
+        }
+mws-Section h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+mws-Section a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+mws-Section Section:hover .Section-helper {
+            opacity: 1.0;
+        }
+    mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    height: 200px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror {
+    height: auto;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .CodeMirror * {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror * {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror {
+    height: 87vh;
+}
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+mws-Demo .demo-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
+    /* Make look better in Docs */
+    max-width: 900px;
+}
+mws-Demo .Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {
+    /* ...except if full screen */
+    max-width: 100vw;
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+    position: absolute;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 20px;
+    background: white;
+}
+
+/* No tabs sitch: */
+mws-Demo .demo-wrapper__notabs .editor-minipreview {
+    margin-top: 40px;
+    margin-left: 5px;
+    border: 1px solid #999;
+    height: 160px;
+}
+
+mws-Demo .demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {
+    margin-top: 65px;
+}
+
+mws-Demo .editor-toolbar {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    width: auto;
+    /*right: -70px;*/
+    right: 30px;
+    top: 0;
+    height: 35px;
+    padding: 2px;
+    border: #ddd 1px solid;
+}
+
+
+
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+    height: 60px;
+    padding: 10px;
+}
+
+
+mws-Demo .demo-wrapper__minipreview  .editor-wrapper {
+    width: 78%;
+    border: 1px solid black;
+}
+mws-Demo .Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {
+}
+
+mws-Demo .demo-wrapper.demo-wrapper__clipboard .editor-wrapper {
+    border: 1px dotted #ddd;
+    width: 100%;
+}
+
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .editor-minipreview {
+    border: 1px solid black;
+    border-radius: 1px;
+    background: #eee;
+    padding: 5px;
+    border-left: none;
+    width: 200px;
+    height: 200px;
+    overflow-y: auto;
+}
+mws-Demo .editor-minipreview > div > * > input {
+  max-width: 175px;
+}
+
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+    width: 30vw;
+    height: auto;
+    border: 1px solid black;
+    margin: 20px;
+    padding: 30px;
+    border: 5px solid black;
+    border-radius: 1px 8px 1px 8px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+}
+
+mws-Demo .side-by-side-panes {
+    display: flex;
+    justify-content: space-between;
+}
+
+mws-Demo .TabNav {
+    /*border-bottom: 1px dotted var(--highlight-color);*/
+    width: 100%;
+}
+
+
+mws-Demo .TabNav > ul {
+    width: 100%;
+    display: flex;
+}
+
+mws-Demo .TabNav-title {
+    border: 2px solid black;
+    border-top-width: 4px;
+    /*border-bottom-width: 0;*/
+    margin-bottom: -2px;
+    border-radius: 8px 8px 0 0;
+    background: white;
+    min-width: 10%;
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transition: box-shadow 0.3s,
+                border-color 0.2s;
+}
+
+mws-Demo .TabNav-title a,
+mws-Demo .TabNav-title a:visited,
+mws-Demo .TabNav-title a:active {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+mws-Demo .TabNav-title:hover {
+    border-color: var(--highlight-color);
+}
+
+mws-Demo .TabNav-title--selected {
+    border-color: var(--highlight-color);
+    background: var(--highlight-color);
+    box-shadow: 0 0 0 8px var(--highlight-color);
+    border-radius: 8px 8px 8px 8px;
+}
+mws-Demo .TabNav-title--selected a {
+    color: white !important;
+}
+
+
+@media (max-width: 992px) {
+mws-Demo .TabNav > ul {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+@media (max-width: 768px) {
+mws-Demo .TabNav-title {
+        padding: 7px;
+    }
+}
+
+
+
+@media (max-width: 768px) {
+mws-Demo .demo-wrapper.demo-wrapper__fullscreen {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: auto;
+        z-index: 1;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-toolbar {
+        position: static;
+        padding: 10px;
+        margin: 20px;
+        height: 60px;
+        font-size: 1.1rem;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-toolbar {
+        margin: 5px;
+        height: 60px;
+        padding: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .side-by-side-panes {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+mws-Demo .editor-minipreview {
+        width: 100%;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-minipreview {
+        width: 90%;
+    }
+}
+
+
+@media (min-width: 768px) {
+mws-Demo .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {
+        height: auto;
+        width: 70vw;
+        min-height: 87vh;
+    }
+}
+
+
+@media (max-width: 768px) {
+mws-Demo .editor-wrapper {
+        width: 100%;
+        border: 1px solid black;
+    }
+mws-Demo .demo-wrapper__fullscreen .editor-wrapper {
+        width: 100%;
+    }
+}
+

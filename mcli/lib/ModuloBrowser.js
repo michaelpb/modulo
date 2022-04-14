@@ -52,8 +52,8 @@ class ModuloVM {
         (async () => {
             await this._startExpress();
             await this._startBrowser();
-            const html = await this.runAsync(htmlPath);
-            callback(html);
+            const res = await this.runAsync(htmlPath);
+            callback(res);
         })();
     }
 
@@ -62,9 +62,16 @@ class ModuloVM {
         return Object.keys(this.dependencyGraph[url] || {})
     }
 
-    async runAsync(htmlPath) {
+    async runAsync(htmlPath, command = null) {
         const waitUntil = 'networkidle0';
         const url = this.getURL(htmlPath);
+
+        const doBundle = command === 'build' || command === 'all';
+        const doBuild = command === 'build' || command === 'all' || !command;
+        const doRender = command === 'render' || command === 'all' || !command;
+        // TODO: Change doBundle to be default setting (null)
+        //const doBundle = command === 'bundle' || command === 'all' || !command;
+        const runSettings = { doBuild, doBundle, doRender };
 
         await this._startExpress(); // setup stuff
         await this._startBrowser();
@@ -82,21 +89,57 @@ class ModuloVM {
         });
 
         await page.goto(url, { waitUntil });
-        await page.evaluate(() => {
-            // Scan document for modulo elements, attaching modulo-original-html as needed
-            for (const elem of document.querySelectorAll('*')) {
-                if (!elem.isModulo) {
-                    continue;
+
+        const buildFiles = await page.evaluate((runSettings) => {
+            if (typeof Modulo === 'undefined') {
+                return []; // Don't attempt any Modulo-specific actions
+            }
+            //const { doBuild, doBundle, doRender } = runSettings;
+            var doBuild = true; // hardcoding for now
+            var doRender = true;
+            var doBundle = false;
+            const buildFiles = [];
+            Modulo.utils.saveFileAs = (filename, text) => {
+                buildFiles.push({ filename, text });
+            };
+            if (doBuild) {
+                Modulo.cmd.build(); // Do CSS / JS build
+            }
+            if (doBundle) {
+                Modulo.cmd.bundle(); // Do CSS / JS bundle
+            }
+
+            if (doRender) {
+                // Delete all script tags and style tags
+                const toDelete = 'script,style,link';
+                for (const elem of document.querySelectorAll(toDelete)) {
+                    // TODO: Have a better way to know if included in build,
+                    // e.g. an attribute
+                    const includedInBuild = elem.tagName === 'STYLE' || (
+                        elem.tagName === 'SCRIPT' && !elem.hasAttribute('src'));
+                    if (doBundle || (doBuild && includedInBuild)) {
+                        elem.remove(); // always remove
+                    }
                 }
-                if (elem.originalHTML !== elem.innerHTML) {
-                    elem.setAttribute('modulo-original-html', elem.originalHTML);
+
+                // Scan document for modulo elements, attaching
+                // modulo-original-html="" as needed
+                for (const elem of document.querySelectorAll('*')) {
+                    if (!elem.isModulo) {
+                        continue;
+                    }
+                    if (elem.originalHTML !== elem.innerHTML) {
+                        elem.setAttribute('modulo-original-html', elem.originalHTML);
+                    }
                 }
             }
-        });
+            return buildFiles;
+        }, runSettings);
+
         const html = await page.evaluate(() => {
             return document.documentElement.innerHTML;
         });
-        return html;
+        return [ html, buildFiles ];
     }
 
     close(callback) {

@@ -102,38 +102,7 @@ function mkdirToContain(path) {
     fs.mkdirSync(pathPrefix, mkdirOpts);
 }
 
-function ifDifferent(inputPath, outputPath, callbackSuccess, cbFailure) {
-    fs.stat(inputPath, (err1, inputStats) => fs.stat(outputPath, (err2, outputStats) => {
-        let shouldCopy = false;
-        if (err1 || err2 || !inputStats || !outputStats) {
-            shouldCopy = true; // if doesn't exist or inaccessible
-        } else if (String(inputStats.mtime) !== String(outputStats.mtime)) {
-            shouldCopy = true;
-        }
-        if (shouldCopy) {
-            callbackSuccess(inputStats, outputStats);
-        } else if (cbFailure) {
-            cbFailure(inputStats, outputStats);
-        }
-        /*else if (inputStats.size !== outputStats.size) { shouldCopy = true; }*/
-    }));
-}
 
-function copyIfDifferent(inputPath, outputPath, callback) {
-    ifDifferent(inputPath, outputPath, (inputStats) => {
-        mkdirToContain(outputPath);
-        fs.copyFile(inputPath, outputPath, () => {
-            // Copy over mtime to new file
-            fs.utimes(outputPath, inputStats.atime, inputStats.mtime, (err) => {
-                if (err) {
-                    console.error('ERROR', err);
-                } else if (callback) {
-                    callback();
-                }
-            });
-        });
-    }, callback);
-}
 
 async function ifDifferentAsync(inputPath, outputPath) {
     let inputStats = null;
@@ -153,18 +122,6 @@ async function ifDifferentAsync(inputPath, outputPath) {
 }
 
 
-async function copyIfDifferentAsync(inputPath, outputPath) {
-    const shouldCopy = await ifDifferentAsync(inputPath, outputPath);
-    if (!shouldCopy) {
-        return false;
-    }
-    mkdirToContain(outputPath);
-    await fs.promises.copyFile(inputPath, outputPath);
-    // Copy over mtime to new file
-    await mirrorMTimesAsync(inputPath, outputPath);
-    return true;
-}
-
 
 async function mirrorMTimesAsync(inputPath, outputPath) {
     let inputStats = null;
@@ -178,6 +135,17 @@ async function mirrorMTimesAsync(inputPath, outputPath) {
     }
     await fs.promises.utimes(outputPath, inputStats.atime, inputStats.mtime);
     return true;
+}
+
+
+async function unlockToWrite(path, text) {
+    mkdirToContain(path);
+    try {
+        await fs.promises.chmod(path, 0777); // unlock, if exists
+    } catch {
+        console.log('Could not unlock ' + path);
+    }
+    await fs.promises.writeFile(path, text, 'utf8');
 }
 
 const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
@@ -307,11 +275,9 @@ module.exports = {
     ACTIONS,
     TERM,
     assert,
-    ifDifferent,
     ifDifferentAsync,
-    copyIfDifferent,
-    copyIfDifferentAsync,
     mirrorMTimesAsync,
+    unlockToWrite,
     mkdirToContain,
     parseArgs,
     findConfig,

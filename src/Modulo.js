@@ -1628,14 +1628,14 @@ Modulo.utils = class utils {
     }
 
     static saveFileAs(filename, text) {
-      const doc = Modulo.globals.document;
-      const element = doc.createElement('a');
-      const enc = encodeURIComponent(text); // TODO silo in globals
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
-      element.setAttribute('download', filename);
-      doc.body.appendChild(element);
-      element.click();
-      doc.body.removeChild(element);
+        const doc = Modulo.globals.document;
+        const element = doc.createElement('a');
+        const enc = encodeURIComponent(text); // TODO silo in globals
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
+        element.setAttribute('download', filename);
+        doc.body.appendChild(element);
+        element.click();
+        doc.body.removeChild(element);
     }
 
     static loadNodeData(node) {
