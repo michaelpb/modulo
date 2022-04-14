@@ -15,6 +15,11 @@ const defaultConfig = {
     port: 3333,
         // [alias: -p] For modulo server: Specifies port to bind
 
+    force: false,
+        // [alias: -f] Forces regeneration of pages. When doing an SSG build,
+        // this will force ALL pages to regenerate, even ones that didn't seem
+        // to have been modified since the last time they were generated.
+
     input: 'srcwww',
         // Specifies input directory for static site, which will be copied 1:1
         // and transformed into output
@@ -163,10 +168,6 @@ const defaultConfig = {
         // Override the current working directory to specify a new base path.
         // This will be used when loading relative file paths from the file
         // system. The default is "CWD" for the current directory.
-
-    force: false,
-        // [alias: -f] Forces certain actions. For SSG builds and server-side
-        // rendering will force rebuild pages.
 
     /*
     // TODO:

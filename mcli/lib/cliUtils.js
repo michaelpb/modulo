@@ -149,24 +149,36 @@ async function ifDifferentAsync(inputPath, outputPath) {
     } else if (String(inputStats.mtime) !== String(outputStats.mtime)) {
         shouldCopy = true;
     }
-    return [ shouldCopy, inputStats ];
+    return shouldCopy;
 }
 
 
 async function copyIfDifferentAsync(inputPath, outputPath) {
-    const [ shouldCopy, inputStats ] = await ifDifferentAsync(inputPath, outputPath);
+    const shouldCopy = await ifDifferentAsync(inputPath, outputPath);
     if (!shouldCopy) {
         return false;
     }
     mkdirToContain(outputPath);
     await fs.promises.copyFile(inputPath, outputPath);
     // Copy over mtime to new file
-    if (inputStats) {
-        await fs.promises.utimes(outputPath, inputStats.atime, inputStats.mtime);
-    }
+    await mirrorMTimesAsync(inputPath, outputPath);
     return true;
 }
 
+
+async function mirrorMTimesAsync(inputPath, outputPath) {
+    let inputStats = null;
+    let shouldCopy = false;
+    try {
+        inputStats = await fs.promises.stat(inputPath);
+    } catch { }
+    await fs.promises.chmod(outputPath, 0444);
+    if (!inputStats) {
+        return false;
+    }
+    await fs.promises.utimes(outputPath, inputStats.atime, inputStats.mtime);
+    return true;
+}
 
 const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
 
@@ -296,8 +308,10 @@ module.exports = {
     TERM,
     assert,
     ifDifferent,
+    ifDifferentAsync,
     copyIfDifferent,
     copyIfDifferentAsync,
+    mirrorMTimesAsync,
     mkdirToContain,
     parseArgs,
     findConfig,

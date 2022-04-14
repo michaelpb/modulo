@@ -8,7 +8,9 @@ const {
     getAction,
     logStatusBar,
     copyIfDifferentAsync,
-    isDifferentAsync,
+    copyAsync,
+    ifDifferentAsync,
+    mirrorMTimesAsync,
     mkdirToContain,
 } = require('./lib/cliUtils');
 
@@ -39,34 +41,43 @@ function hackPostprocess(html) {
 }
 
 async function doGenerate(moduloWrapper, config) {
-    const { inputFile, outputFile, verbose } = config;
+    const { inputFile, outputFile, verbose, force } = config;
     const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
     const action = getAction(inputFile, config);
+    const inputRelPath = path.relative('.', inputFile);
+    const outputRelPath = path.relative('.', outputFile);
     if (action === ACTIONS.SKIP) {
-        log('SKIPPING ' + inputFile);
-        return false;
-    }
-    const isDifferent = await isDifferentAsync(inputFile, outputFile);
-    if (!isDifferent {
-        log('(SAME)   ' + inputFile + ' -> ' + outputFile);
+        log('SKIPPING ' + inputRelPath);
         return false;
     }
 
+    if (!force) {
+        const isDifferent = await ifDifferentAsync(inputFile, outputFile);
+        if (!isDifferent) {
+            log('(SAME)   ' + inputRelPath + ' -> ' + outputRelPath);
+            return false;
+        }
+    }
+
+    // Not skipping, doing COPY, CUSTOM, or GENERATE
     if (action === ACTIONS.COPY) {
-        await copyIfDifferentAsync(inputFile, outputFile);
-        log('COPY     ' + inputFile + ' -> ' + outputFile);
-        return true;
+        log('COPY     ' + inputRelPath + ' -> ' + outputRelPath);
+        await fs.promises.copyFile(inputFile, outputFile);
     } else if (action === ACTIONS.CUSTOM) {
-        log('CUSTOM   ' + inputFile);
+        log('CUSTOM   ' + inputRelPath + ' -> ' + outputRelPath);
         throw new Error('Custom inputFile generators not implemented');
     } else if (action === ACTIONS.GENERATE) {
-        log('GENERATE ' + inputFile);
+        log('GENERATE ' + inputRelPath + ' -> ' + outputRelPath);
         let html = await moduloWrapper.runAsync(inputFile);
         html = hackPostprocess(html);
         mkdirToContain(outputFile);
         await fs.promises.writeFile(outputFile, html, 'utf8');
-        return true;
+    } else {
+        throw new Error('Invalid action');
     }
+
+    await mirrorMTimesAsync(inputFile, outputFile);
+    return true;
 }
 
 async function generate(moduloWrapper, config) {
@@ -100,7 +111,7 @@ async function fullssg(moduloWrapper, config) {
     for (const inputFile of files) {
         const extra = { inputFile, generateCheckDeps: false };
         const conf = Object.assign({}, config, extra);
-        generate(moduloWrapper, conf);
+        await generate(moduloWrapper, conf);
         logStatusBar('FULLSSG', count, files.length);
         count++;
     }

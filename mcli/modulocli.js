@@ -12,7 +12,12 @@ function getConfig(cliConfig, flags) {
     const envFlags = {port: process.env.PORT};
     envFlags.host = envFlags.port ? '0.0.0.0' : undefined;
     // Allow -p, -a, and -v as short-flags from CLI (but not conf):
-    const shortFlags = {port: flags.p, host: flags.a, verbose: flags.v};
+    const shortFlags = {
+        port: flags.p,
+        host: flags.a,
+        verbose: flags.v,
+        force: flags.f,
+    };
 
     const pushKey = { preload: true };
 
