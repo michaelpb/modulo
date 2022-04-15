@@ -767,19 +767,20 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     }
     */
 
-    constructor(element, options) {
-        super(element, options);
-        const engineClass = Modulo.templating[this.attrs.engine || 'MTL'];
-
-        // NOTE: May want to move this to Factory. While it will only create 1
-        // template function, it will generate the code with every instance.
-        //const rFOpts = { tagName: element.tagName.replace('-', '__') };
-        // TODO: Once we change interface to be "getCode" and/or "render", then
-        // we can compile in "Load"
-        const opts = Object.assign({}, this.attrs, {
+    static factoryCallback(partOptions, factory, renderObj) {
+        const engineClass = Modulo.templating[partOptions.attrs.engine || 'MTL'];
+        const opts = Object.assign({}, partOptions.attrs, {
             makeFunc: (a, b) => Modulo.assets.registerFunction(a, b),
         });
-        this.instance = new engineClass(this.content, opts);
+        partOptions.instance = new engineClass(partOptions.content, opts);
+    }
+
+    constructor(element, options) {
+        super(element, options);
+        if (!options.instance) { // TODO: Remove, needed for tests
+            Modulo.cparts.template.factoryCallback(options);
+        }
+        this.instance = options.instance;
     }
 
     prepareCallback(renderObj) {
@@ -977,8 +978,10 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
-        // this.opAliases['not in'] = `!(${this.opAliases['in']})`;
         this.compiledCode = this.compile(text);
+        if (!this.renderFunc) {
+            this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
+        }
     }
 
     tokenizeText(text) {
@@ -1010,9 +1013,6 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     }
 
     render(renderObj) {
-        if (!this.renderFunc) {
-            this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
-        }
         return this.renderFunc(Object.assign({ renderObj }, renderObj), this);
     }
 
@@ -1071,8 +1071,8 @@ Modulo.templating.defaultOptions = {
         //'and': 'X && Y',
         //'or': 'X || Y',
         'not': '!(Y)',
-        // TODO: Consider this to avoid excess rerenderings:
-        // (tmp = Y).includes ? tmp.includes(X) : (X in tmp)
+        // TODO: Consider patterns like this to avoid excess reapplication of filters:
+        // (x = X, y = Y).includes ? y.includes(x) : (x in y)
         'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
         'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
     },
@@ -1151,6 +1151,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         camelcase: s => s.replace(/-([a-z])/g, g => g[1].toUpperCase()),
         capfirst: s => s.charAt(0).toUpperCase() + s.slice(1),
         concat: (s, arg) => s.concat ? s.concat(arg) : s + arg,
+        //combine: (s, arg) => s.concat ? s.concat(arg) : Object.assign(s, arg),
         default: (s, arg) => s || arg,
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
@@ -1168,7 +1169,9 @@ Modulo.templating.defaultOptions.filters = (function () {
         reversed: s => Array.from(s).reverse(),
         upper: s => s.toUpperCase(),
     };
-    return Object.assign(filters, { get, jsobj, safe, sorted });
+    const { values, keys, entries } = Object;
+    const extra = { get, jsobj, safe, sorted, values, keys, entries };
+    return Object.assign(filters, extra);
 })();
 
 Modulo.templating.defaultOptions.tags = {
@@ -1196,8 +1199,8 @@ Modulo.templating.defaultOptions.tags = {
         const arrName = 'ARR' + tmplt.stack.length;
         const [ varExp, arrExp ] = text.split(' in ');
         let start = `var ${arrName}=${tmplt.parseExpr(arrExp)};`;
-        // TODO: Upgrade to of (after good testing), since probably
-        // no need to support for..in
+        // TODO: Upgrade to of (after good testing), since probably no need to
+        // support for..in
         start += `for (var KEY in ${arrName}) {`;
         const [keyVar, valVar] = varExp.split(',').map(cleanWord);
         if (valVar) {
@@ -1937,7 +1940,7 @@ Modulo.CommandMenu = class CommandMenu {
             {% for jsText in scriptSources|sorted %}{{ jsText|safe }}{% endfor %}
             Modulo.defineAll(); // ensure fetchQ gets defined
             Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
-            {% for hash, jsText in assets.rawAssets.js|sorted %}
+            {% for jsText in assets.rawAssets.js|values|sorted %}
                 {{ jsText|safe }}
             {% endfor %}
             {% for text in embeddedSources|sorted %}

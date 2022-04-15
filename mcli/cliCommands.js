@@ -11,6 +11,7 @@ const {
     ifDifferentAsync,
     mirrorMTimesAsync,
     mkdirToContain,
+    mkdirToContainAsync,
 } = require('./lib/cliUtils');
 
 function hackPostprocess(html, buildArtifacts) {
@@ -75,11 +76,7 @@ async function doGenerate(moduloWrapper, config) {
     // Not skipping, doing COPY, CUSTOM, or GENERATE
     if (action === ACTIONS.COPY) {
         log('COPY     ' + inputRelPath + ' -> ' + outputRelPath);
-        try {
-            await fs.promises.chmod(outputFile, 0777); // unlock, if exists
-        } catch {
-            log('Could not unlock ' + outputFile);
-        }
+        await unlockToWrite(outputFile, null, log);
         await fs.promises.copyFile(inputFile, outputFile);
     } else if (action === ACTIONS.CUSTOM) {
         log('CUSTOM   ' + inputRelPath + ' -> ' + outputRelPath);
@@ -94,12 +91,12 @@ async function doGenerate(moduloWrapper, config) {
             const { filename, text } = artifactInfo;
             artifactInfo.outputPath = path.resolve(output, './' + buildPath, filename);
             artifactInfo.absUriPath = (`/${buildPath}/${filename}`).replace(/\/\//g, '/');
-            await unlockToWrite(artifactInfo.outputPath, text);
+            await unlockToWrite(artifactInfo.outputPath, text, log);
         }
 
         // Then, do post processing and write main HTML
         html = hackPostprocess(html, buildArtifacts);
-        await unlockToWrite(outputFile, html);
+        await unlockToWrite(outputFile, html, log);
 
     } else {
         throw new Error('Invalid action');
@@ -140,13 +137,21 @@ async function generate(moduloWrapper, config) {
 
 async function ssg(moduloWrapper, config) {
     const files = walkSync(config.input, config);
+
     let count = 0;
+    const slowFiles = files.filter(file => {
+        const a = getAction(file, config);
+        return a === ACTIONS.GENERATE || a === ACTIONS.CUSTOM;
+    });
     for (const inputFile of files) {
         const extra = { inputFile, generateCheckDeps: false };
         const conf = Object.assign({}, config, extra);
         await generate(moduloWrapper, conf);
-        logStatusBar('SSG', count, files.length);
-        count++;
+
+        logStatusBar('SSG', count, slowFiles.length);
+        if (slowFiles.includes(inputFile)) {
+            count++;
+        }
     }
     moduloWrapper.close();
 }

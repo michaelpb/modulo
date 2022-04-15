@@ -13,34 +13,6 @@ docseg-Tutorial_P1 { /* styles the entire component */
     box-shadow: 10px 10px 0 0 turquoise;
 }
 
-/* ...and any CSS here! */
-e12g1-Example strong {
-    color: blue;
-}
-e12g1-Example .neat {
-    font-variant: small-caps;
-}
-e12g1-Example { /* styles the entire component */
-    display: inline-block;
-    background-color: cornsilk;
-    padding: 5px;
-    box-shadow: 10px 10px 0 0 turquoise;
-}
-
-/* ...and any CSS here! */
-e6g1-Example strong {
-    color: blue;
-}
-e6g1-Example .neat {
-    font-variant: small-caps;
-}
-e6g1-Example { /* styles the entire component */
-    display: inline-block;
-    background-color: cornsilk;
-    padding: 5px;
-    box-shadow: 10px 10px 0 0 turquoise;
-}
-
 docseg-Templating_Escaping .msgcontent {
         background: #999;
         padding: 10px;
@@ -52,10 +24,6 @@ docseg-Templating_PrepareCallback input { display: inline; width: 25px }
 docseg-Tutorial_P3_state_demo {
         font-size: 0.8rem;
     }
-
-e3g1-Example input { display: inline; width: 25px }
-
-e9g1-Example input { display: inline; width: 25px }
 
 eg-ConwayGameOfLife {
         display: flex;
@@ -295,7 +263,36 @@ mws-Section a.secanchor {
 mws-Section Section:hover .Section-helper {
             opacity: 1.0;
         }
-    mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    
+x-ExampleBtn .my-btn {
+                display: inline-block;
+                box-sizing: border-box;
+                font-family: sans-serif;
+                border: 1px solid gray;
+                transition: 0.1s;
+                box-shadow:
+                    inset -3px -3px
+                    1px 1px rgba(100, 100, 100, 0.3);
+                border-radius: 1px 8px 1px 8px;
+                cursor: default;
+                text-align: center;
+                padding: 3px;
+                padding-right: 5px;
+                padding-bottom: 5px;
+                height: 30px;
+                background: turquoise;
+                font-weight: bold;
+            }
+
+x-ExampleBtn .my-btn:active {
+                box-shadow: inset 3px 3px 1px 1px rgba(100, 100, 100, 0.3);
+            }
+x-ExampleBtn .my-btn__square {
+            }
+x-ExampleBtn .my-btn__round {
+                border-radius: 150px;
+            }
+        mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
     height: 200px;
 }
 

@@ -103,6 +103,19 @@ function mkdirToContain(path) {
 }
 
 
+async function mkdirToContainAsync(path) {
+    const pathPrefix = path.slice(0, path.lastIndexOf('/'));
+    const mkdirOpts = {
+        mode: 0o777,
+        recursive: true,
+    };
+    await fs.promises.mkdir(pathPrefix, mkdirOpts);
+    try {
+        await fs.promises.chmod(outputFile, 0777); // unlock, if exists
+    } catch { }
+}
+
+
 
 async function ifDifferentAsync(inputPath, outputPath) {
     let inputStats = null;
@@ -138,14 +151,16 @@ async function mirrorMTimesAsync(inputPath, outputPath) {
 }
 
 
-async function unlockToWrite(path, text) {
-    mkdirToContain(path);
+async function unlockToWrite(path, text, log) {
+    mkdirToContain(path); // TODO: Switch with async
     try {
         await fs.promises.chmod(path, 0777); // unlock, if exists
     } catch {
-        console.log('Could not unlock ' + path);
+        log('Could not unlock ' + path);
     }
-    await fs.promises.writeFile(path, text, 'utf8');
+    if (text !== null) {
+        await fs.promises.writeFile(path, text, 'utf8');
+    }
 }
 
 const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
@@ -279,6 +294,7 @@ module.exports = {
     mirrorMTimesAsync,
     unlockToWrite,
     mkdirToContain,
+    mkdirToContainAsync,
     parseArgs,
     findConfig,
     getAction,

@@ -135,7 +135,7 @@ class ModuloVM {
             return buildFiles;
         }, runSettings);
 
-        console.log(url, buildFiles.map(({ filename }) => filename));
+        // console.log(url, buildFiles.map(({ filename }) => filename));
 
         const html = await page.evaluate(() => {
             return document.documentElement.innerHTML;

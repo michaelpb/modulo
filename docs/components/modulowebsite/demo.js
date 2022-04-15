@@ -231,7 +231,13 @@ function doRun() {
     let componentDef = state.text;
     componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
     const loader = new Modulo.Loader(null, { attrs } );
+
+    // Use a new asset manager when loading, to prevent it from getting into the main bundle
+    const oldAssetMgr = Modulo.assets;
+    Modulo.assets = new Modulo.AssetManager();
     loader.loadString(componentDef);
+    Modulo.assets = oldAssetMgr;
+
     const fullname = `${namespace}-${tagName}`;
     const factory = Modulo.factoryInstances[fullname];
     state.preview = `<${fullname}></${fullname}>`;
