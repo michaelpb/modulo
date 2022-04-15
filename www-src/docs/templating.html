@@ -209,16 +209,18 @@ lower filter, which converts text to lowercase. Use a pipe (|) to apply a
 filter.</p>
 
 <p>Filters can be "chained." The output of one filter is applied to the next.
-<code>{{ text|escape|linebreaks }}</code> is a common idiom for escaping text
-contents, then converting line breaks to &lt;p&gt; tags.</p>
+This chaining feature can be applied, like in
+<code>{{&nbsp;state.color|allow:"red,blue"|default:"green"&nbsp;}}</code>,
+which is a way to conditionally allow for only certain strings to be in
+<code>state.color</code>, while providing a default if none were specified.</p>
 
 <p>Some filters take arguments. A filter argument looks like this:
-<code>{{ bio|truncate:30 }}</code>.
+<code>{{ state.bio|truncate:30 }}</code>.
 This will display the first 30 characters of the bio variable, possibly
 appending an ellipsis if its full length exceeds that.</p>
 
 <p>Filter arguments that contain spaces must be quoted; for example, to join a
-list with commas and spaces you'd use <code>{{ list|join:", " }}</code>.</p>
+list with commas and spaces you'd use <code>{{ state.list|join:", " }}</code>.</p>
 
 <p>Modulo's templating language provides several dozen built-in template
 filters. You can read all about them in the
@@ -254,7 +256,7 @@ will be 4.</p>
 </div>
 
 <p>Again, these are just a few examples; see the <a
-href="/docs/template_reference.html#filters">built-in filter reference</a>.
+href="/docs/template-reference.html#filters">built-in filter reference</a>.
 for the complete list.</p>
 
 <p>You can also create your own custom template filters; see Custom template

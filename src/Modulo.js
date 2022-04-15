@@ -1,9 +1,6 @@
 'use strict';
 
-// # Introduction
-// Welcome to the Modulo.js source code.
-
-// ## Note
+// # Note
 // Earlier versions of Modulo.js's source code were written with "literate
 // programming". Most of this documentation has been deleted, but will be
 // rewritten in this style once the public API is settled. Until then, the code
@@ -1107,12 +1104,24 @@ Modulo.templating.defaultOptions.filters = (function () {
         return obj[key];
     }
 
+    function sorted(obj, arg) {
+        if (!obj) {
+            return obj;
+        }
+        // TODO Refactor
+        if (Array.isArray(obj)) {// && (!obj.length || typeof obj[0] !== 'object')) {
+            return obj.sort();
+        } else {
+            const keys = Array.from(Object.keys(obj)).sort(); // Loop through sorted
+            return keys.map(k => [k, obj[k]]);
+        }
+    }
+
     // TODO: Once we get unit tests for build, replace jsobj with actual loop
-    // in build template (and just backtick escape as filter). Make sure keys
-    // are alphabetical (stable).
+    // in build template (and just backtick escape as filter).
     function jsobj(obj, arg) {
         let s = '{\n';
-        for (const [key, value] of Object.entries(obj)) {
+        for (const [key, value] of sorted(obj)) {
             s += '  ' + JSON.stringify(key) + ': ';
             if (typeof value === 'string') {
                 s += '// (' + value.split('\n').length + ' lines)\n`';
@@ -1130,8 +1139,6 @@ Modulo.templating.defaultOptions.filters = (function () {
     //trim: s => s.trim(), // TODO: improve interface to be more useful
     //invoke: (s, arg) => s(arg),
     //getAttribute: (s, arg) => s.getAttribute(arg),
-    // Idea: Could move more utils here, e.g. style:
-    // stripcomments: s => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
 
     // Idea: Generalized "matches" filter that gets registered like such:
     //     defaultOptions.filters.matches = {name: //ig}
@@ -1161,7 +1168,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         reversed: s => Array.from(s).reverse(),
         upper: s => s.toUpperCase(),
     };
-    return Object.assign(filters, { get, jsobj, safe });
+    return Object.assign(filters, { get, jsobj, safe, sorted });
 })();
 
 Modulo.templating.defaultOptions.tags = {
@@ -1812,15 +1819,12 @@ Modulo.INVALID_WORDS = new Set((`
     switch throw try typeof var let void  while with await async true false
 `).split(/\s+/ig));
 
-//Modulo.RESERVED_WORDS = ['true', 'false', 'this'] // ? void
-
 Modulo.assert = function assert(value, ...info) {
     if (!value) {
         console.error(...info);
         throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
     }
 }
-
 
 Modulo.AssetManager = class AssetManager {
     constructor () {
@@ -1880,8 +1884,8 @@ Modulo.AssetManager = class AssetManager {
         const doc = Modulo.globals.document;
         const elem = doc.createElement(tagName);
         if (doc.head === null) {
-            // NOTE: this is still broken, can still trigger
-            // before head is created!
+            // TODO: NOTE: this is still broken, can still trigger before head
+            // is created!
             setTimeout(() => doc.head.append(elem), 0);
         } else {
             doc.head.append(elem);
@@ -1913,14 +1917,6 @@ Modulo.CommandMenu = class CommandMenu {
         Modulo.globals.m = Modulo.cmd;
     }
 
-    target(elem) {
-        // DAED CODE
-        if (!this.targeted) {
-            this.targeted = [];
-        }
-        this.targeted.push([elem.factory.fullName, elem.instanceId, elem]);
-    }
-
     build(opts = {}) {
         // Base bundle is fetchQ + CSS only
         this.buildcss(opts);
@@ -1938,13 +1934,13 @@ Modulo.CommandMenu = class CommandMenu {
         const { saveFileAs, hash } = Modulo.utils;
         // TODO move template string to config
         const buildTemplate = new Modulo.templating.MTL(`
-            {% for jsText in scriptSources %}{{ jsText|safe }}{% endfor %}
+            {% for jsText in scriptSources|sorted %}{{ jsText|safe }}{% endfor %}
             Modulo.defineAll(); // ensure fetchQ gets defined
             Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
-            {% for hash, jsText in assets.rawAssets.js %}
+            {% for hash, jsText in assets.rawAssets.js|sorted %}
                 {{ jsText|safe }}
             {% endfor %}
-            {% for text in embeddedSources %}
+            {% for text in embeddedSources|sorted %}
                 Modulo.globalLoader.loadString("{{ text|escapejs|safe }}");
             {% endfor %}
             window.onload = () => Modulo.defineAll();
@@ -1960,23 +1956,22 @@ Modulo.CommandMenu = class CommandMenu {
     fetchBundleData(callback) {
         const query = 'script[src*=".js"],link[rel=stylesheet],' +
                       'template[modulo-embed],modulo';
-        const tags = Modulo.globals.document.querySelectorAll(query);
         const scriptSources = [];
         const cssSources = [];
         const embeddedSources = [];
-        for (const tag of tags) {
-            if (tag.tagName === 'TEMPLATE' || tag.tagName === 'MODULO') {
-                embeddedSources.push(data);
+        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+            if (elem.tagName === 'TEMPLATE' || elem.tagName === 'MODULO') {
+                embeddedSources.push(elem.innerHTML);
                 continue;
             }
-            Modulo.fetchQ.enqueue(tag.src, data => {
-                delete Modulo.fetchQ.data[tag.src]; // clear cached data
-                const arr = tag.tagName === 'SCRIPT' ? scriptSources : cssSources;
+            Modulo.fetchQ.enqueue(elem.src, data => {
+                delete Modulo.fetchQ.data[elem.src]; // clear cached data
+                const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
                 arr.push(data);
             });
         }
         // TODO: Add in "embedded" to bundle
-        //const embeddedTags = document.querySelectorAll('script[src*=".js"]');
+        //const embeddedTags = document.querySelectorAll('script[^src]');
         //const embedded = [];
         const opts = { scriptSources, cssSources, embeddedSources };
         Modulo.fetchQ.wait(() => callback(opts));
@@ -1990,7 +1985,6 @@ if (typeof module !== 'undefined') { // Node
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
 }
-
 
 // End of Modulo.js source code. Below is the latest Modulo project:
 // ------------------------------------------------------------------

@@ -63,7 +63,6 @@ class ModuloVM {
     }
 
     async runAsync(htmlPath, command = null) {
-        const waitUntil = 'networkidle0';
         const url = this.getURL(htmlPath);
 
         const doBundle = command === 'build' || command === 'all';
@@ -88,7 +87,7 @@ class ModuloVM {
             this.dependencyGraph[reqUrl][url] = true;
         });
 
-        await page.goto(url, { waitUntil });
+        await page.goto(url, { waitUntil: 'networkidle0' });
 
         const buildFiles = await page.evaluate((runSettings) => {
             if (typeof Modulo === 'undefined') {
@@ -135,6 +134,8 @@ class ModuloVM {
             }
             return buildFiles;
         }, runSettings);
+
+        console.log(url, buildFiles.map(({ filename }) => filename));
 
         const html = await page.evaluate(() => {
             return document.documentElement.innerHTML;
