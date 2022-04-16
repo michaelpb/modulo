@@ -29,7 +29,7 @@ const defaultConfig = {
         // is the one that should be served up as your site (e.g. for sites
         // hosted on GitHub Pages, this should be "docs").
 
-    buildPath: '/_modulo_builds/',
+    buildPath: '/_modulo/',
         // Path prefix used for built JS and CSS files, when building or
         // bundling JS and CSS during SSG step.
 
@@ -71,6 +71,18 @@ const defaultConfig = {
         // in fact GitHub Pages does this automatically already, so no
         // configuration necessary there.
 
+    serverCacheAllow: false,
+        // Set to true to enable caching on the Express.js server.
+
+    serverSetNoCache: false,
+        // Set to true set "Cache-Control: no-store" on response
+
+    serveAll: false,
+        // Set to true to enable serving source on a port one higher than the
+        // normal port at the same time as serving the built version, e.g.
+        // essentially the same as running both servesource and serve at the
+        // same time.
+
     testLog: false,
         // Enable the test log file will keep track of the maximum number of
         // assertions that pass and fail when running. If enabled, an OMISSION
@@ -106,9 +118,20 @@ const defaultConfig = {
         // For SSG, specify a RegExp string that is tested against each file's
         // entire path (e.g. the $ is the end of the full path).
 
+    watchLockTimeout: 2,
+        // How many seconds will the "watch" command throttle rebuilding the
+        // same page after rapid successive edits, while a generate is still in
+        // progress.
+
     // (ENDHELP)
 
     // Undocumented:
+
+    watchDelete: false,
+        // Set to "true" to allow watch to DELETE files from the output
+        // directory, when their counterpart is deleted in the input directory.
+        // It's probably better just to wipe the output directory every so
+        // often and rebuild from scratch, than to try to sync unlinks.
 
     generateCheckDeps: true,
         // Whether to in turn generate other files based on dependencies

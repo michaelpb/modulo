@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-class ModuloVM {
+class ModuloBrowser {
     constructor(config) {
         this.config = config;
         this.absoluteRoot = path.resolve(this.config.input);
@@ -15,13 +15,13 @@ class ModuloVM {
 
     _startExpress(callback) {
         return new Promise((resolve, reject) => {
-            if (this._app) {
+            if (this._genApp && this._serverGen) {
                 return resolve();
             }
             const express = require('express');
-            this._app = express();
-            this._app.use(express.static(this.absoluteRoot));
-            this._server = this._app.listen(this.port, () => {
+            this._genApp = express();
+            this._genApp.use(express.static(this.absoluteRoot));
+            this._serverGen = this._genApp.listen(this.port, () => {
                 this.log('Modulo Browser - static server at: ' + this.port);
                 resolve();
             });
@@ -145,8 +145,14 @@ class ModuloVM {
 
     close(callback) {
         (async () => {
-            if (this._server) {
-                this._server.close();
+            if (this._serverGen) {
+                this._serverGen.close();
+            }
+            if (this._serverSrc) { // HACK, these should be attached & closed elsewhere
+                this._serverSrc.close();
+            }
+            if (this._serverSsg) { // HACK, these should be attached & closed elsewhere
+                this._serverSsg.close();
             }
             if (this._browser) {
                 await this._browser.close();
@@ -158,4 +164,4 @@ class ModuloVM {
     }
 }
 
-module.exports = ModuloVM;
+module.exports = ModuloBrowser;
