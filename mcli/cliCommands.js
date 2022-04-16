@@ -173,19 +173,19 @@ async function ssg(moduloWrapper, config) {
     const files = walkSync(config.input, config);
 
     let count = 0;
-    const slowFiles = files.filter(file => {
+    // Store all files that are slower in a set
+    const slowFilesRemaining = new Set(files.filter(file => {
         const a = getAction(file, config);
         return a === ACTIONS.GENERATE || a === ACTIONS.CUSTOM;
-    });
+    }));
+    const slowTotal = slowFilesRemaining.size;
     for (const inputFile of files) {
         const extra = { inputFile, generateCheckDeps: false };
         const conf = Object.assign({}, config, extra);
-        generate(moduloWrapper, conf);
+        await generate(moduloWrapper, conf);
 
-        logStatusBar('SSG', count, slowFiles.length);
-        if (slowFiles.includes(inputFile)) {
-            count++;
-        }
+        logStatusBar('SSG', slowTotal - slowFilesRemaining.size, slowTotal);
+        slowFilesRemaining.delete(inputFile); // remove file if slow
     }
     moduloWrapper.close();
 }

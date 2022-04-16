@@ -15,7 +15,7 @@ class ModuloBrowser {
 
     _startExpress(callback) {
         return new Promise((resolve, reject) => {
-            if (this._genApp && this._serverGen) {
+            if (this._genApp) {
                 return resolve();
             }
             const express = require('express');
