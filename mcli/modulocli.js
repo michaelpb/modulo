@@ -3,7 +3,8 @@ const ModuloBrowser = require('./lib/ModuloBrowser'); // Puppeteer-based
 const { TERM, findConfig, parseArgs } = require('./lib/cliUtils');
 
 const defaultConfig = require('./lib/defaultConfig');
-const cliCommands = require('./cliCommands');
+const cliCommands = require('./commands/');
+//const cliCommands = require('./cliCommands');
 
 let moduloWrapper = null;
 
@@ -19,7 +20,7 @@ function getConfig(cliConfig, flags) {
         force: flags.f,
     };
 
-    const pushKey = { preload: true };
+    const pushKey = { preload: true }; // TODO: Remove  this feature
 
     // Finally, generate the config "stack", with items at the end taking
     // precedent over items at the top.

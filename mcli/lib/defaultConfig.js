@@ -29,6 +29,12 @@ const defaultConfig = {
         // is the one that should be served up as your site (e.g. for sites
         // hosted on GitHub Pages, this should be "docs").
 
+    inputFile: '',
+        // Used for "generate" command: Specify the single file that you want
+        // to pre-render or copy, with the output directory specified by the
+        // --output command. Note that the "--input" should contain
+        // "--inputFile"
+
     buildPath: '/_modulo/',
         // Path prefix used for built JS and CSS files, when building or
         // bundling JS and CSS during SSG step.
@@ -76,12 +82,6 @@ const defaultConfig = {
 
     serverSetNoCache: false,
         // Set to true set "Cache-Control: no-store" on response
-
-    serveAll: false,
-        // Set to true to enable serving source on a port one higher than the
-        // normal port at the same time as serving the built version, e.g.
-        // essentially the same as running both servesource and serve at the
-        // same time.
 
     testLog: false,
         // Enable the test log file will keep track of the maximum number of
@@ -182,6 +182,12 @@ const defaultConfig = {
         // revisited and get a script-tag inserted with the path to this file.
         // As with other BUILD paths, this path gets templated using MTL syntax
         // with the same variables available (see buildPath)
+
+    serveAll: false,
+        // Set to true to enable serving source on a port one higher than the
+        // normal port at the same time as serving the built version, e.g.
+        // essentially the same as running both servesource and serve at the
+        // same time.
 
     ssgRenderDepth: 10,
         // During the SSG step, this important setting specifies how many times
