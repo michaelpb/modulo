@@ -1,9 +1,7 @@
 const fs = require('fs');
 const pathlib = require('path');
-const {JSDOM} = require('jsdom');
-const {DOMParser} = require('xmldom');
-
-const ssgStore = {};
+// const { JSDOM } = require('jsdom');
+// const { DOMParser } = require('xmldom');
 
 function exitErr(message) {
     console.warn(message);
@@ -14,61 +12,6 @@ function assert(value, ...info) {
     if (!value) {
         exitErr(`ERROR: ${Array.from(info).join(' ')}`);
     }
-}
-
-function parseArgs(argArray, shiftFirst=true) {
-    if (shiftFirst) {
-        argArray.shift(); // always get rid of first argument
-    }
-    if (argArray[0].endsWith('.js') || argArray[0].endsWith('modulocli')) {
-        argArray.shift(); // shift again, if necessary
-    }
-    const flags = {};
-
-    /*
-    const confPath = process.env.MODCLI_CONF || './modulocli.json';
-    let stat = null;
-    try {
-      const stat = fs.statSync(confPath); // throws Error if not found
-    } catch {}
-
-    if (stat && !stat.isDirectory()) {
-        const jsonText = fs.readFileSync(confPath, 'utf-8');
-        flags = JSON.parse(jsonText);
-    }
-    */
-
-    const args = {flags, positional: [], command: null};
-    let currentFlag = null;
-    for (const arg of argArray) {
-        if (arg.startsWith('-')) {
-            if (currentFlag) {
-                args.flags[currentFlag] = true;
-            }
-            if (arg.startsWith('--')) {
-                currentFlag = arg.slice(2);
-
-                if (arg.includes('=')) {
-                    const [name, value] = arg.split('=');
-                    currentFlag = null;
-                    args.flags[name] = value;
-                }
-            } else {
-                currentFlag = null;
-                for (const singleChar of arg.split('')) {
-                    args.flags[singleChar] = true;
-                }
-            }
-        } else if (currentFlag) {
-            args.flags[currentFlag] = arg;
-            currentFlag = null;
-        } else if (args.command === null) {
-            args.command = arg;
-        } else {
-            args.positional.push(arg);
-        }
-    }
-    return args;
 }
 
 const readFileSyncCache = {};
@@ -165,41 +108,6 @@ async function unlockToWrite(path, text, log) {
 
 const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
 
-function findConfig(args, callback) {
-    if ('config' in args.flags) {
-        if (args.flags.config === 'default') {
-            callback({}, args);
-            return;
-        }
-
-        fs.readFile(args.flags.config, 'utf8', (data, err) => {
-            if (err) {
-                console.log('Could not read path:', args.flags.config);
-                throw err;
-            }
-
-            callback(JSON.parse(data), args);
-        });
-        return;
-    }
-
-    fs.readFile(CONFIG_PATH, 'utf8', (err1, data1) => {
-        if (err1) {
-            fs.readFile('./package.json', (err2, data2) => {
-                if (err2) {
-                    callback({}, args);
-                } else {
-                    const jsonData = JSON.parse(data2);
-                    callback(jsonData.modulo || {}, args);
-                }
-            });
-        } else {
-            callback(JSON.parse(data1), args);
-        }
-    });
-}
-
-
 function walkSync(basePath, config) {
     const { isSkip, verbose } = config;
     let results = [];
@@ -295,7 +203,6 @@ module.exports = {
     unlockToWrite,
     mkdirToContain,
     mkdirToContainAsync,
-    parseArgs,
     findConfig,
     getAction,
     walkSync,

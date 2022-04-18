@@ -26,8 +26,8 @@ const HELP_TEXT = {
     devserve: `
         Like SSG, Watch, and two Express servers at once: One for --input (for
         direct development), and one for --output (the bundled and server-side
-        rendered version). By default, the --output server will be at port
-        number :3333 and the --input server will be at :3334
+        rendered version). This allows you to easily compare pre-rendered
+        version with the "source code" version just by changing the port number.
     `,
 };
 
@@ -73,7 +73,7 @@ function help(moduloWrapper, config, args) {
             } else if (line.includes(':')) {
                 const indent = '    --';
                 line = line.replace(/^\s*/, indent);
-                line = line.replace(/:\s*['"]?/, '=');
+                line = line.replace(/:\s*['"]?/, ' ');
                 line = line.replace(/['"]?,\s*$/, '');
                 line = `${TERM.BRIGHT}${line}${TERM.RESET}`;
             }

@@ -1,48 +1,13 @@
 const ModuloVM = require('./lib/ModuloVM'); // HappyDOM-based
 const ModuloBrowser = require('./lib/ModuloBrowser'); // Puppeteer-based
-const { TERM, findConfig, parseArgs } = require('./lib/cliUtils');
+//const { TERM, findConfig, getConfig, parseArgs } = require('./lib/cliUtils');
+const { TERM } = require('./lib/cliUtils');
+const { findConfig, getConfig, parseArgs } = require('./lib/configUtils');
 
-const defaultConfig = require('./lib/defaultConfig');
 const cliCommands = require('./commands/');
 //const cliCommands = require('./cliCommands');
 
 let moduloWrapper = null;
-
-function getConfig(cliConfig, flags) {
-    // Using PORT is so it "does the right thing" on herokulike platforms
-    const envFlags = { port: process.env.PORT };
-    envFlags.host = envFlags.port ? '0.0.0.0' : undefined;
-    // Allow -p, -a, and -v as short-flags from CLI (but not conf):
-    const shortFlags = {
-        port: flags.p,
-        host: flags.a,
-        verbose: flags.v,
-        force: flags.f,
-    };
-
-    const pushKey = { preload: true }; // TODO: Remove  this feature
-
-    // Finally, generate the config "stack", with items at the end taking
-    // precedent over items at the top.
-    const runtimeConfig = [envFlags, shortFlags, flags];
-    const config = Object.assign({}, defaultConfig, cliConfig);
-    for (const key of Object.keys(defaultConfig)) {
-        for (const conf of runtimeConfig) {
-            if (key in conf && conf[key] !== undefined) {
-                if (key in pushKey) {
-                    if (!Array.isArray(conf[key])) {
-                        conf[key] = [conf[key]]; // ensure in arr
-                    }
-                    config[key].push(...conf[key]); // extend list
-                } else {
-                    config[key] = conf[key];
-                }
-            }
-        }
-    }
-    return config;
-}
-
 
 function doCommand(cliConfig, args) {
     let { command, positional, flags } = args;
