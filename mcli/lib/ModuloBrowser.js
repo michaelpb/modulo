@@ -30,13 +30,18 @@ class ModuloBrowser {
 
     _startBrowser() {
         // TODO: refactor
-        const puppeteer = require('puppeteer');
+        const { browserBackend, browserBackendVisible, verbose } = this.config;
+        const puppeteer = require(browserBackend);
+        const pConfig = {
+            headless: !browserBackendVisible,
+            //dumpio: verbose, // Too verbose? (It's the browser process's)
+        };
         return new Promise((resolve, reject) => {
             if (this._browser) {
                 return resolve();
             }
             (async () => {
-                this._browser = await puppeteer.launch();
+                this._browser = await puppeteer.launch(pConfig);
                 resolve();
             })();
         });
@@ -65,11 +70,13 @@ class ModuloBrowser {
     async runAsync(htmlPath, command = null) {
         const url = this.getURL(htmlPath);
 
-        const doBundle = command === 'build' || command === 'all';
-        const doBuild = command === 'build' || command === 'all' || !command;
-        const doRender = command === 'render' || command === 'all' || !command;
-        // TODO: Change doBundle to be default setting (null)
+        let doBundle = command === 'build' || command === 'all';
+        let doBuild = command === 'build' || command === 'all' || !command;
+        let doRender = command === 'render' || command === 'all' || !command;
         //const doBundle = command === 'bundle' || command === 'all' || !command;
+        doBuild = true; // XXX hardcoding for now
+        doRender = true; // XXX
+        doBundle = false; // XXX
         const runSettings = { doBuild, doBundle, doRender };
 
         await this._startExpress(); // setup stuff
@@ -87,17 +94,26 @@ class ModuloBrowser {
             this.dependencyGraph[reqUrl][url] = true;
         });
 
+        const { verbose } = this.config;
+        page.on('console', message => {
+            const code = message.type().substr(0, 3).toUpperCase();
+            if (verbose || code === 'ERR') {
+                console.log(`|%| BROWSER ${code} |%| ${message.text()}`);
+            }
+        });
+
+
         await page.goto(url, { waitUntil: 'networkidle0' });
 
-        const buildFiles = await page.evaluate((runSettings) => {
-            if (typeof Modulo === 'undefined') {
-                return []; // Don't attempt any Modulo-specific actions
-            }
-            //const { doBuild, doBundle, doRender } = runSettings;
-            var doBuild = true; // hardcoding for now
-            var doRender = true;
-            var doBundle = false;
+        const { buildFiles } = await page.evaluate(runSettings => {
+            let { doBuild, doBundle, doRender } = runSettings;
             const buildFiles = [];
+            const results = [];
+
+            if (typeof Modulo === 'undefined') {
+                return { buildFiles }; // Don't attempt any Modulo-specific actions
+            }
+
             Modulo.utils.saveFileAs = (filename, text) => {
                 buildFiles.push({ filename, text });
             };
@@ -112,8 +128,6 @@ class ModuloBrowser {
                 // Delete all script tags and style tags
                 const toDelete = 'script,style,link';
                 for (const elem of document.querySelectorAll(toDelete)) {
-                    // TODO: Have a better way to know if included in build,
-                    // e.g. an attribute
                     const includedInBuild = elem.tagName === 'STYLE' || (
                         elem.tagName === 'SCRIPT' && !elem.hasAttribute('src'));
                     if (doBundle || (doBuild && includedInBuild)) {
@@ -132,7 +146,7 @@ class ModuloBrowser {
                     }
                 }
             }
-            return buildFiles;
+            return { buildFiles };
         }, runSettings);
 
         // console.log(url, buildFiles.map(({ filename }) => filename));

@@ -123,6 +123,15 @@ const defaultConfig = {
         // same page after rapid successive edits, while a generate is still in
         // progress.
 
+    browserBackend: 'puppeteer',
+        // Override to point to any library that implements a "puppeteer-like"
+        // interface, to use this as the browser backend instead.
+
+    browserBackendVisible: false,
+        // By default, the browser backend will start in a "headless" mode. Set
+        // this to make it visible, if possible.
+
+
     // (ENDHELP)
 
     // Undocumented:

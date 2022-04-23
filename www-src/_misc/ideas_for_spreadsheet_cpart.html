@@ -1,0 +1,36 @@
+
+### CPart idea: AirTable / Google Sheets / Firebase etc
+
+- Wraps around their JS API, behaving a bit like State
+- Has "no-code" ways to bind to inputs, etc
+- Dangerously easy:
+- E.g.
+
+      <Template>
+          {% for row in spreadsheet.rows %}
+              <tr>
+                  <th>{{ row.label }}</th>
+                  {% for col in spreadsheet.cols %}
+                      <td>{{ row|get:col.index }}</td>
+                  {% endfor %}
+              </tr>
+          {% endfor %}
+          <input name="first_name" [state.bind] />
+          <input name="last_name" [state.bind] />
+          <input name="phone" [state.bind] />
+          <button @click:=spreadsheet.newRowFromState>Add</button>
+      </Template>
+
+      <State
+          first_name:=''
+          last_name:=''
+          phone:=''
+      ></State>
+
+      <Spreadsheet
+          engine="google"
+          apicode="xyz"
+          sheet="My Sheet 1"
+      ></Spreadsheet>
+
+
