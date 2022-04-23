@@ -2,6 +2,8 @@ const fs = require('fs');
 
 const defaultConfig = require('./defaultConfig');
 
+const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
+
 function getConfig(cliConfig, flags) {
     // Using PORT is so it "does the right thing" on herokulike platforms
     const envFlags = { port: process.env.PORT };
@@ -127,3 +129,9 @@ function parseArgs(argArray, shiftFirst=true) {
     return args;
 }
 
+
+module.exports = {
+    parseArgs,
+    getConfig,
+    findConfig,
+};

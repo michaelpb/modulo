@@ -14,14 +14,6 @@ function assert(value, ...info) {
     }
 }
 
-const readFileSyncCache = {};
-function cachedReadFileSync(fullPath) {
-    if (!(fullPath in readFileSyncCache)) {
-        readFileSyncCache[fullPath] = fs.readFileSync(fullPath, 'utf-8');
-    }
-    return readFileSyncCache[fullPath];
-}
-
 function checkArgs(args, commands) {
     // presently no-op
     const options = Object.keys(commands).join(' or ');
@@ -105,8 +97,6 @@ async function unlockToWrite(path, text, log) {
         await fs.promises.writeFile(path, text, 'utf8');
     }
 }
-
-const CONFIG_PATH = process.env.MODULO_CONFIG || './modulo.json';
 
 function walkSync(basePath, config) {
     const { isSkip, verbose } = config;
@@ -203,7 +193,6 @@ module.exports = {
     unlockToWrite,
     mkdirToContain,
     mkdirToContainAsync,
-    findConfig,
     getAction,
     walkSync,
     logStatusBar,
