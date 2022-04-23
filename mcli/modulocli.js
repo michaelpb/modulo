@@ -1,11 +1,10 @@
 const ModuloVM = require('./lib/ModuloVM'); // HappyDOM-based
 const ModuloBrowser = require('./lib/ModuloBrowser'); // Puppeteer-based
-//const { TERM, findConfig, getConfig, parseArgs } = require('./lib/cliUtils');
+
 const { TERM } = require('./lib/cliUtils');
 const { findConfig, getConfig, parseArgs } = require('./lib/configUtils');
 
 const cliCommands = require('./commands/');
-//const cliCommands = require('./cliCommands');
 
 let moduloWrapper = null;
 
