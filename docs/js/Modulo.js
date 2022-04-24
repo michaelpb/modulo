@@ -1743,6 +1743,7 @@ Modulo.utils = class utils {
     }
 
     static fetchBundleData(callback) {
+        const { normalize } = Modulo.utils;
         const query = 'script[src*=".js"],link[rel=stylesheet],' +
                       'template[modulo-embed],modulo';
         const scriptSources = [];
@@ -1751,10 +1752,10 @@ Modulo.utils = class utils {
         for (const elem of Modulo.globals.document.querySelectorAll(query)) {
             elem.setAttribute('modulo-asset', 'y'); // Mark as an "asset", to rm
             if (elem.tagName === 'TEMPLATE' || elem.tagName === 'MODULO') {
-                embeddedSources.push(elem.innerHTML);
+                embeddedSources.push(normalize(elem.innerHTML));
             } else {
-                Modulo.fetchQ.enqueue(elem.src, data => {
-                    delete Modulo.fetchQ.data[elem.src]; // clear cached data
+                Modulo.fetchQ.enqueue(elem.src || elem.href, data => {
+                    delete Modulo.fetchQ.data[elem.src || elem.href]; // clear cached data
                     const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
                     arr.push(data);
                 });
@@ -1919,7 +1920,7 @@ Modulo.AssetManager = class AssetManager {
 Modulo.jsBuildTemplate = `{% for jsText in jsTexts %}{{ jsText|safe }}{% endfor %}
 Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
 {% for text in embeddedSources %}
-    Modulo.globalLoader.loadString("{{ text|escapejs|safe }}");
+Modulo.globalLoader.loadString("{{ text|escapejs|safe }}");
 {% endfor %}`;
 
 Modulo.CommandMenu = class CommandMenu {
