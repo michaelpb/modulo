@@ -1,0 +1,33 @@
+
+<Component name="Tester">
+    <Template>
+        <p @click:=script.gotClicked>Click me for an alert ({{ customcpart.answer }})</p>
+    </Template>
+
+    <CustomCPart></CustomCPart>
+
+    <Script>
+        console.log('script factory happening');
+
+        function gotClicked() {
+            alert('click registered ' + customcpart.answer * 2);
+        }
+    </Script>
+
+    <Style>
+        p {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        :host {
+            border: 3px solid blue;
+            padding: 10px;
+            margin: 10px;
+            display:  block;
+            width: 100px;
+        }
+    </Style>
+</Component>
+
+

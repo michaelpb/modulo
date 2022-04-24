@@ -225,6 +225,8 @@ Modulo.cparts.load = class Load extends Modulo.ComponentPart {
     }
 }
 
+Modulo.cparts.library = Modulo.cparts.load; // ALIAS, as we transition to Library nomenclature
+
 Modulo.ComponentFactory = class ComponentFactory {
     constructor(loader, name, childrenLoadObj) {
         this.loader = loader;
@@ -1108,7 +1110,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         if (!obj) {
             return obj;
         }
-        // TODO Refactor
+        // TODO Refactor or remove?
         if (Array.isArray(obj)) {// && (!obj.length || typeof obj[0] !== 'object')) {
             return obj.sort();
         } else {
@@ -1756,6 +1758,31 @@ Modulo.utils = class utils {
         }
         return arr;
     }
+
+    static fetchBundleData(callback) {
+        const query = 'script[src*=".js"],link[rel=stylesheet],' +
+                      'template[modulo-embed],modulo';
+        const scriptSources = [];
+        const cssSources = [];
+        const embeddedSources = [];
+        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+            if (elem.tagName === 'TEMPLATE' || elem.tagName === 'MODULO') {
+                embeddedSources.push(elem.innerHTML);
+                continue;
+            }
+            Modulo.fetchQ.enqueue(elem.src, data => {
+                delete Modulo.fetchQ.data[elem.src]; // clear cached data
+                const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
+                arr.push(data);
+            });
+        }
+        // TODO: Add in "embedded" to bundle
+        //const embeddedTags = document.querySelectorAll('script[^src]');
+        //const embedded = [];
+        const opts = { scriptSources, cssSources, embeddedSources, type: 'bundle' };
+        Modulo.fetchQ.wait(() => callback(opts));
+        return embeddedSources; // could be used for loadString in defineAll?
+    }
 }
 
 Modulo.FetchQueue = class FetchQueue {
@@ -1834,6 +1861,11 @@ Modulo.AssetManager = class AssetManager {
         this.functions = {};
         this.stylesheets = {};
         this.rawAssets = { js: {}, css: {} };
+    }
+
+    getAssets(type, extra = null) {
+        // Get an array of assets of the given type, in a stable ordering
+        return (extra || []).concat(Object.values(this.rawAssets[type]).sort());
     }
 
     registerFunction(params, text, opts = {}) {
@@ -1922,20 +1954,22 @@ Modulo.CommandMenu = class CommandMenu {
 
     build(opts = {}) {
         // Base bundle is fetchQ + CSS only
+        opts.type = opts.type || 'build';
         this.buildcss(opts);
         this.buildjs(opts);
+        // this.buildhtml(opts); // TODO
     }
 
     buildcss(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
-        const text = Object.values(Modulo.assets.rawAssets.css)
-                           .concat(opts.cssSources || []).sort().join('');
-        saveFileAs(`modulo-build-${ hash(text) }.css`, text);
+        const text = Modulo.assets.getAssets('css', opts.cssSources).join('');
+        saveFileAs(`modulo-${ opts.type }-${ hash(text) }.css`, text);
     }
 
     buildjs(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
         // TODO move template string to config
+        const jsTexts = Modulo.assets.getAssets('js', opts.scriptSources);
         const buildTemplate = new Modulo.templating.MTL(`
             {% for jsText in scriptSources|sorted %}{{ jsText|safe }}{% endfor %}
             Modulo.defineAll(); // ensure fetchQ gets defined
@@ -1949,36 +1983,12 @@ Modulo.CommandMenu = class CommandMenu {
             window.onload = () => Modulo.defineAll();
         `);
         const jsText = buildTemplate.render(Object.assign({}, opts, Modulo));
-        saveFileAs(`modulo-build-${ hash(jsText) }.js`, jsText);
+        saveFileAs(`modulo-${ opts.type }-${ hash(jsText) }.js`, jsText);
     }
 
     bundle() {
-        this.fetchBundleData(opts => this.build(opts));
-    }
-
-    fetchBundleData(callback) {
-        const query = 'script[src*=".js"],link[rel=stylesheet],' +
-                      'template[modulo-embed],modulo';
-        const scriptSources = [];
-        const cssSources = [];
-        const embeddedSources = [];
-        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
-            if (elem.tagName === 'TEMPLATE' || elem.tagName === 'MODULO') {
-                embeddedSources.push(elem.innerHTML);
-                continue;
-            }
-            Modulo.fetchQ.enqueue(elem.src, data => {
-                delete Modulo.fetchQ.data[elem.src]; // clear cached data
-                const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
-                arr.push(data);
-            });
-        }
-        // TODO: Add in "embedded" to bundle
-        //const embeddedTags = document.querySelectorAll('script[^src]');
-        //const embedded = [];
-        const opts = { scriptSources, cssSources, embeddedSources };
-        Modulo.fetchQ.wait(() => callback(opts));
-        return embeddedSources; // could be used for loadString in defineAll?
+        console.log('bundle happening!');
+        Modulo.utils.fetchBundleData(opts => this.build(opts));
     }
 }
 

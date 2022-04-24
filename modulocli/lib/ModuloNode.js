@@ -371,6 +371,15 @@ class ModuloNode {
     defineAll(config) {
         baseModulo.defineAll(config); // do normal behavior
 
+        if (!baseModulo.fetchQ) {
+            baseModulo.fetchQ = new Modulo.FetchQueue();
+            baseModulo.assets = new Modulo.AssetManager();
+        }
+        if (!baseModulo.globalLoader) {
+            baseModulo.globalLoader = new Modulo.Loader(null, { attrs: { namespace: 'x', src: '/' } });
+        }
+        baseModulo.CommandMenu.setup();
+
         // ensure both share same fetchQ
         this.fetchQ = baseModulo.fetchQ;
         this.globalLoader = baseModulo.globalLoader;

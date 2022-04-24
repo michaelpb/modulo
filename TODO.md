@@ -2,6 +2,8 @@
 
 - Finish bundle()
 
+- Loading relative component libraries is broken, e.g. ./scratchlib4.html
+
 # Medium priority
 
 - Decide on Loader / Module simplification

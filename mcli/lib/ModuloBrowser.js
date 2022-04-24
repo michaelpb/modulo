@@ -34,7 +34,7 @@ class ModuloBrowser {
         const puppeteer = require(browserBackend);
         const pConfig = {
             headless: !browserBackendVisible,
-            //dumpio: verbose, // Too verbose? (It's the browser process's)
+            dumpio: verbose, // Too verbose? (It's the browser process's)
         };
         return new Promise((resolve, reject) => {
             if (this._browser) {
