@@ -69,15 +69,7 @@ class ModuloBrowser {
 
     async runAsync(htmlPath, command = null) {
         const url = this.getURL(htmlPath);
-
-        let doBundle = command === 'build' || command === 'all';
-        let doBuild = command === 'build' || command === 'all' || !command;
-        let doRender = command === 'render' || command === 'all' || !command;
-        //const doBundle = command === 'bundle' || command === 'all' || !command;
-        doBuild = true; // XXX hardcoding for now
-        doRender = true; // XXX
-        doBundle = false; // XXX
-        const runSettings = { doBuild, doBundle, doRender };
+        const runSettings = {} ; ///
 
         await this._startExpress(); // setup stuff
         await this._startBrowser();
@@ -102,59 +94,7 @@ class ModuloBrowser {
             }
         });
 
-
         await page.goto(url, { waitUntil: 'networkidle0' });
-
-        /*
-        const { buildFiles } = await page.evaluate(runSettings => {
-            let { doBuild, doBundle, doRender } = runSettings;
-            const buildFiles = [];
-            const results = [];
-
-            if (typeof Modulo === 'undefined') {
-                return { buildFiles }; // Don't attempt any Modulo-specific actions
-            }
-
-            Modulo.utils.saveFileAs = (filename, text) => {
-                buildFiles.push({ filename, text });
-            };
-            if (doBuild) {
-                Modulo.cmd.build(); // Do CSS / JS build
-            }
-            if (doBundle) {
-                Modulo.cmd.bundle(); // Do CSS / JS bundle
-            }
-
-            if (doRender) {
-                // Delete all script tags and style tags
-                const toDelete = 'script,style,link';
-                for (const elem of document.querySelectorAll(toDelete)) {
-                    const includedInBuild = elem.tagName === 'STYLE' || (
-                        elem.tagName === 'SCRIPT' && !elem.hasAttribute('src'));
-                    if (doBundle || (doBuild && includedInBuild)) {
-                        elem.remove(); // always remove
-                    }
-                }
-
-                // Scan document for modulo elements, attaching
-                // modulo-original-html="" as needed
-                for (const elem of document.querySelectorAll('*')) {
-                    if (!elem.isModulo) {
-                        continue;
-                    }
-                    if (elem.originalHTML !== elem.innerHTML) {
-                        elem.setAttribute('modulo-original-html', elem.originalHTML);
-                    }
-                }
-            }
-            return { buildFiles };
-        }, runSettings);
-
-        const html = await page.evaluate(() => {
-            return document.documentElement.innerHTML;
-        });
-        */
-
         // TODO: Refactor -v
         const artifacts = await page.evaluate(runSettings => {
             const artifacts = [];
@@ -171,8 +111,13 @@ class ModuloBrowser {
                     return './' + filename;
                 }
             };
-            Modulo.cmd.bundle(); // XXX hardcoded, should get from runSettings
-            return artifacts;
+
+            return new Promise((resolve, reject) => {
+                Modulo.cmd.bundle(); // XXX hardcoded, should get from runSettings
+                Modulo.fetchQ.wait(() => {
+                    resolve(artifacts);
+                });
+            });
         }, runSettings);
 
         // XXX this logic should be handled in generate.js
