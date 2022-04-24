@@ -124,10 +124,10 @@ class ModuloBrowser {
         let html = '';
         let buildArtifacts = [];
         for (const info of artifacts) {
-            if (info.filepath.endsWith('.html')) {
+            if (info.filename.endsWith('.html')) {
                 html = info.text;
             } else {
-                buildArtifacts.append(info);
+                buildArtifacts.push(info);
             }
         }
         return [ html, buildArtifacts ];
