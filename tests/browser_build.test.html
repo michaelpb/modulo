@@ -94,8 +94,8 @@
 
         const aTag = mockDoc.querySelector('a[download]');
         const actHref = aTag && aTag.href.replace(/%20/g, '');
-        const expHref = "data:text/plain;charset=utf-8,%0AModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0AModulo.fetchQ.data%3D%7B%0A%7D%3B%0A%0A"
-        const expDownload = "modulo-tst-1jklkci.js";
+        const expHref = "data:text/plain;charset=utf-8,Modulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0AModulo.fetchQ.data%3D%7B%0A%7D%3B%0A"
+        const expDownload = "modulo-tst-x90anlu.js";
         assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
     </script>
 
@@ -117,8 +117,8 @@
 
         const aTag = mockDoc.querySelector('a[download]');
         const actHref = aTag && aTag.href.replace(/%20/g, '');
-        const expHref = "data:text/plain;charset=utf-8,%0AabcdefModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0AModulo.fetchQ.data%3D%7B%0A%22test%22%3A%2F%2F(1lines)%0A%60thing%60%2C%2F%2F(ends%3Atest)%0A%0A%7D%3B%0A%0AModulo.globalLoader.loadString(%22mno%22)%3B%0A%0AModulo.globalLoader.loadString(%22pqr%22)%3B%0A%0A"
-        const expDownload = "modulo-buildtype-x28he8g.js";
+        const expHref = "data:text/plain;charset=utf-8,abcdefModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0AModulo.fetchQ.data%3D%7B%0A%22test%22%3A%2F%2F(1lines)%0A%60thing%60%2C%2F%2F(ends%3Atest)%0A%0A%7D%3B%0A%0AModulo.globalLoader.loadString(%22mno%22)%3B%0A%0AModulo.globalLoader.loadString(%22pqr%22)%3B%0A"
+        const expDownload = "modulo-buildtype-bhmkug.js";
         assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
     </script>
 

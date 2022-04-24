@@ -21,26 +21,9 @@ Object.assign(Modulo, {
     templating: {}, // used later, for custom Templating languages
 });
 
-// TODO: Once Modulo config stack is finished, refactor to:
-// defineAll = config => { Modulo.instance = new Modulo(config); }
-Modulo.defineAll = function defineAll() {
-
-    if (!Modulo.fetchQ) {
-        Modulo.fetchQ = new Modulo.FetchQueue();
-        Modulo.assets = new Modulo.AssetManager();
-    }
-
-    // Then, looks for embedded modulo components, found in <template modulo>
-    // tags or <script type="modulo/embed" tags>. For each of these, it loads
-    // their contents into a global loader with namespace 'x'.
-    const attrs = { namespace: 'x', src: '/' };
-    if (!Modulo.globalLoader) {
-        Modulo.globalLoader = new Modulo.Loader(null, { attrs });
-    }
-
-    Modulo.CommandMenu.setup();
+Modulo.defineAll = function defineAll() { // NEEDS REFACTOR after config stack
     Modulo.fetchQ.wait(() => {
-        const query = 'template[modulo-embed],modulo,m-module';
+        const query = 'template[modulo-embed],modulo';
         for (const elem of Modulo.globals.document.querySelectorAll(query)) {
             // TODO: Should be elem.content if tag===TEMPLATE
             Modulo.globalLoader.loadString(elem.innerHTML);
@@ -527,17 +510,13 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     newReconciler({ directiveShortcuts }) {
-        const directives = {};
+        const opts = { directiveShortcuts, directives: [] };
         for (const cPart of Object.values(this.element.cparts)) {
             for (const directiveName of cPart.getDirectives()) {
-                directives[directiveName] = cPart;
+                opts.directives[directiveName] = cPart;
             }
         }
-
-        this.reconciler = new Modulo.reconcilers[this.attrs.engine]({
-            directiveShortcuts,
-            directives,
-        });
+        this.reconciler = new Modulo.reconcilers[this.attrs.engine](opts);
     }
 
     prepareCallback() {
@@ -1186,12 +1165,6 @@ Modulo.templating.defaultOptions.tags = {
         const start = `if (${condition}) {`;
         return {start, end: '}'};
     },
-    'and': (text, tmplt) => {
-        // Another idea: const start = `if (${condition}) {//COND`;
-        // tmplt.output[tmplt.output.length - 1].replace(') {//COND', ' && ' + condition + ') {//COND')
-        return '';
-        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
-    },
     'else': () => '} else {',
     'elif': (s, tmplt) => '} else ' + tmplt.tags['if'](s, tmplt).start,
     'comment': () => ({ start: "/*", end: "*/"}),
@@ -1219,14 +1192,6 @@ Modulo.templating.defaultOptions.tags = {
         const end = `}${varName} = false;`;
         return {start, end, close: 'endfor'};
     },
-    /*
-    // Should complete, very useful template tag: Basically the ... splat
-    // operator.
-    'attrs': (text, tmplt) {
-        const expr = tmplt.parseExpr(text);
-        return {start: `G.OUT.push(Modulo.utils.escapeAttrs(${expr}));`};
-    },
-    */
 };
 
 
@@ -1648,6 +1613,7 @@ Modulo.utils = class utils {
         doc.body.appendChild(element);
         element.click();
         doc.body.removeChild(element);
+        return `./${filename}`; // by default, return local path
     }
 
     static loadNodeData(node) {
@@ -1759,6 +1725,24 @@ Modulo.utils = class utils {
         return arr;
     }
 
+    static getBuiltHTML(opts) {
+        // Scan document for modulo elements, attaching modulo-original-html=""
+        // as needed, or clearing
+        const doc = Modulo.globals.document;
+        for (const elem of doc.querySelectorAll('*')) {
+            if (elem.hasAttribute('modulo-asset')) {
+                elem.remove();
+            } else if (elem.isModulo && elem.originalHTML !== elem.innerHTML) {
+                elem.setAttribute('modulo-original-html', elem.originalHTML);
+            }
+        }
+        const linkProps = { rel: 'stylesheet', href: opts.cssFilePath };
+        doc.head.append(Object.assign(doc.createElement('link'), linkProps));
+        const scriptProps = { src: opts.jsFilePath };
+        doc.body.append(Object.assign(doc.createElement('script'), scriptProps));
+        return '<!DOCTYPE HTML><html>' + doc.documentElement.innerHTML + '</html>';
+    }
+
     static fetchBundleData(callback) {
         const query = 'script[src*=".js"],link[rel=stylesheet],' +
                       'template[modulo-embed],modulo';
@@ -1766,19 +1750,17 @@ Modulo.utils = class utils {
         const cssSources = [];
         const embeddedSources = [];
         for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+            elem.setAttribute('modulo-asset', 'y'); // Mark as an "asset", to rm
             if (elem.tagName === 'TEMPLATE' || elem.tagName === 'MODULO') {
                 embeddedSources.push(elem.innerHTML);
-                continue;
+            } else {
+                Modulo.fetchQ.enqueue(elem.src, data => {
+                    delete Modulo.fetchQ.data[elem.src]; // clear cached data
+                    const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
+                    arr.push(data);
+                });
             }
-            Modulo.fetchQ.enqueue(elem.src, data => {
-                delete Modulo.fetchQ.data[elem.src]; // clear cached data
-                const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
-                arr.push(data);
-            });
         }
-        // TODO: Add in "embedded" to bundle
-        //const embeddedTags = document.querySelectorAll('script[^src]');
-        //const embedded = [];
         const opts = { scriptSources, cssSources, embeddedSources, type: 'bundle' };
         Modulo.fetchQ.wait(() => callback(opts));
         return embeddedSources; // could be used for loadString in defineAll?
@@ -1872,8 +1854,8 @@ Modulo.AssetManager = class AssetManager {
         const hash = this.getHash(params, text);
         if (!(hash in this.functions)) {
             const funcText = this.wrapFunctionText(params, text, opts);
-            this.rawAssets.js[hash] = funcText;
-            this.appendToHead('script', funcText);
+            this.rawAssets.js[hash] = funcText; // "use strict" only in tag
+            this.appendToHead('script', '"use strict";\n' + funcText);
         }
         return this.functions[hash];
     }
@@ -1908,7 +1890,7 @@ Modulo.AssetManager = class AssetManager {
             prefix += `function __set(name, value) { ${ localVarsIfs } }`;
             suffix = `return { ${symbolsString} setLocalVariable: __set, exports: ${ opts.exports }.exports}\n};`;
         }
-        return `"use strict";${prefix}\n${text}\n${suffix}`;
+        return `${prefix}\n${text}\n${suffix}`;
     }
 
     getHash(params, text) {
@@ -1918,6 +1900,7 @@ Modulo.AssetManager = class AssetManager {
     appendToHead(tagName, codeStr) {
         const doc = Modulo.globals.document;
         const elem = doc.createElement(tagName);
+        elem.setAttribute('modulo-asset', 'y'); // Mark as an "asset"
         if (doc.head === null) {
             // TODO: NOTE: this is still broken, can still trigger before head
             // is created!
@@ -1934,17 +1917,11 @@ Modulo.AssetManager = class AssetManager {
     }
 }
 
-//Modulo.globals.onload = () => Modulo.defineAll();
-Modulo.buildTemplate = new Modulo.templating.MTL(`// modulo build {{ hash }}
-{{ source|safe }};\n
-Modulo.defineAll();
-Modulo.fetchQ.data = {{ fetchData|jsobj|safe }};
-{% for path in preload %}
-//  Preloading page: {{ path|escapejs|safe }} {# Loads content in global #}
-Modulo.globalLoader.loadString(Modulo.fetchQ.data["{{ path|escapejs|safe }}"],
-                               "{{ path|escapejs|safe }}");
-{% endfor %}`);
-
+Modulo.jsBuildTemplate = `{% for jsText in jsTexts %}{{ jsText|safe }}{% endfor %}
+Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
+{% for text in embeddedSources %}
+    Modulo.globalLoader.loadString("{{ text|escapejs|safe }}");
+{% endfor %}`;
 
 Modulo.CommandMenu = class CommandMenu {
     static setup() {
@@ -1953,42 +1930,35 @@ Modulo.CommandMenu = class CommandMenu {
     }
 
     build(opts = {}) {
-        // Base bundle is fetchQ + CSS only
         opts.type = opts.type || 'build';
-        this.buildcss(opts);
-        this.buildjs(opts);
-        // this.buildhtml(opts); // TODO
+        opts.cssFilePath = this.buildcss(opts);
+        opts.jsFilePath = this.buildjs(opts);
+        const fp = this.buildhtml(opts);
+        document.body.innerHTML = `<h1>${ opts.type } : ${ fp }</h1>`;
+    }
+
+    bundle() {
+        Modulo.utils.fetchBundleData(opts => this.build(opts));
     }
 
     buildcss(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
         const text = Modulo.assets.getAssets('css', opts.cssSources).join('');
-        saveFileAs(`modulo-${ opts.type }-${ hash(text) }.css`, text);
+        return saveFileAs(`modulo-${ opts.type }-${ hash(text) }.css`, text);
     }
 
     buildjs(opts = {}) {
         const { saveFileAs, hash } = Modulo.utils;
-        // TODO move template string to config
+        const buildTemplate = new Modulo.templating.MTL(Modulo.jsBuildTemplate);
         const jsTexts = Modulo.assets.getAssets('js', opts.scriptSources);
-        const buildTemplate = new Modulo.templating.MTL(`
-            {% for jsText in scriptSources|sorted %}{{ jsText|safe }}{% endfor %}
-            Modulo.defineAll(); // ensure fetchQ gets defined
-            Modulo.fetchQ.data = {{ fetchQ.data|jsobj|safe }};
-            {% for jsText in assets.rawAssets.js|values|sorted %}
-                {{ jsText|safe }}
-            {% endfor %}
-            {% for text in embeddedSources|sorted %}
-                Modulo.globalLoader.loadString("{{ text|escapejs|safe }}");
-            {% endfor %}
-            window.onload = () => Modulo.defineAll();
-        `);
-        const jsText = buildTemplate.render(Object.assign({}, opts, Modulo));
-        saveFileAs(`modulo-${ opts.type }-${ hash(jsText) }.js`, jsText);
+        const text = buildTemplate.render(Object.assign({ jsTexts }, opts, Modulo));
+        return saveFileAs(`modulo-${ opts.type }-${ hash(text) }.js`, text);
     }
 
-    bundle() {
-        console.log('bundle happening!');
-        Modulo.utils.fetchBundleData(opts => this.build(opts));
+    buildhtml(opts = {}) {
+        const { saveFileAs, getBuiltHTML } = Modulo.utils;
+        const filename = window.location.pathname.split('/').pop();
+        return saveFileAs(filename, getBuiltHTML(opts));
     }
 }
 
@@ -1997,6 +1967,12 @@ if (typeof module !== 'undefined') { // Node
 }
 if (typeof customElements !== 'undefined') { // Browser
     Modulo.globals = window;
+}
+if (!Modulo.fetchQ) { // TODO: Replace this once "new Modulo({})" is ready
+    Modulo.fetchQ = new Modulo.FetchQueue();
+    Modulo.assets = new Modulo.AssetManager();
+    Modulo.globalLoader = new Modulo.Loader(null, { attrs: { namespace: 'x', src: '/' } });
+    Modulo.CommandMenu.setup();
 }
 
 // End of Modulo.js source code. Below is the latest Modulo project:

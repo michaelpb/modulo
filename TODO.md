@@ -73,6 +73,20 @@ storybook, inside an x-Page component
     - No custom JavaScript code! Super impressive!
 
 
+## MDU FE Templating
+
+    'attrs': (text, tmplt) {
+        // Basically the ... splat operator.
+        const expr = tmplt.parseExpr(text);
+        return {start: `G.OUT.push(Modulo.utils.escapeAttrs(${expr}));`};
+    },
+    'and': (text, tmplt) => {
+        // Another idea: const start = `if (${condition}) {//COND`;
+        // tmplt.output[tmplt.output.length - 1].replace(') {//COND', ' && ' + condition + ') {//COND')
+        return '';
+        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
+    },
+
 
 ## MDU CLI
 
