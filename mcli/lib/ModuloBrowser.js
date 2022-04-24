@@ -105,6 +105,7 @@ class ModuloBrowser {
 
         await page.goto(url, { waitUntil: 'networkidle0' });
 
+        /*
         const { buildFiles } = await page.evaluate(runSettings => {
             let { doBuild, doBundle, doRender } = runSettings;
             const buildFiles = [];
@@ -149,12 +150,42 @@ class ModuloBrowser {
             return { buildFiles };
         }, runSettings);
 
-        // console.log(url, buildFiles.map(({ filename }) => filename));
-
         const html = await page.evaluate(() => {
             return document.documentElement.innerHTML;
         });
-        return [ html, buildFiles ];
+        */
+
+        // TODO: Refactor -v
+        const artifacts = await page.evaluate(runSettings => {
+            const artifacts = [];
+            if (typeof Modulo === 'undefined') {
+                return artifacts; // Don't attempt any Modulo-specific actions
+            }
+            // Patch saveFileAs to just add to artifacts array
+            Modulo.utils.saveFileAs = (filename, text) => {
+                artifacts.push({ filename, text });
+                if (filename.endsWith('.js') || filename.endsWith('.css')) {
+                    // XXX hardcoded, should get from runSettings
+                    return '/_modulo/' + filename;
+                } else {
+                    return './' + filename;
+                }
+            };
+            Modulo.cmd.bundle(); // XXX hardcoded, should get from runSettings
+            return artifacts;
+        }, runSettings);
+
+        // XXX this logic should be handled in generate.js
+        let html = '';
+        let buildArtifacts = [];
+        for (const info of artifacts) {
+            if (info.filepath.endsWith('.html')) {
+                html = info.text;
+            } else {
+                buildArtifacts.append(info);
+            }
+        }
+        return [ html, buildArtifacts ];
     }
 
     close(callback) {

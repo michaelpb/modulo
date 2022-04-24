@@ -93,7 +93,7 @@ async function doGenerate(moduloWrapper, config) {
         }
 
         // Then, do post processing and write main HTML
-        html = hackPostprocess(html, buildArtifacts);
+        //html = hackPostprocess(html, buildArtifacts);
         await unlockToWrite(outputFile, html, log);
 
     } else {

@@ -1,5 +1,4 @@
 'use strict';
-
 // # Note
 // Earlier versions of Modulo.js's source code were written with "literate
 // programming". Most of this documentation has been deleted, but will be
@@ -1754,8 +1753,8 @@ Modulo.utils = class utils {
             if (elem.tagName === 'TEMPLATE' || elem.tagName === 'MODULO') {
                 embeddedSources.push(elem.innerHTML);
             } else {
-                Modulo.fetchQ.enqueue(elem.src, data => {
-                    delete Modulo.fetchQ.data[elem.src]; // clear cached data
+                Modulo.fetchQ.enqueue(elem.src || elem.href, data => {
+                    delete Modulo.fetchQ.data[elem.src || elem.href]; // clear cached data
                     const arr = elem.tagName === 'SCRIPT' ? scriptSources : cssSources;
                     arr.push(data);
                 });

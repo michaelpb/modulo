@@ -1,5 +1,4 @@
 'use strict';
-
 // # Note
 // Earlier versions of Modulo.js's source code were written with "literate
 // programming". Most of this documentation has been deleted, but will be
