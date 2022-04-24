@@ -1,6 +1,6 @@
 # High priority
 
-- Finish bundle()
+- (DONE) Finish bundle()
 
 - Loading relative component libraries is broken, e.g. ./scratchlib4.html
 
@@ -104,7 +104,7 @@ storybook, inside an x-Page component
     - serve
     - servesrc
 
-### Misc bundle improvements
+### Misc bundle improvements (MOSTLY DONE)
 
 - Possibly: Move the innerHTML file generation to be in Modulo.js, so that
   m.build() or m.bundle() will generate a file as well
