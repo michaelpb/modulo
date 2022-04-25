@@ -193,7 +193,7 @@ directives next: <em>data prop</em> and <em>state.bind</em>.</p>
 <h3>Data prop directive (:=)</h3>
 
 <blockquote> <p><strong>Why don't we use "strings" for numbers?</strong> Using
-strings of digits (e.g. in quotes) instead of the numbers themselves means that
+strings of digits (i.e. in quotes) instead of the numbers themselves means that
 things like arithmetic won't work as intended. Example: If state variable
 <code>count="1"</code>, then <code>state.count + 10</code>
 will result in <code>"110"</code> instead of the desired <code>11</code>, since
@@ -201,7 +201,7 @@ it's a string of digits, so <code>"1" + "10" = "110"</code></p></blockquote>
 
 <p>Typically, when we add attributes to anything, whether it is a CPart or even
 just in regular HTML, the attribute value can only be a string. This means when
-we did <code>&lt;state count="1" ... &gt;</code> previously, we made a mistake:
+we did <code>&lt;State count="1" ... &gt;</code> previously, we made a mistake:
 The <code>count</code> variable didn't get assigned to <code>1</code> the
 <em>Number</em>, but rather <code>"1"</code> the <em>String</em>. To fix it, we
 do the following:</p>
@@ -211,17 +211,17 @@ do the following:</p>
     color="blue"
 &gt;&lt;/State&gt;</pre>
 
-<p>This is called a <em>data prop</em> directive.  In the case of the <em>data prop</em>
-directive (<code>:=</code>), the attribute name is suffixed with a colon right
-before the equal sign , resulting in a  <em>directive</em> the attribute name
-with a colon right before the equal, like this:
+<p>This is called a <em>data prop</em> directive. You can identify a <em>data
+prop</em> directive (<code>:=</code>), by spotting an attribute name that is
+suffixed with a colon right before the equal sign, like this:
 <code>attributeName:=value</code>.</p>
 
-<p>All directives are "provided" by a CPart. That is, including CParts in your
-component definition may "enable" more directives in your HTML. Data-prop is a
-built-in feature of <em>Components</em>, which means it's always available
-(technically, the <code>:=</code> syntax is in fact syntactic sugar for it's
-full name, <code>[component.dataProp]</code>).  To learn more, including how to
+<!--, resulting in a  <em>directive</em> the attribute name
+with a colon right before the equal, -->
+
+<p>The term <em>directives</em> in Modulo refers to special attributes that you
+add to HTML to add extra functionality.  We'll explore more directives in this
+section, but to learn more on <em>directives</em> in general, including how to
 author your own directives, <a href="/docs/directives.html">see the section on
 <em>Lifecycle & Directives</em></a>. However, most component developers will
 have no need to use directives outside of the built-in directives that come
@@ -318,6 +318,7 @@ that input.</p>
 <h3>Final notes on directives</h3>
 
 
+
 <ol>
     <li>If you are still scratching your head over the use of
     <code>[state.bind]</code> but are familiar with vanilla JS, it's
@@ -328,11 +329,18 @@ that input.</p>
     like <code>state.myinput</code>, and similarly untangles code for
     validation, API requests, etc.</li>
 
+    <li>Where do these "directives" come from? All directives
+    are "provided" by a CPart. That is, including CParts in your component
+    definition may "enable" more directives in your HTML. Data-prop is a built-in
+    feature of <em>Components</em>, which means it's always available (technically,
+    the <code>:=</code> syntax is in fact syntactic sugar for it's full name,
+    <code>[component.dataProp]</code>).</p></li>
+
     <li>Keep in mind that <em>data props</em> directives are not the same as
     the <em>Props</em> CPart.  They are, however, related, in that the
     <em>Props</em> CPart looks for both regular attributes and data props: You
     can in fact set any <em>Props</em> attributes with the <code>:=</code>
-    syntax for data other than Strings.</li>
+    syntax, for data other than Strings.</li>
 
     <li><em>Data props</em> support any JSON literal type. Technically,
     <em>data props</em> values can have double quotes just like normal
@@ -340,7 +348,6 @@ that input.</p>
     the double quotes for any one-word value, and should use only single quotes
     for complex types, such as JSON-formatted Arrays or Objects. See below for
     stylistic examples of data props with different types:
-
 
 <mws-Demo
 text='
