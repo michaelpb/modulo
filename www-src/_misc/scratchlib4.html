@@ -1,11 +1,61 @@
 
 <Component name="Tester">
     <Template>
+        <input [state.bind] name="username" placeholder="Type a github username..." />
+        <button @click:=fetchstate.send>Go</button>
+        <div class="results">
+            <ol>
+                <li><h2>Starred repos:</h2></li>
+                {% for starred_repo in fetchstate.stars %}
+                    <li>{{ starred_repo.name }}</li>
+                {% endfor %}
+            </ol>
+            <ol>
+                <li><h2>Owned repos:</h2></li>
+                {% for starred_repo in fetchstate.stars %}
+                    <li>{{ starred_repo.name }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </Template>
+
+    <State
+        username="michaelpb"
+    ></State>
+
+    <FetchState
+        info="https://api.github.com/users/{{ state.username }}"
+        stars="https://api.github.com/users/{{ state.username }}/starred"
+    ></FetchState>
+    <Style>
+        .results {
+            display: flex;
+        }
+        .results > ol {
+            height: 80px;
+            width: 80px;
+            overflow: auto;
+        }
+        :host {
+            border: 3px solid blue;
+            padding: 10px;
+            margin: 10px;
+            display:  block;
+            width: 200px;
+        }
+    </Style>
+</Component>
+
+
+
+
+
+<Component name="OldTester">
+    <Template>
         <p @click:=script.gotClicked>Click me for an alert ({{ customcpart.answer }})</p>
     </Template>
 
     <CustomCPart></CustomCPart>
-
     <Script>
         console.log('script factory happening');
 
@@ -17,17 +67,7 @@
     <Style>
         p {
             color: blue;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        :host {
-            border: 3px solid blue;
-            padding: 10px;
-            margin: 10px;
-            display:  block;
-            width: 100px;
         }
     </Style>
 </Component>
-
 

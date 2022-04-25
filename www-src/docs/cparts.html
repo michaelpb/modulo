@@ -708,7 +708,8 @@ assumptions about using a synchronous or asynchronous coding style.</p>
     script tag will also make available all functions that you have declared
     using the "old-school" named-function style syntax. This is what allows
     attaching events to be so simple: Simply define a named-function in your
-    script tag (e.g. <code>function&nbsp;doStuff(payload,&nbsp;ev)&nbsp;{&nbsp;...</code>), and
+    script tag (e.g.
+    <code>function&nbsp;doStuff(payload,&nbsp;ev)&nbsp;{&nbsp;...</code>), and
     then it can be referenced elsewhere (e.g. in the template with:
     <code>@click:=script.doStuff</code> template with a click event like: It
     will ignore any "arrow functions" (<code>()&nbsp;=&gt;&nbsp;{}</code>), or any other
@@ -716,7 +717,7 @@ assumptions about using a synchronous or asynchronous coding style.</p>
     <code>const&nbsp;myFunc&nbsp;=&nbsp;function&nbsp;()&nbsp;{&nbsp;...</code>
     will also be ignored). That's not to say you can't declare your functions
     like this: However, you should only do so if you do not want them to be
-    automatically exported.  </li>
+    automatically exported.</li>
 
     <li><code>script.exports</code> - This gives you fine-grained control,
     allowing you to export arbitrary static variables, functions, or data. This

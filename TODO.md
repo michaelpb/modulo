@@ -15,6 +15,9 @@
       entire framework / lib as encapsulated config instance
     - Think about 'Modulo.register('cpart', 'Template', class Template extends
       CPart { });'
+    - Another idea: have "dash" prefix be for modifying config, e.g.
+      '-name="Component"' or something. Maybe only for State/Props/etc, things
+      that need it?
 
 - ModRec & DOMCursor refactor
     - Finish detangling repetitive directives and dead code
@@ -88,6 +91,45 @@ storybook, inside an x-Page component
     },
 
 
+## MDU FE FreezeCPart
+
+- Generate the code for any arbitrary CPart config:
+
+```
+Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
+    static getAttrPreset() {
+        return {
+            githuburl: '//', // etc
+        }
+    }
+
+    static factoryCallback(partOptions, factory, renderObj) {
+        // Override the factory callback to inject attrs and content
+        const { factoryCallback } = Modulo.cparts.FetchState;
+        const { getAttrPreset, getContentPreset } = Modulo.cparts.mycpart;
+        const { attrs, content } = partOptions;
+        partOptions.attrs = getAttrPreset(attrs);
+        partOptions.content = getContentPreset(content);
+        return factoryCallback(partOptions, factory, renderObj);
+    }
+}
+```
+
+- Could be a management command!
+    - Could even use saveFileAs, so it could be run from the CLI conceivably
+- This would allow for quickly "spinning off" FetchState, for example, into a
+  re-usable "API" Component Part that is centrally maintained.
+- Could have custom configs for other MDU ones, that maybe even intelligently
+  auto-generate stuff. For example, Script would come out like an actual CPart,
+  and in general it could attempt to produce an idomatically correct pattern
+  that could be comfortably maintained going forward.
+
+
+## MDU FE StaticData
+
+- Maybe add a StaticData CPart, possibly even built-in? Absurdly simple: Just
+  does a JSON.parse, or little CSV parse, on inner content. Could be used for awesome stuff, like loading URLs
+
 ## MDU CLI
 
 - For now, focus on Puppeteer implementation, since it's most browser-similar
@@ -152,6 +194,31 @@ storybook, inside an x-Page component
     - During build, it will be built like an asset, like anything else
 - Later uses involve any BE <-> FE communication that can be prebaked
     - E.g. urls.py could be dumped into a JSON conf file, to allow named params
+
+
+### Autogen notes
+
+- AutoGenProvider is a type of middleware that has a strict ordering, and is
+  set when configuring modulocli
+- devserver has autogen providers available by default, but production server
+  WILL NOT run them (thus, only run during development / build, to remain
+  "static")
+- During SSG, it will ONLY generate autogen files to --output if they are in a
+  dependency somewhere else (e.g., when an autogen gets used during the build
+  process will it be built by SSG)
+- At their core, autogens are path matchers that only kick in if there is a 404
+- Unlike Express routes / controller functions that get request info, autogen
+  functions if matched are given config, along with one thing: path, relative
+  to --input, and only return 1 thing: a result to be stored in the path
+
+- There should be a globally set whitelisting regexp for them, e.g. if you have
+  no need for potentially dubious ".md" -> ".html" type autogens, then you
+  could whitelist /^\.autogen-/
+
+- Uses:
+    - / * * /.autogen-directory-listing.json - Directory listing of each dir root
+    - /.autogen-package.json - Walking up above the input, first package.json
+
 
 
 ### Simplest hot-reloading

@@ -376,7 +376,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
             return; // TODO: possibly just return?
         }
 
-        if (Modulo.isBackend) {
+        if (Modulo.isBackend) { // TODO rm
             this.parsedCallback(); // ensure synchronous
         } else {
             // TODO Consider putting all async into single queue / loop
@@ -1026,7 +1026,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         return s.match(/^\d+$/) ? s : `CTX.${cleanWord(s)}`
     }
 
-    escapeHTML(text) {
+    escapeText(text) {
         if (text && text.safe) {
             return text;
         }
@@ -1051,7 +1051,8 @@ Modulo.templating.defaultOptions = {
         //'and': 'X && Y',
         //'or': 'X || Y',
         'not': '!(Y)',
-        // TODO: Consider patterns like this to avoid excess reapplication of filters:
+        // TODO: Consider patterns like this to avoid excess reapplication of
+        // filters:
         // (x = X, y = Y).includes ? y.includes(x) : (x in y)
         'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
         'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
@@ -1074,7 +1075,7 @@ Modulo.templating.defaultOptions.modes = {
         return result.start || result;
     },
     '{#': (text, tmplt) => false, // falsy values are ignored
-    '{{': (text, tmplt) => `OUT.push(G.escapeHTML(${tmplt.parseExpr(text)}));`,
+    '{{': (text, tmplt) => `OUT.push(G.escapeText(${tmplt.parseExpr(text)}));`,
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
@@ -1908,7 +1909,7 @@ Modulo.AssetManager = class AssetManager {
         } else {
             doc.head.append(elem);
         }
-        if (Modulo.isBackend && tagName === 'script') {
+        if (Modulo.isBackend && tagName === 'script') { // TODO rm
             codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace 1st
             eval(codeStr, this); // TODO Fix this, limitation of JSDOM
         } else {
