@@ -192,7 +192,6 @@ order within a given <em>Component</em> definition:</p>
     <li><em>(Any custom CParts)</em></li>
     <li>State</li>
     <li>Script</li>
-    <li>Store</li>
     <li>Style</li>
 </ol>
 
@@ -204,6 +203,231 @@ difference: They will be processed in the order given, and in the case of
 duplicate CParts, "whoever gets the last word in wins", or the final CPart is
 typically what takes precedence (although for custom CParts that may be
 different).</p>
+
+
+
+<mws-section name="component" modulo-original-html="Component">
+        <a class="secanchor" title="Click to focus on this section." id="component" name="component" href="#component">#</a>
+        <h2>Component</h2>
+    </mws-section>
+
+<blockquote>
+<p><strong>Low-level interface</strong> - Component developers will typically
+only need to use the <code>name="..."</code> attribute on <em>Component</em>,
+and sometimes <code>mode="vanish-into-document"</code> for  page-level
+components. Similarly, none of the <code>renderObj.component</code> properties
+are typically useful for component developers. Instead, they are used
+internally by CParts (notably <em>Template</em>) in order to move along the
+rendering cycle.</p> </blockquote>
+
+<p>The <em>Component</em> CPart is the most central to Modulo. It's how we
+register components to be mounted on the page, and define the other CParts that
+go inside those Components. It's also what stitches together the "machinery"
+that makes reconciliation and rendering even possible. In other words, the
+<em>Component</em> CPart is what handles the "low-level" operations of
+mounting, reconciling to generate patches, and applying those patches to
+rerender, and the interface described here allows for low-level manipulation of
+this process for unusual circumstances when it's needed.</p>
+
+
+<h3>renderObj</h3>
+
+<p>The Component CPart reads several properties from the
+<code>renderObj</code>, at different lifecycle phases. Read below on how to
+interface with it.</p>
+
+<ul>
+    <li><code>component.originalHTML</code> - <strong>Read-only</strong> -
+    This contains the initial HTML that the element had when mounted on the
+    page.</li>
+
+    <li><code>component.innerHTML</code> - <strong>Write-only</strong> -
+    Assign to this to cause the <em>Component</em> CPart to attempt to
+    reconcile the current HTML with the target HTML provided.
+    It functions a little bit like HTML's built-in <em>"element.innerHTML"</em>:
+    Assign a string containing HTML code to this property to see the HTML
+    appear on the page. This is what the <em>Template</em> CPart does behind
+    the scenes. Unlike HTML's built-in <em>"element.innerHTML"</em>, assigning
+    to this renderObj property will not cause an full update, overwriting
+    everything that exists, but instead will cause the <em>Component</em> to
+    employ the "reconciler" specified to generate a patches list (see next). By
+    default, it will then also apply those patches in the <code>update</code>
+    lifecycle.</li>
+
+    <li><code>component.patches</code> - Between the <code>reconcile</code> and
+    <code>update</code> stages, the "patches" property is exposed to allow
+    access to or modification of the patches that the Component intends to
+    apply. This is an advanced feature that gives fine-grained control to how
+    rendering works, and is rarely useful. For example, you could use this
+    property to "intercept" the patches that are about to be applied to your
+    component while re-rendering, and, for an example, forbid the removal of
+    attributes by deleting all patches with <em>"removeAttribute"</em>.
+    all patches  This is in
+    the format of an Array. Each item in the Array is itself a 4-Array (Array
+    of length 4), in the following format:
+    <code>[element, method, arg1, arg2]</code>.
+    For example, to do a <em>"removeAttribute"</em> patch on an "id" attribute
+    for a given "target element" (a real DOM node on the page somewhere), it
+    might be
+    <code>[(ref to "target element"), "removeAttribute", "id", undefined]</code>
+    If the Array is empty, then no
+    patches will be applied. </li>
+</ul>
+
+
+<h3>attrs</h3>
+
+<p>Components CParts use their attributes to set several configuration options.
+They take the following attributes:</p>
+
+<ul>
+    <li><code>name</code> - <em>REQUIRED</em> - The "name" of the component.
+    Conventionally, it should be written in camel or dromedary case, like
+    how class names are written in JavaScript: <code>LikeThis</code>.
+    Technically, it's case insensitive, so a component named like
+    <code>LikeThis</code>, imported with an <code>x-</code> namespace, could
+    also be used like <code>x-likethis</code> or <code>X-LIKETHIS</code>.</li>
+
+    <li><code>engine</code> - <em>default is <code>engine="ModRec"</code></em> -
+    The Reconciler Engine selected. By default, ModRec, the built-in Modulo
+    Reconciler engine, is enabled. If you want to experiment with other
+    reconciliation engines, such as ones that might be faster or take into
+    account unusual scenarios, set this equal to another property of
+    <code>Modulo.reconcilers</code>.</li>
+
+    <li><code>rerender</code> - <em>default is
+    <code>rerender="event"</code></em>.  Specify mode to change the render mode
+    of this component.  A detailed discussion of valid options are below:
+        <ul>
+            <li><code>rerender="event"</code> - The default behavior, where the
+            the component will rerender after ever event it handles (e.g. after
+            every user interaction). This is typically desirable since usually
+            every user interaction will cause some visual change that needs to
+            be reflected.</li>
+
+            <li><code>rerender="manual"</code> - Modulo will not auto-rerender
+            in any situation. This
+            Note that if this is set, you will have to manually rerender, such
+            as in a <em>Script</em> CPart (<code>element.rerender()</code>), or
+            in a custom CPart (<code>this.element.rerender()</code>) is
+            invoked. This is useful if there are many events that don't cause
+            changes (e.g. mouse movement), but you have discovered that the
+            extra rerender invocations are impacting performance, even though
+            they aren't generating patches to modify the DOM.</li>
+        </ul>
+    </li>
+
+    <li><code>mode</code> - <em>default is <code>mode="regular"</code></em>.
+    Specify mode to change the DOM root render mode of this component. This
+    changes what is considered to be the root of the element, and thus where
+    the content of the Template goes during reconciliation. In "regular" and
+    "vanish", it's the custom component itself (which will be removed after
+    rendering with "vanish"), in "shadow", it uses an attached shadow DOM as
+    the root, and with "vanish-into-document" it replaces the entire page.
+    This allows you to isolate outside CSS from your component using "shadow",
+    do one-time renders only with "vanish", or make your component replace the
+    entire document with "vanish-into-document". A detailed discussion of valid
+    options are below:
+        <ul>
+            <li><code>mode="regular"</code> - The default behavior, where the
+            content generated by this the element will be attached to the
+            regular DOM, as the element itself. This means that CSS stylesheets
+            attached the normal way (e.g. with a "link" tag) will affect the
+            contents of this component. <em>Style</em> CParts are, however,
+            automatically scoped to the component, so a selector like
+            <code>p&nbsp;{...}</code> will get prefixed like
+            <code>x-MyComp&nbsp;p&nbsp;{...}</code> when CSS files are being
+            generated from <em>Style</em> CParts. Keep in mind the normal CSS
+            rules will still apply, meaning that auto-scoped "p" tag will also
+            affect children, grandchildren, etc of sub-components (unless those
+            are "shadow" based).</li>
+
+            <li><code>mode="shadow"</code> - Use the so-called "shadow DOM" to
+            render the content generated by this component. While the
+            <em>shadow DOM</em> may sound like a sci-fi villain, it's a
+            mechanism browsers provide for custom elements to isolate their
+            contents from CSS selectors or other JavaScript libraries. This
+            isolation means means that CSS stylesheets attached the normal way
+            (e.g. with a "link" tag) <em>will not</em> affect the contents of
+            this element. Note that other than the isolation provided, the
+            shadow mode should work exactly the same as regular. That said,
+            <em>Style</em> CParts will still be automatically scoped to the
+            component, but will use the shadowDOM feature to more strictly
+            enforce that scoping. For a component by itself, switching from
+            "shadow" to "regular" or vice-versa shouldn't change behavior at
+            all. It's only useful when CSS from one component or a third party
+            CSS library is "getting inside" your other components in an
+            undesirable way, and you want to isolate them.</li>
+
+            <li><code>mode="vanish"</code> - This less-used setting causes the
+            component to "vanish" after rendering, or replace itself with it's
+            children. Setting this will cause the component to remove itself
+            after the first time it renders, effectively using the component as
+            a simple template. All CParts will become useless after the first
+            rendering, so CParts like <em>Script</em> or <em>State</em> are
+            rarely useful in combination with this mode. This "one-time render"
+            feature is most useful for static pages when you don't want your
+            custom components to get in the way of the DOM that is generated,
+            and for creating static-site generators, when you just want to
+            generate plain HTML, with no Modulo JS or behavior in the end.</li>
+
+            <li><code>mode="vanish-into-document"</code> - This setting is
+            useful in one situation: When you want to create a "page" level
+            component that changes tags that belong in the document head, such
+            as <code>&lt;title&gt;</code>. Like with <code>mode="vanish"</code>
+            described above, setting this will cause the component to remove
+            itself after the first time it renders. However, with
+            vanish-into-document, it will instead replace the entire page.
+            It will also attempt to correctly insert all tags that belong in
+            the document head (meta, title, link, script to be specific),
+            causing link and script tags alike (e.g.
+            <code>&lt;script src=".."&gt;&lt;/script&gt;</code>) to load.
+            Finally, the document will be wiped, and anything else it finds
+            will be put directly into the document's body, for a clean DOM
+            structure that removes itself entirely during this "one-time
+            render".</li>
+
+            <li><code>mode="custom-root"</code> - This is rarely useful, but
+            allows for setting some other DOM element as the new root element
+            for the component to target for rendering it's content. This is
+            done by assigning a value to <code>renderObj.component.root</code>
+            before reconciliation. If no <code>.root</code> value is set, an
+            error will occur.</li>
+        </ul>
+    </li>
+</ul>
+
+
+<h3>Directives</h3>
+
+<p>The <em>Component</em> CPart defines 3 directives:</p>
+
+<ul>
+    <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
+    Attach event listeners to DOM elements, and remove them when the DOM
+    elements are removed. (For jQuery users, this is used for similar purposes
+    as "live" (delegated) events, but is faster.)</li>
+
+    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
+    Attach data to a DOM element's <code>.dataProp</code> object, which can be
+    used to directly pass <code>renderObj</code> values as <em>Props</em> or
+    events</li>
+
+    <li><code>[component.slot]</code> - Reattach the original child elements
+    that this component had when it was first mounted to a new DOM element.
+    (For React users, this is similar to doing
+    <code>{this.props.children}</code>.) This can be used in addition to or
+    instead of the <code>&lt;slot&gt;</code> interface. For more on the slot
+    interface, see Mozilla's <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">"The
+    Web Component Slot element"</a>.  Note that Modulo uses this interface for
+    both <code>mode="shadow"</code> (e.g. using <code>shadowRoot</code> as the
+    root element for reconciliation) and all the other DOM rendering modes
+    (e.g. <code>mode="regular"</code>,
+    <code>mode="vanish-into-document"</code>). For Shadow DOM, it will
+    fall-back on Browser behavior. For everything else, it will detach any
+    nodes it finds and reattach the nodes just before the beginning of the
+    reconciliation process (it's DOM load-directive).</li>
+</ul>
 
 
 <mws-section name="props" modulo-original-html="Props">
@@ -218,7 +442,6 @@ with the new values. They are only supposed to be information being <em>passed
 to</em> the component, which means they can't be changed internally.  For
 internal, mutable data, use <a href="#state">State</a> instead.</p>
 </blockquote>
-
 
 <p>Props allow components to receive data. You can think of Props as being like
 "function parameters": They allow you to pass down "arguments" (attributes) to
@@ -280,11 +503,12 @@ them. This is where Templates come into play: They generate the
 <code>innerHTML</code> of a component.</p>
 
 <p>Templates are not DOM-based, but instead render synchronously to a String
-during the <code>render</code> <a href="/docs/directives.html#lifecycle">lifecycle phase</a>, and setting that to
-the <code>renderObj.component.innerHTML</code>. The <em>Component</em>  CPart
-will take whatever is written there during the <code>reconcile</code> phase and
-then "reconcile", modify it's contents to resemble the target innerHTML. (More
-on this is in <a href="#component">the Component CPart documentation below</a>.)</p>
+during the <code>render</code> <a href="/docs/directives.html#lifecycle">lifecycle phase</a>, and store the
+results in <code>renderObj.component.innerHTML</code>. The <em>Component</em>
+CPart will read this HTML code during the <code>reconcile</code> phase and then
+"reconcile", modify it's contents to resemble the target innerHTML. (More on
+this is in <a href="#component">the Component CPart documentation
+above</a>.)</p>
 
 
 <p>Every time a Component renders, the Template will render using the
@@ -407,8 +631,10 @@ properties of the "data" Object), then an attempt like
 <code>cparts.state.data.newstuff = 10;</code> may result in an error.  If you
 are dealing with a situation where you have an unknown quantity of data, such
 as from an API, the correct approach is to store it all within a nested Object
-<em>inside</em> the state data Object. Unlike top-level "state variables", it's
-okay to directly modify or build upon nested Objects.</p>
+<em>inside</em> the state data Object, e.g. such as an
+<code>data.apiResults</code> Object or Array. Unlike top-level "state
+variables", it's okay to add properties, modify, or build upon nested
+Objects.</p>
 
 <p>While it's allowed to assign any arbitrary reference as a <em>State</em>
 variable, including complex, unserializable types such as function callbacks,
@@ -416,7 +642,11 @@ it's highly recommended to try to keep it to primitive and serializable types
 as much as possible (e.g. String, Number, Boolean, Array, Object). The reason
 being that there may be future features or third-party add-ons for
 <em>State</em> which will only support primitive types (as an example, that
-would be required to save state to localStorage).</p>
+would be required to save state to localStorage). If you want to store
+functions, consider using a <code>prepareCallback</code> to generate the
+functions within a Script context, and only store the data needed to "generate"
+the function in the state (as opposed to storing a direct reference to the
+function itself).</p>
 
 
 
@@ -425,7 +655,7 @@ would be required to save state to localStorage).</p>
 <p>State contributes it's current data values to the renderObj. Examples:</p><p>
 
 </p><ul>
-    <li>State initialized like: <code>&lt;state name="Luiz"&gt;</code> will be
+    <li>State initialized like: <code>&lt;State&nbsp;name="Luiz"&gt;</code> will be
     accessible on the renderObj like <code>renderObj.state.name</code>, and in
     the Script or Template CParts like <code>state.name</code>.</li>
 
@@ -965,7 +1195,7 @@ assumptions about using a synchronous or asynchronous coding style.</p>
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="display: block; bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 218px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: auto;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 218px; min-width: 410.391px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>10</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 21px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span><span class="cm-tag">{%</span><span class="cm-null"> </span><span class="cm-keyword">for</span><span class="cm-null"> </span><span class="cm-variable">item</span><span class="cm-null"> </span><span class="cm-keyword">in</span><span class="cm-null"> </span><span class="cm-variable">script</span><span class="cm-null">.</span><span class="cm-property">exports</span><span class="cm-null">.</span><span class="cm-property">bigArray</span><span class="cm-null"> </span><span class="cm-tag">%}</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">item</span><span class="cm-null"> </span><span class="cm-tag">}}</span>,</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag">{%</span><span class="cm-null"> </span><span class="cm-keyword">endfor</span><span class="cm-null"> </span><span class="cm-tag">%}</span><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable">script</span>.<span class="cm-property">exports</span>.<span class="cm-property">bigArray</span> <span class="cm-operator">=</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">Array</span>.<span class="cm-property">from</span>({ <span class="cm-property">length</span>: <span class="cm-number">100</span> })</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        .<span class="cm-property">map</span>((<span class="cm-def">val</span>, <span class="cm-def">i</span>) <span class="cm-operator">=&gt;</span> <span class="cm-string-2">`i liek ${</span><span class="cm-variable-2">i</span><span class="cm-string-2">}</span> <span class="cm-string-2">turtles`</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 218px;"></div><div class="CodeMirror-gutters" style="height: 268px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 34px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="display: block; bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 218px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: 0px; border-right-width: 50px; min-height: 218px; min-width: 410.391px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>10</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 21px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span><span class="cm-tag">{%</span><span class="cm-null"> </span><span class="cm-keyword">for</span><span class="cm-null"> </span><span class="cm-variable">item</span><span class="cm-null"> </span><span class="cm-keyword">in</span><span class="cm-null"> </span><span class="cm-variable">script</span><span class="cm-null">.</span><span class="cm-property">exports</span><span class="cm-null">.</span><span class="cm-property">bigArray</span><span class="cm-null"> </span><span class="cm-tag">%}</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag">{{</span><span class="cm-null"> </span><span class="cm-variable">item</span><span class="cm-null"> </span><span class="cm-tag">}}</span>,</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag">{%</span><span class="cm-null"> </span><span class="cm-keyword">endfor</span><span class="cm-null"> </span><span class="cm-tag">%}</span><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-variable">script</span>.<span class="cm-property">exports</span>.<span class="cm-property">bigArray</span> <span class="cm-operator">=</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">Array</span>.<span class="cm-property">from</span>({ <span class="cm-property">length</span>: <span class="cm-number">100</span> })</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        .<span class="cm-property">map</span>((<span class="cm-def">val</span>, <span class="cm-def">i</span>) <span class="cm-operator">=&gt;</span> <span class="cm-string-2">`i liek ${</span><span class="cm-variable-2">i</span><span class="cm-string-2">}</span> <span class="cm-string-2">turtles`</span>);</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" aria-hidden="true" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 218px;"></div><div class="CodeMirror-gutters" style="height: 268px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div>
         </div>
 
         
@@ -1283,207 +1513,6 @@ Hello <strong>Modulo</strong> World!
 </div>
 
 </mws-demo>
-
-<mws-section name="component" modulo-original-html="Component">
-        <a class="secanchor" title="Click to focus on this section." id="component" name="component" href="#component">#</a>
-        <h2>Component</h2>
-    </mws-section>
-
-<blockquote>
-<p><strong>Low-level interface</strong> - Component developers will typically
-only need to use the <code>name="..."</code> attribute on <em>Component</em>,
-and sometimes <code>mode="vanish-into-document"</code> for  page-level
-components. Similarly, none of the <code>renderObj.component</code> properties
-are typically useful for component developers. Instead, they are used
-internally by CParts (notably <em>Template</em>) in order to move along the
-rendering cycle.</p> </blockquote>
-
-<p>The <em>Component</em> CPart is the most central to Modulo. It's how we
-register components to be mounted on the page, and define the other CParts that
-go inside those Components. It's also what stitches together the "machinery"
-that makes reconciliation and rendering even possible. In other words, the
-<em>Component</em> CPart is what handles the "low-level" operations of
-mounting, reconciling to generate patches, and applying those patches to
-rerender, and the interface described here allows for low-level manipulation of
-this process for unusual circumstances when it's needed.</p>
-
-
-<h3>renderObj</h3>
-
-<p>The Component CPart reads several properties from the
-<code>renderObj</code>, at different lifecycle phases. Read below on how to
-interface with it.</p>
-
-<ul>
-    <li><code>component.originalHTML</code> - <strong>Read-only</strong> -
-    This contains the initial HTML that the element had when mounted on the
-    page.</li>
-
-    <li><code>component.innerHTML</code> - <strong>Write-only</strong> -
-    Assign to this to cause the <em>Component</em> CPart to attempt to
-    reconcile the current HTML with the target HTML provided.
-    It functions a little bit like HTML's built-in <em>"element.innerHTML"</em>:
-    Assign a string containing HTML code to this property to see the HTML
-    appear on the page. This is what the <em>Template</em> CPart does behind
-    the scenes. Unlike HTML's built-in <em>"element.innerHTML"</em>, assigning
-    to this renderObj property will not cause an full update, overwriting
-    everything that exists, but instead will cause the <em>Component</em> to
-    employ the "reconciler" specified to generate a patches list (see next). By
-    default, it will then also apply those patches in the <code>update</code>
-    lifecycle.</li>
-
-    <li><code>component.patches</code> - Between the <code>reconcile</code> and
-    <code>update</code> stages, the "patches" property is exposed to allow
-    access to or modification of the patches that the Component intends to
-    apply. This is an advanced feature that gives fine-grained control to how
-    rendering works, and is rarely useful. For example, you could use this
-    property to "intercept" the patches that are about to be applied to your
-    component while re-rendering, and, for an example, forbid the removal of
-    attributes by deleting all patches with <em>"removeAttribute"</em>.
-    all patches  This is in
-    the format of an Array. Each item in the Array is itself a 4-Array (Array
-    of length 4), in the following format:
-    <code>[element, method, arg1, arg2]</code>.
-    For example, to do a <em>"removeAttribute"</em> patch on an "id" attribute
-    for a given "target element" (a real DOM node on the page somewhere), it
-    might be
-    <code>[(ref to "target element"), "removeAttribute", "id", undefined]</code>
-    If the Array is empty, then no
-    patches will be applied. </li>
-</ul>
-
-
-<h3>attrs</h3>
-
-<p>Components CParts use their attributes to set several configuration options.
-They take the following attributes:</p>
-
-<ul>
-    <li><code>name</code> - <em>REQUIRED</em> - The "name" Reconciler engine,
-    is enabled. If you want to experiment with other reconciliation engines,
-    such as ones that might be faster or take into account unusual scenarios,
-    set this equal to another property of <code>Modulo.reconcilers</code>.</li>
-
-    <li><code>engine</code> - <em>default is <code>engine="ModRec"</code></em> -
-    The Reconciler Engine selected. By default, ModRec, the built-in Modulo
-    Reconciler engine, is enabled. If you want to experiment with other
-    reconciliation engines, such as ones that might be faster or take into
-    account unusual scenarios, set this equal to another property of
-    <code>Modulo.reconcilers</code>.</li>
-
-    <li><code>rerender</code> - <em>default is <code>rerender="event"</code></em>.
-    Specify mode to change the render mode of this component. This allows you
-    to isolate outside CSS from your component using "shadow", do one-time
-    renders only with "vanish", or make your component replace the entire
-    document with "vanish-into-document". A detailed discussion of valid
-    options are below:
-        <ul>
-            <li><code>rerender="event"</code> - The default behavior, where the
-            the component will rerender after ever event it handles (e.g. after
-            every user interaction).</li>
-
-            <li><code>rerender="manual"</code> - Set this to only rerender when
-            this.rerender() is invoked. This is useful if there are many events
-            that don't cause changes (e.g. mouse movement), but the extra
-            rerenders, even if things aren't changing, impact performance. Note
-            that if this is set, you will have to manually rerender, such as in
-            a <em>Script</em> CPart.</li>
-        </ul>
-    </li>
-
-    <li><code>mode</code> - <em>default is <code>mode="regular"</code></em>.
-    Specify mode to change the render mode of this component. This allows you
-    to isolate outside CSS from your component using "shadow", do one-time
-    renders only with "vanish", or make your component replace the entire
-    document with "vanish-into-document". A detailed discussion of valid
-    options are below:
-        <ul>
-            <li><code>mode="regular"</code> - The default behavior, where the
-            content generated by this the element will be attached to the
-            regular DOM, as the element itself. This means that CSS stylesheets
-            attached the normal way (e.g. with a "link" tag) will affect the
-            contents of this component (however, <em>Style</em> CParts are
-            still automatically scoped).</li>
-
-            <li><code>mode="shadow"</code> - Use the so-called "shadow DOM" to
-            render the content generated by this component. While the
-            <em>shadow DOM</em> may sound like a sci-fi villain, it's a
-            mechanism browsers provide for custom elements to isolate their
-            contents from CSS selectors or other JavaScript libraries. This
-            isolation means means that CSS stylesheets attached the normal way
-            (e.g. with a "link" tag) <em>will not</em> affect the contents of
-            this element.  Note that other than the isolation provided, the
-            shadow mode should work exactly the same as regular. That said,
-            <em>Style</em> CParts will still be automatically scoped to the
-            component, but will use the shadowDOM feature to more strictly
-            enforce that scoping, although theoretically this shouldn't change
-            behavior.</li>
-
-            <li><code>mode="vanish"</code> - This less used setting causes the
-            component to "vanish" after rendering, or replace itself with it's
-            children. Setting this will cause the component to remove itself
-            after the first time it renders, effectively using the component as
-            a simple template. This "one-time render" feature was written with
-            SSG-style features in mind</li>
-
-            <li><code>mode="vanish-into-document"</code> - This setting is
-            useful in one situation: When you want to create a "page" level
-            component that changes tags that belong in the document head, such
-            as <code>&lt;title&gt;</code>. Like with <code>mode="vanish"</code>
-            described above, setting this will cause the component to remove
-            itself after the first time it renders. However, with
-            vanish-into-document, it will instead replace the entire page.
-            It will also attempt to correctly insert all tags that belong in
-            the document head (meta, title, link, script to be specific),
-            causing link and script tags alike (e.g.
-            <code>&lt;script src=".."&gt;&lt;/script&gt;</code>) to load.
-            Finally, the document will be wiped, and anything else it finds
-            will be put directly into the document's body, for a clean DOM
-            structure that removes itself entirely during this "one-time
-            render".</li>
-
-            <li><code>mode="custom-root"</code> - This is rarely useful, but
-            allows for setting some other DOM element as the new root element
-            for the component to target for rendering it's content. This is
-            done by assigning a value to
-            <code>renderObj.component.root</code> before reconciliation. If no
-            <code>.root</code> value is set, an error will occur.</li>
-        </ul>
-    </li>
-</ul>
-
-
-<h3>Directives</h3>
-
-<p>The <em>Component</em> CPart defines 3 directives:</p>
-
-<ul>
-    <li><code>[component.event]</code> (<em>shortcut:</em> <code>@</code>) -
-    Attach event listeners to DOM elements, and remove them when the DOM
-    elements are removed. (For jQuery users, this is used for similar purposes
-    as "live" (delegated) events, but is faster.)</li>
-
-    <li><code>[component.dataProp]</code> (<em>shortcut:</em> <code>:</code>) -
-    Attach data to a DOM element's <code>.dataProp</code> object, which can be
-    used to directly pass <code>renderObj</code> values as <em>Props</em> or
-    events</li>
-
-    <li><code>[component.slot]</code> - Reattach the original child elements
-    that this component had when it was first mounted to a new DOM element.
-    (For React users, this is similar to doing
-    <code>{this.props.children}</code>.) This can be used in addition to or
-    instead of the <code>&lt;slot&gt;</code> interface. For more on the slot
-    interface, see Mozilla's <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">"The
-    Web Component Slot element"</a>.  Note that Modulo uses this interface for
-    both <code>mode="shadow"</code> (e.g. using <code>shadowRoot</code> as the
-    root element for reconciliation) and all the other DOM rendering modes
-    (e.g. <code>mode="regular"</code>,
-    <code>mode="vanish-into-document"</code>). For Shadow DOM, it will
-    fall-back on Browser behavior. For everything else, it will detach any
-    nodes it finds and reattach the nodes just before the beginning of the
-    reconciliation process (it's DOM load-directive).</li>
-</ul>
-
 
 
 
