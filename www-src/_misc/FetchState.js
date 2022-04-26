@@ -1,6 +1,16 @@
+/*
+  FetchState is a "State-like" component that does fetches, retrieving it's
+  state data from URLs that serve up JSON data. This allows for easy
+  integration of APIs, for both sending data (via POST from a form), and
+  retrieving data.
+
+  A unique feature of it is that it uses MTL templated URLs, allowing for using
+  the templating language for more powerful URL construction and substitution.
+  It also allows for customizations of requests beyond the default, such as
+  using {% method "GET" %} to  ensure a request is sent via the "GET" method.
+*/
 Modulo.cparts.fetchstate = class FetchState extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
-        console.log("thsi is partoptions",partOptions);
         // During factory callback, create each a new template for each URL
         const { defaultOptions } = Modulo.templating;
         const engineClass = Modulo.templating[partOptions.attrs.engine || 'MTL'];
@@ -19,16 +29,11 @@ Modulo.cparts.fetchstate = class FetchState extends Modulo.ComponentPart {
         this.urlTemplates = options.urlTemplates;
     }
 
-    initializedCallback(renderObj) {
+    initializedCallback() {
+        console.log('initializedcallback hapening!');
         // When a component is initialized, set up state variables
         if (!this.data) {
             this.data = {};
-        }
-
-        for (const key of Object.keys(this.urlTemplates)) {
-            if (!(key in this.data)) {
-                this.data[key] = null;
-            }
         }
         this.data.isReady = false;
         this.data.isLoading = false;
@@ -36,11 +41,14 @@ Modulo.cparts.fetchstate = class FetchState extends Modulo.ComponentPart {
         this.data.lastError = null;
         this.allErrors = [];
         this.allLoading = [];
-        this.send();
+        this.data.refresh = this.refresh.bind(this);
+        this.data.sync = this.sync.bind(this);
+        // this.submit = this.refresh.bind(this); // Right now just an alias
+        this.refresh(); // Kick off initial refresh
         return this.data;
     }
 
-    send(key) {
+    refresh(key) {
         if (key) {
             delete this.lastSynced[key]; // Clear a single URL
         } else {
@@ -126,22 +134,26 @@ Modulo.cparts.fetchstate = class FetchState extends Modulo.ComponentPart {
 
         // Add to loading to set isLoading state, then rerender to show
         this.addToLoading(url);
-        this.element.rerender();
-        console.log('thsi is url', url);
-        console.log('thsi is fetchOpts', fetchOpts);
+        if (this.element.isMounted) {
+            this.element.rerender();
+        }
 
         // And finally queue the fetch itself
         return Modulo.globals.fetch(url, fetchOpts)
             .then(response => response.json())
             .then(result => {
-                console.log('Success:', result); // TODO rm
+                if (this.attrs.debug) {
+                    console.log('Success:', result);
+                }
                 this.removeFromLoading(url);
                 this.isError = false;
                 this.data[key] = result;
                 this.element.rerender();
             })
             .catch(error => {
-                console.error('Error:', error);
+                if (this.attrs.debug) {
+                    console.error('Error:', error);
+                }
                 this.removeFromLoading(url);
                 this.data.isError = true;
                 this.data.lastError = error;

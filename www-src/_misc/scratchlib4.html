@@ -1,39 +1,140 @@
 
-<Component name="Tester">
+<Component name="OpenBookAPIExample">
     <Template>
-        <input [state.bind] name="username" placeholder="Type a github username..." />
-        <button @click:=fetchstate.send>Go</button>
+        <input [state.bind] name="search" />
+        <button @click:=fetchstate.refresh>GO</button>
+        {% if fetchstate.isLoading %}
+            Loading...
+        {% else %}
+            {% if state.page > state.limit %}
+                <button>&lt;</button>
+            {% endif %}
+            {% if state.page|multiply:state.limit < fetchstate.openlibrary.numberFound %}
+                <button>&gt;</button>
+            {% endif %}
+
+            <input [state.bind] name="page" min="0"
+                max="{{ fetchstate.openlibrary.numberFound|dividedinto:state.count }}"
+                type="number" @change:=fetchstate.refresh />
+            <ol>
+                {% for result in fetchstate.openlibrary.docs %}
+                    <li>
+                        <img src="http://covers.openlibrary.org/b/id/{{ result.cover_i }}-S.jpg" />
+                        {{ result.title }}
+                        {% if result.author_name %} ({{ result.author_name|join }}) {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </Template>
+
+    <State
+        search="the lord of the rings"
+        limit:=6
+        page:=0
+        fields:='["title", "author_name", "cover_i" ]'
+    ></State>
+
+    <FetchState
+      debug=true
+        openlibrary="
+            https://openlibrary.org/search.json?
+                q = {{ state.search }} &
+                offset = {{ state.page|multiply:state.limit }} &
+                limit = {{ state.limit }} &
+                fields = {{ state.fields|join }}
+        "
+    ></FetchState>
+    <Style>
+        :host {
+            border: 3px solid blue;
+            padding: 10px;
+            margin: 10px;
+            display:  block;
+            width: 800px;
+        }
+    </Style>
+</Component>
+
+
+
+
+
+
+
+
+
+
+
+<Component name="GitHubAPIExample">
+    <Template>
+        <div class="user-tabs">
+            {% for name in state.usernames %}
+                <label>
+                      <input [state.bind] name="username" value="{{ name }}" type="radio" />
+                      {{ name }}
+                </label>
+            {% endfor %}
+
+            <!--
+            <label>
+                <input [state.bind] name="new_username" placeholder="Type a github username..." />
+                <button @click:=state.usernames.push payload="{{ state.new_username }}">
+                    &#x2795;
+                </button>
+            </label>
+            -->
+            <button @click:=fetchstate.refresh>
+                Display {{ state.username }}
+            </button>
+        </div>
+
         <div class="results">
             <ol>
-                <li><h2>Starred repos:</h2></li>
-                {% for starred_repo in fetchstate.stars %}
-                    <li>{{ starred_repo.name }}</li>
+                <h4>Starred repos:</h4>
+                {% for repo in fetchstate.starred %}
+                    <li>{{ repo.name }}</li>
                 {% endfor %}
             </ol>
             <ol>
-                <li><h2>Owned repos:</h2></li>
-                {% for starred_repo in fetchstate.stars %}
-                    <li>{{ starred_repo.name }}</li>
+                <h4>Owned repos:</h4>
+                {% for repo in fetchstate.owned %}
+                    <li>{{ repo.name }}</li>
                 {% endfor %}
             </ol>
         </div>
     </Template>
 
     <State
+        usernames:='["michaelpb", "kickstartcoding"]'
         username="michaelpb"
+        new_username="michaelpb"
     ></State>
 
     <FetchState
+        debug="yes"
         info="https://api.github.com/users/{{ state.username }}"
-        stars="https://api.github.com/users/{{ state.username }}/starred"
+        starred="https://api.github.com/users/{{ state.username }}/starred"
+        owned="https://api.github.com/users/{{ state.username }}/repos"
     ></FetchState>
+    <!--
+        stars="
+          {% if fetchstate.info %}
+              {{ fetchstate.info.starred_url }}
+          {% endif %}
+        "
+    -->
     <Style>
+        .user-tabs label {
+            border-radius: 8px 8px 0 0;
+            background: white;
+            height: 40px;
+            min-width: 10%;
+        }
         .results {
             display: flex;
         }
         .results > ol {
-            height: 80px;
-            width: 80px;
             overflow: auto;
         }
         :host {
@@ -41,7 +142,7 @@
             padding: 10px;
             margin: 10px;
             display:  block;
-            width: 200px;
+            width: 800px;
         }
     </Style>
 </Component>

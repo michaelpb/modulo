@@ -1,6 +1,6 @@
-<component name="BrowserBuildTester"><testsuite>
+<Component name="BrowserBuildTester"><TestSuite>
 
-<test name="Test AssetManager functionality">
+<Test name="Test AssetManager functionality">
     <script name="Ensure instantiates with expected properties">
         const inst = new Modulo.AssetManager();
         assert: inst.functions && inst.stylesheets && inst.rawAssets;
@@ -118,7 +118,7 @@
         const aTag = mockDoc.querySelector('a[download]');
         const actHref = aTag && aTag.href.replace(/%20/g, '');
         const expHref = "data:text/plain;charset=utf-8,abcdefModulo.assets.functions%5B%22xv8r3rt%22%5D%3Dfunction(a%2Cb)%7B%0Areturna%2Bb%0A%7D%3B%0AModulo.fetchQ.data%3D%7B%0A%22test%22%3A%2F%2F(1lines)%0A%60thing%60%2C%2F%2F(ends%3Atest)%0A%0A%7D%3B%0A%0AModulo.globalLoader.loadString(%22mno%22)%3B%0A%0AModulo.globalLoader.loadString(%22pqr%22)%3B%0A"
-        const expDownload = "modulo-buildtype-bhmkug.js";
+        const expDownload = "modulo-buildtype-1je2oag.js";
         assert: aTag !== null && actHref === expHref && aTag.download === expDownload;
     </script>
 
@@ -144,6 +144,6 @@
         assert: true
     </script>
 
-</test>
+</Test>
 
-</testsuite></component>
+</TestSuite></Component>

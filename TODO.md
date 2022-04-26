@@ -65,6 +65,7 @@ Possible repo setup:
 The docs for the MDU tab could even just be literally a self-generated
 storybook, inside an x-Page component
 
+
 ## MDU FE Ideas
 
 - UndoState CPart, as a drop-in replacement for state
@@ -128,7 +129,8 @@ Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
 ## MDU FE StaticData
 
 - Maybe add a StaticData CPart, possibly even built-in? Absurdly simple: Just
-  does a JSON.parse, or little CSV parse, on inner content. Could be used for awesome stuff, like loading URLs
+  does a JSON.parse, or little CSV parse, on inner content. Could be used for
+  awesome stuff, like loading URLs
 
 ## MDU CLI
 
@@ -187,7 +189,7 @@ Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
 - Allow for hooking into build-process for things like directory listings
     - e.g. .modulo-data.dirlisting.json
     - Have a CPart that makes this easy to access:
-        - <Data source="dirlisting"></Data>
+        - <StaticData source="dirlisting"></StaticData>
         - {% for filename, title of data.files %}<a href="{{ filename }}">Hi</a>{% endfor %}
 - The goal is JS / build parity:
     - During dev, it will be a fetch

@@ -215,7 +215,7 @@ lord of the rings&rdquo;)</p>
 
     function typingCallback() {
         state.loading = true;
-        const apiBase = 'http://openlibrary.org/search.json'
+        const apiBase = 'https://openlibrary.org/search.json'
         const search = `q=${state.search}`;
         const opts = 'limit=6&fields=title,author_name,cover_i';
         const url = `${apiBase}?${search}&${opts}`;

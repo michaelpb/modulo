@@ -780,10 +780,17 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     }
 }
 
+Modulo.cparts.staticdata = class StaticData extends Modulo.ComponentPart {
+    static factoryCallback(partOptions, factory, renderObj) {
+        const code = partOptions.content || ''; // TODO: trim whitespace?
+        const transform = partOptions.attrs.transform || s => `return ${s}`;
+        return Modulo.assets.registerFunction([], transform(code))();
+    }
+}
 
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
-        const code = partOptions.content || '';
+        const code = partOptions.content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts'); // give access to CParts JS interface
@@ -1852,7 +1859,8 @@ Modulo.AssetManager = class AssetManager {
     }
 
     registerFunction(params, text, opts = {}) {
-        const hash = this.getHash(params, text);
+        // Checks if text IS the hash, in which case use that, otherwise gen hash
+        const hash = text in this.functions ? text : this.getHash(params, text);
         if (!(hash in this.functions)) {
             const funcText = this.wrapFunctionText(params, text, opts);
             this.rawAssets.js[hash] = funcText; // "use strict" only in tag

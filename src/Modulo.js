@@ -780,10 +780,17 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
     }
 }
 
+Modulo.cparts.staticdata = class StaticData extends Modulo.ComponentPart {
+    static factoryCallback(partOptions, factory, renderObj) {
+        const code = partOptions.content || ''; // TODO: trim whitespace?
+        const transform = partOptions.attrs.transform || (s => `return ${s}`);
+        return Modulo.assets.registerFunction([], transform(code))();
+    }
+}
 
 Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
-        const code = partOptions.content || '';
+        const code = partOptions.content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(renderObj);
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts'); // give access to CParts JS interface
@@ -881,7 +888,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     initializedCallback(renderObj) {
-        this.boundElements = {};
         if (!this.data) {
             // Initialize with deep copy of attributes
             // TODO: Need to do proper deep-copy... is this okay?
@@ -892,7 +898,11 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             }
             this.data = Object.assign({}, attrs);
         }
-        //console.log('thsi is data', this.data);
+
+        this.boundElements = {}; // initialize
+        for (const name of Object.keys(this.data)) {
+            this.boundElements[name] = [];
+        }
         return this.data;
     }
 
@@ -900,10 +910,9 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         const { assert } = Modulo;
         const name = el.getAttribute('name') || attrName;
         assert(name in this.data, `[state.bind]: key "${name}" not in state`);
-        assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
         const listen = () => {
             // TODO: redo
-            let { value, type, checked } = el;
+            let { value, type, checked, tagName } = el;
             if (type && type === 'checkbox') {
                 value === !!checked;
             }
@@ -911,16 +920,24 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
         const evName = value ? value : (isText ? 'keyup' : 'change');
-        this.boundElements[name] = [ el, evName, listen ];
+        //assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
+
+        this.boundElements[name].push([ el, evName, listen ]);
         el.value = this.data[name];
         el.addEventListener(evName, listen);
     }
 
     bindUnmount({ el, attrName }) {
         const name = el.getAttribute('name') || attrName;
-        const [ el2, evName, listen ] = this.boundElements[name];
-        delete this.boundElements[name];
-        el2.removeEventListener(evName, listen);
+        const remainingBound = [];
+        for (const row of this.boundElements[name]) {
+            if (row[0] === el) {
+                row[0].removeEventListener(row[1], row[2]);
+            } else {
+                remainingBound.push(row);
+            }
+        }
+        this.boundElements[name] = remainingBound;
     }
 
     reloadCallback(oldPart) {
@@ -929,6 +946,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     set(name, value) {
+        /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } */
         this.data[name] = value;
         this.element.rerender();
     }
@@ -942,11 +960,12 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
             const val = this.data[name];
             if (name in this.boundElements && val !== this._oldData[name]) {
-                const [el, listen, evName] = this.boundElements[name];
-                if (el.type === 'checkbox') {
-                    el.checked = !!val;
-                } else {
-                    el.value = val;
+                for (const [ el, evName, listen ] of this.boundElements[name]) {
+                    if (el.type === 'checkbox') {
+                        el.checked = !!val;
+                    } else {
+                        el.value = val;
+                    }
                 }
             }
         }
@@ -1135,6 +1154,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         //combine: (s, arg) => s.concat ? s.concat(arg) : Object.assign(s, arg),
         default: (s, arg) => s || arg,
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+        dividedinto: (s, arg) => Math.ceil((s * 1) / (arg * 1)),
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
         join: (s, arg) => s.join(arg === undefined ? ", " : arg),
@@ -1142,6 +1162,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         last: s => s[s.length - 1],
         length: s => s.length !== undefined ? s.length : Object.keys(s).length,
         lower: s => s.toLowerCase(),
+        multiply: (s, arg) => (s * 1) * (arg * 1),
         number: (s) => Number(s),
         pluralize: (s, arg) => (arg.split(',')[(s === 1) * 1]) || '',
         subtract: (s, arg) => s - arg,
@@ -1852,7 +1873,8 @@ Modulo.AssetManager = class AssetManager {
     }
 
     registerFunction(params, text, opts = {}) {
-        const hash = this.getHash(params, text);
+        // Checks if text IS the hash, in which case use that, otherwise gen hash
+        const hash = text in this.functions ? text : this.getHash(params, text);
         if (!(hash in this.functions)) {
             const funcText = this.wrapFunctionText(params, text, opts);
             this.rawAssets.js[hash] = funcText; // "use strict" only in tag
