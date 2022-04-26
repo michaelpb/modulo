@@ -21,13 +21,11 @@ Object.assign(Modulo, {
 });
 
 Modulo.defineAll = function defineAll() { // NEEDS REFACTOR after config stack
-    //Modulo.fetchQ.wait(() => {
     const query = 'template[modulo-embed],modulo';
     for (const elem of Modulo.globals.document.querySelectorAll(query)) {
         // TODO: Should be elem.content if tag===TEMPLATE
         Modulo.globalLoader.loadString(elem.innerHTML);
     }
-    //});
 };
 
 Modulo.ComponentPart = class ComponentPart {
@@ -41,7 +39,6 @@ Modulo.ComponentPart = class ComponentPart {
         // TODO is this still useful? --v
         const content = node.tagName.startsWith('TE') ? node.innerHTML
                                                       : node.textContent;
-        console.log('thsi si attrs.src', attrs.src);
         return { attrs, content, dependencies: attrs.src || null };
     }
 
@@ -135,7 +132,6 @@ Modulo.Loader = class Loader {
             array.push([ cPartName, data ]);
 
             if (data.dependencies) {
-                console.log('DEPS', JSON.stringify(data.dependencies));
                 // Ensure any CPart dependencies are loaded (relative to src)
                 const basePath = Modulo.utils.resolvePath(this.src, '..');
                 const loadCb = cpartClass.loadedCallback.bind(cpartClass);
@@ -417,8 +413,6 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
         //childrenLoadObj.push([partName, data]);
         childrenLoadObj.unshift([ partName, data ]); // Add "self" as CPart
         const cb = () => { // Wait for all dependencies to finish resolving
-            //console.log('?????????? ending wait', Modulo.fetchQ.waitCallbacks.length, Object.keys(Modulo.fetchQ.queue).length);
-            //console.log('FACTORY', JSON.stringify(childrenLoadObj[2][1]), Modulo.fetchQ.waitCallbacks.length);
             const factory = new Modulo.ComponentFactory(loader, name, childrenLoadObj);
             factory.register();
         };
@@ -787,9 +781,10 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
 Modulo.cparts.staticdata = class StaticData extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
-        console.log('thsi si it all', JSON.stringify(partOptions));
         const code = partOptions.content || ''; // TODO: trim whitespace?
-        const transform = partOptions.attrs.transform || (s => `return ${s}`);
+        const defTransform = s => `return ${s.trim()};`;
+        //(s => `return ${JSON.stringify(JSON.parse(s))}`);
+        const transform = partOptions.attrs.transform || defTransform;
         return Modulo.assets.registerFunction([], transform(code))();
     }
 }
@@ -820,7 +815,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         return results;
     }
 
-    getDirectives() { // TODO: refactor / rm
+    getDirectives() { // TODO: refactor / rm, maybe move to component, make for all?
         const { script } = this.element.initRenderObj;
         const isCbRegex = /(Unmount|Mount)$/;
         return Object.keys(script)
@@ -1036,7 +1031,6 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     parseCondExpr(string) {
         // This RegExp splits around the tokens, with spaces added
         const regExpText = ` (${this.opTokens.split(',').join('|')}) `;
-        //console.log(string.split(RegExp(regExpText)));
         return string.split(RegExp(regExpText));
     }
 
@@ -1821,7 +1815,6 @@ Modulo.FetchQueue = class FetchQueue {
         } else if (!(src in this.queue)) {
             this.queue[src] = [ callback ];
             // TODO: Think about if we want to keep cache:no-store
-            console.log('this is fethc', src);
             Modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
@@ -1845,29 +1838,19 @@ Modulo.FetchQueue = class FetchQueue {
     }
 
     checkWait() {
-        console.log('--------CHECKING WAIT', Object.keys(this.queue).length);
         if (Object.keys(this.queue).length === 0) {
-            const { waitCallbacks } = this;
-            while (waitCallbacks.length > 0) {
-                waitCallbacks.shift()(); // clear while invoking
-            }
-            //this.waitCallbacks = [];
-            //waitCallbacks.forEach(callback => callback());
-            /*
             while (this.waitCallbacks.length > 0) {
                 this.waitCallbacks.shift()(); // clear while invoking
             }
-            */
         }
-        console.log('--------DONE CHECKING WAIT', Object.keys(this.queue).length);
     }
 }
 
 Modulo.INVALID_WORDS = new Set((`
-    break case catch class const continue debugger default delete do else
-    enum export extends finally for if implements import in instanceof
-    interface new null package private protected public return static super
-    switch throw try typeof var let void  while with await async true false
+    break case catch class const continue debugger default delete do else enum
+    export extends finally for if implements import in instanceof interface new
+    null package private protected public return static super switch throw try
+    typeof var let void  while with await async true false
 `).split(/\s+/ig));
 
 Modulo.assert = function assert(value, ...info) {
