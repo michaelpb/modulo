@@ -124,6 +124,19 @@
 <!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
 
 
+<component name="JSON">
+<!-- Use StaticData CPart to include JSON from an API or file -->
+<Template>
+    {{ staticdata.language }}:<br>
+    <a href="{{ staticdata.html_url }}">{{ staticdata.name }}</a>
+    ({{ staticdata.stargazers_count }} &starf;)
+</Template>
+<StaticData
+    src="https://api.github.com/repos/michaelpb/modulo"
+></StaticData>
+</component>
+
+
 <component name="API">
 <Template>
 <p>{{ state.name }} | {{ state.location }}</p>
@@ -168,28 +181,32 @@
 
 
 <component name="SearchBox">
+<!-- A "type as you go" search box implementation,
+an example of more complicated HTML and JS behavior -->
 <Template>
-<p>Start typing a book name to see "search as you type" (e.g. try &ldquo;the
-lord of the rings&rdquo;)</p>
+<p>Type a book name for "search as you type"
+(e.g. try &ldquo;the lord of the rings&rdquo;)</p>
 
-<input [state.bind] name="search" @keyup:=script.typingCallback />
+<input [state.bind] name="search"
+  @keyup:=script.typingCallback />
 
-<div class="results {% if state.search.length gt 0 %}visible{% endif %}">
-    <div class="results-container">
-        {% if state.loading %}
-            <img style="margin-top: 30px"
-                src="{{ script.exports.loadingGif  }}" alt="loading" />
-        {% else %}
-            {% for result in state.results %}
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/{{ result.cover_i }}-S.jpg" />
-                    <label>{{ result.title }}</label>
-                </div>
-            {% empty %}
-                <p>No books found.</p>
-            {% endfor %}
-        {% endif %}
-    </div>
+<div class="results {% if state.search.length gt 0 %}
+                      visible {% endif %}">
+  <div class="results-container">
+    {% if state.loading %}
+      <img src="{{ staticdata.gif }}" alt="loading" />
+    {% else %}
+      {% for result in state.results %}
+        <div class="result">
+          <img
+            src="{{ staticdata.cover|add:result.cover_i }}-S.jpg"
+          /> <label>{{ result.title }}</label>
+        </div>
+      {% empty %}
+        <p>No books found.</p>
+      {% endfor %}
+    {% endif %}
+  </div>
 </div>
 </Template>
 
@@ -199,26 +216,22 @@ lord of the rings&rdquo;)</p>
     loading:=false
 ></State>
 
-<Script>
-    // Because this variable is created "loose" in the script tag, it becomes a
-    // static variable global to all instances of this class (though,
-    // thankfully, not global in general -- it's still in an "IFFE")
-    // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state in the initializedCallback)
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
+<!-- Puting long URLs down here to declutter -->
+<StaticData>
+{
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+}
+</StaticData>
 
+<Script>
     function typingCallback() {
         state.loading = true;
-        const apiBase = 'https://openlibrary.org/search.json'
         const search = `q=${state.search}`;
         const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = `${apiBase}?${search}&${opts}`;
+        const url = `${staticdata.apiBase}?${search}&${opts}`;
         _globalDebounce(() => {
             fetch(url)
                 .then(response => response.json())
@@ -232,32 +245,23 @@ lord of the rings&rdquo;)</p>
         element.rerender();
     }
 
-    // Puting this long URL down here to declutter
-    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
-                                 'semantic-ui/0.16.1/images/loader-large.gif');
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
 </Script>
 
 <Style>
-    SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-    input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-    input::after {
-        content: '\1F50E';
-    }
+    input { width: 120px; }
     .results-container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
     }
+    .results-container > img { margin-top 30px; }
     .results {
         position: absolute;
         height: 0;
@@ -266,8 +270,8 @@ lord of the rings&rdquo;)</p>
         display: block;
         border: 2px solid coral;
         border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
+        transition: height 0.2s;
+        z-index: 20;
         background: white;
     }
     .results.visible {

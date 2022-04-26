@@ -21,13 +21,13 @@ Object.assign(Modulo, {
 });
 
 Modulo.defineAll = function defineAll() { // NEEDS REFACTOR after config stack
-    Modulo.fetchQ.wait(() => {
-        const query = 'template[modulo-embed],modulo';
-        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
-            // TODO: Should be elem.content if tag===TEMPLATE
-            Modulo.globalLoader.loadString(elem.innerHTML);
-        }
-    });
+    //Modulo.fetchQ.wait(() => {
+    const query = 'template[modulo-embed],modulo';
+    for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+        // TODO: Should be elem.content if tag===TEMPLATE
+        Modulo.globalLoader.loadString(elem.innerHTML);
+    }
+    //});
 };
 
 Modulo.ComponentPart = class ComponentPart {
@@ -41,6 +41,7 @@ Modulo.ComponentPart = class ComponentPart {
         // TODO is this still useful? --v
         const content = node.tagName.startsWith('TE') ? node.innerHTML
                                                       : node.textContent;
+        console.log('thsi si attrs.src', attrs.src);
         return { attrs, content, dependencies: attrs.src || null };
     }
 
@@ -134,6 +135,7 @@ Modulo.Loader = class Loader {
             array.push([ cPartName, data ]);
 
             if (data.dependencies) {
+                console.log('DEPS', JSON.stringify(data.dependencies));
                 // Ensure any CPart dependencies are loaded (relative to src)
                 const basePath = Modulo.utils.resolvePath(this.src, '..');
                 const loadCb = cpartClass.loadedCallback.bind(cpartClass);
@@ -414,10 +416,13 @@ Modulo.FactoryCPart = class FactoryCPart extends Modulo.ComponentPart {
         }
         //childrenLoadObj.push([partName, data]);
         childrenLoadObj.unshift([ partName, data ]); // Add "self" as CPart
-        Modulo.fetchQ.wait(() => { // Wait for all dependencies to finish resolving
+        const cb = () => { // Wait for all dependencies to finish resolving
+            //console.log('?????????? ending wait', Modulo.fetchQ.waitCallbacks.length, Object.keys(Modulo.fetchQ.queue).length);
+            //console.log('FACTORY', JSON.stringify(childrenLoadObj[2][1]), Modulo.fetchQ.waitCallbacks.length);
             const factory = new Modulo.ComponentFactory(loader, name, childrenLoadObj);
             factory.register();
-        });
+        };
+        Modulo.fetchQ.wait(cb);
     }
 }
 
@@ -782,8 +787,9 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
 Modulo.cparts.staticdata = class StaticData extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
+        console.log('thsi si it all', JSON.stringify(partOptions));
         const code = partOptions.content || ''; // TODO: trim whitespace?
-        const transform = partOptions.attrs.transform || s => `return ${s}`;
+        const transform = partOptions.attrs.transform || (s => `return ${s}`);
         return Modulo.assets.registerFunction([], transform(code))();
     }
 }
@@ -888,7 +894,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     initializedCallback(renderObj) {
-        this.boundElements = {};
         if (!this.data) {
             // Initialize with deep copy of attributes
             // TODO: Need to do proper deep-copy... is this okay?
@@ -899,7 +904,11 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             }
             this.data = Object.assign({}, attrs);
         }
-        //console.log('thsi is data', this.data);
+
+        this.boundElements = {}; // initialize
+        for (const name of Object.keys(this.data)) {
+            this.boundElements[name] = [];
+        }
         return this.data;
     }
 
@@ -907,10 +916,9 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         const { assert } = Modulo;
         const name = el.getAttribute('name') || attrName;
         assert(name in this.data, `[state.bind]: key "${name}" not in state`);
-        assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
         const listen = () => {
             // TODO: redo
-            let { value, type, checked } = el;
+            let { value, type, checked, tagName } = el;
             if (type && type === 'checkbox') {
                 value === !!checked;
             }
@@ -918,16 +926,24 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
         const evName = value ? value : (isText ? 'keyup' : 'change');
-        this.boundElements[name] = [ el, evName, listen ];
+        //assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
+
+        this.boundElements[name].push([ el, evName, listen ]);
         el.value = this.data[name];
         el.addEventListener(evName, listen);
     }
 
     bindUnmount({ el, attrName }) {
         const name = el.getAttribute('name') || attrName;
-        const [ el2, evName, listen ] = this.boundElements[name];
-        delete this.boundElements[name];
-        el2.removeEventListener(evName, listen);
+        const remainingBound = [];
+        for (const row of this.boundElements[name]) {
+            if (row[0] === el) {
+                row[0].removeEventListener(row[1], row[2]);
+            } else {
+                remainingBound.push(row);
+            }
+        }
+        this.boundElements[name] = remainingBound;
     }
 
     reloadCallback(oldPart) {
@@ -936,6 +952,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     set(name, value) {
+        /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } */
         this.data[name] = value;
         this.element.rerender();
     }
@@ -949,11 +966,12 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
             const val = this.data[name];
             if (name in this.boundElements && val !== this._oldData[name]) {
-                const [el, listen, evName] = this.boundElements[name];
-                if (el.type === 'checkbox') {
-                    el.checked = !!val;
-                } else {
-                    el.value = val;
+                for (const [ el, evName, listen ] of this.boundElements[name]) {
+                    if (el.type === 'checkbox') {
+                        el.checked = !!val;
+                    } else {
+                        el.value = val;
+                    }
                 }
             }
         }
@@ -1142,6 +1160,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         //combine: (s, arg) => s.concat ? s.concat(arg) : Object.assign(s, arg),
         default: (s, arg) => s || arg,
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
+        dividedinto: (s, arg) => Math.ceil((s * 1) / (arg * 1)),
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
         join: (s, arg) => s.join(arg === undefined ? ", " : arg),
@@ -1149,6 +1168,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         last: s => s[s.length - 1],
         length: s => s.length !== undefined ? s.length : Object.keys(s).length,
         lower: s => s.toLowerCase(),
+        multiply: (s, arg) => (s * 1) * (arg * 1),
         number: (s) => Number(s),
         pluralize: (s, arg) => (arg.split(',')[(s === 1) * 1]) || '',
         subtract: (s, arg) => s - arg,
@@ -1799,8 +1819,9 @@ Modulo.FetchQueue = class FetchQueue {
         if (src in this.data) {
             callback(this.data[src], label, src); // Synchronous route
         } else if (!(src in this.queue)) {
-            this.queue[src] = [callback];
-            // TODO: Think about if cache:no-store
+            this.queue[src] = [ callback ];
+            // TODO: Think about if we want to keep cache:no-store
+            console.log('this is fethc', src);
             Modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
@@ -1824,11 +1845,21 @@ Modulo.FetchQueue = class FetchQueue {
     }
 
     checkWait() {
+        console.log('--------CHECKING WAIT', Object.keys(this.queue).length);
         if (Object.keys(this.queue).length === 0) {
+            const { waitCallbacks } = this;
+            while (waitCallbacks.length > 0) {
+                waitCallbacks.shift()(); // clear while invoking
+            }
+            //this.waitCallbacks = [];
+            //waitCallbacks.forEach(callback => callback());
+            /*
             while (this.waitCallbacks.length > 0) {
                 this.waitCallbacks.shift()(); // clear while invoking
             }
+            */
         }
+        console.log('--------DONE CHECKING WAIT', Object.keys(this.queue).length);
     }
 }
 

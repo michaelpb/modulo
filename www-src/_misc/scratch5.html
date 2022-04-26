@@ -1,0 +1,21 @@
+<script src="/js/Modulo.js"></script>
+
+<template modulo-embed>
+    <Component name="Test">
+        <Template>
+            {% for item in staticdata %}
+                <p>{{ item.userId }}: {{ item.title|truncate }}</p>
+            {% endfor %}
+        </Template>
+        <StaticData
+            src="https://jsonplaceholder.typicode.com/posts"
+        ></StaticData>
+    </Component>
+</template>
+
+<p>bef</p>
+<x-Test></x-Test>
+<p>af</p>
+
+<script> Modulo.defineAll() </script>
+

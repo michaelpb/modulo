@@ -37,8 +37,9 @@ order within a given <em>Component</em> definition:</p>
 <ol>
     <li>Props</li>
     <li>Template</li>
-    <li><em>(Any custom CParts)</em></li>
+    <li><em>(Any other CParts)</em></li>
     <li>State</li>
+    <li>StaticData</li>
     <li>Script</li>
     <li>Style</li>
 </ol>
@@ -502,6 +503,132 @@ function itself).</p>
 -->
 
 
+<mws-Section name="staticdata">StaticData</mws-Section>
+
+<p>The <em>StaticData</em> CPart is useful for loading JSON files to use as a
+data source. StaticData has no "refresh" capability, meaning this should only
+consist data that you do not expect to change while running your program, such
+as type definitions or data from a API that does not change frequently.</p>
+
+<h3>Usage</h3>
+
+<p>The StaticData CPart can be used in two different ways. The most common is
+loading data from a JSON file or JSON API by specifying a <code>src=</code>
+attribute. During development, this will "fetch" when refreshing the page, but
+once you "build" the component using <code>build()</code> or
+<code>bundle()</code>, the JSON file or JSON-based API will no longer be
+fetched.  When using <code>build()</code> or <code>bundle()</code>, the
+specified content will be "frozen in time" during the build, and bundled in
+with the resulting JS file.</p>
+
+<p>The other usage is to simply "hardcode" the data in JSON syntax within the
+element itself. There is no functional difference of including data in JSON
+syntax in a StaticData CPart to simply adding a Script CPart that uses
+<code>script.exports</code> to expose data, other than it being slightly more
+convenience (e.g. less typing), and intentionally less flexible compared to a
+script CPart.</p>
+
+<p>Note: Currently, StaticData supports JavaScript Object syntax by default,
+NOT JSON syntax. This default might change in the future, to only strictly
+support JSON (e.g., require double-quotes, error on trailing commas), offering
+the looser structure.</p>
+
+<h3>attrs</h3>
+
+<ul>
+    <li><code>src</code> - Just like any other CParts, the <code>src=</code>
+    attribute lets you load the content from another URL.
+    This could be from an API (e.g. something like
+    <code>src="https://some.api.com/v1/getdata?p=3"</code>), or for loading
+    from a file (e.g.  <code>src="./data/weatherData.json"</code>), or for
+    loading from a file. If not specified, then the data must be specified
+    within the StaticData tag, or else it will be simply "undefined".</li>
+
+    <li><code>transform</code> - This optional attribute can be set to a
+    function (e.g.  using <code>:=</code> data-prop syntax) that takes a single
+    string as input (the original data) and outputs a single string (the
+    transformed data), which should be a valid JavaScript expression that will
+    result in the data format that you want. Generally, this JavaScript
+    expression should be JS primitives, such as in JSON format. This happens
+    before build() and bundle(), meaning it this JS expression will be what
+    gets included in the built JS file.  By default, no transformation is done,
+    and the input is expected to already be valid JSON to be inserted
+    verbatim.</li>
+</ul>
+
+
+<h3>renderObj</h3>
+
+<p>The StaticData CPart exposes it's data directly (e.g. so it can be accessed
+in Script, Template, etc).</p>
+
+
+<h3>Usage Example</h3>
+<p>Examine the following examples for ideas on how to use StaticData:</p>
+<br />
+<mws-Demo
+demotype="minipreview"
+ttitle="Package.json"
+text='
+<!-- Load package.json file directly from GitHub -->
+<Template>
+    {{ staticdata.name }} v{{ staticdata.version }}
+    (by {{ staticdata.author }})
+</Template>
+<StaticData
+    src="https://raw.githubusercontent.com/michaelpb/modulo/main/package.json"
+></StaticData>
+'
+ttitle2="FromAPI"
+text2='
+<Template>
+    <table>
+    {% for item in staticdata %}
+        <tr>
+            <td>#{{ item.userId }}</td>
+            <td>{{ item.title|truncate:5 }}</td>
+            <td>{{ item.body|truncate:10 }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+</Template>
+<!-- Load 100 items of sample data from a
+     JSON placeholder website "typicode" -->
+<StaticData
+    src="https://jsonplaceholder.typicode.com/posts"
+></StaticData>
+'
+ttitle3="EmbeddedData"
+text3='
+<Template>
+    {% for item in staticdata %}
+        <label>
+          <img src="{{ item.thumbnailUrl }}" />
+          <tt>#{{ item.id }}</tt>
+          {{ item.title|truncate }}
+        </label>
+    {% endfor %}
+</Template>
+<!-- Hardcode lorem ipsum / sample data -->
+<StaticData>
+[
+  {
+    "id": 1,
+    "title": "accusamus beatae ad facilis cum similique qui sunt",
+    "url": "https://via.placeholder.com/600/92c952",
+    "thumbnailUrl": "https://via.placeholder.com/150/92c952"
+  },
+  {
+    "id": 2,
+    "title": "reprehenderit est deserunt velit ipsam",
+    "url": "https://via.placeholder.com/600/771796",
+    "thumbnailUrl": "https://via.placeholder.com/150/771796"
+  }
+]
+</StaticData>
+'
+></mws-Demo>
+
 
 <mws-Section name="script">Script</mws-Section>
 
@@ -724,7 +851,9 @@ assumptions about using a synchronous or asynchronous coding style.</p>
     is useful for building up static data structures to be shared between all
     instances of this component, which can then be accessed in the template.
     This <em>should not</em> be used as a store or state variable (use the
-    <em>Store</em> CPart for that). For example:
+    <em>Store</em> CPart for that). Also, it should not be used for simply
+    storing static data that requires no further code or manipulation (use the
+    <em>StaticData</em> CPart for this). For example:
 <mws-Demo
 demotype="minipreview"
 text='

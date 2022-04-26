@@ -1,7 +1,5 @@
 # High priority
 
-- (DONE) Finish bundle()
-
 - Loading relative component libraries is broken, e.g. ./scratchlib4.html
 
 # Medium priority
@@ -57,7 +55,6 @@ Possible repo setup:
 
 - modulo/modulo -- src/Modulo.js, www-src, tests & docs for core
 - modulo/mdu -- modulocli/, mdu/cparts, mdu/html, tests & docs for mdu
-
 - modulo/website-common -- The component libraries for x-Page, etc, so both mdu
   and modulo can share the same look! Then, mdu.modulojs.org could be the docs
   for the "MDU" Tab.
@@ -76,20 +73,6 @@ storybook, inside an x-Page component
         - < button @click=state.undo >Undo</button> (+ redo etc)
     - No custom JavaScript code! Super impressive!
 
-
-## MDU FE Templating
-
-    'attrs': (text, tmplt) {
-        // Basically the ... splat operator.
-        const expr = tmplt.parseExpr(text);
-        return {start: `G.OUT.push(Modulo.utils.escapeAttrs(${expr}));`};
-    },
-    'and': (text, tmplt) => {
-        // Another idea: const start = `if (${condition}) {//COND`;
-        // tmplt.output[tmplt.output.length - 1].replace(') {//COND', ' && ' + condition + ') {//COND')
-        return '';
-        // Another idea: Use "while ()" for "if", then use "break LABEL;" for "and"
-    },
 
 
 ## MDU FE FreezeCPart
@@ -229,4 +212,44 @@ Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
 - Then, State CPart (only?) should save to localStorage
 - Force refresh, then check from localStorage and restore & do rerender
 - That way it's always a true refresh, but state gets remembered
+
+
+
+### Misc note on a potential ordering bug with wait()
+
+An outer-most wait caused all dependencies in modulo-embed to fail:
+
+    Modulo.defineAll = function defineAll() { // NEEDS REFACTOR after config stack
+        const query = 'template[modulo-embed],modulo';
+        for (const elem of Modulo.globals.document.querySelectorAll(query)) {
+            // TODO: Should be elem.content if tag===TEMPLATE
+            Modulo.globalLoader.loadString(elem.innerHTML);
+        }
+        //Modulo.fetchQ.wait(() => { // BREAKS! for dependencies
+        //});
+    };
+
+
+USed the following code to debug, to figure out the "stray" check wait eats up
+the queue from children check-waits. This behavior is questionable, and the
+logic in checkWait should be more robust, I think.
+
+    checkWait() {
+        console.log('--------CHECKING WAIT', Object.keys(this.queue).length);
+        if (Object.keys(this.queue).length === 0) {
+            const { waitCallbacks } = this;
+            while (waitCallbacks.length > 0) {
+                waitCallbacks.shift()(); // clear while invoking
+            }
+            //this.waitCallbacks = [];
+            //waitCallbacks.forEach(callback => callback());
+            /*
+            while (this.waitCallbacks.length > 0) {
+                this.waitCallbacks.shift()(); // clear while invoking
+            }
+            */
+        }
+        console.log('--------DONE CHECKING WAIT', Object.keys(this.queue).length);
+    }
+}
 
