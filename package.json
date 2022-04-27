@@ -4,6 +4,10 @@
   "description": "Minimalist Web Component based framework",
   "homepage": "https://modulojs.org/",
   "main": "mcli/modulocli.js",
+  "bin": {
+        "mdu-cli": "mcli/modulocli.js",
+        "modulocli": "mcli/modulocli.js"
+  },
   "scripts": {
     "build-complexity-report": "complexity-report-html ./src/",
     "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
