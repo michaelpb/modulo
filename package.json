@@ -1,9 +1,9 @@
 {
-  "name": "modulo",
+  "name": "modulocli",
   "version": "0.0.1",
   "description": "Minimalist Web Component based framework",
-  "homepage": "https://github.com/michaelpb/modulo#readme",
-  "main": "modulocli/modulocli.js",
+  "homepage": "https://modulojs.org/",
+  "main": "mcli/modulocli.js",
   "scripts": {
     "build-complexity-report": "complexity-report-html ./src/",
     "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
@@ -23,6 +23,8 @@
     "docco-next": "0.9.8",
     "jsdom": "16.4.0",
     "sloc": "0.2.1",
+    "happy-dom": "2.55.0",
+    "linkedom": "0.14.5",
     "xmldom": "0.4.0"
   },
   "repository": {
@@ -39,9 +41,7 @@
   },
   "dependencies": {
     "express": "4.17.1",
-    "happy-dom": "^2.55.0",
-    "linkedom": "0.14.5",
     "node-watch": "0.7.2",
-    "puppeteer": "^13.5.2"
+    "puppeteer": "13.5.2"
   }
 }
