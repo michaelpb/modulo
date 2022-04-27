@@ -14677,116 +14677,6 @@ var OUT=[];
 OUT.push("\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n"); // "Hello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>"
 
 return OUT.join("");
-};Modulo.assets.functions["1209aqv"]= function (){
-return {
-  "id": 320452827,
-  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
-  "name": "modulo",
-  "full_name": "michaelpb/modulo",
-  "private": false,
-  "owner": {
-    "login": "michaelpb",
-    "id": 181549,
-    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
-    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
-    "gravatar_id": "",
-    "url": "https://api.github.com/users/michaelpb",
-    "html_url": "https://github.com/michaelpb",
-    "followers_url": "https://api.github.com/users/michaelpb/followers",
-    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
-    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
-    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
-    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
-    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
-    "repos_url": "https://api.github.com/users/michaelpb/repos",
-    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
-    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
-    "type": "User",
-    "site_admin": false
-  },
-  "html_url": "https://github.com/michaelpb/modulo",
-  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
-  "fork": false,
-  "url": "https://api.github.com/repos/michaelpb/modulo",
-  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
-  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
-  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
-  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
-  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
-  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
-  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
-  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
-  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
-  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
-  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
-  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
-  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
-  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
-  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
-  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
-  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
-  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
-  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
-  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
-  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
-  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
-  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
-  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
-  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
-  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
-  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
-  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
-  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
-  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
-  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
-  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
-  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
-  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
-  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
-  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
-  "created_at": "2020-12-11T03:08:21Z",
-  "updated_at": "2022-01-04T21:07:05Z",
-  "pushed_at": "2022-04-25T15:30:31Z",
-  "git_url": "git://github.com/michaelpb/modulo.git",
-  "ssh_url": "git@github.com:michaelpb/modulo.git",
-  "clone_url": "https://github.com/michaelpb/modulo.git",
-  "svn_url": "https://github.com/michaelpb/modulo",
-  "homepage": null,
-  "size": 4101,
-  "stargazers_count": 1,
-  "watchers_count": 1,
-  "language": "JavaScript",
-  "has_issues": true,
-  "has_projects": true,
-  "has_downloads": true,
-  "has_wiki": true,
-  "has_pages": true,
-  "forks_count": 0,
-  "mirror_url": null,
-  "archived": false,
-  "disabled": false,
-  "open_issues_count": 0,
-  "license": {
-    "key": "lgpl-2.1",
-    "name": "GNU Lesser General Public License v2.1",
-    "spdx_id": "LGPL-2.1",
-    "url": "https://api.github.com/licenses/lgpl-2.1",
-    "node_id": "MDc6TGljZW5zZTEx"
-  },
-  "allow_forking": true,
-  "is_template": false,
-  "topics": [
-
-  ],
-  "visibility": "public",
-  "forks": 0,
-  "open_issues": 0,
-  "watchers": 1,
-  "default_branch": "main",
-  "temp_clone_token": null,
-  "network_count": 0,
-  "subscribers_count": 1
-};
 };Modulo.assets.functions["138n0bb"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n    "); // ""
@@ -14975,6 +14865,116 @@ return { "setNum": typeof setNum !== "undefined" ? setNum : undefined,
 
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["1nk8j0s"]= function (){
+return {
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-01-04T21:07:05Z",
+  "pushed_at": "2022-04-26T21:01:49Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": null,
+  "size": 4101,
+  "stargazers_count": 1,
+  "watchers_count": 1,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 1,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+};
 };Modulo.assets.functions["1nm8gm0"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n<p>User \"<em>"); // "<p>User \"<em>"
@@ -14982,17 +14982,6 @@ OUT.push(G.escapeText(CTX.state.username)); // "state.username"
 OUT.push("</em>\" sent a message:</p>\n<div class=\"msgcontent\">\n    "); // "</em>\" sent a message:</p>\n<div class=\"msgcontent\">"
 OUT.push(G.escapeText(G.filters["safe"](CTX.state.content))); // "state.content|safe"
 OUT.push("\n</div>\n"); // "</div>"
-
-return OUT.join("");
-};Modulo.assets.functions["1rcq8u"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n    <p>"); // "<p>"
-var ARR0=CTX.script.exports.bigArray;for (var KEY in ARR0) {CTX. item=ARR0[KEY]; // "for item in script.exports.bigArray"
-OUT.push("\n        "); // ""
-OUT.push(G.escapeText(CTX.item)); // "item"
-OUT.push(",\n    "); // ","
-} // "endfor"
-OUT.push("</p>\n"); // "</p>"
 
 return OUT.join("");
 };Modulo.assets.functions["1s5vkkp"]= function (CTX, G){
@@ -15044,21 +15033,6 @@ OUT.push("</p>\n"); // "</p>"
 OUT.push("\n"); // ""
 
 return OUT.join("");
-};Modulo.assets.functions["1sqqsbm"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function fetchMe() {
-        fetch("https://api.github.com/users/michaelpb")
-            .then(response => response.json())
-            .then(cparts.script.cb(data => {
-                // Note that this callback is "wrapped" with
-                // "cparts.script.cb(  ...  )"
-                state.data = data; // update state
-                element.rerender(); // force rerender
-            }));
-    }
-
-return { "fetchMe": typeof fetchMe !== "undefined" ? fetchMe : undefined,
- setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["1t7kt92"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 let componentTexts = null;
 let componentTexts2 = null;
@@ -15511,54 +15485,6 @@ OUT.push(G.escapeText(CTX.state.noun)); // "state.noun"
 OUT.push("s.\n</pre>\n"); // "s.\n</pre>"
 
 return OUT.join("");
-};Modulo.assets.functions["8uq4sc"]= function (){
-return {
-  "name": "modulo",
-  "version": "0.0.1",
-  "description": "Minimalist Web Component based framework",
-  "homepage": "https://github.com/michaelpb/modulo#readme",
-  "main": "modulocli/modulocli.js",
-  "scripts": {
-    "build-complexity-report": "complexity-report-html ./src/",
-    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
-    "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
-    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
-    "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
-    "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
-    "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
-    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
-    "new-build": "node ./mcli/modulocli.js -v build",
-    "cli": "node ./modulocli/modulocli.js",
-    "test": "npm run cli -- test ./tests/all.html"
-  },
-  "devDependencies": {
-    "complexity-report-html": "0.0.3",
-    "crypto-js": "4.1.1",
-    "docco-next": "0.9.8",
-    "jsdom": "16.4.0",
-    "sloc": "0.2.1",
-    "xmldom": "0.4.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/michaelpb/modulo.git"
-  },
-  "keywords": [
-    "framework"
-  ],
-  "author": "michaelb",
-  "license": "LGPL-2.1",
-  "bugs": {
-    "url": "https://github.com/michaelpb/modulo/issues"
-  },
-  "dependencies": {
-    "express": "4.17.1",
-    "happy-dom": "^2.55.0",
-    "linkedom": "0.14.5",
-    "node-watch": "0.7.2",
-    "puppeteer": "^13.5.2"
-  }
-};
 };Modulo.assets.functions["dfca1k"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function fetchGitHub() {
@@ -15705,24 +15631,6 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
 "makeError": typeof makeError !== "undefined" ? makeError : undefined,
  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["sogcqp"]= function (Modulo, factory, module, component, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    script.exports.bigArray =
-        Array.from({ length: 100 })
-        .map((val, i) => `i liek ${i} turtles`);
-
-return {  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["ubtauo"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n    "); // ""
-OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
-OUT.push(" v"); // "v"
-OUT.push(G.escapeText(CTX.staticdata.version)); // "staticdata.version"
-OUT.push("\n    (by "); // "(by"
-OUT.push(G.escapeText(CTX.staticdata.author)); // "staticdata.author"
-OUT.push(")\n"); // ")"
-
-return OUT.join("");
 };Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         // Splits up own source-code to get source for each example
@@ -16313,13 +16221,6 @@ OUT.push(G.escapeText(CTX.item)); // "item"
 OUT.push("</li>\n    "); // "</li>"
 } // "endfor"
 OUT.push("\n    <li>\n        <input [state.bind] name=\"text\" />\n        <button @click:=script.addItem>Add</button>\n    </li>\n</ol>\n"); // "<li>\n        <input [state.bind] name=\"text\" />\n        <button @click:=script.addItem>Add</button>\n    </li>\n</ol>"
-
-return OUT.join("");
-};Modulo.assets.functions["x4mc2e8"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n    API data: <pre>"); // "API data: <pre>"
-OUT.push(G.escapeText(G.filters["truncate"](G.filters["json"](CTX.state.data),80))); // "state.data|json|truncate:80"
-OUT.push("</pre>\n    <button @click:=script.fetchMe>Get API data</button>\n"); // "</pre>\n    <button @click:=script.fetchMe>Get API data</button>"
 
 return OUT.join("");
 };Modulo.assets.functions["x648bme"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
@@ -19561,7 +19462,7 @@ element.previewSpot.appendChild(component);
   "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
   "created_at": "2020-12-11T03:08:21Z",
   "updated_at": "2022-01-04T21:07:05Z",
-  "pushed_at": "2022-04-25T15:30:31Z",
+  "pushed_at": "2022-04-26T21:01:49Z",
   "git_url": "git://github.com/michaelpb/modulo.git",
   "ssh_url": "git@github.com:michaelpb/modulo.git",
   "clone_url": "https://github.com/michaelpb/modulo.git",
@@ -19603,56 +19504,6 @@ element.previewSpot.appendChild(component);
   "subscribers_count": 1
 }
 `,// (ends: https://api.github.com/repos/michaelpb/modulo) 
-
-  "https://raw.githubusercontent.com/michaelpb/modulo/main/package.json": // (48 lines)
-`{
-  "name": "modulo",
-  "version": "0.0.1",
-  "description": "Minimalist Web Component based framework",
-  "homepage": "https://github.com/michaelpb/modulo#readme",
-  "main": "modulocli/modulocli.js",
-  "scripts": {
-    "build-complexity-report": "complexity-report-html ./src/",
-    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
-    "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
-    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
-    "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
-    "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
-    "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
-    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
-    "new-build": "node ./mcli/modulocli.js -v build",
-    "cli": "node ./modulocli/modulocli.js",
-    "test": "npm run cli -- test ./tests/all.html"
-  },
-  "devDependencies": {
-    "complexity-report-html": "0.0.3",
-    "crypto-js": "4.1.1",
-    "docco-next": "0.9.8",
-    "jsdom": "16.4.0",
-    "sloc": "0.2.1",
-    "xmldom": "0.4.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/michaelpb/modulo.git"
-  },
-  "keywords": [
-    "framework"
-  ],
-  "author": "michaelb",
-  "license": "LGPL-2.1",
-  "bugs": {
-    "url": "https://github.com/michaelpb/modulo/issues"
-  },
-  "dependencies": {
-    "express": "4.17.1",
-    "happy-dom": "^2.55.0",
-    "linkedom": "0.14.5",
-    "node-watch": "0.7.2",
-    "puppeteer": "^13.5.2"
-  }
-}
-`,// (ends: https://raw.githubusercontent.com/michaelpb/modulo/main/package.json) 
 
 };
 

@@ -13454,8 +13454,9 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 Modulo.cparts.staticdata = class StaticData extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
         const code = partOptions.content || ''; // TODO: trim whitespace?
-        const transform = partOptions.attrs.transform || (s => `return ${s};`);
+        const defTransform = s => `return ${s.trim()};`;
         //(s => `return ${JSON.stringify(JSON.parse(s))}`);
+        const transform = partOptions.attrs.transform || defTransform;
         return Modulo.assets.registerFunction([], transform(code))();
     }
 }
@@ -14676,6 +14677,19 @@ var OUT=[];
 OUT.push("\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n"); // "Hello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>"
 
 return OUT.join("");
+};Modulo.assets.functions["138n0bb"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    "); // ""
+OUT.push(G.escapeText(CTX.staticdata.language)); // "staticdata.language"
+OUT.push(":<br>\n    <a href=\""); // ":<br>\n    <a href=\""
+OUT.push(G.escapeText(CTX.staticdata.html_url)); // "staticdata.html_url"
+OUT.push("\">"); // "\">"
+OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
+OUT.push("</a>\n    ("); // "</a>\n    ("
+OUT.push(G.escapeText(CTX.staticdata.stargazers_count)); // "staticdata.stargazers_count"
+OUT.push(" &starf;)\n"); // "&starf;)"
+
+return OUT.join("");
 };Modulo.assets.functions["13lid16"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function toggle([ i, j ]) {
@@ -14767,6 +14781,33 @@ var OUT=[];
 OUT.push("\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n"); // "<p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>"
 
 return OUT.join("");
+};Modulo.assets.functions["17dsoab"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n<p>Type a book name for \"search as you type\"\n(e.g. try &ldquo;the lord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\"\n  @keyup:=script.typingCallback />\n\n<div class=\"results "); // "<p>Type a book name for \"search as you type\"\n(e.g. try &ldquo;the lord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\"\n  @keyup:=script.typingCallback />\n\n<div class=\"results"
+if (CTX.state.search.length > 0) { // "if state.search.length gt 0"
+OUT.push("\n                      visible "); // "visible"
+} // "endif"
+OUT.push("\">\n  <div class=\"results-container\">\n    "); // "\">\n  <div class=\"results-container\">"
+if (CTX.state.loading) { // "if state.loading"
+OUT.push("\n      <img src=\""); // "<img src=\""
+OUT.push(G.escapeText(CTX.staticdata.gif)); // "staticdata.gif"
+OUT.push("\" alt=\"loading\" />\n    "); // "\" alt=\"loading\" />"
+} else { // "else"
+OUT.push("\n      "); // ""
+var ARR1=CTX.state.results;for (var KEY in ARR1) {CTX. result=ARR1[KEY]; // "for result in state.results"
+OUT.push("\n        <div class=\"result\">\n          <img\n            src=\""); // "<div class=\"result\">\n          <img\n            src=\""
+OUT.push(G.escapeText(G.filters["add"](CTX.staticdata.cover,CTX.result.cover_i))); // "staticdata.cover|add:result.cover_i"
+OUT.push("-S.jpg\"\n          /> <label>"); // "-S.jpg\"\n          /> <label>"
+OUT.push(G.escapeText(CTX.result.title)); // "result.title"
+OUT.push("</label>\n        </div>\n      "); // "</label>\n        </div>"
+G.FORLOOP_NOT_EMPTY2=true; } if (!G.FORLOOP_NOT_EMPTY2) { // "empty"
+OUT.push("\n        <p>No books found.</p>\n      "); // "<p>No books found.</p>"
+}G.FORLOOP_NOT_EMPTY2 = false; // "endfor"
+OUT.push("\n    "); // ""
+} // "endif"
+OUT.push("\n  </div>\n</div>\n"); // "</div>\n</div>"
+
+return OUT.join("");
 };Modulo.assets.functions["182j849"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n    Components can use any number of <strong>CParts</strong>.\n    Here we use only <em>Style</em> and <em>Template</em>.\n"); // "Components can use any number of <strong>CParts</strong>.\n    Here we use only <em>Style</em> and <em>Template</em>."
@@ -14824,6 +14865,116 @@ return { "setNum": typeof setNum !== "undefined" ? setNum : undefined,
 
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["1nk8j0s"]= function (){
+return {
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-01-04T21:07:05Z",
+  "pushed_at": "2022-04-26T21:01:49Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": null,
+  "size": 4101,
+  "stargazers_count": 1,
+  "watchers_count": 1,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 1,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+};
 };Modulo.assets.functions["1nm8gm0"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n<p>User \"<em>"); // "<p>User \"<em>"
@@ -15279,19 +15430,13 @@ OUT.push("\n        <button @click:=script.pause alt=\"Pause\">&#x2016;</button>
 OUT.push("\n\n    <button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>\n"); // "<button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>"
 
 return OUT.join("");
-};Modulo.assets.functions["4psf6c"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n    "); // ""
-var ARR0=CTX.staticdata;for (var KEY in ARR0) {CTX. item=ARR0[KEY]; // "for item in staticdata"
-OUT.push("\n        <p>"); // "<p>"
-OUT.push(G.escapeText(CTX.item.userId)); // "item.userId"
-OUT.push(": "); // ":"
-OUT.push(G.escapeText(G.filters["truncate"](CTX.item.title))); // "item.title|truncate"
-OUT.push("</p>\n    "); // "</p>"
-} // "endfor"
-OUT.push("\n"); // ""
-
-return OUT.join("");
+};Modulo.assets.functions["4amukg"]= function (){
+return {
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+};
 };Modulo.assets.functions["6dqor"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n<ul>\n    "); // "<ul>"
@@ -15366,6 +15511,54 @@ OUT.push(G.escapeText(CTX.state.noun)); // "state.noun"
 OUT.push("s.\n</pre>\n"); // "s.\n</pre>"
 
 return OUT.join("");
+};Modulo.assets.functions["8uq4sc"]= function (){
+return {
+  "name": "modulo",
+  "version": "0.0.1",
+  "description": "Minimalist Web Component based framework",
+  "homepage": "https://github.com/michaelpb/modulo#readme",
+  "main": "modulocli/modulocli.js",
+  "scripts": {
+    "build-complexity-report": "complexity-report-html ./src/",
+    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
+    "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
+    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
+    "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
+    "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
+    "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
+    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
+    "new-build": "node ./mcli/modulocli.js -v build",
+    "cli": "node ./modulocli/modulocli.js",
+    "test": "npm run cli -- test ./tests/all.html"
+  },
+  "devDependencies": {
+    "complexity-report-html": "0.0.3",
+    "crypto-js": "4.1.1",
+    "docco-next": "0.9.8",
+    "jsdom": "16.4.0",
+    "sloc": "0.2.1",
+    "xmldom": "0.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michaelpb/modulo.git"
+  },
+  "keywords": [
+    "framework"
+  ],
+  "author": "michaelb",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/michaelpb/modulo/issues"
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "happy-dom": "^2.55.0",
+    "linkedom": "0.14.5",
+    "node-watch": "0.7.2",
+    "puppeteer": "^13.5.2"
+  }
+};
 };Modulo.assets.functions["dfca1k"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function fetchGitHub() {
@@ -15383,609 +15576,6 @@ return OUT.join("");
 return { "fetchGitHub": typeof fetchGitHub !== "undefined" ? fetchGitHub : undefined,
 "githubCallback": typeof githubCallback !== "undefined" ? githubCallback : undefined,
  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["hgneei"]= function (){
-return [
-  {
-    "userId": 1,
-    "id": 1,
-    "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-    "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
-  },
-  {
-    "userId": 1,
-    "id": 2,
-    "title": "qui est esse",
-    "body": "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla"
-  },
-  {
-    "userId": 1,
-    "id": 3,
-    "title": "ea molestias quasi exercitationem repellat qui ipsa sit aut",
-    "body": "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut"
-  },
-  {
-    "userId": 1,
-    "id": 4,
-    "title": "eum et est occaecati",
-    "body": "ullam et saepe reiciendis voluptatem adipisci\nsit amet autem assumenda provident rerum culpa\nquis hic commodi nesciunt rem tenetur doloremque ipsam iure\nquis sunt voluptatem rerum illo velit"
-  },
-  {
-    "userId": 1,
-    "id": 5,
-    "title": "nesciunt quas odio",
-    "body": "repudiandae veniam quaerat sunt sed\nalias aut fugiat sit autem sed est\nvoluptatem omnis possimus esse voluptatibus quis\nest aut tenetur dolor neque"
-  },
-  {
-    "userId": 1,
-    "id": 6,
-    "title": "dolorem eum magni eos aperiam quia",
-    "body": "ut aspernatur corporis harum nihil quis provident sequi\nmollitia nobis aliquid molestiae\nperspiciatis et ea nemo ab reprehenderit accusantium quas\nvoluptate dolores velit et doloremque molestiae"
-  },
-  {
-    "userId": 1,
-    "id": 7,
-    "title": "magnam facilis autem",
-    "body": "dolore placeat quibusdam ea quo vitae\nmagni quis enim qui quis quo nemo aut saepe\nquidem repellat excepturi ut quia\nsunt ut sequi eos ea sed quas"
-  },
-  {
-    "userId": 1,
-    "id": 8,
-    "title": "dolorem dolore est ipsam",
-    "body": "dignissimos aperiam dolorem qui eum\nfacilis quibusdam animi sint suscipit qui sint possimus cum\nquaerat magni maiores excepturi\nipsam ut commodi dolor voluptatum modi aut vitae"
-  },
-  {
-    "userId": 1,
-    "id": 9,
-    "title": "nesciunt iure omnis dolorem tempora et accusantium",
-    "body": "consectetur animi nesciunt iure dolore\nenim quia ad\nveniam autem ut quam aut nobis\net est aut quod aut provident voluptas autem voluptas"
-  },
-  {
-    "userId": 1,
-    "id": 10,
-    "title": "optio molestias id quia eum",
-    "body": "quo et expedita modi cum officia vel magni\ndoloribus qui repudiandae\nvero nisi sit\nquos veniam quod sed accusamus veritatis error"
-  },
-  {
-    "userId": 2,
-    "id": 11,
-    "title": "et ea vero quia laudantium autem",
-    "body": "delectus reiciendis molestiae occaecati non minima eveniet qui voluptatibus\naccusamus in eum beatae sit\nvel qui neque voluptates ut commodi qui incidunt\nut animi commodi"
-  },
-  {
-    "userId": 2,
-    "id": 12,
-    "title": "in quibusdam tempore odit est dolorem",
-    "body": "itaque id aut magnam\npraesentium quia et ea odit et ea voluptas et\nsapiente quia nihil amet occaecati quia id voluptatem\nincidunt ea est distinctio odio"
-  },
-  {
-    "userId": 2,
-    "id": 13,
-    "title": "dolorum ut in voluptas mollitia et saepe quo animi",
-    "body": "aut dicta possimus sint mollitia voluptas commodi quo doloremque\niste corrupti reiciendis voluptatem eius rerum\nsit cumque quod eligendi laborum minima\nperferendis recusandae assumenda consectetur porro architecto ipsum ipsam"
-  },
-  {
-    "userId": 2,
-    "id": 14,
-    "title": "voluptatem eligendi optio",
-    "body": "fuga et accusamus dolorum perferendis illo voluptas\nnon doloremque neque facere\nad qui dolorum molestiae beatae\nsed aut voluptas totam sit illum"
-  },
-  {
-    "userId": 2,
-    "id": 15,
-    "title": "eveniet quod temporibus",
-    "body": "reprehenderit quos placeat\nvelit minima officia dolores impedit repudiandae molestiae nam\nvoluptas recusandae quis delectus\nofficiis harum fugiat vitae"
-  },
-  {
-    "userId": 2,
-    "id": 16,
-    "title": "sint suscipit perspiciatis velit dolorum rerum ipsa laboriosam odio",
-    "body": "suscipit nam nisi quo aperiam aut\nasperiores eos fugit maiores voluptatibus quia\nvoluptatem quis ullam qui in alias quia est\nconsequatur magni mollitia accusamus ea nisi voluptate dicta"
-  },
-  {
-    "userId": 2,
-    "id": 17,
-    "title": "fugit voluptas sed molestias voluptatem provident",
-    "body": "eos voluptas et aut odit natus earum\naspernatur fuga molestiae ullam\ndeserunt ratione qui eos\nqui nihil ratione nemo velit ut aut id quo"
-  },
-  {
-    "userId": 2,
-    "id": 18,
-    "title": "voluptate et itaque vero tempora molestiae",
-    "body": "eveniet quo quis\nlaborum totam consequatur non dolor\nut et est repudiandae\nest voluptatem vel debitis et magnam"
-  },
-  {
-    "userId": 2,
-    "id": 19,
-    "title": "adipisci placeat illum aut reiciendis qui",
-    "body": "illum quis cupiditate provident sit magnam\nea sed aut omnis\nveniam maiores ullam consequatur atque\nadipisci quo iste expedita sit quos voluptas"
-  },
-  {
-    "userId": 2,
-    "id": 20,
-    "title": "doloribus ad provident suscipit at",
-    "body": "qui consequuntur ducimus possimus quisquam amet similique\nsuscipit porro ipsam amet\neos veritatis officiis exercitationem vel fugit aut necessitatibus totam\nomnis rerum consequatur expedita quidem cumque explicabo"
-  },
-  {
-    "userId": 3,
-    "id": 21,
-    "title": "asperiores ea ipsam voluptatibus modi minima quia sint",
-    "body": "repellat aliquid praesentium dolorem quo\nsed totam minus non itaque\nnihil labore molestiae sunt dolor eveniet hic recusandae veniam\ntempora et tenetur expedita sunt"
-  },
-  {
-    "userId": 3,
-    "id": 22,
-    "title": "dolor sint quo a velit explicabo quia nam",
-    "body": "eos qui et ipsum ipsam suscipit aut\nsed omnis non odio\nexpedita earum mollitia molestiae aut atque rem suscipit\nnam impedit esse"
-  },
-  {
-    "userId": 3,
-    "id": 23,
-    "title": "maxime id vitae nihil numquam",
-    "body": "veritatis unde neque eligendi\nquae quod architecto quo neque vitae\nest illo sit tempora doloremque fugit quod\net et vel beatae sequi ullam sed tenetur perspiciatis"
-  },
-  {
-    "userId": 3,
-    "id": 24,
-    "title": "autem hic labore sunt dolores incidunt",
-    "body": "enim et ex nulla\nomnis voluptas quia qui\nvoluptatem consequatur numquam aliquam sunt\ntotam recusandae id dignissimos aut sed asperiores deserunt"
-  },
-  {
-    "userId": 3,
-    "id": 25,
-    "title": "rem alias distinctio quo quis",
-    "body": "ullam consequatur ut\nomnis quis sit vel consequuntur\nipsa eligendi ipsum molestiae et omnis error nostrum\nmolestiae illo tempore quia et distinctio"
-  },
-  {
-    "userId": 3,
-    "id": 26,
-    "title": "est et quae odit qui non",
-    "body": "similique esse doloribus nihil accusamus\nomnis dolorem fuga consequuntur reprehenderit fugit recusandae temporibus\nperspiciatis cum ut laudantium\nomnis aut molestiae vel vero"
-  },
-  {
-    "userId": 3,
-    "id": 27,
-    "title": "quasi id et eos tenetur aut quo autem",
-    "body": "eum sed dolores ipsam sint possimus debitis occaecati\ndebitis qui qui et\nut placeat enim earum aut odit facilis\nconsequatur suscipit necessitatibus rerum sed inventore temporibus consequatur"
-  },
-  {
-    "userId": 3,
-    "id": 28,
-    "title": "delectus ullam et corporis nulla voluptas sequi",
-    "body": "non et quaerat ex quae ad maiores\nmaiores recusandae totam aut blanditiis mollitia quas illo\nut voluptatibus voluptatem\nsimilique nostrum eum"
-  },
-  {
-    "userId": 3,
-    "id": 29,
-    "title": "iusto eius quod necessitatibus culpa ea",
-    "body": "odit magnam ut saepe sed non qui\ntempora atque nihil\naccusamus illum doloribus illo dolor\neligendi repudiandae odit magni similique sed cum maiores"
-  },
-  {
-    "userId": 3,
-    "id": 30,
-    "title": "a quo magni similique perferendis",
-    "body": "alias dolor cumque\nimpedit blanditiis non eveniet odio maxime\nblanditiis amet eius quis tempora quia autem rem\na provident perspiciatis quia"
-  },
-  {
-    "userId": 4,
-    "id": 31,
-    "title": "ullam ut quidem id aut vel consequuntur",
-    "body": "debitis eius sed quibusdam non quis consectetur vitae\nimpedit ut qui consequatur sed aut in\nquidem sit nostrum et maiores adipisci atque\nquaerat voluptatem adipisci repudiandae"
-  },
-  {
-    "userId": 4,
-    "id": 32,
-    "title": "doloremque illum aliquid sunt",
-    "body": "deserunt eos nobis asperiores et hic\nest debitis repellat molestiae optio\nnihil ratione ut eos beatae quibusdam distinctio maiores\nearum voluptates et aut adipisci ea maiores voluptas maxime"
-  },
-  {
-    "userId": 4,
-    "id": 33,
-    "title": "qui explicabo molestiae dolorem",
-    "body": "rerum ut et numquam laborum odit est sit\nid qui sint in\nquasi tenetur tempore aperiam et quaerat qui in\nrerum officiis sequi cumque quod"
-  },
-  {
-    "userId": 4,
-    "id": 34,
-    "title": "magnam ut rerum iure",
-    "body": "ea velit perferendis earum ut voluptatem voluptate itaque iusto\ntotam pariatur in\nnemo voluptatem voluptatem autem magni tempora minima in\nest distinctio qui assumenda accusamus dignissimos officia nesciunt nobis"
-  },
-  {
-    "userId": 4,
-    "id": 35,
-    "title": "id nihil consequatur molestias animi provident",
-    "body": "nisi error delectus possimus ut eligendi vitae\nplaceat eos harum cupiditate facilis reprehenderit voluptatem beatae\nmodi ducimus quo illum voluptas eligendi\net nobis quia fugit"
-  },
-  {
-    "userId": 4,
-    "id": 36,
-    "title": "fuga nam accusamus voluptas reiciendis itaque",
-    "body": "ad mollitia et omnis minus architecto odit\nvoluptas doloremque maxime aut non ipsa qui alias veniam\nblanditiis culpa aut quia nihil cumque facere et occaecati\nqui aspernatur quia eaque ut aperiam inventore"
-  },
-  {
-    "userId": 4,
-    "id": 37,
-    "title": "provident vel ut sit ratione est",
-    "body": "debitis et eaque non officia sed nesciunt pariatur vel\nvoluptatem iste vero et ea\nnumquam aut expedita ipsum nulla in\nvoluptates omnis consequatur aut enim officiis in quam qui"
-  },
-  {
-    "userId": 4,
-    "id": 38,
-    "title": "explicabo et eos deleniti nostrum ab id repellendus",
-    "body": "animi esse sit aut sit nesciunt assumenda eum voluptas\nquia voluptatibus provident quia necessitatibus ea\nrerum repudiandae quia voluptatem delectus fugit aut id quia\nratione optio eos iusto veniam iure"
-  },
-  {
-    "userId": 4,
-    "id": 39,
-    "title": "eos dolorem iste accusantium est eaque quam",
-    "body": "corporis rerum ducimus vel eum accusantium\nmaxime aspernatur a porro possimus iste omnis\nest in deleniti asperiores fuga aut\nvoluptas sapiente vel dolore minus voluptatem incidunt ex"
-  },
-  {
-    "userId": 4,
-    "id": 40,
-    "title": "enim quo cumque",
-    "body": "ut voluptatum aliquid illo tenetur nemo sequi quo facilis\nipsum rem optio mollitia quas\nvoluptatem eum voluptas qui\nunde omnis voluptatem iure quasi maxime voluptas nam"
-  },
-  {
-    "userId": 5,
-    "id": 41,
-    "title": "non est facere",
-    "body": "molestias id nostrum\nexcepturi molestiae dolore omnis repellendus quaerat saepe\nconsectetur iste quaerat tenetur asperiores accusamus ex ut\nnam quidem est ducimus sunt debitis saepe"
-  },
-  {
-    "userId": 5,
-    "id": 42,
-    "title": "commodi ullam sint et excepturi error explicabo praesentium voluptas",
-    "body": "odio fugit voluptatum ducimus earum autem est incidunt voluptatem\nodit reiciendis aliquam sunt sequi nulla dolorem\nnon facere repellendus voluptates quia\nratione harum vitae ut"
-  },
-  {
-    "userId": 5,
-    "id": 43,
-    "title": "eligendi iste nostrum consequuntur adipisci praesentium sit beatae perferendis",
-    "body": "similique fugit est\nillum et dolorum harum et voluptate eaque quidem\nexercitationem quos nam commodi possimus cum odio nihil nulla\ndolorum exercitationem magnam ex et a et distinctio debitis"
-  },
-  {
-    "userId": 5,
-    "id": 44,
-    "title": "optio dolor molestias sit",
-    "body": "temporibus est consectetur dolore\net libero debitis vel velit laboriosam quia\nipsum quibusdam qui itaque fuga rem aut\nea et iure quam sed maxime ut distinctio quae"
-  },
-  {
-    "userId": 5,
-    "id": 45,
-    "title": "ut numquam possimus omnis eius suscipit laudantium iure",
-    "body": "est natus reiciendis nihil possimus aut provident\nex et dolor\nrepellat pariatur est\nnobis rerum repellendus dolorem autem"
-  },
-  {
-    "userId": 5,
-    "id": 46,
-    "title": "aut quo modi neque nostrum ducimus",
-    "body": "voluptatem quisquam iste\nvoluptatibus natus officiis facilis dolorem\nquis quas ipsam\nvel et voluptatum in aliquid"
-  },
-  {
-    "userId": 5,
-    "id": 47,
-    "title": "quibusdam cumque rem aut deserunt",
-    "body": "voluptatem assumenda ut qui ut cupiditate aut impedit veniam\noccaecati nemo illum voluptatem laudantium\nmolestiae beatae rerum ea iure soluta nostrum\neligendi et voluptate"
-  },
-  {
-    "userId": 5,
-    "id": 48,
-    "title": "ut voluptatem illum ea doloribus itaque eos",
-    "body": "voluptates quo voluptatem facilis iure occaecati\nvel assumenda rerum officia et\nillum perspiciatis ab deleniti\nlaudantium repellat ad ut et autem reprehenderit"
-  },
-  {
-    "userId": 5,
-    "id": 49,
-    "title": "laborum non sunt aut ut assumenda perspiciatis voluptas",
-    "body": "inventore ab sint\nnatus fugit id nulla sequi architecto nihil quaerat\neos tenetur in in eum veritatis non\nquibusdam officiis aspernatur cumque aut commodi aut"
-  },
-  {
-    "userId": 5,
-    "id": 50,
-    "title": "repellendus qui recusandae incidunt voluptates tenetur qui omnis exercitationem",
-    "body": "error suscipit maxime adipisci consequuntur recusandae\nvoluptas eligendi et est et voluptates\nquia distinctio ab amet quaerat molestiae et vitae\nadipisci impedit sequi nesciunt quis consectetur"
-  },
-  {
-    "userId": 6,
-    "id": 51,
-    "title": "soluta aliquam aperiam consequatur illo quis voluptas",
-    "body": "sunt dolores aut doloribus\ndolore doloribus voluptates tempora et\ndoloremque et quo\ncum asperiores sit consectetur dolorem"
-  },
-  {
-    "userId": 6,
-    "id": 52,
-    "title": "qui enim et consequuntur quia animi quis voluptate quibusdam",
-    "body": "iusto est quibusdam fuga quas quaerat molestias\na enim ut sit accusamus enim\ntemporibus iusto accusantium provident architecto\nsoluta esse reprehenderit qui laborum"
-  },
-  {
-    "userId": 6,
-    "id": 53,
-    "title": "ut quo aut ducimus alias",
-    "body": "minima harum praesentium eum rerum illo dolore\nquasi exercitationem rerum nam\nporro quis neque quo\nconsequatur minus dolor quidem veritatis sunt non explicabo similique"
-  },
-  {
-    "userId": 6,
-    "id": 54,
-    "title": "sit asperiores ipsam eveniet odio non quia",
-    "body": "totam corporis dignissimos\nvitae dolorem ut occaecati accusamus\nex velit deserunt\net exercitationem vero incidunt corrupti mollitia"
-  },
-  {
-    "userId": 6,
-    "id": 55,
-    "title": "sit vel voluptatem et non libero",
-    "body": "debitis excepturi ea perferendis harum libero optio\neos accusamus cum fuga ut sapiente repudiandae\net ut incidunt omnis molestiae\nnihil ut eum odit"
-  },
-  {
-    "userId": 6,
-    "id": 56,
-    "title": "qui et at rerum necessitatibus",
-    "body": "aut est omnis dolores\nneque rerum quod ea rerum velit pariatur beatae excepturi\net provident voluptas corrupti\ncorporis harum reprehenderit dolores eligendi"
-  },
-  {
-    "userId": 6,
-    "id": 57,
-    "title": "sed ab est est",
-    "body": "at pariatur consequuntur earum quidem\nquo est laudantium soluta voluptatem\nqui ullam et est\net cum voluptas voluptatum repellat est"
-  },
-  {
-    "userId": 6,
-    "id": 58,
-    "title": "voluptatum itaque dolores nisi et quasi",
-    "body": "veniam voluptatum quae adipisci id\net id quia eos ad et dolorem\naliquam quo nisi sunt eos impedit error\nad similique veniam"
-  },
-  {
-    "userId": 6,
-    "id": 59,
-    "title": "qui commodi dolor at maiores et quis id accusantium",
-    "body": "perspiciatis et quam ea autem temporibus non voluptatibus qui\nbeatae a earum officia nesciunt dolores suscipit voluptas et\nanimi doloribus cum rerum quas et magni\net hic ut ut commodi expedita sunt"
-  },
-  {
-    "userId": 6,
-    "id": 60,
-    "title": "consequatur placeat omnis quisquam quia reprehenderit fugit veritatis facere",
-    "body": "asperiores sunt ab assumenda cumque modi velit\nqui esse omnis\nvoluptate et fuga perferendis voluptas\nillo ratione amet aut et omnis"
-  },
-  {
-    "userId": 7,
-    "id": 61,
-    "title": "voluptatem doloribus consectetur est ut ducimus",
-    "body": "ab nemo optio odio\ndelectus tenetur corporis similique nobis repellendus rerum omnis facilis\nvero blanditiis debitis in nesciunt doloribus dicta dolores\nmagnam minus velit"
-  },
-  {
-    "userId": 7,
-    "id": 62,
-    "title": "beatae enim quia vel",
-    "body": "enim aspernatur illo distinctio quae praesentium\nbeatae alias amet delectus qui voluptate distinctio\nodit sint accusantium autem omnis\nquo molestiae omnis ea eveniet optio"
-  },
-  {
-    "userId": 7,
-    "id": 63,
-    "title": "voluptas blanditiis repellendus animi ducimus error sapiente et suscipit",
-    "body": "enim adipisci aspernatur nemo\nnumquam omnis facere dolorem dolor ex quis temporibus incidunt\nab delectus culpa quo reprehenderit blanditiis asperiores\naccusantium ut quam in voluptatibus voluptas ipsam dicta"
-  },
-  {
-    "userId": 7,
-    "id": 64,
-    "title": "et fugit quas eum in in aperiam quod",
-    "body": "id velit blanditiis\neum ea voluptatem\nmolestiae sint occaecati est eos perspiciatis\nincidunt a error provident eaque aut aut qui"
-  },
-  {
-    "userId": 7,
-    "id": 65,
-    "title": "consequatur id enim sunt et et",
-    "body": "voluptatibus ex esse\nsint explicabo est aliquid cumque adipisci fuga repellat labore\nmolestiae corrupti ex saepe at asperiores et perferendis\nnatus id esse incidunt pariatur"
-  },
-  {
-    "userId": 7,
-    "id": 66,
-    "title": "repudiandae ea animi iusto",
-    "body": "officia veritatis tenetur vero qui itaque\nsint non ratione\nsed et ut asperiores iusto eos molestiae nostrum\nveritatis quibusdam et nemo iusto saepe"
-  },
-  {
-    "userId": 7,
-    "id": 67,
-    "title": "aliquid eos sed fuga est maxime repellendus",
-    "body": "reprehenderit id nostrum\nvoluptas doloremque pariatur sint et accusantium quia quod aspernatur\net fugiat amet\nnon sapiente et consequatur necessitatibus molestiae"
-  },
-  {
-    "userId": 7,
-    "id": 68,
-    "title": "odio quis facere architecto reiciendis optio",
-    "body": "magnam molestiae perferendis quisquam\nqui cum reiciendis\nquaerat animi amet hic inventore\nea quia deleniti quidem saepe porro velit"
-  },
-  {
-    "userId": 7,
-    "id": 69,
-    "title": "fugiat quod pariatur odit minima",
-    "body": "officiis error culpa consequatur modi asperiores et\ndolorum assumenda voluptas et vel qui aut vel rerum\nvoluptatum quisquam perspiciatis quia rerum consequatur totam quas\nsequi commodi repudiandae asperiores et saepe a"
-  },
-  {
-    "userId": 7,
-    "id": 70,
-    "title": "voluptatem laborum magni",
-    "body": "sunt repellendus quae\nest asperiores aut deleniti esse accusamus repellendus quia aut\nquia dolorem unde\neum tempora esse dolore"
-  },
-  {
-    "userId": 8,
-    "id": 71,
-    "title": "et iusto veniam et illum aut fuga",
-    "body": "occaecati a doloribus\niste saepe consectetur placeat eum voluptate dolorem et\nqui quo quia voluptas\nrerum ut id enim velit est perferendis"
-  },
-  {
-    "userId": 8,
-    "id": 72,
-    "title": "sint hic doloribus consequatur eos non id",
-    "body": "quam occaecati qui deleniti consectetur\nconsequatur aut facere quas exercitationem aliquam hic voluptas\nneque id sunt ut aut accusamus\nsunt consectetur expedita inventore velit"
-  },
-  {
-    "userId": 8,
-    "id": 73,
-    "title": "consequuntur deleniti eos quia temporibus ab aliquid at",
-    "body": "voluptatem cumque tenetur consequatur expedita ipsum nemo quia explicabo\naut eum minima consequatur\ntempore cumque quae est et\net in consequuntur voluptatem voluptates aut"
-  },
-  {
-    "userId": 8,
-    "id": 74,
-    "title": "enim unde ratione doloribus quas enim ut sit sapiente",
-    "body": "odit qui et et necessitatibus sint veniam\nmollitia amet doloremque molestiae commodi similique magnam et quam\nblanditiis est itaque\nquo et tenetur ratione occaecati molestiae tempora"
-  },
-  {
-    "userId": 8,
-    "id": 75,
-    "title": "dignissimos eum dolor ut enim et delectus in",
-    "body": "commodi non non omnis et voluptas sit\nautem aut nobis magnam et sapiente voluptatem\net laborum repellat qui delectus facilis temporibus\nrerum amet et nemo voluptate expedita adipisci error dolorem"
-  },
-  {
-    "userId": 8,
-    "id": 76,
-    "title": "doloremque officiis ad et non perferendis",
-    "body": "ut animi facere\ntotam iusto tempore\nmolestiae eum aut et dolorem aperiam\nquaerat recusandae totam odio"
-  },
-  {
-    "userId": 8,
-    "id": 77,
-    "title": "necessitatibus quasi exercitationem odio",
-    "body": "modi ut in nulla repudiandae dolorum nostrum eos\naut consequatur omnis\nut incidunt est omnis iste et quam\nvoluptates sapiente aliquam asperiores nobis amet corrupti repudiandae provident"
-  },
-  {
-    "userId": 8,
-    "id": 78,
-    "title": "quam voluptatibus rerum veritatis",
-    "body": "nobis facilis odit tempore cupiditate quia\nassumenda doloribus rerum qui ea\nillum et qui totam\naut veniam repellendus"
-  },
-  {
-    "userId": 8,
-    "id": 79,
-    "title": "pariatur consequatur quia magnam autem omnis non amet",
-    "body": "libero accusantium et et facere incidunt sit dolorem\nnon excepturi qui quia sed laudantium\nquisquam molestiae ducimus est\nofficiis esse molestiae iste et quos"
-  },
-  {
-    "userId": 8,
-    "id": 80,
-    "title": "labore in ex et explicabo corporis aut quas",
-    "body": "ex quod dolorem ea eum iure qui provident amet\nquia qui facere excepturi et repudiandae\nasperiores molestias provident\nminus incidunt vero fugit rerum sint sunt excepturi provident"
-  },
-  {
-    "userId": 9,
-    "id": 81,
-    "title": "tempora rem veritatis voluptas quo dolores vero",
-    "body": "facere qui nesciunt est voluptatum voluptatem nisi\nsequi eligendi necessitatibus ea at rerum itaque\nharum non ratione velit laboriosam quis consequuntur\nex officiis minima doloremque voluptas ut aut"
-  },
-  {
-    "userId": 9,
-    "id": 82,
-    "title": "laudantium voluptate suscipit sunt enim enim",
-    "body": "ut libero sit aut totam inventore sunt\nporro sint qui sunt molestiae\nconsequatur cupiditate qui iste ducimus adipisci\ndolor enim assumenda soluta laboriosam amet iste delectus hic"
-  },
-  {
-    "userId": 9,
-    "id": 83,
-    "title": "odit et voluptates doloribus alias odio et",
-    "body": "est molestiae facilis quis tempora numquam nihil qui\nvoluptate sapiente consequatur est qui\nnecessitatibus autem aut ipsa aperiam modi dolore numquam\nreprehenderit eius rem quibusdam"
-  },
-  {
-    "userId": 9,
-    "id": 84,
-    "title": "optio ipsam molestias necessitatibus occaecati facilis veritatis dolores aut",
-    "body": "sint molestiae magni a et quos\neaque et quasi\nut rerum debitis similique veniam\nrecusandae dignissimos dolor incidunt consequatur odio"
-  },
-  {
-    "userId": 9,
-    "id": 85,
-    "title": "dolore veritatis porro provident adipisci blanditiis et sunt",
-    "body": "similique sed nisi voluptas iusto omnis\nmollitia et quo\nassumenda suscipit officia magnam sint sed tempora\nenim provident pariatur praesentium atque animi amet ratione"
-  },
-  {
-    "userId": 9,
-    "id": 86,
-    "title": "placeat quia et porro iste",
-    "body": "quasi excepturi consequatur iste autem temporibus sed molestiae beatae\net quaerat et esse ut\nvoluptatem occaecati et vel explicabo autem\nasperiores pariatur deserunt optio"
-  },
-  {
-    "userId": 9,
-    "id": 87,
-    "title": "nostrum quis quasi placeat",
-    "body": "eos et molestiae\nnesciunt ut a\ndolores perspiciatis repellendus repellat aliquid\nmagnam sint rem ipsum est"
-  },
-  {
-    "userId": 9,
-    "id": 88,
-    "title": "sapiente omnis fugit eos",
-    "body": "consequatur omnis est praesentium\nducimus non iste\nneque hic deserunt\nvoluptatibus veniam cum et rerum sed"
-  },
-  {
-    "userId": 9,
-    "id": 89,
-    "title": "sint soluta et vel magnam aut ut sed qui",
-    "body": "repellat aut aperiam totam temporibus autem et\narchitecto magnam ut\nconsequatur qui cupiditate rerum quia soluta dignissimos nihil iure\ntempore quas est"
-  },
-  {
-    "userId": 9,
-    "id": 90,
-    "title": "ad iusto omnis odit dolor voluptatibus",
-    "body": "minus omnis soluta quia\nqui sed adipisci voluptates illum ipsam voluptatem\neligendi officia ut in\neos soluta similique molestias praesentium blanditiis"
-  },
-  {
-    "userId": 10,
-    "id": 91,
-    "title": "aut amet sed",
-    "body": "libero voluptate eveniet aperiam sed\nsunt placeat suscipit molestias\nsimilique fugit nam natus\nexpedita consequatur consequatur dolores quia eos et placeat"
-  },
-  {
-    "userId": 10,
-    "id": 92,
-    "title": "ratione ex tenetur perferendis",
-    "body": "aut et excepturi dicta laudantium sint rerum nihil\nlaudantium et at\na neque minima officia et similique libero et\ncommodi voluptate qui"
-  },
-  {
-    "userId": 10,
-    "id": 93,
-    "title": "beatae soluta recusandae",
-    "body": "dolorem quibusdam ducimus consequuntur dicta aut quo laboriosam\nvoluptatem quis enim recusandae ut sed sunt\nnostrum est odit totam\nsit error sed sunt eveniet provident qui nulla"
-  },
-  {
-    "userId": 10,
-    "id": 94,
-    "title": "qui qui voluptates illo iste minima",
-    "body": "aspernatur expedita soluta quo ab ut similique\nexpedita dolores amet\nsed temporibus distinctio magnam saepe deleniti\nomnis facilis nam ipsum natus sint similique omnis"
-  },
-  {
-    "userId": 10,
-    "id": 95,
-    "title": "id minus libero illum nam ad officiis",
-    "body": "earum voluptatem facere provident blanditiis velit laboriosam\npariatur accusamus odio saepe\ncumque dolor qui a dicta ab doloribus consequatur omnis\ncorporis cupiditate eaque assumenda ad nesciunt"
-  },
-  {
-    "userId": 10,
-    "id": 96,
-    "title": "quaerat velit veniam amet cupiditate aut numquam ut sequi",
-    "body": "in non odio excepturi sint eum\nlabore voluptates vitae quia qui et\ninventore itaque rerum\nveniam non exercitationem delectus aut"
-  },
-  {
-    "userId": 10,
-    "id": 97,
-    "title": "quas fugiat ut perspiciatis vero provident",
-    "body": "eum non blanditiis soluta porro quibusdam voluptas\nvel voluptatem qui placeat dolores qui velit aut\nvel inventore aut cumque culpa explicabo aliquid at\nperspiciatis est et voluptatem dignissimos dolor itaque sit nam"
-  },
-  {
-    "userId": 10,
-    "id": 98,
-    "title": "laboriosam dolor voluptates",
-    "body": "doloremque ex facilis sit sint culpa\nsoluta assumenda eligendi non ut eius\nsequi ducimus vel quasi\nveritatis est dolores"
-  },
-  {
-    "userId": 10,
-    "id": 99,
-    "title": "temporibus sit alias delectus eligendi possimus magni",
-    "body": "quo deleniti praesentium dicta non quod\naut est molestias\nmolestias et officia quis nihil\nitaque dolorem quia"
-  },
-  {
-    "userId": 10,
-    "id": 100,
-    "title": "at nam consequatur ea labore ea harum",
-    "body": "cupiditate quo est a modi nesciunt soluta\nipsa voluptas error itaque dicta in\nautem qui minus magnam et distinctio eum\naccusamus ratione error aut"
-  }
-];
 };Modulo.assets.functions["ki6eec"]= function (Modulo, factory, module, component, template, style, props, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'style') style = value; if (name === 'props') props = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         let egTexts = null;
@@ -16115,48 +15705,6 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
 "makeError": typeof makeError !== "undefined" ? makeError : undefined,
  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["piu4tg"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    // Because this variable is created "loose" in the script tag, it becomes a
-    // static variable global to all instances of this class (though,
-    // thankfully, not global in general -- it's still in an "IFFE")
-    // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state in the initializedCallback)
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
-
-    function typingCallback() {
-        state.loading = true;
-        const apiBase = 'https://openlibrary.org/search.json'
-        const search = `q=${state.search}`;
-        const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = `${apiBase}?${search}&${opts}`;
-        _globalDebounce(() => {
-            fetch(url)
-                .then(response => response.json())
-                .then(dataBackCallback);
-        });
-    }
-
-    function dataBackCallback(data) {
-        state.results = data.docs;
-        state.loading = false;
-        element.rerender();
-    }
-
-    // Puting this long URL down here to declutter
-    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
-                                 'semantic-ui/0.16.1/images/loader-large.gif');
-
-return { "_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
-"typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
-"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["sogcqp"]= function (Modulo, factory, module, component, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     script.exports.bigArray =
@@ -16164,31 +15712,15 @@ return { "_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebo
         .map((val, i) => `i liek ${i} turtles`);
 
 return {  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["uj6ft1"]= function (CTX, G){
+};Modulo.assets.functions["ubtauo"]= function (CTX, G){
 var OUT=[];
-OUT.push("\n<p>Start typing a book name to see \"search as you type\" (e.g. try &ldquo;the\nlord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\" @keyup:=script.typingCallback />\n\n<div class=\"results "); // "<p>Start typing a book name to see \"search as you type\" (e.g. try &ldquo;the\nlord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\" @keyup:=script.typingCallback />\n\n<div class=\"results"
-if (CTX.state.search.length > 0) { // "if state.search.length gt 0"
-OUT.push("visible"); // "visible"
-} // "endif"
-OUT.push("\">\n    <div class=\"results-container\">\n        "); // "\">\n    <div class=\"results-container\">"
-if (CTX.state.loading) { // "if state.loading"
-OUT.push("\n            <img style=\"margin-top: 30px\"\n                src=\""); // "<img style=\"margin-top: 30px\"\n                src=\""
-OUT.push(G.escapeText(CTX.script.exports.loadingGif)); // "script.exports.loadingGif"
-OUT.push("\" alt=\"loading\" />\n        "); // "\" alt=\"loading\" />"
-} else { // "else"
-OUT.push("\n            "); // ""
-var ARR1=CTX.state.results;for (var KEY in ARR1) {CTX. result=ARR1[KEY]; // "for result in state.results"
-OUT.push("\n                <div class=\"result\">\n                    <img src=\"http://covers.openlibrary.org/b/id/"); // "<div class=\"result\">\n                    <img src=\"http://covers.openlibrary.org/b/id/"
-OUT.push(G.escapeText(CTX.result.cover_i)); // "result.cover_i"
-OUT.push("-S.jpg\" />\n                    <label>"); // "-S.jpg\" />\n                    <label>"
-OUT.push(G.escapeText(CTX.result.title)); // "result.title"
-OUT.push("</label>\n                </div>\n            "); // "</label>\n                </div>"
-G.FORLOOP_NOT_EMPTY2=true; } if (!G.FORLOOP_NOT_EMPTY2) { // "empty"
-OUT.push("\n                <p>No books found.</p>\n            "); // "<p>No books found.</p>"
-}G.FORLOOP_NOT_EMPTY2 = false; // "endfor"
-OUT.push("\n        "); // ""
-} // "endif"
-OUT.push("\n    </div>\n</div>\n"); // "</div>\n</div>"
+OUT.push("\n    "); // ""
+OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
+OUT.push(" v"); // "v"
+OUT.push(G.escapeText(CTX.staticdata.version)); // "staticdata.version"
+OUT.push("\n    (by "); // "(by"
+OUT.push(G.escapeText(CTX.staticdata.author)); // "staticdata.author"
+OUT.push(")\n"); // ")"
 
 return OUT.join("");
 };Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
@@ -16224,6 +15756,189 @@ return OUT.join("");
         script.exports.componentTexts = componentTexts;
     
 return {  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["x11j0c5c"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function _child(label, hash, keywords=[], filepath=null) {
+        if (!hash) {
+            hash = label.toLowerCase()
+        }
+        if (hash.endsWith('.html') && filepath === null) {
+            filepath = hash;
+        }
+        return {label, hash, keywords, filepath};
+    }
+    let componentTexts;
+    try {
+        //console.log('this is', Object.keys(Modulo.factoryInstances));
+        //console.log('this is', Modulo.factoryInstances);
+        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    } catch {
+        console.log('couldnt get componentTexts');
+        componentTexts = {};
+    }
+    script.exports.menu = [
+        {
+            label: 'Table of Contents',
+            filename: '/docs/',
+        },
+
+        {
+            label: 'Tutorial',
+            filename: '/docs/tutorial_part1.html',
+            children: [
+                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
+                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
+                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
+            ],
+        },
+
+        {
+            label: 'Templating',
+            filename: '/docs/templating.html',
+            children: [
+                _child('Templates', null, ['templating philosophy', 'templating overview']),
+                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
+                _child('Filters', null, ['filter syntax', 'example filters']),
+                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
+                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
+                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
+            ],
+        },
+
+        {
+            label: 'Template Reference',
+            filename: '/docs/templating-reference.html',
+            children: [
+                _child('Built-in Template Tags', 'templatetags', [
+                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
+                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
+                    'comparison', 'control-flow',
+                ]),
+                _child('Built-in Filters', 'filters', [
+                    'add', 'allow', 'capfirst', 'concat', 'default',
+                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
+                    'length', 'lower', 'number', 'pluralize', 'subtract',
+                    'truncate', 'renderas', 'reversed', 'upper',
+                ]),
+            ],
+        },
+
+        {
+            label: 'CParts',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Props', 'props', ['accessing props', 'defining props',
+                                    'setting props', 'using props']),
+                _child('Template', 'template', ['custom template', 'templating engine']),
+                _child('State', 'state', ['state definition', 'state data types',
+                                'json', 'state variables', 'state.bind directive']),
+                _child('StaticData', 'staticdata', ['loading API', 'loading json',
+                                'transform function', 'bundling data']),
+                _child('Script', 'script', ['javascript', 'events', 'computed properties',
+                                'static execution', 'custom lifecycle methods',
+                                    'script callback execution context', 'script exports']),
+                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
+                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
+                                    'rendering mode', 'manual rerender', 'shadow',
+                                    'vanish', 'vanish-into-document', 'component.event',
+                                    'component.slot', 'component.dataProp']),
+                //_child('Module'),
+            ],
+        },
+
+        {
+            label: 'Lifecycle',
+            filename: '/docs/lifecycle.html',
+            children: [
+                _child('Lifecycle phases', 'phases',
+                    ['lifestyle phases', 'lifestyle phase groups',
+                     'load', 'factory', 'prepare', 'initialized',
+                     'render', 'reconcile', 'update',
+                     'event', 'eventCleanup', 'hooking into lifecycle',
+                     'lifecycle callbacks', 'script tag callbacks']),
+                _child('Factory lifecycle', 'factory',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+                _child('renderObj', 'renderobj',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+            ],
+        },
+
+        {
+            label: 'Directives',
+            filename: '/docs/directives.html',
+            children: [
+                _child('Directives', 'directives',
+                    ['built-in directives', 'directive shortcuts',
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
+            ],
+        },
+
+        /*
+        {
+            label: 'API & Extension',
+            filename: '/docs/api.html',
+            children: [
+                _child('Custom CParts', 'cparts'),
+                _child('CPart Spares', 'spares'),
+                _child('Custom Templating', 'template'),
+                _child('Custom Filters', 'customfilters'),
+                _child('Custom Template Tags', 'customtags'),
+                _child('Custom Template Syntax', 'customtags'),
+                _child('ModRec', 'modrec'),
+                _child('DOMCursor', 'cursor'),
+            ],
+        },
+        */
+
+        {
+            label: 'Example Library',
+            filename: '/docs/example-library.html',
+            children: Object.keys(componentTexts).map(name => _child(name)),
+        },
+
+        /*
+        {
+            label: 'Project Info',
+            filename: '/docs/project-info.html',
+            children: [
+                _child('FAQ', 'faq'),
+                _child('Framework Design Philosophy', 'philosophy'),
+            ],
+        },
+        */
+    ];
+
+    function initializedCallback() {
+        const { path, showall } = props;
+        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
+        for (const groupObj of state.menu) {
+            if (showall) {
+                groupObj.active = true;
+            }
+            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
+                groupObj.active = true;
+            }
+        }
+    }
+
+return { "_child": typeof _child !== "undefined" ? _child : undefined,
+"initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["x11m00cs"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         let txt;
@@ -16524,6 +16239,38 @@ return OUT.join("");
         script.exports.componentTexts = componentTexts;
     
 return {  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["x1j6psf9"]= function (Modulo, factory, module, component, template, state, staticdata, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'staticdata') staticdata = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function typingCallback() {
+        state.loading = true;
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${staticdata.apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+
+return { "typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
+"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
+"_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
+ setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["x1kg0tea"]= function (Modulo, factory, module, component, props, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         function initializedCallback() {
@@ -16687,187 +16434,6 @@ OUT.push("\n    <main class=\"Main\" [component.slot]>\n    </main>\n"); // "<ma
 OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>\n"); // "<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>"
 
 return OUT.join("");
-};Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function _child(label, hash, keywords=[], filepath=null) {
-        if (!hash) {
-            hash = label.toLowerCase()
-        }
-        if (hash.endsWith('.html') && filepath === null) {
-            filepath = hash;
-        }
-        return {label, hash, keywords, filepath};
-    }
-    let componentTexts;
-    try {
-        //console.log('this is', Object.keys(Modulo.factoryInstances));
-        //console.log('this is', Modulo.factoryInstances);
-        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
-    } catch {
-        console.log('couldnt get componentTexts');
-        componentTexts = {};
-    }
-    script.exports.menu = [
-        {
-            label: 'Table of Contents',
-            filename: '/docs/',
-        },
-
-        {
-            label: 'Tutorial',
-            filename: '/docs/tutorial_part1.html',
-            children: [
-                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
-                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
-                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
-            ],
-        },
-
-        {
-            label: 'Templating',
-            filename: '/docs/templating.html',
-            children: [
-                _child('Templates', null, ['templating philosophy', 'templating overview']),
-                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
-                _child('Filters', null, ['filter syntax', 'example filters']),
-                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
-                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
-                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
-            ],
-        },
-
-        {
-            label: 'Template Reference',
-            filename: '/docs/templating-reference.html',
-            children: [
-                _child('Built-in Template Tags', 'templatetags', [
-                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
-                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
-                    'comparison', 'control-flow',
-                ]),
-                _child('Built-in Filters', 'filters', [
-                    'add', 'allow', 'capfirst', 'concat', 'default',
-                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
-                    'length', 'lower', 'number', 'pluralize', 'subtract',
-                    'truncate', 'renderas', 'reversed', 'upper',
-                ]),
-            ],
-        },
-
-        {
-            label: 'CParts',
-            filename: '/docs/cparts.html',
-            children: [
-                _child('Props', 'props', ['accessing props', 'defining props',
-                                    'setting props', 'using props']),
-                _child('Template', 'template', ['custom template', 'templating engine']),
-                _child('State', 'state', ['state definition', 'state data types',
-                                'json', 'state variables', 'state.bind directive']),
-                _child('Script', 'script', ['javascript', 'events', 'computed properties',
-                                'static execution', 'custom lifecycle methods',
-                                    'script callback execution context', 'script exports']),
-                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
-                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
-                                    'rendering mode', 'manual rerender', 'shadow',
-                                    'vanish', 'vanish-into-document', 'component.event',
-                                    'component.slot', 'component.dataProp']),
-                //_child('Module'),
-            ],
-        },
-
-        {
-            label: 'Lifecycle',
-            filename: '/docs/lifecycle.html',
-            children: [
-                _child('Lifecycle phases', 'phases',
-                    ['lifestyle phases', 'lifestyle phase groups',
-                     'load', 'factory', 'prepare', 'initialized',
-                     'render', 'reconcile', 'update',
-                     'event', 'eventCleanup', 'hooking into lifecycle',
-                     'lifecycle callbacks', 'script tag callbacks']),
-                _child('Factory lifecycle', 'factory',
-                    ['renderObj', 'baseRenderObj', 'loadObj',
-                     'dependency injection', 'middleware']),
-                _child('renderObj', 'renderobj',
-                    ['renderObj', 'baseRenderObj', 'loadObj',
-                     'dependency injection', 'middleware']),
-            ],
-        },
-
-        {
-            label: 'Directives',
-            filename: '/docs/directives.html',
-            children: [
-                _child('Directives', 'directives',
-                    ['built-in directives', 'directive shortcuts',
-                     'custom directives']),
-                _child('Built-in directives', 'builtin', [
-                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
-                        'data-prop', 'assignment',
-                        '[component.event]', '@click', '@...:=',
-                        '[component.slot]', '[state.bind]',
-                    ]),
-                _child('Custom directives', 'custom', [
-                    'refs', 'accessing dom', 'escape hatch',
-                    'Mount callbacks', 'Unmount callbacks',
-                    'template variables vs directives',
-                    'script-tag custom directives',
-                    'custom shortcuts',
-                ]),
-            ],
-        },
-
-        /*
-        {
-            label: 'API & Extension',
-            filename: '/docs/api.html',
-            children: [
-                _child('Custom CParts', 'cparts'),
-                _child('CPart Spares', 'spares'),
-                _child('Custom Templating', 'template'),
-                _child('Custom Filters', 'customfilters'),
-                _child('Custom Template Tags', 'customtags'),
-                _child('Custom Template Syntax', 'customtags'),
-                _child('ModRec', 'modrec'),
-                _child('DOMCursor', 'cursor'),
-            ],
-        },
-        */
-
-        {
-            label: 'Example Library',
-            filename: '/docs/example-library.html',
-            children: Object.keys(componentTexts).map(name => _child(name)),
-        },
-
-        /*
-        {
-            label: 'Project Info',
-            filename: '/docs/project-info.html',
-            children: [
-                _child('FAQ', 'faq'),
-                _child('Framework Design Philosophy', 'philosophy'),
-            ],
-        },
-        */
-    ];
-
-    function initializedCallback() {
-        const { path, showall } = props;
-        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
-        for (const groupObj of state.menu) {
-            if (showall) {
-                groupObj.active = true;
-            }
-            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
-                groupObj.active = true;
-            }
-        }
-    }
-
-return { "_child": typeof _child !== "undefined" ? _child : undefined,
-"initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["xfchbde"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n        <div class=\"split\">\n            <div style=\"height: "); // "<div class=\"split\">\n            <div style=\"height:"
@@ -17764,7 +17330,7 @@ to {{ state.count }} {{ state.noun }}s.
 
 `,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
 
-  "/components/examplelib.html": // (676 lines)
+  "/components/examplelib.html": // (680 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
@@ -17891,6 +17457,19 @@ to {{ state.count }} {{ state.noun }}s.
 <!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
 
 
+<component name="JSON">
+<!-- Use StaticData CPart to include JSON from an API or file -->
+<Template>
+    {{ staticdata.language }}:<br>
+    <a href="{{ staticdata.html_url }}">{{ staticdata.name }}</a>
+    ({{ staticdata.stargazers_count }} &starf;)
+</Template>
+<StaticData
+    src="https://api.github.com/repos/michaelpb/modulo"
+></StaticData>
+</component>
+
+
 <component name="API">
 <Template>
 <p>{{ state.name }} | {{ state.location }}</p>
@@ -17935,28 +17514,32 @@ to {{ state.count }} {{ state.noun }}s.
 
 
 <component name="SearchBox">
+<!-- A "type as you go" search box implementation,
+an example of more complicated HTML and JS behavior -->
 <Template>
-<p>Start typing a book name to see "search as you type" (e.g. try &ldquo;the
-lord of the rings&rdquo;)</p>
+<p>Type a book name for "search as you type"
+(e.g. try &ldquo;the lord of the rings&rdquo;)</p>
 
-<input [state.bind] name="search" @keyup:=script.typingCallback />
+<input [state.bind] name="search"
+  @keyup:=script.typingCallback />
 
-<div class="results {% if state.search.length gt 0 %}visible{% endif %}">
-    <div class="results-container">
-        {% if state.loading %}
-            <img style="margin-top: 30px"
-                src="{{ script.exports.loadingGif  }}" alt="loading" />
-        {% else %}
-            {% for result in state.results %}
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/{{ result.cover_i }}-S.jpg" />
-                    <label>{{ result.title }}</label>
-                </div>
-            {% empty %}
-                <p>No books found.</p>
-            {% endfor %}
-        {% endif %}
-    </div>
+<div class="results {% if state.search.length gt 0 %}
+                      visible {% endif %}">
+  <div class="results-container">
+    {% if state.loading %}
+      <img src="{{ staticdata.gif }}" alt="loading" />
+    {% else %}
+      {% for result in state.results %}
+        <div class="result">
+          <img
+            src="{{ staticdata.cover|add:result.cover_i }}-S.jpg"
+          /> <label>{{ result.title }}</label>
+        </div>
+      {% empty %}
+        <p>No books found.</p>
+      {% endfor %}
+    {% endif %}
+  </div>
 </div>
 </Template>
 
@@ -17966,26 +17549,22 @@ lord of the rings&rdquo;)</p>
     loading:=false
 ></State>
 
-<Script>
-    // Because this variable is created "loose" in the script tag, it becomes a
-    // static variable global to all instances of this class (though,
-    // thankfully, not global in general -- it's still in an "IFFE")
-    // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state in the initializedCallback)
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
+<!-- Puting long URLs down here to declutter -->
+<StaticData>
+{
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+}
+</StaticData>
 
+<Script>
     function typingCallback() {
         state.loading = true;
-        const apiBase = 'https://openlibrary.org/search.json'
         const search = \`q=\${state.search}\`;
         const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = \`\${apiBase}?\${search}&\${opts}\`;
+        const url = \`\${staticdata.apiBase}?\${search}&\${opts}\`;
         _globalDebounce(() => {
             fetch(url)
                 .then(response => response.json())
@@ -17999,32 +17578,23 @@ lord of the rings&rdquo;)</p>
         element.rerender();
     }
 
-    // Puting this long URL down here to declutter
-    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
-                                 'semantic-ui/0.16.1/images/loader-large.gif');
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
 </Script>
 
 <Style>
-    SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-    input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-    input::after {
-        content: '\\1F50E';
-    }
+    input { width: 120px; }
     .results-container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
     }
+    .results-container > img { margin-top 30px; }
     .results {
         position: absolute;
         height: 0;
@@ -18033,8 +17603,8 @@ lord of the rings&rdquo;)</p>
         display: block;
         border: 2px solid coral;
         border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
+        transition: height 0.2s;
+        z-index: 20;
         background: white;
     }
     .results.visible {
@@ -18684,7 +18254,7 @@ h3 {
 </html>
 `,// (ends: /components/layouts/base.html) 
 
-  "/components/modulowebsite.html": // (565 lines)
+  "/components/modulowebsite.html": // (567 lines)
 `<component name="Section">
     <props
         name
@@ -18921,6 +18491,8 @@ h3 {
                 _child('Template', 'template', ['custom template', 'templating engine']),
                 _child('State', 'state', ['state definition', 'state data types',
                                 'json', 'state variables', 'state.bind directive']),
+                _child('StaticData', 'staticdata', ['loading API', 'loading json',
+                                'transform function', 'bundling data']),
                 _child('Script', 'script', ['javascript', 'events', 'computed properties',
                                 'static execution', 'custom lifecycle methods',
                                     'script callback execution context', 'script exports']),
@@ -19407,7 +18979,7 @@ h3 {
     margin-bottom: -2px;
     border-radius: 8px 8px 0 0;
     background: white;
-    min-width: 10%;
+    min-width: 50px;
     box-shadow: 0 0 0 0 var(--highlight-color);
     transition: box-shadow 0.3s,
                 border-color 0.2s;
@@ -19920,609 +19492,167 @@ element.previewSpot.appendChild(component);
 
 `,// (ends: /components/modulowebsite/demo.js) 
 
-  "https://jsonplaceholder.typicode.com/posts": // (602 lines)
-`[
-  {
-    "userId": 1,
-    "id": 1,
-    "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-    "body": "quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto"
-  },
-  {
-    "userId": 1,
-    "id": 2,
-    "title": "qui est esse",
-    "body": "est rerum tempore vitae\\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\\nqui aperiam non debitis possimus qui neque nisi nulla"
-  },
-  {
-    "userId": 1,
-    "id": 3,
-    "title": "ea molestias quasi exercitationem repellat qui ipsa sit aut",
-    "body": "et iusto sed quo iure\\nvoluptatem occaecati omnis eligendi aut ad\\nvoluptatem doloribus vel accusantium quis pariatur\\nmolestiae porro eius odio et labore et velit aut"
-  },
-  {
-    "userId": 1,
-    "id": 4,
-    "title": "eum et est occaecati",
-    "body": "ullam et saepe reiciendis voluptatem adipisci\\nsit amet autem assumenda provident rerum culpa\\nquis hic commodi nesciunt rem tenetur doloremque ipsam iure\\nquis sunt voluptatem rerum illo velit"
-  },
-  {
-    "userId": 1,
-    "id": 5,
-    "title": "nesciunt quas odio",
-    "body": "repudiandae veniam quaerat sunt sed\\nalias aut fugiat sit autem sed est\\nvoluptatem omnis possimus esse voluptatibus quis\\nest aut tenetur dolor neque"
-  },
-  {
-    "userId": 1,
-    "id": 6,
-    "title": "dolorem eum magni eos aperiam quia",
-    "body": "ut aspernatur corporis harum nihil quis provident sequi\\nmollitia nobis aliquid molestiae\\nperspiciatis et ea nemo ab reprehenderit accusantium quas\\nvoluptate dolores velit et doloremque molestiae"
-  },
-  {
-    "userId": 1,
-    "id": 7,
-    "title": "magnam facilis autem",
-    "body": "dolore placeat quibusdam ea quo vitae\\nmagni quis enim qui quis quo nemo aut saepe\\nquidem repellat excepturi ut quia\\nsunt ut sequi eos ea sed quas"
-  },
-  {
-    "userId": 1,
-    "id": 8,
-    "title": "dolorem dolore est ipsam",
-    "body": "dignissimos aperiam dolorem qui eum\\nfacilis quibusdam animi sint suscipit qui sint possimus cum\\nquaerat magni maiores excepturi\\nipsam ut commodi dolor voluptatum modi aut vitae"
-  },
-  {
-    "userId": 1,
-    "id": 9,
-    "title": "nesciunt iure omnis dolorem tempora et accusantium",
-    "body": "consectetur animi nesciunt iure dolore\\nenim quia ad\\nveniam autem ut quam aut nobis\\net est aut quod aut provident voluptas autem voluptas"
-  },
-  {
-    "userId": 1,
-    "id": 10,
-    "title": "optio molestias id quia eum",
-    "body": "quo et expedita modi cum officia vel magni\\ndoloribus qui repudiandae\\nvero nisi sit\\nquos veniam quod sed accusamus veritatis error"
-  },
-  {
-    "userId": 2,
-    "id": 11,
-    "title": "et ea vero quia laudantium autem",
-    "body": "delectus reiciendis molestiae occaecati non minima eveniet qui voluptatibus\\naccusamus in eum beatae sit\\nvel qui neque voluptates ut commodi qui incidunt\\nut animi commodi"
-  },
-  {
-    "userId": 2,
-    "id": 12,
-    "title": "in quibusdam tempore odit est dolorem",
-    "body": "itaque id aut magnam\\npraesentium quia et ea odit et ea voluptas et\\nsapiente quia nihil amet occaecati quia id voluptatem\\nincidunt ea est distinctio odio"
-  },
-  {
-    "userId": 2,
-    "id": 13,
-    "title": "dolorum ut in voluptas mollitia et saepe quo animi",
-    "body": "aut dicta possimus sint mollitia voluptas commodi quo doloremque\\niste corrupti reiciendis voluptatem eius rerum\\nsit cumque quod eligendi laborum minima\\nperferendis recusandae assumenda consectetur porro architecto ipsum ipsam"
-  },
-  {
-    "userId": 2,
-    "id": 14,
-    "title": "voluptatem eligendi optio",
-    "body": "fuga et accusamus dolorum perferendis illo voluptas\\nnon doloremque neque facere\\nad qui dolorum molestiae beatae\\nsed aut voluptas totam sit illum"
-  },
-  {
-    "userId": 2,
-    "id": 15,
-    "title": "eveniet quod temporibus",
-    "body": "reprehenderit quos placeat\\nvelit minima officia dolores impedit repudiandae molestiae nam\\nvoluptas recusandae quis delectus\\nofficiis harum fugiat vitae"
-  },
-  {
-    "userId": 2,
-    "id": 16,
-    "title": "sint suscipit perspiciatis velit dolorum rerum ipsa laboriosam odio",
-    "body": "suscipit nam nisi quo aperiam aut\\nasperiores eos fugit maiores voluptatibus quia\\nvoluptatem quis ullam qui in alias quia est\\nconsequatur magni mollitia accusamus ea nisi voluptate dicta"
-  },
-  {
-    "userId": 2,
-    "id": 17,
-    "title": "fugit voluptas sed molestias voluptatem provident",
-    "body": "eos voluptas et aut odit natus earum\\naspernatur fuga molestiae ullam\\ndeserunt ratione qui eos\\nqui nihil ratione nemo velit ut aut id quo"
-  },
-  {
-    "userId": 2,
-    "id": 18,
-    "title": "voluptate et itaque vero tempora molestiae",
-    "body": "eveniet quo quis\\nlaborum totam consequatur non dolor\\nut et est repudiandae\\nest voluptatem vel debitis et magnam"
-  },
-  {
-    "userId": 2,
-    "id": 19,
-    "title": "adipisci placeat illum aut reiciendis qui",
-    "body": "illum quis cupiditate provident sit magnam\\nea sed aut omnis\\nveniam maiores ullam consequatur atque\\nadipisci quo iste expedita sit quos voluptas"
-  },
-  {
-    "userId": 2,
-    "id": 20,
-    "title": "doloribus ad provident suscipit at",
-    "body": "qui consequuntur ducimus possimus quisquam amet similique\\nsuscipit porro ipsam amet\\neos veritatis officiis exercitationem vel fugit aut necessitatibus totam\\nomnis rerum consequatur expedita quidem cumque explicabo"
-  },
-  {
-    "userId": 3,
-    "id": 21,
-    "title": "asperiores ea ipsam voluptatibus modi minima quia sint",
-    "body": "repellat aliquid praesentium dolorem quo\\nsed totam minus non itaque\\nnihil labore molestiae sunt dolor eveniet hic recusandae veniam\\ntempora et tenetur expedita sunt"
-  },
-  {
-    "userId": 3,
-    "id": 22,
-    "title": "dolor sint quo a velit explicabo quia nam",
-    "body": "eos qui et ipsum ipsam suscipit aut\\nsed omnis non odio\\nexpedita earum mollitia molestiae aut atque rem suscipit\\nnam impedit esse"
-  },
-  {
-    "userId": 3,
-    "id": 23,
-    "title": "maxime id vitae nihil numquam",
-    "body": "veritatis unde neque eligendi\\nquae quod architecto quo neque vitae\\nest illo sit tempora doloremque fugit quod\\net et vel beatae sequi ullam sed tenetur perspiciatis"
-  },
-  {
-    "userId": 3,
-    "id": 24,
-    "title": "autem hic labore sunt dolores incidunt",
-    "body": "enim et ex nulla\\nomnis voluptas quia qui\\nvoluptatem consequatur numquam aliquam sunt\\ntotam recusandae id dignissimos aut sed asperiores deserunt"
-  },
-  {
-    "userId": 3,
-    "id": 25,
-    "title": "rem alias distinctio quo quis",
-    "body": "ullam consequatur ut\\nomnis quis sit vel consequuntur\\nipsa eligendi ipsum molestiae et omnis error nostrum\\nmolestiae illo tempore quia et distinctio"
-  },
-  {
-    "userId": 3,
-    "id": 26,
-    "title": "est et quae odit qui non",
-    "body": "similique esse doloribus nihil accusamus\\nomnis dolorem fuga consequuntur reprehenderit fugit recusandae temporibus\\nperspiciatis cum ut laudantium\\nomnis aut molestiae vel vero"
-  },
-  {
-    "userId": 3,
-    "id": 27,
-    "title": "quasi id et eos tenetur aut quo autem",
-    "body": "eum sed dolores ipsam sint possimus debitis occaecati\\ndebitis qui qui et\\nut placeat enim earum aut odit facilis\\nconsequatur suscipit necessitatibus rerum sed inventore temporibus consequatur"
-  },
-  {
-    "userId": 3,
-    "id": 28,
-    "title": "delectus ullam et corporis nulla voluptas sequi",
-    "body": "non et quaerat ex quae ad maiores\\nmaiores recusandae totam aut blanditiis mollitia quas illo\\nut voluptatibus voluptatem\\nsimilique nostrum eum"
-  },
-  {
-    "userId": 3,
-    "id": 29,
-    "title": "iusto eius quod necessitatibus culpa ea",
-    "body": "odit magnam ut saepe sed non qui\\ntempora atque nihil\\naccusamus illum doloribus illo dolor\\neligendi repudiandae odit magni similique sed cum maiores"
-  },
-  {
-    "userId": 3,
-    "id": 30,
-    "title": "a quo magni similique perferendis",
-    "body": "alias dolor cumque\\nimpedit blanditiis non eveniet odio maxime\\nblanditiis amet eius quis tempora quia autem rem\\na provident perspiciatis quia"
-  },
-  {
-    "userId": 4,
-    "id": 31,
-    "title": "ullam ut quidem id aut vel consequuntur",
-    "body": "debitis eius sed quibusdam non quis consectetur vitae\\nimpedit ut qui consequatur sed aut in\\nquidem sit nostrum et maiores adipisci atque\\nquaerat voluptatem adipisci repudiandae"
-  },
-  {
-    "userId": 4,
-    "id": 32,
-    "title": "doloremque illum aliquid sunt",
-    "body": "deserunt eos nobis asperiores et hic\\nest debitis repellat molestiae optio\\nnihil ratione ut eos beatae quibusdam distinctio maiores\\nearum voluptates et aut adipisci ea maiores voluptas maxime"
-  },
-  {
-    "userId": 4,
-    "id": 33,
-    "title": "qui explicabo molestiae dolorem",
-    "body": "rerum ut et numquam laborum odit est sit\\nid qui sint in\\nquasi tenetur tempore aperiam et quaerat qui in\\nrerum officiis sequi cumque quod"
-  },
-  {
-    "userId": 4,
-    "id": 34,
-    "title": "magnam ut rerum iure",
-    "body": "ea velit perferendis earum ut voluptatem voluptate itaque iusto\\ntotam pariatur in\\nnemo voluptatem voluptatem autem magni tempora minima in\\nest distinctio qui assumenda accusamus dignissimos officia nesciunt nobis"
-  },
-  {
-    "userId": 4,
-    "id": 35,
-    "title": "id nihil consequatur molestias animi provident",
-    "body": "nisi error delectus possimus ut eligendi vitae\\nplaceat eos harum cupiditate facilis reprehenderit voluptatem beatae\\nmodi ducimus quo illum voluptas eligendi\\net nobis quia fugit"
-  },
-  {
-    "userId": 4,
-    "id": 36,
-    "title": "fuga nam accusamus voluptas reiciendis itaque",
-    "body": "ad mollitia et omnis minus architecto odit\\nvoluptas doloremque maxime aut non ipsa qui alias veniam\\nblanditiis culpa aut quia nihil cumque facere et occaecati\\nqui aspernatur quia eaque ut aperiam inventore"
-  },
-  {
-    "userId": 4,
-    "id": 37,
-    "title": "provident vel ut sit ratione est",
-    "body": "debitis et eaque non officia sed nesciunt pariatur vel\\nvoluptatem iste vero et ea\\nnumquam aut expedita ipsum nulla in\\nvoluptates omnis consequatur aut enim officiis in quam qui"
-  },
-  {
-    "userId": 4,
-    "id": 38,
-    "title": "explicabo et eos deleniti nostrum ab id repellendus",
-    "body": "animi esse sit aut sit nesciunt assumenda eum voluptas\\nquia voluptatibus provident quia necessitatibus ea\\nrerum repudiandae quia voluptatem delectus fugit aut id quia\\nratione optio eos iusto veniam iure"
-  },
-  {
-    "userId": 4,
-    "id": 39,
-    "title": "eos dolorem iste accusantium est eaque quam",
-    "body": "corporis rerum ducimus vel eum accusantium\\nmaxime aspernatur a porro possimus iste omnis\\nest in deleniti asperiores fuga aut\\nvoluptas sapiente vel dolore minus voluptatem incidunt ex"
-  },
-  {
-    "userId": 4,
-    "id": 40,
-    "title": "enim quo cumque",
-    "body": "ut voluptatum aliquid illo tenetur nemo sequi quo facilis\\nipsum rem optio mollitia quas\\nvoluptatem eum voluptas qui\\nunde omnis voluptatem iure quasi maxime voluptas nam"
-  },
-  {
-    "userId": 5,
-    "id": 41,
-    "title": "non est facere",
-    "body": "molestias id nostrum\\nexcepturi molestiae dolore omnis repellendus quaerat saepe\\nconsectetur iste quaerat tenetur asperiores accusamus ex ut\\nnam quidem est ducimus sunt debitis saepe"
-  },
-  {
-    "userId": 5,
-    "id": 42,
-    "title": "commodi ullam sint et excepturi error explicabo praesentium voluptas",
-    "body": "odio fugit voluptatum ducimus earum autem est incidunt voluptatem\\nodit reiciendis aliquam sunt sequi nulla dolorem\\nnon facere repellendus voluptates quia\\nratione harum vitae ut"
-  },
-  {
-    "userId": 5,
-    "id": 43,
-    "title": "eligendi iste nostrum consequuntur adipisci praesentium sit beatae perferendis",
-    "body": "similique fugit est\\nillum et dolorum harum et voluptate eaque quidem\\nexercitationem quos nam commodi possimus cum odio nihil nulla\\ndolorum exercitationem magnam ex et a et distinctio debitis"
-  },
-  {
-    "userId": 5,
-    "id": 44,
-    "title": "optio dolor molestias sit",
-    "body": "temporibus est consectetur dolore\\net libero debitis vel velit laboriosam quia\\nipsum quibusdam qui itaque fuga rem aut\\nea et iure quam sed maxime ut distinctio quae"
-  },
-  {
-    "userId": 5,
-    "id": 45,
-    "title": "ut numquam possimus omnis eius suscipit laudantium iure",
-    "body": "est natus reiciendis nihil possimus aut provident\\nex et dolor\\nrepellat pariatur est\\nnobis rerum repellendus dolorem autem"
-  },
-  {
-    "userId": 5,
-    "id": 46,
-    "title": "aut quo modi neque nostrum ducimus",
-    "body": "voluptatem quisquam iste\\nvoluptatibus natus officiis facilis dolorem\\nquis quas ipsam\\nvel et voluptatum in aliquid"
-  },
-  {
-    "userId": 5,
-    "id": 47,
-    "title": "quibusdam cumque rem aut deserunt",
-    "body": "voluptatem assumenda ut qui ut cupiditate aut impedit veniam\\noccaecati nemo illum voluptatem laudantium\\nmolestiae beatae rerum ea iure soluta nostrum\\neligendi et voluptate"
-  },
-  {
-    "userId": 5,
-    "id": 48,
-    "title": "ut voluptatem illum ea doloribus itaque eos",
-    "body": "voluptates quo voluptatem facilis iure occaecati\\nvel assumenda rerum officia et\\nillum perspiciatis ab deleniti\\nlaudantium repellat ad ut et autem reprehenderit"
-  },
-  {
-    "userId": 5,
-    "id": 49,
-    "title": "laborum non sunt aut ut assumenda perspiciatis voluptas",
-    "body": "inventore ab sint\\nnatus fugit id nulla sequi architecto nihil quaerat\\neos tenetur in in eum veritatis non\\nquibusdam officiis aspernatur cumque aut commodi aut"
-  },
-  {
-    "userId": 5,
-    "id": 50,
-    "title": "repellendus qui recusandae incidunt voluptates tenetur qui omnis exercitationem",
-    "body": "error suscipit maxime adipisci consequuntur recusandae\\nvoluptas eligendi et est et voluptates\\nquia distinctio ab amet quaerat molestiae et vitae\\nadipisci impedit sequi nesciunt quis consectetur"
-  },
-  {
-    "userId": 6,
-    "id": 51,
-    "title": "soluta aliquam aperiam consequatur illo quis voluptas",
-    "body": "sunt dolores aut doloribus\\ndolore doloribus voluptates tempora et\\ndoloremque et quo\\ncum asperiores sit consectetur dolorem"
-  },
-  {
-    "userId": 6,
-    "id": 52,
-    "title": "qui enim et consequuntur quia animi quis voluptate quibusdam",
-    "body": "iusto est quibusdam fuga quas quaerat molestias\\na enim ut sit accusamus enim\\ntemporibus iusto accusantium provident architecto\\nsoluta esse reprehenderit qui laborum"
-  },
-  {
-    "userId": 6,
-    "id": 53,
-    "title": "ut quo aut ducimus alias",
-    "body": "minima harum praesentium eum rerum illo dolore\\nquasi exercitationem rerum nam\\nporro quis neque quo\\nconsequatur minus dolor quidem veritatis sunt non explicabo similique"
-  },
-  {
-    "userId": 6,
-    "id": 54,
-    "title": "sit asperiores ipsam eveniet odio non quia",
-    "body": "totam corporis dignissimos\\nvitae dolorem ut occaecati accusamus\\nex velit deserunt\\net exercitationem vero incidunt corrupti mollitia"
-  },
-  {
-    "userId": 6,
-    "id": 55,
-    "title": "sit vel voluptatem et non libero",
-    "body": "debitis excepturi ea perferendis harum libero optio\\neos accusamus cum fuga ut sapiente repudiandae\\net ut incidunt omnis molestiae\\nnihil ut eum odit"
-  },
-  {
-    "userId": 6,
-    "id": 56,
-    "title": "qui et at rerum necessitatibus",
-    "body": "aut est omnis dolores\\nneque rerum quod ea rerum velit pariatur beatae excepturi\\net provident voluptas corrupti\\ncorporis harum reprehenderit dolores eligendi"
-  },
-  {
-    "userId": 6,
-    "id": 57,
-    "title": "sed ab est est",
-    "body": "at pariatur consequuntur earum quidem\\nquo est laudantium soluta voluptatem\\nqui ullam et est\\net cum voluptas voluptatum repellat est"
-  },
-  {
-    "userId": 6,
-    "id": 58,
-    "title": "voluptatum itaque dolores nisi et quasi",
-    "body": "veniam voluptatum quae adipisci id\\net id quia eos ad et dolorem\\naliquam quo nisi sunt eos impedit error\\nad similique veniam"
-  },
-  {
-    "userId": 6,
-    "id": 59,
-    "title": "qui commodi dolor at maiores et quis id accusantium",
-    "body": "perspiciatis et quam ea autem temporibus non voluptatibus qui\\nbeatae a earum officia nesciunt dolores suscipit voluptas et\\nanimi doloribus cum rerum quas et magni\\net hic ut ut commodi expedita sunt"
-  },
-  {
-    "userId": 6,
-    "id": 60,
-    "title": "consequatur placeat omnis quisquam quia reprehenderit fugit veritatis facere",
-    "body": "asperiores sunt ab assumenda cumque modi velit\\nqui esse omnis\\nvoluptate et fuga perferendis voluptas\\nillo ratione amet aut et omnis"
-  },
-  {
-    "userId": 7,
-    "id": 61,
-    "title": "voluptatem doloribus consectetur est ut ducimus",
-    "body": "ab nemo optio odio\\ndelectus tenetur corporis similique nobis repellendus rerum omnis facilis\\nvero blanditiis debitis in nesciunt doloribus dicta dolores\\nmagnam minus velit"
-  },
-  {
-    "userId": 7,
-    "id": 62,
-    "title": "beatae enim quia vel",
-    "body": "enim aspernatur illo distinctio quae praesentium\\nbeatae alias amet delectus qui voluptate distinctio\\nodit sint accusantium autem omnis\\nquo molestiae omnis ea eveniet optio"
-  },
-  {
-    "userId": 7,
-    "id": 63,
-    "title": "voluptas blanditiis repellendus animi ducimus error sapiente et suscipit",
-    "body": "enim adipisci aspernatur nemo\\nnumquam omnis facere dolorem dolor ex quis temporibus incidunt\\nab delectus culpa quo reprehenderit blanditiis asperiores\\naccusantium ut quam in voluptatibus voluptas ipsam dicta"
-  },
-  {
-    "userId": 7,
-    "id": 64,
-    "title": "et fugit quas eum in in aperiam quod",
-    "body": "id velit blanditiis\\neum ea voluptatem\\nmolestiae sint occaecati est eos perspiciatis\\nincidunt a error provident eaque aut aut qui"
-  },
-  {
-    "userId": 7,
-    "id": 65,
-    "title": "consequatur id enim sunt et et",
-    "body": "voluptatibus ex esse\\nsint explicabo est aliquid cumque adipisci fuga repellat labore\\nmolestiae corrupti ex saepe at asperiores et perferendis\\nnatus id esse incidunt pariatur"
-  },
-  {
-    "userId": 7,
-    "id": 66,
-    "title": "repudiandae ea animi iusto",
-    "body": "officia veritatis tenetur vero qui itaque\\nsint non ratione\\nsed et ut asperiores iusto eos molestiae nostrum\\nveritatis quibusdam et nemo iusto saepe"
-  },
-  {
-    "userId": 7,
-    "id": 67,
-    "title": "aliquid eos sed fuga est maxime repellendus",
-    "body": "reprehenderit id nostrum\\nvoluptas doloremque pariatur sint et accusantium quia quod aspernatur\\net fugiat amet\\nnon sapiente et consequatur necessitatibus molestiae"
-  },
-  {
-    "userId": 7,
-    "id": 68,
-    "title": "odio quis facere architecto reiciendis optio",
-    "body": "magnam molestiae perferendis quisquam\\nqui cum reiciendis\\nquaerat animi amet hic inventore\\nea quia deleniti quidem saepe porro velit"
-  },
-  {
-    "userId": 7,
-    "id": 69,
-    "title": "fugiat quod pariatur odit minima",
-    "body": "officiis error culpa consequatur modi asperiores et\\ndolorum assumenda voluptas et vel qui aut vel rerum\\nvoluptatum quisquam perspiciatis quia rerum consequatur totam quas\\nsequi commodi repudiandae asperiores et saepe a"
-  },
-  {
-    "userId": 7,
-    "id": 70,
-    "title": "voluptatem laborum magni",
-    "body": "sunt repellendus quae\\nest asperiores aut deleniti esse accusamus repellendus quia aut\\nquia dolorem unde\\neum tempora esse dolore"
-  },
-  {
-    "userId": 8,
-    "id": 71,
-    "title": "et iusto veniam et illum aut fuga",
-    "body": "occaecati a doloribus\\niste saepe consectetur placeat eum voluptate dolorem et\\nqui quo quia voluptas\\nrerum ut id enim velit est perferendis"
-  },
-  {
-    "userId": 8,
-    "id": 72,
-    "title": "sint hic doloribus consequatur eos non id",
-    "body": "quam occaecati qui deleniti consectetur\\nconsequatur aut facere quas exercitationem aliquam hic voluptas\\nneque id sunt ut aut accusamus\\nsunt consectetur expedita inventore velit"
-  },
-  {
-    "userId": 8,
-    "id": 73,
-    "title": "consequuntur deleniti eos quia temporibus ab aliquid at",
-    "body": "voluptatem cumque tenetur consequatur expedita ipsum nemo quia explicabo\\naut eum minima consequatur\\ntempore cumque quae est et\\net in consequuntur voluptatem voluptates aut"
-  },
-  {
-    "userId": 8,
-    "id": 74,
-    "title": "enim unde ratione doloribus quas enim ut sit sapiente",
-    "body": "odit qui et et necessitatibus sint veniam\\nmollitia amet doloremque molestiae commodi similique magnam et quam\\nblanditiis est itaque\\nquo et tenetur ratione occaecati molestiae tempora"
-  },
-  {
-    "userId": 8,
-    "id": 75,
-    "title": "dignissimos eum dolor ut enim et delectus in",
-    "body": "commodi non non omnis et voluptas sit\\nautem aut nobis magnam et sapiente voluptatem\\net laborum repellat qui delectus facilis temporibus\\nrerum amet et nemo voluptate expedita adipisci error dolorem"
-  },
-  {
-    "userId": 8,
-    "id": 76,
-    "title": "doloremque officiis ad et non perferendis",
-    "body": "ut animi facere\\ntotam iusto tempore\\nmolestiae eum aut et dolorem aperiam\\nquaerat recusandae totam odio"
-  },
-  {
-    "userId": 8,
-    "id": 77,
-    "title": "necessitatibus quasi exercitationem odio",
-    "body": "modi ut in nulla repudiandae dolorum nostrum eos\\naut consequatur omnis\\nut incidunt est omnis iste et quam\\nvoluptates sapiente aliquam asperiores nobis amet corrupti repudiandae provident"
-  },
-  {
-    "userId": 8,
-    "id": 78,
-    "title": "quam voluptatibus rerum veritatis",
-    "body": "nobis facilis odit tempore cupiditate quia\\nassumenda doloribus rerum qui ea\\nillum et qui totam\\naut veniam repellendus"
-  },
-  {
-    "userId": 8,
-    "id": 79,
-    "title": "pariatur consequatur quia magnam autem omnis non amet",
-    "body": "libero accusantium et et facere incidunt sit dolorem\\nnon excepturi qui quia sed laudantium\\nquisquam molestiae ducimus est\\nofficiis esse molestiae iste et quos"
-  },
-  {
-    "userId": 8,
-    "id": 80,
-    "title": "labore in ex et explicabo corporis aut quas",
-    "body": "ex quod dolorem ea eum iure qui provident amet\\nquia qui facere excepturi et repudiandae\\nasperiores molestias provident\\nminus incidunt vero fugit rerum sint sunt excepturi provident"
-  },
-  {
-    "userId": 9,
-    "id": 81,
-    "title": "tempora rem veritatis voluptas quo dolores vero",
-    "body": "facere qui nesciunt est voluptatum voluptatem nisi\\nsequi eligendi necessitatibus ea at rerum itaque\\nharum non ratione velit laboriosam quis consequuntur\\nex officiis minima doloremque voluptas ut aut"
-  },
-  {
-    "userId": 9,
-    "id": 82,
-    "title": "laudantium voluptate suscipit sunt enim enim",
-    "body": "ut libero sit aut totam inventore sunt\\nporro sint qui sunt molestiae\\nconsequatur cupiditate qui iste ducimus adipisci\\ndolor enim assumenda soluta laboriosam amet iste delectus hic"
-  },
-  {
-    "userId": 9,
-    "id": 83,
-    "title": "odit et voluptates doloribus alias odio et",
-    "body": "est molestiae facilis quis tempora numquam nihil qui\\nvoluptate sapiente consequatur est qui\\nnecessitatibus autem aut ipsa aperiam modi dolore numquam\\nreprehenderit eius rem quibusdam"
-  },
-  {
-    "userId": 9,
-    "id": 84,
-    "title": "optio ipsam molestias necessitatibus occaecati facilis veritatis dolores aut",
-    "body": "sint molestiae magni a et quos\\neaque et quasi\\nut rerum debitis similique veniam\\nrecusandae dignissimos dolor incidunt consequatur odio"
-  },
-  {
-    "userId": 9,
-    "id": 85,
-    "title": "dolore veritatis porro provident adipisci blanditiis et sunt",
-    "body": "similique sed nisi voluptas iusto omnis\\nmollitia et quo\\nassumenda suscipit officia magnam sint sed tempora\\nenim provident pariatur praesentium atque animi amet ratione"
-  },
-  {
-    "userId": 9,
-    "id": 86,
-    "title": "placeat quia et porro iste",
-    "body": "quasi excepturi consequatur iste autem temporibus sed molestiae beatae\\net quaerat et esse ut\\nvoluptatem occaecati et vel explicabo autem\\nasperiores pariatur deserunt optio"
-  },
-  {
-    "userId": 9,
-    "id": 87,
-    "title": "nostrum quis quasi placeat",
-    "body": "eos et molestiae\\nnesciunt ut a\\ndolores perspiciatis repellendus repellat aliquid\\nmagnam sint rem ipsum est"
-  },
-  {
-    "userId": 9,
-    "id": 88,
-    "title": "sapiente omnis fugit eos",
-    "body": "consequatur omnis est praesentium\\nducimus non iste\\nneque hic deserunt\\nvoluptatibus veniam cum et rerum sed"
-  },
-  {
-    "userId": 9,
-    "id": 89,
-    "title": "sint soluta et vel magnam aut ut sed qui",
-    "body": "repellat aut aperiam totam temporibus autem et\\narchitecto magnam ut\\nconsequatur qui cupiditate rerum quia soluta dignissimos nihil iure\\ntempore quas est"
-  },
-  {
-    "userId": 9,
-    "id": 90,
-    "title": "ad iusto omnis odit dolor voluptatibus",
-    "body": "minus omnis soluta quia\\nqui sed adipisci voluptates illum ipsam voluptatem\\neligendi officia ut in\\neos soluta similique molestias praesentium blanditiis"
-  },
-  {
-    "userId": 10,
-    "id": 91,
-    "title": "aut amet sed",
-    "body": "libero voluptate eveniet aperiam sed\\nsunt placeat suscipit molestias\\nsimilique fugit nam natus\\nexpedita consequatur consequatur dolores quia eos et placeat"
-  },
-  {
-    "userId": 10,
-    "id": 92,
-    "title": "ratione ex tenetur perferendis",
-    "body": "aut et excepturi dicta laudantium sint rerum nihil\\nlaudantium et at\\na neque minima officia et similique libero et\\ncommodi voluptate qui"
-  },
-  {
-    "userId": 10,
-    "id": 93,
-    "title": "beatae soluta recusandae",
-    "body": "dolorem quibusdam ducimus consequuntur dicta aut quo laboriosam\\nvoluptatem quis enim recusandae ut sed sunt\\nnostrum est odit totam\\nsit error sed sunt eveniet provident qui nulla"
-  },
-  {
-    "userId": 10,
-    "id": 94,
-    "title": "qui qui voluptates illo iste minima",
-    "body": "aspernatur expedita soluta quo ab ut similique\\nexpedita dolores amet\\nsed temporibus distinctio magnam saepe deleniti\\nomnis facilis nam ipsum natus sint similique omnis"
-  },
-  {
-    "userId": 10,
-    "id": 95,
-    "title": "id minus libero illum nam ad officiis",
-    "body": "earum voluptatem facere provident blanditiis velit laboriosam\\npariatur accusamus odio saepe\\ncumque dolor qui a dicta ab doloribus consequatur omnis\\ncorporis cupiditate eaque assumenda ad nesciunt"
-  },
-  {
-    "userId": 10,
-    "id": 96,
-    "title": "quaerat velit veniam amet cupiditate aut numquam ut sequi",
-    "body": "in non odio excepturi sint eum\\nlabore voluptates vitae quia qui et\\ninventore itaque rerum\\nveniam non exercitationem delectus aut"
-  },
-  {
-    "userId": 10,
-    "id": 97,
-    "title": "quas fugiat ut perspiciatis vero provident",
-    "body": "eum non blanditiis soluta porro quibusdam voluptas\\nvel voluptatem qui placeat dolores qui velit aut\\nvel inventore aut cumque culpa explicabo aliquid at\\nperspiciatis est et voluptatem dignissimos dolor itaque sit nam"
-  },
-  {
-    "userId": 10,
-    "id": 98,
-    "title": "laboriosam dolor voluptates",
-    "body": "doloremque ex facilis sit sint culpa\\nsoluta assumenda eligendi non ut eius\\nsequi ducimus vel quasi\\nveritatis est dolores"
-  },
-  {
-    "userId": 10,
-    "id": 99,
-    "title": "temporibus sit alias delectus eligendi possimus magni",
-    "body": "quo deleniti praesentium dicta non quod\\naut est molestias\\nmolestias et officia quis nihil\\nitaque dolorem quia"
-  },
-  {
-    "userId": 10,
-    "id": 100,
-    "title": "at nam consequatur ea labore ea harum",
-    "body": "cupiditate quo est a modi nesciunt soluta\\nipsa voluptas error itaque dicta in\\nautem qui minus magnam et distinctio eum\\naccusamus ratione error aut"
+  "https://api.github.com/repos/michaelpb/modulo": // (110 lines)
+`{
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-01-04T21:07:05Z",
+  "pushed_at": "2022-04-26T21:01:49Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": null,
+  "size": 4101,
+  "stargazers_count": 1,
+  "watchers_count": 1,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 1,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+}
+`,// (ends: https://api.github.com/repos/michaelpb/modulo) 
+
+  "https://raw.githubusercontent.com/michaelpb/modulo/main/package.json": // (48 lines)
+`{
+  "name": "modulo",
+  "version": "0.0.1",
+  "description": "Minimalist Web Component based framework",
+  "homepage": "https://github.com/michaelpb/modulo#readme",
+  "main": "modulocli/modulocli.js",
+  "scripts": {
+    "build-complexity-report": "complexity-report-html ./src/",
+    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
+    "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
+    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
+    "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
+    "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
+    "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
+    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
+    "new-build": "node ./mcli/modulocli.js -v build",
+    "cli": "node ./modulocli/modulocli.js",
+    "test": "npm run cli -- test ./tests/all.html"
+  },
+  "devDependencies": {
+    "complexity-report-html": "0.0.3",
+    "crypto-js": "4.1.1",
+    "docco-next": "0.9.8",
+    "jsdom": "16.4.0",
+    "sloc": "0.2.1",
+    "xmldom": "0.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michaelpb/modulo.git"
+  },
+  "keywords": [
+    "framework"
+  ],
+  "author": "michaelb",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/michaelpb/modulo/issues"
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "happy-dom": "^2.55.0",
+    "linkedom": "0.14.5",
+    "node-watch": "0.7.2",
+    "puppeteer": "^13.5.2"
   }
-]`,// (ends: https://jsonplaceholder.typicode.com/posts) 
+}
+`,// (ends: https://raw.githubusercontent.com/michaelpb/modulo/main/package.json) 
 
 };
 

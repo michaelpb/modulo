@@ -782,8 +782,9 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 Modulo.cparts.staticdata = class StaticData extends Modulo.ComponentPart {
     static factoryCallback(partOptions, factory, renderObj) {
         const code = partOptions.content || ''; // TODO: trim whitespace?
-        const transform = partOptions.attrs.transform || (s => `return ${s};`);
+        const defTransform = s => `return ${s.trim()};`;
         //(s => `return ${JSON.stringify(JSON.parse(s))}`);
+        const transform = partOptions.attrs.transform || defTransform;
         return Modulo.assets.registerFunction([], transform(code))();
     }
 }
@@ -14676,6 +14677,34 @@ var OUT=[];
 OUT.push("\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n"); // "Hello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>"
 
 return OUT.join("");
+};Modulo.assets.functions["11l9b0l"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n            "); // ""
+var ARR0=CTX.script.exports.examples;for (var KEY in ARR0) {CTX. example=ARR0[KEY]; // "for example in script.exports.examples"
+OUT.push("\n                <mws-section name=\""); // "<mws-section name=\""
+OUT.push(G.escapeText(G.filters["lower"](CTX.example.name))); // "example.name|lower"
+OUT.push("\">\n                    "); // "\">"
+OUT.push(G.escapeText(CTX.example.name)); // "example.name"
+OUT.push("\n                </mws-section>\n                <mws-demo demotype=\"minipreview\" fromlibrary=\""); // "</mws-section>\n                <mws-demo demotype=\"minipreview\" fromlibrary=\""
+OUT.push(G.escapeText(CTX.example.name)); // "example.name"
+OUT.push("\"></mws-demo>\n            "); // "\"></mws-demo>"
+} // "endfor"
+OUT.push("\n        "); // ""
+
+return OUT.join("");
+};Modulo.assets.functions["138n0bb"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    "); // ""
+OUT.push(G.escapeText(CTX.staticdata.language)); // "staticdata.language"
+OUT.push(":<br>\n    <a href=\""); // ":<br>\n    <a href=\""
+OUT.push(G.escapeText(CTX.staticdata.html_url)); // "staticdata.html_url"
+OUT.push("\">"); // "\">"
+OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
+OUT.push("</a>\n    ("); // "</a>\n    ("
+OUT.push(G.escapeText(CTX.staticdata.stargazers_count)); // "staticdata.stargazers_count"
+OUT.push(" &starf;)\n"); // "&starf;)"
+
+return OUT.join("");
 };Modulo.assets.functions["13lid16"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     function toggle([ i, j ]) {
@@ -14767,6 +14796,33 @@ var OUT=[];
 OUT.push("\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n"); // "<p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>"
 
 return OUT.join("");
+};Modulo.assets.functions["17dsoab"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n<p>Type a book name for \"search as you type\"\n(e.g. try &ldquo;the lord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\"\n  @keyup:=script.typingCallback />\n\n<div class=\"results "); // "<p>Type a book name for \"search as you type\"\n(e.g. try &ldquo;the lord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\"\n  @keyup:=script.typingCallback />\n\n<div class=\"results"
+if (CTX.state.search.length > 0) { // "if state.search.length gt 0"
+OUT.push("\n                      visible "); // "visible"
+} // "endif"
+OUT.push("\">\n  <div class=\"results-container\">\n    "); // "\">\n  <div class=\"results-container\">"
+if (CTX.state.loading) { // "if state.loading"
+OUT.push("\n      <img src=\""); // "<img src=\""
+OUT.push(G.escapeText(CTX.staticdata.gif)); // "staticdata.gif"
+OUT.push("\" alt=\"loading\" />\n    "); // "\" alt=\"loading\" />"
+} else { // "else"
+OUT.push("\n      "); // ""
+var ARR1=CTX.state.results;for (var KEY in ARR1) {CTX. result=ARR1[KEY]; // "for result in state.results"
+OUT.push("\n        <div class=\"result\">\n          <img\n            src=\""); // "<div class=\"result\">\n          <img\n            src=\""
+OUT.push(G.escapeText(G.filters["add"](CTX.staticdata.cover,CTX.result.cover_i))); // "staticdata.cover|add:result.cover_i"
+OUT.push("-S.jpg\"\n          /> <label>"); // "-S.jpg\"\n          /> <label>"
+OUT.push(G.escapeText(CTX.result.title)); // "result.title"
+OUT.push("</label>\n        </div>\n      "); // "</label>\n        </div>"
+G.FORLOOP_NOT_EMPTY2=true; } if (!G.FORLOOP_NOT_EMPTY2) { // "empty"
+OUT.push("\n        <p>No books found.</p>\n      "); // "<p>No books found.</p>"
+}G.FORLOOP_NOT_EMPTY2 = false; // "endfor"
+OUT.push("\n    "); // ""
+} // "endif"
+OUT.push("\n  </div>\n</div>\n"); // "</div>\n</div>"
+
+return OUT.join("");
 };Modulo.assets.functions["182j849"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n    Components can use any number of <strong>CParts</strong>.\n    Here we use only <em>Style</em> and <em>Template</em>.\n"); // "Components can use any number of <strong>CParts</strong>.\n    Here we use only <em>Style</em> and <em>Template</em>."
@@ -14824,6 +14880,116 @@ return { "setNum": typeof setNum !== "undefined" ? setNum : undefined,
 
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["1nk8j0s"]= function (){
+return {
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-01-04T21:07:05Z",
+  "pushed_at": "2022-04-26T21:01:49Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": null,
+  "size": 4101,
+  "stargazers_count": 1,
+  "watchers_count": 1,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 1,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+};
 };Modulo.assets.functions["1nm8gm0"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n<p>User \"<em>"); // "<p>User \"<em>"
@@ -15253,6 +15419,13 @@ OUT.push("\n        <button @click:=script.pause alt=\"Pause\">&#x2016;</button>
 OUT.push("\n\n    <button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>\n"); // "<button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>"
 
 return OUT.join("");
+};Modulo.assets.functions["4amukg"]= function (){
+return {
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+};
 };Modulo.assets.functions["6dqor"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n<ul>\n    "); // "<ul>"
@@ -15473,75 +15646,6 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
 "makeError": typeof makeError !== "undefined" ? makeError : undefined,
  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["piu4tg"]= function (Modulo, factory, module, component, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    // Because this variable is created "loose" in the script tag, it becomes a
-    // static variable global to all instances of this class (though,
-    // thankfully, not global in general -- it's still in an "IFFE")
-    // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state in the initializedCallback)
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
-
-    function typingCallback() {
-        state.loading = true;
-        const apiBase = 'https://openlibrary.org/search.json'
-        const search = `q=${state.search}`;
-        const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = `${apiBase}?${search}&${opts}`;
-        _globalDebounce(() => {
-            fetch(url)
-                .then(response => response.json())
-                .then(dataBackCallback);
-        });
-    }
-
-    function dataBackCallback(data) {
-        state.results = data.docs;
-        state.loading = false;
-        element.rerender();
-    }
-
-    // Puting this long URL down here to declutter
-    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
-                                 'semantic-ui/0.16.1/images/loader-large.gif');
-
-return { "_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
-"typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
-"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["uj6ft1"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n<p>Start typing a book name to see \"search as you type\" (e.g. try &ldquo;the\nlord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\" @keyup:=script.typingCallback />\n\n<div class=\"results "); // "<p>Start typing a book name to see \"search as you type\" (e.g. try &ldquo;the\nlord of the rings&rdquo;)</p>\n\n<input [state.bind] name=\"search\" @keyup:=script.typingCallback />\n\n<div class=\"results"
-if (CTX.state.search.length > 0) { // "if state.search.length gt 0"
-OUT.push("visible"); // "visible"
-} // "endif"
-OUT.push("\">\n    <div class=\"results-container\">\n        "); // "\">\n    <div class=\"results-container\">"
-if (CTX.state.loading) { // "if state.loading"
-OUT.push("\n            <img style=\"margin-top: 30px\"\n                src=\""); // "<img style=\"margin-top: 30px\"\n                src=\""
-OUT.push(G.escapeText(CTX.script.exports.loadingGif)); // "script.exports.loadingGif"
-OUT.push("\" alt=\"loading\" />\n        "); // "\" alt=\"loading\" />"
-} else { // "else"
-OUT.push("\n            "); // ""
-var ARR1=CTX.state.results;for (var KEY in ARR1) {CTX. result=ARR1[KEY]; // "for result in state.results"
-OUT.push("\n                <div class=\"result\">\n                    <img src=\"http://covers.openlibrary.org/b/id/"); // "<div class=\"result\">\n                    <img src=\"http://covers.openlibrary.org/b/id/"
-OUT.push(G.escapeText(CTX.result.cover_i)); // "result.cover_i"
-OUT.push("-S.jpg\" />\n                    <label>"); // "-S.jpg\" />\n                    <label>"
-OUT.push(G.escapeText(CTX.result.title)); // "result.title"
-OUT.push("</label>\n                </div>\n            "); // "</label>\n                </div>"
-G.FORLOOP_NOT_EMPTY2=true; } if (!G.FORLOOP_NOT_EMPTY2) { // "empty"
-OUT.push("\n                <p>No books found.</p>\n            "); // "<p>No books found.</p>"
-}G.FORLOOP_NOT_EMPTY2 = false; // "endfor"
-OUT.push("\n        "); // ""
-} // "endif"
-OUT.push("\n    </div>\n</div>\n"); // "</div>\n</div>"
-
-return OUT.join("");
 };Modulo.assets.functions["uon9pj"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         // Splits up own source-code to get source for each example
@@ -15575,6 +15679,189 @@ return OUT.join("");
         script.exports.componentTexts = componentTexts;
     
 return {  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["x11j0c5c"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function _child(label, hash, keywords=[], filepath=null) {
+        if (!hash) {
+            hash = label.toLowerCase()
+        }
+        if (hash.endsWith('.html') && filepath === null) {
+            filepath = hash;
+        }
+        return {label, hash, keywords, filepath};
+    }
+    let componentTexts;
+    try {
+        //console.log('this is', Object.keys(Modulo.factoryInstances));
+        //console.log('this is', Modulo.factoryInstances);
+        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    } catch {
+        console.log('couldnt get componentTexts');
+        componentTexts = {};
+    }
+    script.exports.menu = [
+        {
+            label: 'Table of Contents',
+            filename: '/docs/',
+        },
+
+        {
+            label: 'Tutorial',
+            filename: '/docs/tutorial_part1.html',
+            children: [
+                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
+                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
+                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
+            ],
+        },
+
+        {
+            label: 'Templating',
+            filename: '/docs/templating.html',
+            children: [
+                _child('Templates', null, ['templating philosophy', 'templating overview']),
+                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
+                _child('Filters', null, ['filter syntax', 'example filters']),
+                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
+                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
+                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
+            ],
+        },
+
+        {
+            label: 'Template Reference',
+            filename: '/docs/templating-reference.html',
+            children: [
+                _child('Built-in Template Tags', 'templatetags', [
+                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
+                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
+                    'comparison', 'control-flow',
+                ]),
+                _child('Built-in Filters', 'filters', [
+                    'add', 'allow', 'capfirst', 'concat', 'default',
+                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
+                    'length', 'lower', 'number', 'pluralize', 'subtract',
+                    'truncate', 'renderas', 'reversed', 'upper',
+                ]),
+            ],
+        },
+
+        {
+            label: 'CParts',
+            filename: '/docs/cparts.html',
+            children: [
+                _child('Props', 'props', ['accessing props', 'defining props',
+                                    'setting props', 'using props']),
+                _child('Template', 'template', ['custom template', 'templating engine']),
+                _child('State', 'state', ['state definition', 'state data types',
+                                'json', 'state variables', 'state.bind directive']),
+                _child('StaticData', 'staticdata', ['loading API', 'loading json',
+                                'transform function', 'bundling data']),
+                _child('Script', 'script', ['javascript', 'events', 'computed properties',
+                                'static execution', 'custom lifecycle methods',
+                                    'script callback execution context', 'script exports']),
+                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
+                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
+                                    'rendering mode', 'manual rerender', 'shadow',
+                                    'vanish', 'vanish-into-document', 'component.event',
+                                    'component.slot', 'component.dataProp']),
+                //_child('Module'),
+            ],
+        },
+
+        {
+            label: 'Lifecycle',
+            filename: '/docs/lifecycle.html',
+            children: [
+                _child('Lifecycle phases', 'phases',
+                    ['lifestyle phases', 'lifestyle phase groups',
+                     'load', 'factory', 'prepare', 'initialized',
+                     'render', 'reconcile', 'update',
+                     'event', 'eventCleanup', 'hooking into lifecycle',
+                     'lifecycle callbacks', 'script tag callbacks']),
+                _child('Factory lifecycle', 'factory',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+                _child('renderObj', 'renderobj',
+                    ['renderObj', 'baseRenderObj', 'loadObj',
+                     'dependency injection', 'middleware']),
+            ],
+        },
+
+        {
+            label: 'Directives',
+            filename: '/docs/directives.html',
+            children: [
+                _child('Directives', 'directives',
+                    ['built-in directives', 'directive shortcuts',
+                     'custom directives']),
+                _child('Built-in directives', 'builtin', [
+                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
+                        'data-prop', 'assignment',
+                        '[component.event]', '@click', '@...:=',
+                        '[component.slot]', '[state.bind]',
+                    ]),
+                _child('Custom directives', 'custom', [
+                    'refs', 'accessing dom', 'escape hatch',
+                    'Mount callbacks', 'Unmount callbacks',
+                    'template variables vs directives',
+                    'script-tag custom directives',
+                    'custom shortcuts',
+                ]),
+            ],
+        },
+
+        /*
+        {
+            label: 'API & Extension',
+            filename: '/docs/api.html',
+            children: [
+                _child('Custom CParts', 'cparts'),
+                _child('CPart Spares', 'spares'),
+                _child('Custom Templating', 'template'),
+                _child('Custom Filters', 'customfilters'),
+                _child('Custom Template Tags', 'customtags'),
+                _child('Custom Template Syntax', 'customtags'),
+                _child('ModRec', 'modrec'),
+                _child('DOMCursor', 'cursor'),
+            ],
+        },
+        */
+
+        {
+            label: 'Example Library',
+            filename: '/docs/example-library.html',
+            children: Object.keys(componentTexts).map(name => _child(name)),
+        },
+
+        /*
+        {
+            label: 'Project Info',
+            filename: '/docs/project-info.html',
+            children: [
+                _child('FAQ', 'faq'),
+                _child('Framework Design Philosophy', 'philosophy'),
+            ],
+        },
+        */
+    ];
+
+    function initializedCallback() {
+        const { path, showall } = props;
+        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
+        for (const groupObj of state.menu) {
+            if (showall) {
+                groupObj.active = true;
+            }
+            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
+                groupObj.active = true;
+            }
+        }
+    }
+
+return { "_child": typeof _child !== "undefined" ? _child : undefined,
+"initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+ setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["x11m00cs"]= function (Modulo, factory, module, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         let txt;
@@ -15875,6 +16162,38 @@ return OUT.join("");
         script.exports.componentTexts = componentTexts;
     
 return {  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["x1j6psf9"]= function (Modulo, factory, module, component, template, state, staticdata, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'staticdata') staticdata = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+    function typingCallback() {
+        state.loading = true;
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${staticdata.apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+
+return { "typingCallback": typeof typingCallback !== "undefined" ? typingCallback : undefined,
+"dataBackCallback": typeof dataBackCallback !== "undefined" ? dataBackCallback : undefined,
+"_globalDebounce": typeof _globalDebounce !== "undefined" ? _globalDebounce : undefined,
+ setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["x1kg0tea"]= function (Modulo, factory, module, component, props, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
         function initializedCallback() {
@@ -15994,6 +16313,42 @@ return OUT.join("");
 
 return { "prepareCallback": typeof prepareCallback !== "undefined" ? prepareCallback : undefined,
  setLocalVariable: __set, exports: script.exports}
+};Modulo.assets.functions["xc2vovd"]= function (Modulo, factory, module, component, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+
+            console.log('loading AllExamples');
+            script.exports.examples = [];
+            function initializedCallback() {
+                // TODO: make sure initialized only get called once
+                // TODO: Encapsolate this into a dependency pattern, if proves
+                // useful
+                Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => {
+                    //Modulo.fetchQ.wait(() => _setup(text)); // not sure why -v is needed
+                    Modulo.fetchQ.wait(() => setTimeout(() => _setup(text), 0));
+                });
+            }
+            function _setup(text) {
+                let componentTexts;
+                try {
+                    componentTexts = Modulo.factoryInstances['eg-eg']
+                            .baseRenderObj.script.exports.componentTexts;
+                } catch {
+                    console.log('couldnt get componentTexts (2)', Modulo.factoryInstances);
+                    componentTexts = null;
+                }
+                if (!componentTexts) {
+                    return;
+                }
+
+                script.exports.examples = [];
+                for (const [name, content] of Object.entries(componentTexts)) {
+                    script.exports.examples.push({name, content});
+                }
+                element.rerender();
+            }
+        
+return { "initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+"_setup": typeof _setup !== "undefined" ? _setup : undefined,
+ setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["xco5ifg"]= function (CTX, G){
 var OUT=[];
 OUT.push("<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"); // "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"
@@ -16031,187 +16386,6 @@ OUT.push("\n    <main class=\"Main\" [component.slot]>\n    </main>\n"); // "<ma
 OUT.push("\n\n<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>\n"); // "<footer>\n    <main>\n        (C) 2022 - Michael Bethencourt - Documentation under LGPL 3.0\n    </main>\n</footer>\n\n</body>\n</html>"
 
 return OUT.join("");
-};Modulo.assets.functions["xdu5ajb"]= function (Modulo, factory, module, component, props, template, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'props') props = value; if (name === 'template') template = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
-
-    function _child(label, hash, keywords=[], filepath=null) {
-        if (!hash) {
-            hash = label.toLowerCase()
-        }
-        if (hash.endsWith('.html') && filepath === null) {
-            filepath = hash;
-        }
-        return {label, hash, keywords, filepath};
-    }
-    let componentTexts;
-    try {
-        //console.log('this is', Object.keys(Modulo.factoryInstances));
-        //console.log('this is', Modulo.factoryInstances);
-        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
-    } catch {
-        console.log('couldnt get componentTexts');
-        componentTexts = {};
-    }
-    script.exports.menu = [
-        {
-            label: 'Table of Contents',
-            filename: '/docs/',
-        },
-
-        {
-            label: 'Tutorial',
-            filename: '/docs/tutorial_part1.html',
-            children: [
-                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
-                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
-                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
-            ],
-        },
-
-        {
-            label: 'Templating',
-            filename: '/docs/templating.html',
-            children: [
-                _child('Templates', null, ['templating philosophy', 'templating overview']),
-                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
-                _child('Filters', null, ['filter syntax', 'example filters']),
-                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
-                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
-                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
-            ],
-        },
-
-        {
-            label: 'Template Reference',
-            filename: '/docs/templating-reference.html',
-            children: [
-                _child('Built-in Template Tags', 'templatetags', [
-                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
-                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
-                    'comparison', 'control-flow',
-                ]),
-                _child('Built-in Filters', 'filters', [
-                    'add', 'allow', 'capfirst', 'concat', 'default',
-                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
-                    'length', 'lower', 'number', 'pluralize', 'subtract',
-                    'truncate', 'renderas', 'reversed', 'upper',
-                ]),
-            ],
-        },
-
-        {
-            label: 'CParts',
-            filename: '/docs/cparts.html',
-            children: [
-                _child('Props', 'props', ['accessing props', 'defining props',
-                                    'setting props', 'using props']),
-                _child('Template', 'template', ['custom template', 'templating engine']),
-                _child('State', 'state', ['state definition', 'state data types',
-                                'json', 'state variables', 'state.bind directive']),
-                _child('Script', 'script', ['javascript', 'events', 'computed properties',
-                                'static execution', 'custom lifecycle methods',
-                                    'script callback execution context', 'script exports']),
-                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
-                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
-                                    'rendering mode', 'manual rerender', 'shadow',
-                                    'vanish', 'vanish-into-document', 'component.event',
-                                    'component.slot', 'component.dataProp']),
-                //_child('Module'),
-            ],
-        },
-
-        {
-            label: 'Lifecycle',
-            filename: '/docs/lifecycle.html',
-            children: [
-                _child('Lifecycle phases', 'phases',
-                    ['lifestyle phases', 'lifestyle phase groups',
-                     'load', 'factory', 'prepare', 'initialized',
-                     'render', 'reconcile', 'update',
-                     'event', 'eventCleanup', 'hooking into lifecycle',
-                     'lifecycle callbacks', 'script tag callbacks']),
-                _child('Factory lifecycle', 'factory',
-                    ['renderObj', 'baseRenderObj', 'loadObj',
-                     'dependency injection', 'middleware']),
-                _child('renderObj', 'renderobj',
-                    ['renderObj', 'baseRenderObj', 'loadObj',
-                     'dependency injection', 'middleware']),
-            ],
-        },
-
-        {
-            label: 'Directives',
-            filename: '/docs/directives.html',
-            children: [
-                _child('Directives', 'directives',
-                    ['built-in directives', 'directive shortcuts',
-                     'custom directives']),
-                _child('Built-in directives', 'builtin', [
-                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
-                        'data-prop', 'assignment',
-                        '[component.event]', '@click', '@...:=',
-                        '[component.slot]', '[state.bind]',
-                    ]),
-                _child('Custom directives', 'custom', [
-                    'refs', 'accessing dom', 'escape hatch',
-                    'Mount callbacks', 'Unmount callbacks',
-                    'template variables vs directives',
-                    'script-tag custom directives',
-                    'custom shortcuts',
-                ]),
-            ],
-        },
-
-        /*
-        {
-            label: 'API & Extension',
-            filename: '/docs/api.html',
-            children: [
-                _child('Custom CParts', 'cparts'),
-                _child('CPart Spares', 'spares'),
-                _child('Custom Templating', 'template'),
-                _child('Custom Filters', 'customfilters'),
-                _child('Custom Template Tags', 'customtags'),
-                _child('Custom Template Syntax', 'customtags'),
-                _child('ModRec', 'modrec'),
-                _child('DOMCursor', 'cursor'),
-            ],
-        },
-        */
-
-        {
-            label: 'Example Library',
-            filename: '/docs/example-library.html',
-            children: Object.keys(componentTexts).map(name => _child(name)),
-        },
-
-        /*
-        {
-            label: 'Project Info',
-            filename: '/docs/project-info.html',
-            children: [
-                _child('FAQ', 'faq'),
-                _child('Framework Design Philosophy', 'philosophy'),
-            ],
-        },
-        */
-    ];
-
-    function initializedCallback() {
-        const { path, showall } = props;
-        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
-        for (const groupObj of state.menu) {
-            if (showall) {
-                groupObj.active = true;
-            }
-            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
-                groupObj.active = true;
-            }
-        }
-    }
-
-return { "_child": typeof _child !== "undefined" ? _child : undefined,
-"initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
- setLocalVariable: __set, exports: script.exports}
 };Modulo.assets.functions["xfchbde"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n        <div class=\"split\">\n            <div style=\"height: "); // "<div class=\"split\">\n            <div style=\"height:"
@@ -16244,6 +16418,19 @@ OUT.push("</h2>\n    "); // "</h2>"
 return OUT.join("");
 };
 Modulo.fetchQ.data = {
+  "/components/components/examplelib.html": // (11 lines)
+`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /components/components/examplelib.html</pre>
+</body>
+</html>
+`,// (ends: /components/components/examplelib.html) 
+
   "/components/embeddedexampleslib.html": // (360 lines)
 `<module>
     <script>
@@ -17108,7 +17295,7 @@ to {{ state.count }} {{ state.noun }}s.
 
 `,// (ends: /components/examplelib-tests/Tutorial_P3_state_bind-tests.html) 
 
-  "/components/examplelib.html": // (676 lines)
+  "/components/examplelib.html": // (680 lines)
 `<module>
     <script>
         // Splits up own source-code to get source for each example
@@ -17235,6 +17422,19 @@ to {{ state.count }} {{ state.noun }}s.
 <!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
 
 
+<component name="JSON">
+<!-- Use StaticData CPart to include JSON from an API or file -->
+<Template>
+    {{ staticdata.language }}:<br>
+    <a href="{{ staticdata.html_url }}">{{ staticdata.name }}</a>
+    ({{ staticdata.stargazers_count }} &starf;)
+</Template>
+<StaticData
+    src="https://api.github.com/repos/michaelpb/modulo"
+></StaticData>
+</component>
+
+
 <component name="API">
 <Template>
 <p>{{ state.name }} | {{ state.location }}</p>
@@ -17279,28 +17479,32 @@ to {{ state.count }} {{ state.noun }}s.
 
 
 <component name="SearchBox">
+<!-- A "type as you go" search box implementation,
+an example of more complicated HTML and JS behavior -->
 <Template>
-<p>Start typing a book name to see "search as you type" (e.g. try &ldquo;the
-lord of the rings&rdquo;)</p>
+<p>Type a book name for "search as you type"
+(e.g. try &ldquo;the lord of the rings&rdquo;)</p>
 
-<input [state.bind] name="search" @keyup:=script.typingCallback />
+<input [state.bind] name="search"
+  @keyup:=script.typingCallback />
 
-<div class="results {% if state.search.length gt 0 %}visible{% endif %}">
-    <div class="results-container">
-        {% if state.loading %}
-            <img style="margin-top: 30px"
-                src="{{ script.exports.loadingGif  }}" alt="loading" />
-        {% else %}
-            {% for result in state.results %}
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/{{ result.cover_i }}-S.jpg" />
-                    <label>{{ result.title }}</label>
-                </div>
-            {% empty %}
-                <p>No books found.</p>
-            {% endfor %}
-        {% endif %}
-    </div>
+<div class="results {% if state.search.length gt 0 %}
+                      visible {% endif %}">
+  <div class="results-container">
+    {% if state.loading %}
+      <img src="{{ staticdata.gif }}" alt="loading" />
+    {% else %}
+      {% for result in state.results %}
+        <div class="result">
+          <img
+            src="{{ staticdata.cover|add:result.cover_i }}-S.jpg"
+          /> <label>{{ result.title }}</label>
+        </div>
+      {% empty %}
+        <p>No books found.</p>
+      {% endfor %}
+    {% endif %}
+  </div>
 </div>
 </Template>
 
@@ -17310,26 +17514,22 @@ lord of the rings&rdquo;)</p>
     loading:=false
 ></State>
 
-<Script>
-    // Because this variable is created "loose" in the script tag, it becomes a
-    // static variable global to all instances of this class (though,
-    // thankfully, not global in general -- it's still in an "IFFE")
-    // (If we had wanted individual components to be debounced, we'd have
-    // needed to attach it to state in the initializedCallback)
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
+<!-- Puting long URLs down here to declutter -->
+<StaticData>
+{
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+}
+</StaticData>
 
+<Script>
     function typingCallback() {
         state.loading = true;
-        const apiBase = 'https://openlibrary.org/search.json'
         const search = \`q=\${state.search}\`;
         const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = \`\${apiBase}?\${search}&\${opts}\`;
+        const url = \`\${staticdata.apiBase}?\${search}&\${opts}\`;
         _globalDebounce(() => {
             fetch(url)
                 .then(response => response.json())
@@ -17343,32 +17543,23 @@ lord of the rings&rdquo;)</p>
         element.rerender();
     }
 
-    // Puting this long URL down here to declutter
-    script.exports.loadingGif = ('https://cdnjs.cloudflare.com/ajax/libs/' +
-                                 'semantic-ui/0.16.1/images/loader-large.gif');
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
 </Script>
 
 <Style>
-    SearchBox {
-        position: relative;
-        display: block;
-        width: 300px;
-    }
-    input {
-        padding: 8px;
-        background: coral;
-        color: white;
-        width: 200px;
-        border: none;
-    }
-    input::after {
-        content: '\\1F50E';
-    }
+    input { width: 120px; }
     .results-container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
     }
+    .results-container > img { margin-top 30px; }
     .results {
         position: absolute;
         height: 0;
@@ -17377,8 +17568,8 @@ lord of the rings&rdquo;)</p>
         display: block;
         border: 2px solid coral;
         border-radius: 0 0 20px 20px;
-        transition: height 2s;
-        z-index: 1;
+        transition: height 0.2s;
+        z-index: 20;
         background: white;
     }
     .results.visible {
@@ -18028,7 +18219,7 @@ h3 {
 </html>
 `,// (ends: /components/layouts/base.html) 
 
-  "/components/modulowebsite.html": // (565 lines)
+  "/components/modulowebsite.html": // (567 lines)
 `<component name="Section">
     <props
         name
@@ -18265,6 +18456,8 @@ h3 {
                 _child('Template', 'template', ['custom template', 'templating engine']),
                 _child('State', 'state', ['state definition', 'state data types',
                                 'json', 'state variables', 'state.bind directive']),
+                _child('StaticData', 'staticdata', ['loading API', 'loading json',
+                                'transform function', 'bundling data']),
                 _child('Script', 'script', ['javascript', 'events', 'computed properties',
                                 'static execution', 'custom lifecycle methods',
                                     'script callback execution context', 'script exports']),
@@ -18751,7 +18944,7 @@ h3 {
     margin-bottom: -2px;
     border-radius: 8px 8px 0 0;
     background: white;
-    min-width: 10%;
+    min-width: 50px;
     box-shadow: 0 0 0 0 var(--highlight-color);
     transition: box-shadow 0.3s,
                 border-color 0.2s;
@@ -19264,6 +19457,120 @@ element.previewSpot.appendChild(component);
 
 `,// (ends: /components/modulowebsite/demo.js) 
 
+  "https://api.github.com/repos/michaelpb/modulo": // (110 lines)
+`{
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-01-04T21:07:05Z",
+  "pushed_at": "2022-04-26T21:01:49Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": null,
+  "size": 4101,
+  "stargazers_count": 1,
+  "watchers_count": 1,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 1,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+}
+`,// (ends: https://api.github.com/repos/michaelpb/modulo) 
+
 };
 
 Modulo.globalLoader.loadString("<load namespace=\"x\" src=\"/components/layouts.html\"></load>");
+
+Modulo.globalLoader.loadString("<component name=\"AllExamples\"><template> {% for example in script.exports.examples %} <mws-section name=\"{{ example.name|lower }}\"> {{ example.name }} </mws-section><mws-demo demotype=\"minipreview\" fromlibrary=\"{{ example.name }}\"></mws-demo> {% endfor %} </template><script> console.log('loading AllExamples'); script.exports.examples = []; function initializedCallback() { // TODO: make sure initialized only get called once // TODO: Encapsolate this into a dependency pattern, if proves // useful Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => { //Modulo.fetchQ.wait(() => _setup(text)); // not sure why -v is needed Modulo.fetchQ.wait(() => setTimeout(() => _setup(text), 0)); }); } function _setup(text) { let componentTexts; try { componentTexts = Modulo.factoryInstances['eg-eg'] .baseRenderObj.script.exports.componentTexts; } catch { console.log('couldnt get componentTexts (2)', Modulo.factoryInstances); componentTexts = null; } if (!componentTexts) { return; } script.exports.examples = []; for (const [name, content] of Object.entries(componentTexts)) { script.exports.examples.push({name, content}); } element.rerender(); } </script></component>");

@@ -64,24 +64,26 @@
         <p><strong>Zero set-up</strong> - Like the "golden age" of jQuery,
         just drop it into any HTML file.  Unlike jQuery, that 1 file packs
         in many of the creature-comforts of a modern component framework,
-        without any dependencies or new syntax to learn.</p>
+        without any dependencies or new syntax to learn. You can even compile
+        to a single JS file, directly from your browser!</p>
         <!--
         a modern component system, a swappable templating language based on
         Liquid-syntax, DOM resolution, and more.  , a tiny build system to pack
         your CSS and JS for production, and even debug tools.</p>-->
 
         <p><strong>A gentler learning curve</strong> - Modulo's declarative,
-        synchronous coding style was designed to be easier for coding
-        newbies to pick-up&mdash;in fact, useful components can be
-        developed without writing any JavaScript code!</p>
+        synchronous "low-code" approach was designed to be easier for coding
+        newbies to pick-up&mdash;in fact, useful components can be developed
+        without writing any JavaScript code!</p>
 
         <p><strong><strike style="color: gray">Progressive Web Apps</strike>
         Progressive Enhancement</strong> - Modulo makes few assumptions, and
         renders components mixed with plain HTML for easier integration into
-        backend apps. JAMStack and PWA's are fine and all, but what about all
-        our existing server-side apps in Ruby on Rails, Python, Go, or that one
-        home-grown PHP monster that will never go away? Sprinkle in some Modulo
-        components to make your "traditional" web apps
+        backend apps. JAMStack and PWA's are fine and all, and Modulo could be
+        used for these as well, but what about all our existing server-side
+        apps in Ruby on Rails, Python, Go, or that one home-grown PHP monster
+        that will never go away? Sprinkle in some Modulo components to make
+        your "traditional" web apps
         <em>shine</em>.</p>
         <!--
         <abbr title="In fact, Modulo templating language uses a backend-inspired 'Djangolike' or Liquid-style syntax templating language, e.g. {{ example|filter }}">
@@ -95,18 +97,24 @@
         <p><strong>CParts</strong> - CParts are like "Lego blocks" for your
         components! Create components by snapping together one or more
         Component Parts or <em>CParts</em>. Mix Script, Style, State, Props,
-        and Templates to make components that have one or all, or even
-        multiples, of these features. Reusing CParts between components
-        provides a powerful system of "composition-based" inheritance.</p>
+        and Templates to make components that have one (or all) of these
+        features.<!--
+        Reusing CParts between components provides a powerful system
+        of "composition-based" inheritance.--></p>
 
-        <p><strong>Everything is swappable</strong> - Components configure
-        themselves, meaning you can create custom CParts, "mix and match" your
-        favorite JS templating languages, or fine-tune DOM-resolution behavior
-        on a per-component basis.</p>
+        <p><strong>Everything is transparent and swappable</strong> -
+        Components configure themselves, meaning you can create custom CParts
+        to support your backend APIs, "mix and match" your favorite JS
+        templating languages, or fine-tune DOM-resolution behavior on a
+        per-component basis. Hook your own code into the rendering process,
+        either through lifecycle callbacks, or by defining powerful
+        attribute-based directives.</p>
 
-        <p><strong>Lifecycle hooks and directives</strong> - Hook your own code
-        into the rendering process, either through lifecycle callbacks, or by
-        defining custom attribute-based directives.</p>
+        <p><strong>A novel approach to component development</strong> -
+        Modulo's separation of CPart development from component development
+        allows JavaScript developers to write pure JS to wrap APIs, and
+        component developers to tie it all together with "low-code".</p>
+
     </aside>
     <aside>
         <h3><span alt="Sigma">&#x03A3;</span></h3>
@@ -126,22 +134,23 @@
     <aside>
         <p><strong>"It's like React"</strong> - Modulo is "batteries-included"
         to function like React.js or Vue.js. You get encapsulated components
-        with state management, two-way data binding, props &amp; types,
-        computed values, DOM resolution, event directives, and more. You even
-        get a simple importing and namespacing system, that can "self-pack"
-        your components into a single JS file!</p>
+        with state management, two-way data binding, props, computed values,
+        smart DOM resolution, event directives, and more. You even get a simple
+        importing and namespacing system, which can "self-pack" your components
+        into a single JS file!</p>
 
         <p><strong>Clean & concise</strong> - The code-base of Modulo itself is
-        intentionally kept short &amp; sweet: It hovers around roughly 1000
+        intentionally kept short &amp; sweet: It's roughly 1500
         <abbr title="Source Lines of Code - This counts 'physical lines' and thus does not include comments, documentation, blanks, etc">SLOC</abbr>,
         80 char line limit, 4 spaces of
-        indent, and a <abbr title="Almost all functions have a cyclomatic complexity of 3 or lower">low-complexity</abbr>
-        imperative style. When something goes wrong (which it probably will
-        since it's new), it's easy to "<tt>git blame</tt>" Modulo.</p>
+        indent, and a <abbr title="Try to keep cyclomatic complexity of functions to 3 or lower">low-complexity</abbr>
+        imperative style. When something goes wrong (which it
+        probably will since it's new), it's easier to "<tt>git blame</tt>"
+        Modulo.</p>
 
-        <p><strong>A basis for whatever comes next</strong> - Want to write
-        your own component framework? Modulo's core is in only a few hundred
-        lines of code. Read the source code, fork away, and swap the
+        <p><strong>A basis for whatever comes next</strong> - Writing your own
+        framework? Modulo's core for loading &amp; mounting CParts is only ~500
+        SLOC. Read the source code, fork away, and swap the
         "batteries-included" for your own!</p>
     </aside>
 </section>
