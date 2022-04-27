@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const ModuloVM = require('./lib/ModuloVM'); // HappyDOM-based
 const ModuloBrowser = require('./lib/ModuloBrowser'); // Puppeteer-based
 
