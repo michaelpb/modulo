@@ -1,10 +1,7 @@
 'use strict';
-// # Note
-// Earlier versions of Modulo.js's source code were written with "literate
-// programming". Most of this documentation has been deleted, but will be
-// rewritten in this style once the public API is settled. Until then, the code
-// is a mess, riddled with TODO's, not "literate" and thus merely aspires to
-// much better comments, formatting, lower complexity, etc.
+// Modulo, when released as BETA, will have clean and commented code.  Until
+// then, the code is a mess, riddled with TODO's, not "literate" and thus
+// merely aspires to much better comments, formatting, lower complexity, etc.
 
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
