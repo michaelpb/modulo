@@ -1,3 +1,55 @@
+
+<Component name="WordGuess">
+    <Props
+        word
+    ></Props>
+    <Template>
+        {% for letter in props.word %}
+            <label>
+                {% if letter in state.guessed %}
+                    {{ letter }}
+                {% else %}
+                    _
+                {% endif %}
+            </label>
+        {% endfor %}
+        <p>
+            Guessed:
+            {% for letter in state.guessed %}
+                <s>{{ letter }}</s>
+            {% endfor %}
+        </p>
+        <br />
+        <input [state.bind] name="letter" maxlength=1 />
+        <button @click:=state.guessed.push payload="{{ state.letter }}">
+            Guess
+        </button>
+    </Template>
+
+    <State
+        guessed:=[]
+        letter=""
+    ></State>
+
+    <Style>
+        label, input, s {
+            font-size: 32px;
+        }
+        input {
+            width: 32px;
+        }
+    </Style>
+</Component>
+
+
+
+
+
+
+
+
+
+
 <Component name="MiniExcel">
   <!--<Debug></Debug>-->
   <Template>

@@ -13,9 +13,7 @@
       entire framework / lib as encapsulated config instance
     - Think about 'Modulo.register('cpart', 'Template', class Template extends
       CPart { });'
-    - Another idea: have "dash" prefix be for modifying config, e.g.
-      '-name="Component"' or something. Maybe only for State/Props/etc, things
-      that need it?
+    - See directive idea below
 
 - ModRec & DOMCursor refactor
     - Finish detangling repetitive directives and dead code
@@ -111,9 +109,29 @@ Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
 
 ## MDU FE StaticData
 
-- Maybe add a StaticData CPart, possibly even built-in? Absurdly simple: Just
-  does a JSON.parse, or little CSV parse, on inner content. Could be used for
-  awesome stuff, like loading URLs
+- StaticData 2 - Should add a little more code to prefix, e.g. default filter
+  could be:
+        const key = Modulo.statics[attrs.name || attrs.src];
+        if (key in Modulo.statics) {
+            return Modulo.statics[key];
+        }
+        Modulo.statics[key] = {{ filter }};
+        return Modulo.statics[key];
+
+- State $sync:=Modulo.statics.user - Auto-refresh
+
+## Config Directives + Modulo config
+
+- Another idea: have "dash" prefix be for modifying config, e.g.
+    '-name="Component"' or something. Maybe only for State/Props/etc, things
+    that need it?
+- Create a directive like "%" used at load, that sets silo'ed config based on
+  path:
+    - Top level: `{ "component": { "mode": "regular" } }`
+    - `<Component %mode="vanish"></Component>`
+    -  (turns into component.mode = "vanish" in silo'ed modulo)
+
+
 
 ## MDU CLI
 

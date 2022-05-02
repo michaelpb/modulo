@@ -111,4 +111,9 @@ async function devserve(moduloWrapper, config, args) {
     });
 }
 
-module.exports = { devserve, prodserve };
+async function srcserve(moduloWrapper, config, args) {
+    // config.port -= 1; // maybe subtract 1?
+    doServeSource(moduloWrapper, config, args);
+}
+
+module.exports = { devserve, prodserve, srcserve };
