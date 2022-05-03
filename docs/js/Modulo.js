@@ -928,6 +928,10 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     bindUnmount({ el, attrName }) {
         const name = el.getAttribute('name') || attrName;
         const remainingBound = [];
+        if (!(name in this.boundElements)) { // XXX HACK
+            console.log('Modulo ERROR: Could not unbind', name);
+            return;
+        }
         for (const row of this.boundElements[name]) {
             if (row[0] === el) {
                 row[0].removeEventListener(row[1], row[2]);
