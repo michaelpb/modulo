@@ -127,9 +127,9 @@
 <component name="JSON">
 <!-- Use StaticData CPart to include JSON from an API or file -->
 <Template>
-    <h3>{{ staticdata.name }}</h3>
-    Languages: {{ staticdata.language }} <br />
-    Topics: {{ staticdata.topics|join }}
+    <strong>Name:</strong> {{ staticdata.name }} <br />
+    <strong>Site:</strong> {{ staticdata.homepage }} <br />
+    <strong>Tags:</strong> {{ staticdata.topics|join }}
 </Template>
 <StaticData
     src="https://api.github.com/repos/michaelpb/modulo"

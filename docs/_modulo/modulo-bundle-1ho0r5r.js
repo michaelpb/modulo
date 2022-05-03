@@ -16768,6 +16768,17 @@ OUT.push("</p>\n  "); // "</p>"
 OUT.push("\n"); // ""
 
 return OUT.join("");
+};Modulo.assets.functions["3c01k5"]= function (CTX, G){
+var OUT=[];
+OUT.push("\n    <strong>Name:</strong> "); // "<strong>Name:</strong>"
+OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
+OUT.push(" <br />\n    <strong>Site:</strong> "); // "<br />\n    <strong>Site:</strong>"
+OUT.push(G.escapeText(CTX.staticdata.homepage)); // "staticdata.homepage"
+OUT.push(" <br />\n    <strong>Tags:</strong> "); // "<br />\n    <strong>Tags:</strong>"
+OUT.push(G.escapeText(G.filters["join"](CTX.staticdata.topics))); // "staticdata.topics|join"
+OUT.push("\n"); // ""
+
+return OUT.join("");
 };Modulo.assets.functions["4amukg"]= function (){
 return {
   apiBase: 'https://openlibrary.org/search.json',
@@ -16995,17 +17006,6 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 return { "countUp": typeof countUp !== "undefined" ? countUp : undefined,
 "makeError": typeof makeError !== "undefined" ? makeError : undefined,
  setLocalVariable: __set, exports: script.exports}
-};Modulo.assets.functions["so6m0l"]= function (CTX, G){
-var OUT=[];
-OUT.push("\n    <h3>"); // "<h3>"
-OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
-OUT.push("</h3>\n    Languages: "); // "</h3>\n    Languages:"
-OUT.push(G.escapeText(CTX.staticdata.language)); // "staticdata.language"
-OUT.push(" <br />\n    Topics: "); // "<br />\n    Topics:"
-OUT.push(G.escapeText(G.filters["join"](CTX.staticdata.topics))); // "staticdata.topics|join"
-OUT.push("\n"); // ""
-
-return OUT.join("");
 };Modulo.assets.functions["sogcqp"]= function (Modulo, factory, module, component, template, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'Modulo') Modulo = value; if (name === 'factory') factory = value; if (name === 'module') module = value; if (name === 'component') component = value; if (name === 'template') template = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 
     script.exports.bigArray =
@@ -17433,6 +17433,123 @@ OUT.push("</li>\n    "); // "</li>"
 OUT.push("\n    <li>\n        <input [state.bind] name=\"text\" />\n        <button @click:=script.addItem>Add</button>\n    </li>\n</ol>\n"); // "<li>\n        <input [state.bind] name=\"text\" />\n        <button @click:=script.addItem>Add</button>\n    </li>\n</ol>"
 
 return OUT.join("");
+};Modulo.assets.functions["x3hucjm"]= function (){
+return {
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-05-03T19:15:19Z",
+  "pushed_at": "2022-05-03T18:40:57Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": "https://modulojs.org/",
+  "size": 4899,
+  "stargazers_count": 2,
+  "watchers_count": 2,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+    "component-based",
+    "framework",
+    "html",
+    "javascript",
+    "state-management",
+    "template-engine",
+    "vanilla-js",
+    "web-components"
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 2,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+};
 };Modulo.assets.functions["x4mc2e8"]= function (CTX, G){
 var OUT=[];
 OUT.push("\n    API data: <pre>"); // "API data: <pre>"
@@ -17653,8 +17770,6 @@ OUT.push(G.escapeText(G.filters["safe"](CTX.component.originalHTML))); // "compo
 OUT.push("</h2>\n    "); // "</h2>"
 
 return OUT.join("");
-};Modulo.assets.functions["xtc70q8"]= function (){
-return {"message":"API rate limit exceeded for 192.184.129.172. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"};
 };
 Modulo.fetchQ.data = {
   "/components/embeddedexampleslib.html": // (360 lines)
@@ -18651,9 +18766,9 @@ to {{ state.count }} {{ state.noun }}s.
 <component name="JSON">
 <!-- Use StaticData CPart to include JSON from an API or file -->
 <Template>
-    <h3>{{ staticdata.name }}</h3>
-    Languages: {{ staticdata.language }} <br />
-    Topics: {{ staticdata.topics|join }}
+    <strong>Name:</strong> {{ staticdata.name }} <br />
+    <strong>Site:</strong> {{ staticdata.homepage }} <br />
+    <strong>Tags:</strong> {{ staticdata.topics|join }}
 </Template>
 <StaticData
     src="https://api.github.com/repos/michaelpb/modulo"
@@ -20857,8 +20972,123 @@ element.previewSpot.appendChild(component);
 
 `,// (ends: /components/modulowebsite/demo.js) 
 
-  "https://api.github.com/repos/michaelpb/modulo": // (2 lines)
-`{"message":"API rate limit exceeded for 192.184.129.172. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
+  "https://api.github.com/repos/michaelpb/modulo": // (117 lines)
+`{
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-05-03T19:15:19Z",
+  "pushed_at": "2022-05-03T18:40:57Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": "https://modulojs.org/",
+  "size": 4899,
+  "stargazers_count": 2,
+  "watchers_count": 2,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "topics": [
+    "component-based",
+    "framework",
+    "html",
+    "javascript",
+    "state-management",
+    "template-engine",
+    "vanilla-js",
+    "web-components"
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 2,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 1
+}
 `,// (ends: https://api.github.com/repos/michaelpb/modulo) 
 
   "https://jsonplaceholder.typicode.com/todos": // (1202 lines)
