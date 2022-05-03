@@ -323,6 +323,34 @@ an example of more complicated HTML and JS behavior -->
 
 
 
+<component name="Components">
+<!-- Once defined, Modulo web components can be used like HTML.
+DemoModal and DemoChart are already defined. Try using below! -->
+<Template>
+
+<x-DemoChart
+    data:='[1, 2, 3, 5, 8]'
+></x-DemoChart>
+
+<x-DemoModal button="Nicholas Cage" title="Biography">
+    <p>Prolific Hollywood actor</p>
+    <img src="https://www.placecage.com/640/360" />
+</x-DemoModal>
+
+<x-DemoModal button="Tommy Wiseau" title="Further Data">
+    <p>Actor, director, and acclaimed fashion designer</p>
+    <x-DemoChart data:='[50, 13, 94]' ></x-DemoChart>
+</x-DemoModal>
+
+</Template>
+
+</component>
+
+
+
+
+
+
 <component name="PrimeSieve">
 <!-- Demos mouseover, template filters, template control flow,
      and static script exports -->

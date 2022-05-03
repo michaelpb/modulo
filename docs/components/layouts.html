@@ -164,3 +164,158 @@
 
 </component>
 
+<!-- Used by demos! -->
+<component name="DemoChart">
+    <Props
+        data
+    ></Props>
+    <Template>
+        <div class="chart-container">
+            {% for percent in script.percent %}
+                <div style="height: {{ percent }}px; width: {{ script.width }}px">
+                </div>
+            {% endfor %}
+        </div>
+        {% for value in props.data %}
+            <label style="width: {{ script.width }}px">{{ value }}</label>
+        {% endfor %}
+    </Template>
+
+    <Script>
+        function prepareCallback() {
+            const { data } = props;
+            const max = Math.max(...data);
+            const min = 0;// Math.min(...props.data),
+            return {
+                percent: data.map(item => ((item - min) / max) * 100),
+                width: Math.floor(100 / data.length),
+            }
+        }
+    </Script>
+
+    <Style>
+        .chart-container {
+            border: 1px solid black;
+            height: 100px;
+            width: 100px;
+            display: flex;
+            align-items: flex-end;
+        }
+        .chart-container > div {
+            box-sizing: border-box;
+            background-color: #b90183;
+            background-color: white;
+            border: 1px solid grey;
+            width: 30px;
+            border-radius: 1px 5px 1px 5px;
+            box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
+            margin-top: -5px;
+        }
+        .chart-container > div:first-of-type {
+            margin-left: -4px;
+        }
+        .chart-container > div:hover {
+            background-color: #b90183;
+        }
+        label {
+            display: inline-block;
+        }
+    </Style>
+</Component>
+
+
+
+<!-- Used by demos! -->
+<component name="DemoModal">
+    <Props
+        button
+        title
+    ></Props>
+
+    <Template>
+        <button @click:=script.show>{{ props.button }} ⬇☐&nbsp;</button>
+        <div class="modal-backdrop"
+            @click:=script.hide
+            style="display: {% if state.visible %}block{% else %}none{% endif %}">
+        </div>
+        <div class="modal-body" style="
+        {% if state.visible %} top: 100px; {% else %} top: -400px; {% endif %}">
+            <h2>{{ props.title }} <button @click:=script.hide>&times;</button></h2>
+            <slot></slot>
+        </div>
+    </Template>
+
+    <State
+        visible:=false
+    ></State>
+
+
+    <Script>
+        function show() {
+            state.visible = true;
+        }
+        function hide() {
+            state.visible = false;
+        }
+    </Script>
+
+    <Style>
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 11;
+        }
+        .modal-body {
+            --w: 400px;
+            width: var(--w);
+            position: fixed;
+            z-index: 12;
+            left: calc(50vw - (var(--w) / 2));
+            display: block;
+            background: white;
+            border: 7px solid black;
+            border-radius: 7px;
+            padding: 50px;
+            transition: top 1s;
+        }
+        .modal-body > h2 {
+            border-bottom: 3px solid black;
+            color: #b90183;
+            padding: 10px;
+            border-top: 0;
+            margin: -50px;
+            margin-bottom: 50px;
+        }
+        .modal-body > h2 button {
+            font-size: 25px;
+            float: right;
+            width: 50px;
+        }
+
+        button {
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 1px 10px 1px 10px;
+            background:  #b90183;
+            color: black;
+            border: 1px solid grey;
+            box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
+            cursor: default;
+            margin-top: 0px;
+            padding: 5px;
+            background-color: white;
+            margin-bottom: 4px;
+        }
+        button:active {
+            box-shadow: inset 5px 5px 1px 1px hsla(0,0%,39.2%,.3);
+            margin-top: 5px;
+        }
+    </Style>
+</Component>
+

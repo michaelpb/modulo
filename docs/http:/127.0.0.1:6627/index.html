@@ -1,566 +1,726 @@
-<component name="Section">
-    <props
-        name
-    ></props>
-    <template>
-        <a class="secanchor"
-            title="Click to focus on this section."
-            id="{{ props.name }}"
-            name="{{ props.name }}"
-            href="#{{ props.name }}">#</a>
-        <h2>{{ component.originalHTML|safe }}</h2>
-    </template>
-    <style>
-        Section {
-            position: relative;
-        }
-        h2 {
-            font-weight: bold;
-            color: var(--highlight-color);
-            margin-bottom: 0;
-        }
-        a.secanchor {
-            padding-top: 100px;
-            color: var(--highlight-color);
-            opacity: 0.3;
-            display: block;
-        }
-        Section:hover .Section-helper {
-            opacity: 1.0;
-        }
-    </style>
-</component>
-
-
-<component name="ErrorCauser">
-    <template>
-        <a @click:=script.makeError>Click me to cause a traceback</a>
-        <a @click:=script.countUp>Click me to count: {{ state.num }}</a>
-
-        {% if state.num gt 3 %}
-            {{ state.num|brokenFilter }}
-        {% endif %}
-    </template>
-    <state
-      num:=1
-    ></state>
+<module>
     <script>
-        // console.info('factory method of ErrorCauser');
-        function countUp() {
-            state.num++;
+        // Splits up own source-code to get source for each example
+        const mySrc = '/components/examplelib.html';
+        const myText = Modulo.fetchQ.data[mySrc];
+        const componentTexts = {};
+        if (myText) {
+            let name = '';
+            let currentComponent = '';
+            let inTestSuite = false;
+            for (const line of myText.split('\n')) {
+                const lower = line.toLowerCase();
+                if (lower.startsWith('</component>')) {
+                    componentTexts[name] = currentComponent;
+                    currentComponent = '';
+                    name = null;
+                } else if (lower.startsWith('<component')) {
+                    name = line.split(' name="')[1].split('"')[0];
+                } else if (lower.startsWith('<testsuite')) {
+                    inTestSuite = true;
+                } else if (lower.includes('</testsuite>')) {
+                    inTestSuite = false;
+                } else if (name && !inTestSuite) {
+                    currentComponent += line + '\n';
+                }
+            }
         }
-
-        function makeError() {
-            console.info('makeError callback happening');
-            const a = 10;
-            a(); // cause error
-        }
+        script.exports.componentTexts = componentTexts;
     </script>
-    <style>
-        * {
-            color: orangered !important;
-            background: black !important;
-            border: blue 5px solid;
-            padding: 10px;
-        }
-    </style>
-</component>
+</module>
 
+<!--
+/*} else if (sName === 'style') {
+    console.log('this is content', data.content);
+    const content = data.content.replace(/\*\/.*?\*\//ig, '');
+    // To prefix the selectors, we loop through them,
+    // with this RegExp that looks for { chars
+    content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, (selector, data) => {
+        console.log('selector', selector);
+        console.log('data', data);
+    });*/
+-->
 
+<component name="Hello">
 
+<Template>
+    <button @click:=script.countUp>Hello {{ state.num }}</button>
+</Template>
+<State
+    num:=42
+></State>
+<Script>
+    function countUp() {
+        state.num++;
+    }
+</Script>
 
-<component name="Demo">
-    <!-- TODO: Refactor the following to take variable length props instead of 2, 3, etc-->
-    <props
-        text
-        text2
-        text3
-        ttitle
-        ttitle2
-        ttitle3
-        demotype
-        fromlibrary
-    ></props>
-    <template src="./modulowebsite/demo.html"></template>
-
-    <state
-        tabs:='[]'
-        selected:=null
-        preview=""
-        text=""
-        nscounter:=1
-        showpreview:=false
-        showclipboard:=false
-        fullscreen:=false
-    ></state>
-    <script src="./modulowebsite/demo.js"></script>
-    <style src="./modulowebsite/demo.css"> </style>
+<testsuite
+    src="./examplelib-tests/Hello-tests.html"
+></testsuite>
 
 </component>
 
 
 
 
-<component name="DocSidebar">
+<component name="Simple">
 
-<props
-    path
-    showall
-></props>
+<Template>
+    Components can use any number of <strong>CParts</strong>.
+    Here we use only <em>Style</em> and <em>Template</em>.
+</Template>
 
-<template>
-<ul>
-    {% for linkGroup in state.menu %}
-        <li class="
-            {% if linkGroup.children %}
-                {% if linkGroup.active %}gactive{% else %}ginactive{% endif %}
-            {% endif %}
-            "><a href="{{ linkGroup.filename }}">{{ linkGroup.label }}</a>
-            {% if linkGroup.active %}
-                {% if linkGroup.children %}
-                    <ul>
-                    {% for childLink in linkGroup.children %}
-                        <li><a
-                          href="{% if childLink.filepath %}{{ childLink.filepath }}{% else %}{{ linkGroup.filename }}#{{ childLink.hash }}{% endif %}"
-                            >{{ childLink.label }}</a>
-                        {% if props.showall %}
-                            {% if childLink.keywords.length gt 0 %}
-                                <span style="margin-left: 10px; color: #aaa">(<em>Topics: {{ childLink.keywords|join:', ' }}</em>)</span>
-                            {% endif %}
-                        {% endif %}
-                        </li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
-            {% endif %}
-        </li>
+<Style>
+    em { color: darkgreen; }
+    * { text-decoration: underline; }
+</Style>
+
+<testsuite>
+    <test name="Initially renders">
+        <template>
+            Components can use any number of <strong>CParts</strong>.
+            Here we use only <em>Style</em> and <em>Template</em>.
+        </template>
+    </test>
+</testsuite>
+
+</component>
+
+
+
+
+<component name="ToDo">
+<Template>
+<ol>
+    {% for item in state.list %}
+        <li>{{ item }}</li>
     {% endfor %}
-
-
-    <!--
     <li>
-        Other resources:
-
-        <ul>
-            <li>
-                <a href="/docs/faq.html">FAQ</a>
-            <li title="Work in progress: Finalizing source code and methodically annotating entire file with extensive comments.">
-                Literate Source*<br /><em>* Coming soon!</em>
-            </li>
-        </ul>
-
+        <input [state.bind] name="text" />
+        <button @click:=script.addItem>Add</button>
     </li>
-    -->
-    <!--<a href="/literate/src/Modulo.html">Literate source</a>-->
-</ul>
-</template>
+</ol>
+</Template>
 
-<state
-  menu
-></state>
+<State
+    list:='["Milk", "Bread", "Candy"]'
+    text="Beer"
+></State>
 
-<script>
-    function _child(label, hash, keywords=[], filepath=null) {
-        if (!hash) {
-            hash = label.toLowerCase()
-        }
-        if (hash.endsWith('.html') && filepath === null) {
-            filepath = hash;
-        }
-        return {label, hash, keywords, filepath};
+<Script>
+    function addItem() {
+        state.list.push(state.text); // add to list
+        state.text = ""; // clear input
     }
-    let componentTexts;
-    try {
-        //console.log('this is', Object.keys(Modulo.factoryInstances));
-        //console.log('this is', Modulo.factoryInstances);
-        componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
-    } catch {
-        console.log('couldnt get componentTexts');
-        componentTexts = {};
+</Script>
+
+<testsuite
+    src="./examplelib-tests/ToDo-tests.html"
+></testsuite>
+
+</component>
+
+<!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
+
+
+<component name="JSON">
+<!-- Use StaticData CPart to include JSON from an API or file -->
+<Template>
+    <strong>Name:</strong> {{ staticdata.name }} <br />
+    <strong>Site:</strong> {{ staticdata.homepage }} <br />
+    <strong>Tags:</strong> {{ staticdata.topics|join }}
+</Template>
+<StaticData
+    src="https://api.github.com/repos/michaelpb/modulo"
+></StaticData>
+</component>
+
+
+
+
+<component name="JSONArray">
+<!-- Use StaticData CPart to include JSON from an API or file.
+You can use it for arrays as well. Note that it is "bundled"
+as static data in with JS, so it does not refresh. -->
+<Template>
+  {% for post in staticdata %}
+    <p>{% if post.completed %}&starf;{% else %}&star;{% endif %}
+        {{ post.title|truncate:15 }}</p>
+  {% endfor %}
+</Template>
+<StaticData
+  src="https://jsonplaceholder.typicode.com/todos"
+></StaticData>
+</component>
+
+<component name="API">
+<Template>
+<p>{{ state.name }} | {{ state.location }}</p>
+<p>{{ state.bio }}</p>
+<a href="https://github.com/{{ state.search }}/" target="_blank">
+    {% if state.search %}github.com/{{ state.search }}/{% endif %}
+</a>
+<input [state.bind] name="search"
+    placeholder="Type GitHub username" />
+<button @click:=script.fetchGitHub>Get Info</button>
+</Template>
+
+<State
+    search=""
+    name=""
+    location=""
+    bio=""
+></State>
+
+<Script>
+    function fetchGitHub() {
+        fetch(`https://api.github.com/users/${state.search}`)
+            .then(response => response.json())
+            .then(githubCallback);
     }
-    script.exports.menu = [
-        {
-            label: 'Table of Contents',
-            filename: '/docs/',
-        },
-
-        {
-            label: 'Tutorial',
-            filename: '/docs/tutorial_part1.html',
-            children: [
-                _child('Part 1: Components, CParts, and Loading', '/docs/tutorial_part1.html', ['cdn', 'module-embed', 'components', 'cparts', 'template', 'style', 'html & css']),
-                _child('Part 2: Props, Templating, and Building', '/docs/tutorial_part2.html', ['props', 'template variables', 'template filters', 'modulo console command', 'build', 'hash']),
-                _child('Part 3: State, Directives, and Scripting', '/docs/tutorial_part3.html', ['state', 'directives', 'data props', 'state.bind', 'data types', 'events', 'basic scripting']),
-            ],
-        },
-
-        {
-            label: 'Templating',
-            filename: '/docs/templating.html',
-            children: [
-                _child('Templates', null, ['templating philosophy', 'templating overview']),
-                _child('Variables', null, ['variable syntax', 'variable sources', 'cparts as variables']),
-                _child('Filters', null, ['filter syntax', 'example filters']),
-                _child('Tags', null, ['template-tag syntax', 'example use of templatetags']),
-                _child('Comments', null, ['syntax', 'inline comments', 'block comments']),
-                _child('Escaping', null, ['escaping HTML', 'safe filter', 'XSS injection protection']),
-            ],
-        },
-
-        {
-            label: 'Template Reference',
-            filename: '/docs/templating-reference.html',
-            children: [
-                _child('Built-in Template Tags', 'templatetags', [
-                    'if', 'elif', 'else', 'endif', 'for', 'empty', 'endfor',
-                    'operators', 'in', 'not in', 'is', 'is not', 'lt', 'gt',
-                    'comparison', 'control-flow',
-                ]),
-                _child('Built-in Filters', 'filters', [
-                    'add', 'allow', 'capfirst', 'concat', 'default',
-                    'divisibleby', 'escapejs', 'first', 'join', 'json', 'last',
-                    'length', 'lower', 'number', 'pluralize', 'subtract',
-                    'truncate', 'renderas', 'reversed', 'upper',
-                ]),
-            ],
-        },
-
-        {
-            label: 'CParts',
-            filename: '/docs/cparts.html',
-            children: [
-                _child('Props', 'props', ['accessing props', 'defining props',
-                                    'setting props', 'using props']),
-                _child('Template', 'template', ['custom template', 'templating engine']),
-                _child('State', 'state', ['state definition', 'state data types',
-                                'json', 'state variables', 'state.bind directive']),
-                _child('StaticData', 'staticdata', ['loading API', 'loading json',
-                                'transform function', 'bundling data']),
-                _child('Script', 'script', ['javascript', 'events', 'computed properties',
-                                'static execution', 'custom lifecycle methods',
-                                    'script callback execution context', 'script exports']),
-                _child('Style', 'style', ['CSS', 'styling', ':host', 'shadowDOM']),
-                _child('Component', 'component', ['name', 'innerHTML', 'patches', 'reconciliation',
-                                    'rendering mode', 'manual rerender', 'shadow',
-                                    'vanish', 'vanish-into-document', 'component.event',
-                                    'component.slot', 'component.dataProp']),
-                //_child('Module'),
-            ],
-        },
-
-        {
-            label: 'Lifecycle',
-            filename: '/docs/lifecycle.html',
-            children: [
-                _child('Lifecycle phases', 'phases',
-                    ['lifestyle phases', 'lifestyle phase groups',
-                     'load', 'factory', 'prepare', 'initialized',
-                     'render', 'reconcile', 'update',
-                     'event', 'eventCleanup', 'hooking into lifecycle',
-                     'lifecycle callbacks', 'script tag callbacks']),
-                _child('Factory lifecycle', 'factory',
-                    ['renderObj', 'baseRenderObj', 'loadObj',
-                     'dependency injection', 'middleware']),
-                _child('renderObj', 'renderobj',
-                    ['renderObj', 'baseRenderObj', 'loadObj',
-                     'dependency injection', 'middleware']),
-            ],
-        },
-
-        {
-            label: 'Directives',
-            filename: '/docs/directives.html',
-            children: [
-                _child('Directives', 'directives',
-                    ['built-in directives', 'directive shortcuts',
-                     'custom directives']),
-                _child('Built-in directives', 'builtin', [
-                        '[component.dataProp]', ':=', 'prop:=', 'JSON primitive',
-                        'data-prop', 'assignment',
-                        '[component.event]', '@click', '@...:=',
-                        '[component.slot]', '[state.bind]',
-                    ]),
-                _child('Custom directives', 'custom', [
-                    'refs', 'accessing dom', 'escape hatch',
-                    'Mount callbacks', 'Unmount callbacks',
-                    'template variables vs directives',
-                    'script-tag custom directives',
-                    'custom shortcuts',
-                ]),
-            ],
-        },
-
-        /*
-        {
-            label: 'API & Extension',
-            filename: '/docs/api.html',
-            children: [
-                _child('Custom CParts', 'cparts'),
-                _child('CPart Spares', 'spares'),
-                _child('Custom Templating', 'template'),
-                _child('Custom Filters', 'customfilters'),
-                _child('Custom Template Tags', 'customtags'),
-                _child('Custom Template Syntax', 'customtags'),
-                _child('ModRec', 'modrec'),
-                _child('DOMCursor', 'cursor'),
-            ],
-        },
-        */
-
-        {
-            label: 'Example Library',
-            filename: '/docs/example-library.html',
-            children: Object.keys(componentTexts).map(name => _child(name)),
-        },
-
-        /*
-        {
-            label: 'Project Info',
-            filename: '/docs/project-info.html',
-            children: [
-                _child('FAQ', 'faq'),
-                _child('Framework Design Philosophy', 'philosophy'),
-            ],
-        },
-        */
-    ];
-
-    function initializedCallback() {
-        const { path, showall } = props;
-        state.menu = script.exports.menu.map(o => Object.assign({}, o)); // dupe
-        for (const groupObj of state.menu) {
-            if (showall) {
-                groupObj.active = true;
-            }
-            if (groupObj.filename && path && groupObj.filename.endsWith(path)) {
-                groupObj.active = true;
-            }
-        }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
     }
-</script>
+</Script>
 
-<style>
-  li {
-      margin-left: 20px;
-  }
-  /*
-  li.ginactive > ul::before,
-  li.gactive > ul::before {
-      content: ' - ';
-      background: var(--highlight-color);
-      color: white;
-      text-decoration: none;
-  }
-  */
-  li.ginactive > a::before {
-      content: '+ ';
-  }
-</style>
+<testsuite
+    src="./examplelib-tests/API-tests.html"
+></testsuite>
 
 </component>
 
 
 
-<component name="CodeExample">
-    <template>
-        <div class="split">
-            <div
-            style="height: {{ props.vsize|number|default:170|add:2 }}px;"
-            modulo-ignore>
-                <textarea [script.codemirror]>
-                </textarea>
-            </div>
 
-            <div>
-                <div class="toolbar">
-                    <h2>Preview</h2>
-                    <button @click:=script.run>Run &#10227;</button>
-                </div>
-                <div [script.previewspot] class="preview-wrapper">
-                    <div modulo-ignore></div>
-                </div>
-                {% if props.showtag %}
-                    {% if props.preview %}
-                        <div class="toolbar">
-                            <h2>Tag</h2>
-                            <code>{{ props.preview }}</code>
-                        </div>
-                    {% endif %}
-                {% endif %}
-            </div>
+
+<component name="SearchBox">
+<!-- A "type as you go" search box implementation,
+an example of more complicated HTML and JS behavior -->
+<Template>
+<p>Type a book name for "search as you type"
+(e.g. try &ldquo;the lord of the rings&rdquo;)</p>
+
+<input [state.bind] name="search"
+  @keyup:=script.typingCallback />
+
+<div class="results {% if state.search.length gt 0 %}
+                      visible {% endif %}">
+  <div class="results-container">
+    {% if state.loading %}
+      <img src="{{ staticdata.gif }}" alt="loading" />
+    {% else %}
+      {% for result in state.results %}
+        <div class="result">
+          <img
+            src="{{ staticdata.cover|add:result.cover_i }}-S.jpg"
+          /> <label>{{ result.title }}</label>
         </div>
-    </template>
+      {% empty %}
+        <p>No books found.</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+</Template>
 
-    <style>
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-        }
-        .toolbar > button {
-            border: 2px solid black;
-            border-top-width: 1px;
-            border-bottom-width: 3px;
-            border-radius: 3px;
-            background: white;
-            font-weight: lighter;
-            text-transform: uppercase;
-        }
-        .toolbar > button:active {
-            border-top-width: 3px;
-            border-bottom-width: 1px;
-        }
-        .toolbar > button:hover {
-            box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */
-        }
-        .split > div:last-child {
-            padding: 5px;
-            background: whiteSmoke;
-        }
-        .split > div:first-child{
-            border: 1px solid black;
-            /*overflow-y: scroll;*/
-        }
+<State
+    search=""
+    results:=[]
+    loading:=false
+></State>
 
-        .preview-wrapper {
-            margin-top: 4px;
-            padding: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
-            border: 1px solid black;
+<!-- Puting long URLs down here to declutter -->
+<StaticData>
+{
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+}
+</StaticData>
+
+<Script>
+    function typingCallback() {
+        state.loading = true;
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${staticdata.apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
         }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+</Script>
 
-        .split > div > textarea {
-            width: 100%;
-            min-height: 10px;
-        }
-        .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-        }
-        @media (max-width: 992px) {
-            .split { display: block; }
-        }
-    </style>
+<Style>
+    input {
+        width: 100%;
+    }
+    .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .results-container > img { margin-top 30px; }
+    .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid #B90183;
+        border-radius: 0 0 20px 20px;
+        transition: height 0.2s;
+        z-index: 20;
+        background: white;
+    }
+    .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+    .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+    .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</Style>
 
-    <props
-        text
-        extraprops
-        vsize
-        textsrc
-        cname
-    ></props>
+<testsuite
+    src="./examplelib-tests/SearchBox-tests.html"
+></testsuite>
 
-    <state 
-        nscounter:=1
-        preview=''
-    ></state>
-    <script>
-        let egTexts = null;
-        try {
-            if ('eg-eg' in Modulo.factoryInstances) {
-                egTexts = Modulo.factoryInstances['eg-eg']
-                    .baseRenderObj.script.exports.componentTexts;
-            }
-        } catch {
-            console.log('couldnt get egTexts');
-        }
-
-        let exCounter = 0; // global variable
-        //console.log('gettin script tagged');
-        /* Configure loader: */
-        function initializedCallback() {
-            //console.log('hey i am getting initialized wow');
-            //console.log('initialized callback', element.innerHTML);
-            if (Modulo.isBackend) {
-                let html;
-                if (egTexts && props.cname) {
-                    Modulo.assert(props.cname in egTexts, `${props.cname} not found`);
-                    html = egTexts[props.cname];
-                } else {
-                    html = (element.innerHTML || '').trim();
-                    html = html.replace(/([\w\[\]\._-]+):="(\w+)"/, '$1:=$2'); // clean up due to DOM
-                }
-
-                if (props.textsrc) {
-                    const html = Modulo.require('fs')
-                        .readFileSync('./docs-src/' + props.textsrc, 'utf8');
-                    element.setAttribute('text', html);
-                } else if (html && !element.getAttribute('text')) {
-                    element.setAttribute('text', html);
-                }
-            }
-        }
-
-        function previewspotMount({el}) {
-            element.previewSpot = el.firstElementChild;
-            run(); // mount after first render
-        }
-
-        function codemirrorMount({el}) {
-            if (Modulo.globals.CodeMirror) {
-                //console.log('this is props', props);
-                // TODO: Debug this, should not use textarea, should not need
-                // extra refreshes or anything
-                const cm = CodeMirror.fromTextArea(el, {
-                    lineNumbers: true,
-                    mode: 'django',
-                    theme: 'eclipse',
-                    indentUnit: 4,
-                });
-                element.codeMirrorEditor = cm;
-                window.cm = cm;
-
-                const height = props.vsize ? Number(props.vsize) : 170;
-                cm.setValue('');
-                cm.setSize(null, height);
-                cm.refresh();
-
-                let text = props.text.trim();
-                text = text.replace(/&#39;/g, "'"); // correct double escape
-                cm.setValue(text);
-                setTimeout(() => {
-                    cm.setValue(text);
-                    cm.setSize(null, height);
-                    cm.refresh();
-                }, 1);
-                el.setAttribute('modulo-ignore', 'y');
-            } else {
-                //console.log('Code mirror not found'); // probably SSG
-            }
-        }
-
-        function run() {
-            if (!Modulo.globals.CodeMirror) {
-                return;
-            }
-            exCounter++;
-            //console.log('There are ', exCounter, ' examples on this page. Gee!')
-            const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
-            state.nscounter++;
-            const loadOpts = {src: '', namespace};
-            const loader = new Modulo.Loader(null, {options: loadOpts});
-            const tagName = 'Example';
-            let text = element.codeMirrorEditor.getValue();
-            text = `<template mod-component="${tagName}">${text}</template>`;
-            //console.log('Creating component from text:', text)
-            loader.loadString(text);
-            const tag = `${namespace}-${tagName}`;
-            let extraPropsStr = '';
-            /*
-            const extraProps =  props.extraprops ? JSON.parse(props.extraprops) : {};
-            for (const [key, value] of Object.entries(extraProps)) {
-                const escValue = value.replace(/"/g, , '&quot;');
-                extraPropsStr += ` ${key}="${escValue}"`;
-            }
-            */
-
-            const preview = `<${tag}${extraPropsStr}></${tag}>`;
-            element.previewSpot.innerHTML = preview;
-            //state.preview = preview;
-            //document.querySelector('#previewSpot').innerHTML = preview;
-            //console.log('adding preview', preview);
-        }
-    </script>
 </component>
 
+
+
+
+
+
+<component name="Components">
+<!-- Once defined, Modulo web components can be used like HTML.
+DemoModal and DemoChart are already defined. Try using below! -->
+<Template>
+
+<x-DemoChart
+    data:='[1, 2, 3, 5, 8]'
+></x-DemoChart>
+
+<x-DemoModal button="Nicholas Cage" title="Biography">
+    <p>Prolific Hollywood actor</p>
+    <img src="https://www.placecage.com/640/360" />
+</x-DemoModal>
+
+<x-DemoModal button="Tommy Wiseau" title="Further Data">
+    <p>Actor, director, and acclaimed fashion designer</p>
+    <x-DemoChart data:='[50, 13, 94]' ></x-DemoChart>
+</x-DemoModal>
+
+</Template>
+
+</component>
+
+
+
+
+
+
+<component name="PrimeSieve">
+<!-- Demos mouseover, template filters, template control flow,
+     and static script exports -->
+<Template>
+  <div class="grid">
+    {% for i in script.exports.range %}
+      <div @mouseover:=script.setNum
+        class="
+            {# If-statements to check divisibility in template: #}
+            {% if state.number == i %}number{% endif %}
+            {% if state.number lt i %}hidden{% else %}
+              {% if state.number|divisibleby:i %}whole{% endif %}
+            {% endif %}
+        ">{{ i }}</div>
+    {% endfor %}
+  </div>
+</Template>
+
+<State
+    number:=64
+></State>
+
+<Script>
+    // Getting big a range of numbers in JS. Use "script.exports"
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 63}, (x, i) => i + 2);
+    function setNum(payload, ev) {
+        state.number = Number(ev.target.textContent);
+    }
+</Script>
+
+<Style>
+.grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    color: #ccc;
+    font-weight: bold;
+    width: 100%;
+    margin: -5px;
+}
+.grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+div.whole {
+    color: white;
+    background: #B90183;
+}
+div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+div.number { background: green; }
+div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+   If found, then hide asterisk and green */
+div.whole ~ div.number { background: #B90183; }
+div.whole ~ div.number::after { opacity: 0; }
+</Style>
+
+<testsuite
+    src="./examplelib-tests/PrimeSieve-tests.html"
+></testsuite>
+
+</component>
+
+
+
+
+
+<component name="MemoryGame">
+<!-- A much more complicated example application -->
+<Template>
+{% if not state.cards.length %}
+    <h3>The Symbolic Memory Game</h3>
+    <p>Choose your difficulty:</p>
+    <button @click:=script.setup click.payload=8>2x4</button>
+    <button @click:=script.setup click.payload=16>4x4</button>
+    <button @click:=script.setup click.payload=36>6x6</button>
+{% else %}
+    <div class="board
+        {% if state.cards.length > 16 %}hard{% endif %}">
+    {# Loop through each card in the "deck" (state.cards) #}
+    {% for card in state.cards %}
+        {# Use "key=" to speed up DOM reconciler #}
+        <div key="c{{ card.id }}"
+            class="card
+            {% if card.id in state.revealed %}
+                flipped
+            {% endif %}
+            "
+            style="
+            {% if state.win %}
+                animation: flipping 0.5s infinite alternate;
+                animation-delay: {{ card.id }}.{{ card.id }}s;
+            {% endif %}
+            "
+            @click:=script.flip
+            click.payload="{{ card.id }}">
+            {% if card.id in state.revealed %}
+                {{ card.symbol }}
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+    <p style="{% if state.failedflip %}
+                color: red{% endif %}">
+        {{ state.message }}</p>
+{% endif %}
+</Template>
+
+<State
+    message="Good luck!"
+    win:=false
+    cards:=[]
+    revealed:=[]
+    lastflipped:=null
+    failedflip:=null
+></State>
+
+<Script>
+const symbolsStr = "%!@#=?&+~÷≠∑µ‰∂Δƒσ"; // 16 options
+function setup(payload) {
+    const count = Number(payload);
+    let symbols = symbolsStr.substr(0, count/2).split("");
+    symbols = symbols.concat(symbols); // duplicate cards
+    let id = 0;
+    while (id < count) {
+        const index = Math.floor(Math.random()
+                                    * symbols.length);
+        const symbol = symbols.splice(index, 1)[0];
+        state.cards.push({symbol, id});
+        id++;
+    }
+}
+
+function failedFlipCallback() {
+    // Remove both from revealed array & set to null
+    state.revealed = state.revealed.filter(
+            id => id !== state.failedflip
+                    && id !== state.lastflipped);
+    state.failedflip = null;
+    state.lastflipped = null;
+    state.message = "";
+    element.rerender();
+}
+
+function flip(id) {
+    if (state.failedflip !== null) {
+        return;
+    }
+    id = Number(id);
+    if (state.revealed.includes(id)) {
+        return; // double click
+    } else if (state.lastflipped === null) {
+        state.lastflipped = id;
+        state.revealed.push(id);
+    } else {
+        state.revealed.push(id);
+        const {symbol} = state.cards[id];
+        const lastCard = state.cards[state.lastflipped];
+        if (symbol === lastCard.symbol) {
+            // Successful match! Check for win.
+            const {revealed, cards} = state;
+            if (revealed.length === cards.length) {
+                state.message = "You win!";
+                state.win = true;
+            } else {
+                state.message = "Nice match!";
+            }
+            state.lastflipped = null;
+        } else {
+            state.message = "No match.";
+            state.failedflip = id;
+            setTimeout(failedFlipCallback, 1000);
+        }
+    }
+}
+</Script>
+
+<Style>
+h3 {
+    background: #B90183;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+.board {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2px;
+    width: 100%;
+    height: 150px;
+    width: 150px;
+}
+.board.hard {
+    grid-gap: 1px;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+.board > .card {
+    background: #B90183;
+    border: 2px solid black;
+    border-radius: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-height: 15px;
+    transition: background 0.3s, transform 0.3s;
+    transform: scaleX(-1);
+    padding-top: 2px;
+    color: #B90183;
+}
+.board.hard > .card {
+    border: none !important;
+    padding: 0;
+}
+.board > .card.flipped {
+    background: #FFFFFF;
+    border: 2px solid #B90183;
+    transform: scaleX(1);
+}
+
+@keyframes flipping {
+    from { transform: scaleX(-1.1); background: #B90183; }
+    to {   transform: scaleX(1.0);  background: #FFFFFF; }
+}
+</Style>
+
+<testsuite
+    src="./examplelib-tests/MemoryGame-tests.html"
+></testsuite>
+
+</component>
+
+
+
+
+<component name="ConwayGameOfLife">
+<Template>
+  <div class="grid">
+    {% for i in script.exports.range %}
+        {% for j in script.exports.range %}
+          <div
+            @click:=script.toggle
+            payload:='[ {{ i }}, {{ j }} ]'
+            {% if state.cells|get:i %}
+                {% if state.cells|get:i|get:j %}
+                    style="background: #B90183;"
+                {% endif %}
+            {% endif %}
+           ></div>
+        {% endfor %}
+    {% endfor %}
+  </div>
+  <div class="controls">
+    {% if not state.playing %}
+        <button @click:=script.play alt="Play">&#x25B6;</button>
+    {% else %}
+        <button @click:=script.pause alt="Pause">&#x2016;</button>
+    {% endif %}
+
+    <button @click:=script.randomize alt="Randomize">RND</button>
+    <button @click:=script.clear alt="Randomize">CLR</button>
+    <label>Spd: <input [state.bind]
+        name="speed"
+        type="number" min="1" max="10" step="1" /></label>
+  </div>
+</Template>
+
+<State
+    playing:=false
+    speed:=3
+    cells:='{
+        "12": { "10": true, "11": true, "12": true },
+        "11": { "12": true },
+        "10": { "11": true }
+    }'
+></State>
+
+<Script>
+    function toggle([ i, j ]) {
+        if (!state.cells[i]) {
+            state.cells[i] = {};
+        }
+        state.cells[i][j] = !state.cells[i][j];
+    }
+
+    function play() {
+        state.playing = true;
+        setTimeout(() => {
+            if (state.playing) {
+                updateNextFrame();
+                element.rerender(); // manually rerender
+                play(); // cue next frame
+            }
+        }, 2000 / state.speed);
+    }
+
+    function pause() {
+        state.playing = false;
+    }
+
+    function clear() {
+        state.cells = {};
+    }
+
+    function randomize() {
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!state.cells[i]) {
+                    state.cells[i] = {};
+                }
+                state.cells[i][j] = (Math.random() > 0.5);
+            }
+        }
+    }
+
+    // Helper function for getting a cell from data
+    const get = (i, j) => Boolean(state.cells[i] && state.cells[i][j]);
+    function updateNextFrame() {
+        const nextData = {};
+        for (const i of script.exports.range) {
+            for (const j of script.exports.range) {
+                if (!nextData[i]) {
+                    nextData[i] = {};
+                }
+                const count = countNeighbors(i, j);
+                nextData[i][j] = get(i, j) ?
+                    (count === 2 || count === 3) : // stays alive
+                    (count === 3); // comes alive
+            }
+        }
+        state.cells = nextData;
+    }
+
+    function countNeighbors(i, j) {
+        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),
+                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),
+                get(i + 1, j - 1), get(i - 1, j + 1)];
+        return neighbors.filter(v => v).length;
+    }
+    script.exports.range = Array.from({length: 24}, (x, i) => i);
+</Script>
+
+<Style>
+    :host {
+        display: flex;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(24, 5px);
+        margin: -2px;
+        grid-gap: 1px;
+    }
+    .grid > div {
+        background: white;
+        width: 5px;
+        height: 5px;
+    }
+    input, button {
+        width: 40px;
+    }
+</Style>
+
+</component>
 
