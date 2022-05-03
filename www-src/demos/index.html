@@ -1,0 +1,54 @@
+<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<!-- ... -->
+<script src="/js/Modulo.js"></script>
+<Modulo>
+    <Library namespace="x" src="/components/layouts.html"> </Library>
+</Modulo>
+
+<script> Modulo.defineAll() </script>
+
+<x-Page
+    docbarselected="/demos/"
+    pagetitle="Examples"
+    navbar="docs">
+
+<h1>Examples</h1>
+
+<p>This page has a collection of larger demos and library of mini-examples.</p>
+
+<p><strong>Note:</strong> Unlike every other page at modulojs.org, this page is
+NOT pre-rendered! That means you can use "View Source" (Right click, or Ctrl+U)
+to see how Modulo's own website was built.</p>
+
+
+<mws-Section name="demos">
+    Demos
+</mws-Section>
+
+<p>This is a collection of full-page Demo Apps. The current selection show more
+advanced capabilities.</p>
+
+<ul class="DemoPanels">
+    <li>
+        <a href="/demos/fetchstate_book_browser.html">FetchState API</a>
+        <p>Demonstration of an API-backed, paginated book search app,
+        <em>without</em> use of any JavaScript, beyond using the custom CPart
+        <em>FetchState</em>.</p>
+    </li>
+    <li>
+        <a href="/demos/jsx_template.html">JSX Templating</a>
+        <p>Demonstration of integrating Babel JS and replacing Template CPart
+        with custom CPart to enable React-style JSX-syntax in Modulo.</p>
+    </li>
+</ul>
+
+<mws-Section name="example-library">
+    Example Library
+</mws-Section>
+
+<mws-AllExamples></mws-AllExamples>
+
+</x-Page>
+

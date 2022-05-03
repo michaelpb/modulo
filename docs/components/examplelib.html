@@ -127,9 +127,21 @@
 <component name="JSON">
 <!-- Use StaticData CPart to include JSON from an API or file -->
 <Template>
+    {% for post in staticdata %}
+        <p><strong>{{ post.title }}</strong> - {{ post.body|truncate }}</p>
+    {% endfor %}
+</Template>
+<StaticData
+    src="https://jsonplaceholder.typicode.com/posts"
+></StaticData>
+</component>
+
+
+<component name="StaticAPIUsage">
+<!-- Use StaticData CPart to include JSON from an API or file -->
+<Template>
     {{ staticdata.language }}:<br>
     <a href="{{ staticdata.html_url }}">{{ staticdata.name }}</a>
-    ({{ staticdata.stargazers_count }} &starf;)
 </Template>
 <StaticData
     src="https://api.github.com/repos/michaelpb/modulo"

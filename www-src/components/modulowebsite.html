@@ -308,9 +308,14 @@
         */
 
         {
-            label: 'Example Library',
-            filename: '/docs/example-library.html',
-            children: Object.keys(componentTexts).map(name => _child(name)),
+            label: 'Examples',
+            filename: '/demos/',
+            children: [
+                _child('Demos', 'demos', [ 'custom cparts',
+                    'FetchState cpart', 'jsx templating', 'babel.js', 'transpiling',
+                    'cparts for apis' ]),
+                _child('Example Library', 'library', Object.keys(componentTexts)),
+            ],
         },
 
         /*
@@ -563,4 +568,154 @@
     </script>
 </component>
 
+
+
+<Component name="AllExamples">
+    <Template>
+        {% for example in state.examples %}
+            {% if example.name == state.selected %}
+                <div class="Example expanded">
+                    <button class="tool-button" alt="Edit" title="Hide source code & editor"
+                        @click:=script.toggleExample payload="{{ example.name }}">
+                        {{ example.name }}
+                        &times;
+                    </button>
+                    <mws-Demo
+                        demotype="minipreview"
+                        fromlibrary='{{ example.name }}'
+                    ></mws-Demo>
+                </div>
+            {% else %}
+                <div class="Example">
+                    <button class="tool-button" alt="Edit" title="See source code & edit example"
+                        @click:=script.toggleExample payload="{{ example.name }}">
+                        {{ example.name }}
+                        ✎
+                       <!--Source-->
+                    </button>
+                    <div class="Example-wrapper">
+                        <eg-{{ example.name }}></eg-{{ example.name }}>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </Template>
+
+    <!--
+    <mws-Section name="{{ example.name|lower }}">
+        {{ example.name }}
+    </mws-Section>
+    <mws-Demo
+        demotype="minipreview"
+        fromlibrary='{{ example.name }}'
+    ></mws-Demo>
+    -->
+    <State
+        selected=""
+        examples:=[]
+    ></State>
+
+    <Script>
+        function toggleExample(payload) {
+            if (state.selected === payload) {
+                state.selected = '';
+            } else {
+                state.selected = payload;
+            }
+        }
+        function initializedCallback() {
+            // TODO: make sure initialized only get called once
+            // TODO: Encapsolate this into a dependency pattern, if proves
+            // useful
+            Modulo.fetchQ.enqueue('/components/examplelib.html', (text) => {
+                //Modulo.fetchQ.wait(() => _setup(text)); // not sure why -v is needed
+                Modulo.fetchQ.wait(() => setTimeout(() => _setup(text), 0));
+            });
+        }
+        function _setup(text) {
+            let componentTexts;
+            try {
+                componentTexts = Modulo.factoryInstances['eg-eg']
+                        .baseRenderObj.script.exports.componentTexts;
+            } catch {
+                console.log('couldnt get componentTexts (2)', Modulo.factoryInstances);
+                componentTexts = null;
+            }
+            if (!componentTexts) {
+                return;
+            }
+
+            state.examples = [];
+            for (const [name, content] of Object.entries(componentTexts)) {
+                state.examples.push({ name, content });
+            }
+            element.rerender();
+        }
+    </Script>
+
+    <Style>
+        :host {
+            --colcount: 5;
+            display: grid;
+            grid-template-columns: repeat(var(--colcount), 1fr);
+        }
+        :host > .Example {
+            border: 1px solid black;
+            border-radius: 2px;
+            padding: 10px;
+            margin: 10px;
+            min-height: 200px;
+            background: #ddd;
+            position: relative;
+            margin-top: 50px;
+        }
+        .Example-wrapper {
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        :host > .Example.expanded {
+            background: transparent;
+            grid-column: 1 / span var(--colcount);
+        }
+
+        :host > .Example .tool-button {
+            position: absolute;
+            top: -30px;
+            height: 30px;
+            right: 0px;
+            min-width: 80px;
+            border-radius: 10px 10px 0 0;
+            /*border-bottom: none;*/
+            background: #ddd;
+        }
+        :host > .Example .tool-button:hover {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1550px) {
+            :host {
+                --colcount: 4;
+            }
+        }
+        @media (max-width: 1250px) {
+            :host {
+                --colcount: 3;
+            }
+        }
+
+        @media (max-width: 1160px) {
+            :host {
+                --colcount: 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :host {
+                --colcount: 1;
+            }
+        }
+    </Style>
+</Component>
 

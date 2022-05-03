@@ -127,15 +127,32 @@
 <component name="JSON">
 <!-- Use StaticData CPart to include JSON from an API or file -->
 <Template>
-    {{ staticdata.language }}:<br>
-    <a href="{{ staticdata.html_url }}">{{ staticdata.name }}</a>
-    ({{ staticdata.stargazers_count }} &starf;)
+    <h3>{{ staticdata.name }}</h3>
+    Languages: {{ staticdata.language }} <br />
+    Topics: {{ staticdata.topics|join }}
 </Template>
 <StaticData
     src="https://api.github.com/repos/michaelpb/modulo"
 ></StaticData>
 </component>
 
+
+
+
+<component name="JSONArray">
+<!-- Use StaticData CPart to include JSON from an API or file.
+You can use it for arrays as well. Note that it is "bundled"
+as static data in with JS, so it does not refresh. -->
+<Template>
+  {% for post in staticdata %}
+    <p>{% if post.completed %}&starf;{% else %}&star;{% endif %}
+        {{ post.title|truncate:15 }}</p>
+  {% endfor %}
+</Template>
+<StaticData
+  src="https://jsonplaceholder.typicode.com/todos"
+></StaticData>
+</component>
 
 <component name="API">
 <Template>
@@ -255,7 +272,9 @@ an example of more complicated HTML and JS behavior -->
 </Script>
 
 <Style>
-    input { width: 120px; }
+    input {
+        width: 100%;
+    }
     .results-container {
         display: flex;
         flex-wrap: wrap;
@@ -268,7 +287,7 @@ an example of more complicated HTML and JS behavior -->
         width: 0;
         overflow: hidden;
         display: block;
-        border: 2px solid coral;
+        border: 2px solid #B90183;
         border-radius: 0 0 20px 20px;
         transition: height 0.2s;
         z-index: 20;

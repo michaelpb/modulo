@@ -1,6 +1,7 @@
 {
     "preload": ["www-src/components/layouts.html"],
     "testLog": true,
+    "isCopyOnly": "^(components|libraries|demos)$",
     "domEngine": "jsdom",
     "testLogPath": "modulo.testlog.json",
     "output": "docs",

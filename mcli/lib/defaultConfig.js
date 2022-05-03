@@ -213,6 +213,7 @@ const defaultConfig = {
     /*
     // TODO:
     tests: '(^tests$|*.test.html$)',
+    isCopyOnly: '^(libraries|static)$',
     */
 };
 
