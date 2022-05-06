@@ -1,7 +1,8 @@
 <!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<link rel="stylesheet" href="https://modulojs.org/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="https://modulojs.org/js/codemirror_5.63.0/codemirror_bundled.js"></script>
 <!-- ... -->
+<!--<script src="https://modulojs.org/js/Modulo.js"></script>-->
 <script src="/js/Modulo.js"></script>
 <Modulo>
     <Library namespace="x" src="/components/layouts.html"> </Library>
@@ -23,13 +24,79 @@ NOT pre-rendered! That means you can use "View Source" (Right click, or Ctrl+U)
 to see how Modulo's own website was built.</p>
 
 
+<mws-Section name="library">
+    Example Library
+</mws-Section>
+
+<mws-AllExamples></mws-AllExamples>
+
+
 <mws-Section name="demos">
     Demos
 </mws-Section>
 
-<p>This is a collection of full-page Demo Apps. The current selection show more
-advanced capabilities.</p>
+<section class="Tutorial-tryit">
+    <h4>How to "fork" a Modulo.js demo</h4>
+    <p>The tiles below link to a collection of full-page demonstration apps.
+    These are intended as a reference of copy &amp; paste recipes so you can
+    get started even quicker with building Modulo apps.</p>
+    <p>Every demo can be "forked" (copied) by clicking the "COPY SOURCE" button
+    in the top-right. Then, it can be pasted into a local HTML file in your
+    text editor. The demos have been designed so they should "just work" if
+    pasted in any HTML code.</p>
+</section>
 
+<h2>Snippet and page starter files</h2>
+<p>Use one of these demo pages to get a head-start with your own Modulo
+project.</p>
+
+<ul class="DemoPanels">
+    <li>
+        <a href="/demos/basic_starter.html">Basic Snippet</a>
+        <p>This snippet has a single component defined with examples of common
+        CParts and template syntax.</p>
+    </li>
+
+    <li>
+        <a href="/demos/components_starter.html">Components Snippet</a>
+        <p>This starting snippet defines a small collection of example
+        components, demonstrating how to build a site or app.</p>
+    </li>
+    <!--
+    <li>
+        <a href="/demos/basic_page.html">Basic Page</a>
+        <p> This demo includes the page boilerplate (e.g. <tt>head</tt>) for a
+        fully valid HTML file.</p>
+    </li>
+
+    <li>
+        <a href="/demos/bootstrap_page.html">Bootstrap Page</a>
+        <p>Similar to the starter page, but with Bootstrap 5 CDN already
+        included.</p>
+    </li>
+    -->
+</ul>
+
+<!--
+
+<h2>SPA: Modulo-based layouts</h2>
+
+<p>Thinking Modulo will be taking a "center-stage" in your project, and
+handling layout as well? These demos show how you can define Layout elements to
+omit HTML boilerplate in your Modulo-powered valid HTML file.</p>
+
+<ul class="DemoPanels">
+    <li>
+        <a href="/demos/basic_page.html">SPA Page Layout</a>
+        <p>A simple start page, with a single component defined to get you
+        going.</p>
+    </li>
+</ul>
+-->
+
+<h2>MDU demos</h2>
+
+<p>These demos show off a few MDU CParts, which are still in development.</p>
 <ul class="DemoPanels">
     <li>
         <a href="/demos/fetchstate_book_browser.html">FetchState API</a>
@@ -44,11 +111,6 @@ advanced capabilities.</p>
     </li>
 </ul>
 
-<mws-Section name="library">
-    Example Library
-</mws-Section>
-
-<mws-AllExamples></mws-AllExamples>
 
 </x-Page>
 

@@ -24,8 +24,24 @@
 
 # Low priority
 
+- Simple API for component rerender: mark isDirty on any lifecycle, and will
+  always rerender
 - Fix Reconciler1 tests so they run on other Node versions (they rely on an
   older "[object Object]" style toString that is inconsistent)
+
+
+-----------------------------
+
+## Modulo Config simplification / ordering idea (22-05)
+
+- Maybe a "config" lifecycle, that comes after load, when all CParts have done
+  initial registration?
+- Could be for CParts that depend on seeing other CParts, e.g. that way Script
+  can include all CParts regardless of order
+- This could then DISCARD, by default, the loadObject, or something, meaning
+  the loadObject IS the config? So something like loadObj.template.filters...
+- Modulo.register could do this as well? E.g. Modulo.register(loadObj, 'template.filters', {...)
+
 
 -----------------------------
 

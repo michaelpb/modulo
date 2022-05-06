@@ -232,6 +232,18 @@ class ModuloNode {
     fetchFile(src, opts) {
         // Similar interface to window.fetch, except using fs.readFile
 
+        ///////////////////////////////////////////////////////////////////
+        if (src.startsWith('http')) { // 2022-05 hack to get tests running
+            console.log("(Legacy) Modulo JSDOM ERROR, cannot resolve absolute URL: src=", src);
+            return new Promise((resolve, reject) => {
+                const data = '{}';
+                const text = () => new Promise(r => r(data));
+                const json = () => new Promise(r => r(JSON.parse(data)))
+                resolve({ text, json });
+            });
+        }
+        ///////////////////////////////////////////////////////////////////
+
         // TODO: This "prefix" stuff is a complete mess and has many bugs (e.g.
         // can't have nested dirs with same name as prefix!) and needs to be
         // rewritten so that there is simple, predictable, and similar behavior

@@ -209,6 +209,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.loader = loader;
         this.config = this.loader.config;
         this.name = name;
+        this.id = 1;
         this.fullName = `${this.loader.namespace}-${name}`;
 
         this.isModule = this.loader.namespace === name; // if name = namespace
@@ -443,6 +444,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
         ];
+        opts.uniqueId = ++factory.id;
     }
 
     headTagLoad({ el }) {
@@ -596,6 +598,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             el.moduloEvents = {};
         }
         const listen = ev => {
+            ev.preventDefault();
             const payload = get(attrName + '.payload', 'payload');
             const currentFunction = resolveDataProp(attrName, el);
             this.handleEvent(currentFunction, payload, ev);
@@ -888,13 +891,13 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         if (!this.data) {
             // Initialize with deep copy of attributes
-            // TODO: Need to do proper deep-copy... is this okay?
-            // this.data = JSON.parse(JSON.stringify(this.attrs));
             let { attrs } = this;
             if (attrs.attrs) { // TODO: Hack code here, not sure why its like this
                 attrs = attrs.attrs;
             }
             this.data = Object.assign({}, attrs);
+            // TODO: Need to do proper deep-copy... is this okay?
+            this.data = JSON.parse(JSON.stringify(this.data));
         }
 
         this.boundElements = {}; // initialize
@@ -912,7 +915,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             // TODO: redo
             let { value, type, checked, tagName } = el;
             if (type && type === 'checkbox') {
-                value === !!checked;
+                value = !!checked;
             }
             this.set(name, value);
         };
@@ -1168,6 +1171,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         pluralize: (s, arg) => (arg.split(',')[(s === 1) * 1]) || '',
         subtract: (s, arg) => s - arg,
         truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
+        type: s => s === null ? 'null' : (Array.isArray(s) ? 'array' : typeof s),
         renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
         reversed: s => Array.from(s).reverse(),
         upper: s => s.toUpperCase(),
