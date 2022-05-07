@@ -40,7 +40,9 @@
   can include all CParts regardless of order
 - This could then DISCARD, by default, the loadObject, or something, meaning
   the loadObject IS the config? So something like loadObj.template.filters...
-- Modulo.register could do this as well? E.g. Modulo.register(loadObj, 'template.filters', {...)
+    - And then, the config
+- Modulo.register could do this as well? E.g.
+    - `Modulo.register(loadObj, 'template.filters', {...)`
 
 
 -----------------------------

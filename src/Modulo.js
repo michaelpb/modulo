@@ -593,7 +593,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const { resolveDataProp } = Modulo.utils;
         const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
         const func = get(attrName);
-        Modulo.assert(func, `Bad @${attrName} event: ${value} is falsy`);
+        Modulo.assert(func, `No function found for ${rawName} ${value}`);
         if (!el.moduloEvents) {
             el.moduloEvents = {};
         }
@@ -983,6 +983,9 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
         this.compiledCode = this.compile(text);
+        const unclosed = this.stack.map(({ close }) => close).join(', ');
+        Modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`);
+
         if (!this.renderFunc) {
             this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
         }
@@ -1723,8 +1726,7 @@ Modulo.utils = class utils {
     static parseDirectives(rawName, directiveShortcuts) { //, foundDirectives) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
-            // TODO: If we ever support key= as a shortcut, this
-            // will break
+            // TODO: If we ever support key= as a shortcut, this will break
         }
 
         // "Expand" shortcuts into their full versions

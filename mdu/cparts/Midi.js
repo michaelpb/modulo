@@ -1,3 +1,4 @@
+
 Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
     initializedCallback() {
         if (!this.attrs.engine) {
@@ -79,7 +80,6 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         this.data.input = this.WebMidi.inputs.find(input => input.id === inputId);
         this.selectedInputListeners = this.data.input.addListener('noteon', this.onEvent.bind(this));
         this.selectedInputListeners = this.data.input.addListener('noteoff', this.onEvent.bind(this));
-        console.log(this.data.input);
     }
 
     onEvent(ev) {
@@ -89,6 +89,16 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         renderObj.note = String(ev.note.identifier); // XXX
         this.element.lifecycle([ 'note' ]);
         this.element.rerender(); // have different rerender modes
+    }
+
+    noteOn(identifier) {
+        const renderObj = this.element.getCurrentRenderObj(); // mess XXX
+        renderObj.note = String(identifier); // XXX
+        this.element.lifecycle([ 'note' ]);
+        this.element.rerender(); // have different rerender modes
+    }
+
+    noteOff(identifier) {
     }
 
     /*
@@ -115,6 +125,7 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
 
 
 }
+
 
 Modulo.cparts.midikeyboard = class MidiKeyboard extends Modulo.ComponentPart {
     initializedCallback() {
@@ -149,30 +160,4 @@ Modulo.cparts.midikeyboard = class MidiKeyboard extends Modulo.ComponentPart {
         return data;
     }
 }
-
-
-Modulo.cparts.tonesynth = class ToneSynthAdaptor extends Modulo.ComponentPart {
-    initializedCallback() {
-        return {
-            start: this.start.bind(this),
-        }
-    }
-
-    start() {
-        if (!this.attrs.engine) {
-            this.Tone = Tone; // Use WebMidi API
-        } else{
-            this.Tone = this.attrs.engine;
-        }
-        this.synth = new this.Tone.Synth().toDestination()
-    }
-
-    noteCallback({ note }) {
-        if (this.synth) {
-            console.log('playing!', note);
-            this.synth.triggerAttackRelease(note, '8n');
-        }
-    }
-}
-
 

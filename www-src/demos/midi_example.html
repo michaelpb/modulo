@@ -7,44 +7,50 @@
     ></Props>
 
     <Template>
-        <p>Is ready:{{ midi.isReady }}</p>
-        <p>Is error:{{ midi.isError }}</p>
-        <p>Is error:{{ midi.error }}</p>
+        <div>
+            <h2>Midi</h2>
+            <p>Is ready:{{ midi.isReady }}</p>
+            <p>Is error:{{ midi.isError }}</p>
+            <p>Is error:{{ midi.error }}</p>
+            {% if midi.isReady %}
+                {% for input in midi.inputs %}
+                    <div class="input">
+                        {{ input.name }}
+                        <button
+                            @click:=midi.selectInput
+                            payload="{{ input.id }}"
+                        >Select</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
 
         <button @click:=tonesynth.start>Power On Synth</button>
-
-        {% if midi.isReady %}
-            {% for input in midi.inputs %}
-                <div class="input">
-                    {{ input.name }}
-                    <button
-                        @click:=midi.selectInput
-                        payload="{{ input.id }}"
-                    >Select</button>
+        <div class="keyboard">
+            {% for keyInfo in midikeyboard.keys %}
+                <div class="
+                    {% if keyInfo.isSharp %}
+                        sharp
+                    {% endif %}
+                    {% if midi.lastInputChannel %}
+                        {% if midi.lastInputChannel.notesState|get:keyInfo.i %}
+                            active
+                        {% endif %}
+                    {% endif %}
+                    "
+                    @mousedown:=midi.noteOn
+                    @mouseup:=midi.noteOff
+                    payload="{{ keyInfo.letter }}"
+                    >
+                    {{ keyInfo.letter }}
+                    {% if midi.lastInputChannel %}
+                        {% if midi.lastInputChannel.notesState|get:keyInfo.i %}
+                            &bull;
+                        {% endif %}
+                    {% endif %}
                 </div>
             {% endfor %}
-
-            <div class="keyboard">
-                {% for keyInfo in midikeyboard.keys %}
-                    {% if midi.lastInputChannel %}
-                        <div class="
-                            {% if keyInfo.isSharp %}
-                                sharp
-                            {% endif %}
-                            {% if midi.lastInputChannel.notesState|get:keyInfo.i %}
-                                active
-                            {% endif %}
-                            "
-                            >
-                            <!--@click:=midi.triggerKey-->
-                            {% if midi.lastInputChannel.notesState|get:keyInfo.i %}
-                                &bull;
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
+        </div>
     </Template>
 
     <State
@@ -52,7 +58,10 @@
 
     <Midi></Midi>
     <MidiKeyboard></MidiKeyboard>
-    <ToneSynth></ToneSynth>
+
+    <ToneSynth
+        FMSynth
+    ></ToneSynth>
 
     <Script>
     </Script>
