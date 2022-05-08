@@ -92,6 +92,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
         } else{
             this.Tone = this.attrs.engine; // allows for patching
         }
+        //this.Tone.setContext(new this.Tone.Context({ latencyHint : "playback" }))
 
         this.devicesByStateKey = {};
         this.lowerToCapitalized = {};
@@ -107,10 +108,12 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             connectionStack: [],
 
             nextAdaptorId: 1,
+            extraLatency: 0.1, // 100 MS
             isConnected: false,
             isStarted: false,
 
             start: this.start.bind(this),
+            stop: this.stop.bind(this),
             connect: this.connect.bind(this),
             noteOn: args => this.triggerMethod('triggerAttack', args),
             noteOff: this.noteOff.bind(this),
@@ -290,7 +293,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
         }
 
         if (!startTime || typeof startTime !== 'number') {
-            startTime = 0.0; // ensure set to 0.0
+            startTime = this.data.extraLatency; // right now
         }
 
         for (const device of this.data.deviceArray) {
@@ -299,9 +302,14 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             }
         }
 
-        // IDEA: <Midi noteOn=tone.noteOn noteOff=tone.noteOff sysPlay=tone.start > etc
-        Tone.Transport.start();
+        this.Tone.Transport.start();
         this.data.isStarted = true;
+    }
+
+    stop() {
+        //this.Tone.stop();
+        this.Tone.Transport.stop();
+        this.data.isStarted = false;
     }
 
     connectMount({ el }) {
@@ -340,7 +348,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
         let time;
         let identifier;
         if (typeof args === 'string') {
-            time = 0.0; // ensure set to 0.0
+            time = this.data.extraLatency; // right now
             identifier = args;
         } else {
             identifier = args[0];
@@ -374,7 +382,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
         let time;
         let identifier;
         if (typeof args === 'string') {
-            time = 0.0; // ensure set to 0.0
+            time = this.data.extraLatency; // right now
             identifier = args;
         } else {
             identifier = args[0];
@@ -397,7 +405,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             duration = '4n';
         }
         if (!time) {
-            time = 0; // right now
+            time = this.data.extraLatency; // right now
         }
         const now = this.Tone.now()
         for (const device of this.data.deviceArray) {
@@ -408,6 +416,13 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
     }
 }
 
+// Add a "getval" filter (TODO: Make this component silo'ed)
+Modulo.templating.defaultOptions.filters.getval = s => s.getValue();
+Modulo.templating.defaultOptions.filters.stepprogress = (s) => {
+    // TODO hardcoding, should use increment from s
+    const steps = 8;
+    return Math.floor(Number(s.progress) * steps);
+};
 
 /*
 eventCleanupCallback() {

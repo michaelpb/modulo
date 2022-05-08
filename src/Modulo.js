@@ -534,7 +534,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             }
             // XXX ----------------
 
-
             if (this.mode === 'regular' || this.mode === 'vanish') {
                 root = this.element; // default, use element as root
             } else if (this.mode === 'shadow') {

@@ -7,42 +7,77 @@
     ></Props>
 
     <Template>
-        <div class="synth top">
-            {% if tone.isStarted %}
-                <button @click:=tone.stop>Power Off</button>
-            {% else %}
-                <button @click:=tone.start>Power On</button>
-            {% endif %}
-
-            <input type="range" value="{{ tone.meter.getValue }}" disabled />
-        </div>
-
-        <div class="synth controls">
-            <label>Volume:
-                <input [state.bind] name="volume" type="range"
-                    min="-60.0" max="-0.1" step="0.1" />
+        <div class="synth controls" style="display: flex">
+            <h2>MODULO<br />SYNTH</h2>
+            <div>&nbsp;</div>
+            <label><h2>Dampening</h2>
+                <input [state.bind] name="dampening" type="range"
+                    min="1" max="7000" step="1" />
             </label>
 
-            <label>Modulation Index:
-                <input [state.bind] name="modulationIndex" type="range"
-                    min="1" max="10" step="0.1" />
+            <label><h2>Resonance</h2>
+                <input [state.bind] name="resonance" type="range"
+                    min="0.0" max="1.0" step="0.01" />
             </label>
+
+            <label><h2>Reverb</h2>
+                <input [state.bind] name="wet" type="range"
+                    min="0.0" max="1.0" step="0.01" />
+            </label>
+
+
+            <label><h2>OSC1</h2>
+                <input [state.bind] name="voice0" type="range"
+                    min="0.0" max="1.0" step="0.01" />
+            </label>
+
+            <label><h2>OSC2</h2>
+                <input [state.bind] name="voice1" type="range"
+                    min="0.0" max="1.0" step="0.01" />
+            </label>
+
+            <label><h2>Vibrato</h2>
+                <input [state.bind] name="vibratoAmount" type="range"
+                    min="0.0" max="1.0" step="0.01" /> <br/>
+            </label>
+            <label><h2>Vib Rate</h2>
+                <input [state.bind] name="vibratoRate" type="range"
+                    min="0.0" max="1.0" step="0.01" />
+            </label>
+
         </div>
 
-        <div class="synth sequencer">
-            <div class="sequencer">
-                <div class="step">
+        <div style="display: flex">
+            <div class="synth" style="display: flex">
+                <h2>SEQ<br />
+                {% if tone.isStarted %}
+                    <button @click:=tone.stop><span alt="Stop">◼</span></button>
+                {% else %}
+                    <button @click:=tone.start><span alt="Play">▶</span></button>
+                {% endif %}
+                </h2>
+                {% for i, note in state.notes %}
+                    <label
+                        class="step {% if tone.sequence|stepprogress == i|number %}active{% endif %}"
+                        @click:=script.selectSeq payload:="{{ i }}">
+                        {{ note }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div style="width: 150px" class="synth">
+                <h2>MIX</h2>
+                <label>
+                    <input [state.bind] name="volume" type="range"
+                        min="-60.0" max="-0.1" step="0.1" />
+                </label>
+
+                <input type="range" value="{{ tone.meter|getval }}"
+                      min="-60.0" max="-0.1" disabled />
+                <div style="position: relative; top: -20px;">
+                  -60db <span style="float: right">0db</span>
                 </div>
             </div>
-            <ol>
-                {% for note in state.notes %}
-                    <li>{{ note }}</li>
-                {% endfor %}
-                <li>
-                    <input  [state.bind] name="nextNote" type="text" />
-                    <button @click:=script.addNote>Add</button>
-                </li>
-            </ol>
         </div>
 
         <div class="keyboard">
@@ -63,35 +98,63 @@
     </Template>
 
     <State
-        next-note="C3"
         volume:=-6.0
+        resonance:=0.1
+        detune:=0.0
+        voice0:=1.0
+        voice1:=1.0
+        vibrato-amount:=0.0
+        vibrato-rate:=1.0
+        portamento:=0.0
+        dampening:=3000
+        wet:=0.1
         modulation-index:=2.0
-        notes:='["C3", "C3" ]'
+        notes:='["C3", "C3", "C3", "C3", "C3", "C3", "C3", "C3" ]'
     ></State>
     <MidiKeyboard></MidiKeyboard>
 
-    <Script>
-
-        function addNote() {
-            console.log('thisis notes', state.notes);
-            state.notes.push(state.nextNote);
-            state.nextNote = '';
-            console.log('thisis notes', state.notes);
-            cparts.state.propagate('notes', state.notes);
-            //cparts.state.set('notes', state.notes);
-        }
-
-    </Script>
 
     <Tone
         Meter
         PluckSynth=state
-        Delay:='{ "decay": 100 }'
+        Reverb=state
+        MonoSynth:='{
+            "oscillator": {
+                "type": "sawtooth"
+            },
+            "envelope": {
+                "attack": 0.01,
+                "sustain": 0.0,
+                "decay": 0.5,
+                "release": 0.5
+            }
+        }'
         Sequence=state.notes
     ></Tone>
+        <!--DuoSynth=state-->
         <!--FMSynth=state-->
         <!--Sequence:='["C3", "C3", "D3", "F3", "F#3", "C3"]'-->
         <!--:='{ "frequency": "C3" }'-->
+
+    <Script>
+
+        function initializedCallback() {
+            setInterval(() => {
+                if (tone.isStarted) {
+                    element.rerender();
+                }
+            }, 100); // ensure 10x updates per second
+        }
+
+        function selectSeq(i) {
+            // Just cycle through letters
+            const currentNote = state.notes[Number(i)];
+            const currentLetter = currentNote[0];
+            const nextLetter = { C: 'D', D: 'E', E: 'F', F: 'G', G: 'A', A: 'B', B: 'C' }[currentLetter];
+            state.notes[Number(i)] = nextLetter + currentNote.substr(1);
+            cparts.state.propagate('notes', state.notes); // ensure gets updated
+        }
+    </Script>
 
     <Style>
         .keyboard {
@@ -116,6 +179,43 @@
             margin-left: calc(1px - (var(--key-width) / 2));
             margin-right: calc(1px - (var(--key-width) / 2));
             z-index: 2;
+        }
+
+        button, .step {
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 1px 10px 1px 10px;
+            border: 1px solid  #b90183;
+            color: black;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        button:active {
+            box-shadow: inset 5px 5px 1px 1px hsla(0,0%,39.2%,.3);
+        }
+
+        .step.active {
+            color: white;
+            background: #b90183;
+        }
+
+        .synth {
+            font-family: monospace;
+            border:  2px solid #b90183 ;
+            border-radius: 1px 10px 1px 10px;
+            padding: 20px;
+            margin: 20px;
+        }
+        .synth h2 {
+            border-radius: 10px 1px 10px 1px;
+            color: white;
+            background: #b90183;
+            font-size: 13px;
+            font-weight: bold;
+            margin: 0;
+            padding: 2px;
         }
     </Style>
   </Component>
