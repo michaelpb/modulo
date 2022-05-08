@@ -71,15 +71,42 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
     */
 
     selectInput(inputId) {
+        this.clearListeners();
+        this.data.input = this.WebMidi.inputs.find(input => input.id === inputId);
+        this.addListener('noteon', this.onEvent.bind(this));
+        this.addListener('noteoff', this.onEvent.bind(this));
+
+        const { tone } = this.element.cparts;
+        if (tone) {
+            this.connectToTone(tone);
+        }
+    }
+
+    clearListeners() {
         if (this.selectedInputListeners) {
             for (const listener of this.selectedInputListeners) {
                 listener.remove(); // close out existing listeners
             }
         }
+    }
 
-        this.data.input = this.WebMidi.inputs.find(input => input.id === inputId);
-        this.selectedInputListeners = this.data.input.addListener('noteon', this.onEvent.bind(this));
-        this.selectedInputListeners = this.data.input.addListener('noteoff', this.onEvent.bind(this));
+    addListener(evName, func) {
+        if (!this.selectedInputListeners) {
+            this.selectedInputListeners = [];
+        }
+        this.selectedInputListeners.push(this.data.input.addListener(evName, func));
+    }
+
+    connectToTone(tone) {
+        this.addListener('noteon', (ev) => {
+            // TODO: Later add velocity, bind to state, etc
+            const note = String(ev.note.identifier);
+            tone.noteOn(note);
+        });
+        this.addListener('noteoff', (ev) => {
+            const note = String(ev.note.identifier);
+            tone.noteOn(note);
+        });
     }
 
     onEvent(ev) {
@@ -88,9 +115,10 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         const renderObj = this.element.getCurrentRenderObj(); // mess XXX
         renderObj.note = String(ev.note.identifier); // XXX
         this.element.lifecycle([ 'note' ]);
-        this.element.rerender(); // have different rerender modes
+        this.element.rerender(); // TODO have different rerender modes
     }
 
+    /*
     noteOn(identifier) {
         const renderObj = this.element.getCurrentRenderObj(); // mess XXX
         renderObj.note = String(identifier); // XXX
@@ -100,6 +128,7 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
 
     noteOff(identifier) {
     }
+    */
 
     /*
     addInput(input) {
@@ -120,6 +149,8 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         this.data.inputs = this.WebMidi.inputs; // expose inputs
         this.data.ouputs = this.WebMidi.ouputs; // and inputs
         this.data.selectInput = this.selectInput.bind(this);
+        //this.data.noteOn = this.noteOn.bind(this);
+        //this.data.noteOff = this.noteOff.bind(this);
         return this.data;
     }
 
@@ -150,7 +181,7 @@ Modulo.cparts.midikeyboard = class MidiKeyboard extends Modulo.ComponentPart {
         const blackKeys = { 1: true, 3: true, 5: true, 7: true, 9: true };
         const letters = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         while (i < end) {
-            const octave = i / 12;
+            const octave = Math.floor(i / 12);
             const octaveKey = i % 12;
             const letter = letters[octaveKey]
             const isSharp = letter.endsWith('#');

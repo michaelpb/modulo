@@ -21,6 +21,9 @@
     - Fix nested subrender directives
     - Possibly: Implement new patch-set data structure
 
+- Template variable syntax change:
+    - Allow '-' in identifier names, and then just do "camelcase" be default
+      identifier filter
 
 # Low priority
 

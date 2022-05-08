@@ -910,12 +910,14 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     bindMount({ el, attrName, value }) {
         const { assert } = Modulo;
         const name = el.getAttribute('name') || attrName;
-        assert(name in this.data, `[state.bind]: key "${name}" not in state`);
+        assert(name in this.data, `[state.bind]: key "${name}" not in ${ Object.keys(this.data).join(', ') }`);
         const listen = () => {
             // TODO: redo
             let { value, type, checked, tagName } = el;
             if (type && type === 'checkbox') {
                 value = !!checked;
+            } else if (type && (type === 'range' || type === 'number')) {
+                value = Number(value); // ensure ranges & numbers get evaled
             }
             this.set(name, value);
         };
@@ -950,14 +952,32 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
-    set(name, value) {
+    set(name, value) { //, originalEl) {
         /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } */
         this.data[name] = value;
         this.element.rerender();
+        if ((name in this.boundElements) && this.boundElements[name].length > 1) {
+            this.propagate(name, value); //, originalEl);
+        }
     }
 
     eventCallback() {
         this._oldData = Object.assign({}, this.data);
+    }
+
+    propagate(name, val, originalEl) {
+        for (const [ el, evName, listen ] of this.boundElements[name]) {
+            //if (originalEl && el === originalEl) {
+            //    continue;
+            //}
+            if (el.stateChangedCallback) {
+                el.stateChangedCallback(name, val);
+            } else if (el.type === 'checkbox') {
+                el.checked = !!val;
+            } else {
+                el.value = val;
+            }
+        }
     }
 
     eventCleanupCallback() {
@@ -965,13 +985,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
             const val = this.data[name];
             if (name in this.boundElements && val !== this._oldData[name]) {
-                for (const [ el, evName, listen ] of this.boundElements[name]) {
-                    if (el.type === 'checkbox') {
-                        el.checked = !!val;
-                    } else {
-                        el.value = val;
-                    }
-                }
+                this.propagate(name, val);
             }
         }
         this._oldData = null;
@@ -1703,7 +1717,13 @@ Modulo.utils = class utils {
     }
 
     static cleanWord(text) {
+        // should merge with stripWord ?
         return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
+    }
+
+    static stripWord(text) {
+        return text.replace(/^[^a-zA-Z0-9$_\.]/, '')
+                   .replace(/[^a-zA-Z0-9$_\.]$/, '');
     }
 
     static transformTag(n1, tag2) {
@@ -1741,9 +1761,9 @@ Modulo.utils = class utils {
         }
 
         // There are directives... time to resolve them
-        const { cleanWord } = Modulo.utils;
+        const { cleanWord, stripWord } = Modulo.utils;
         const arr = [];
-        const attrName = cleanWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
+        const attrName = stripWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
         for (const directiveName of name.split(']').map(cleanWord)) {
             // Skip the bare name itself, and filter for valid directives
             if (directiveName !== attrName) {// && directiveName in directives) {

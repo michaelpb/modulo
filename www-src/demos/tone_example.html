@@ -1,0 +1,164 @@
+<!-- Want to use Tone to build synths? Look below!  -->
+<template modulo-embed>
+
+  <Component name="HelloWorld">
+    <Props
+        label
+    ></Props>
+
+    <Template>
+        <div class="synth top">
+            {% if tone.isStarted %}
+                <button @click:=tone.stop>Power Off</button>
+            {% else %}
+                <button @click:=tone.start>Power On</button>
+            {% endif %}
+
+            <input type="range" value="{{ tone.meter.getValue }}" disabled />
+        </div>
+
+        <div class="synth controls">
+            <label>Volume:
+                <input [state.bind] name="volume" type="range"
+                    min="-60.0" max="-0.1" step="0.1" />
+            </label>
+
+            <label>Modulation Index:
+                <input [state.bind] name="modulationIndex" type="range"
+                    min="1" max="10" step="0.1" />
+            </label>
+        </div>
+
+        <div class="synth sequencer">
+            <div class="sequencer">
+                <div class="step">
+                </div>
+            </div>
+            <ol>
+                {% for note in state.notes %}
+                    <li>{{ note }}</li>
+                {% endfor %}
+                <li>
+                    <input  [state.bind] name="nextNote" type="text" />
+                    <button @click:=script.addNote>Add</button>
+                </li>
+            </ol>
+        </div>
+
+        <div class="keyboard">
+            {% for key in midikeyboard.keys %}
+                <div class="
+                    {% if key.isSharp %}
+                        sharp
+                    {% endif %}
+                    "
+                    @mousedown:=tone.noteOn
+                    @mouseup:=tone.noteOff
+                    payload="{{ key.letter }}{{ key.octave }}"
+                    >
+                    {{ key.letter }}
+                </div>
+            {% endfor %}
+        </div>
+    </Template>
+
+    <State
+        next-note="C3"
+        volume:=-6.0
+        modulation-index:=2.0
+        notes:='["C3", "C3" ]'
+    ></State>
+    <MidiKeyboard></MidiKeyboard>
+
+    <Script>
+
+        function addNote() {
+            console.log('thisis notes', state.notes);
+            state.notes.push(state.nextNote);
+            state.nextNote = '';
+            console.log('thisis notes', state.notes);
+            cparts.state.propagate('notes', state.notes);
+            //cparts.state.set('notes', state.notes);
+        }
+
+    </Script>
+
+    <Tone
+        Meter
+        PluckSynth=state
+        Delay:='{ "decay": 100 }'
+        Sequence=state.notes
+    ></Tone>
+        <!--FMSynth=state-->
+        <!--Sequence:='["C3", "C3", "D3", "F3", "F#3", "C3"]'-->
+        <!--:='{ "frequency": "C3" }'-->
+
+    <Style>
+        .keyboard {
+            display: flex;
+            --key-width: 30px;
+        }
+
+        .keyboard > div {
+            width: var(--key-width);
+            height: 80px;
+            border: 1px solid black;
+            z-index: 1;
+            position: relative;
+        }
+
+        .keyboard > div.active {
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .keyboard > div.sharp {
+            background: gray;
+            height: 50px;
+            margin-left: calc(1px - (var(--key-width) / 2));
+            margin-right: calc(1px - (var(--key-width) / 2));
+            z-index: 2;
+        }
+    </Style>
+  </Component>
+
+
+</template>
+
+<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
+<script src="https://unpkg.com/tone"></script>
+<script src="/js/Modulo.js"></script>
+<script src="/demos/mdu/cparts/Midi.js"></script>
+<script src="/demos/mdu/cparts/ToneJsAdaptor.js"></script>
+
+
+<script>Modulo.defineAll();</script>
+
+
+<!-- Use it anywhere, each instance is isolated: -->
+<hr />
+<x-HelloWorld></x-HelloWorld>
+<hr />
+
+<!--
+    REMEMBER: While the demos show embedded components (with template
+    modulo-embed), this is only to make it easier to copy & paste into one
+    file. Always separate your components into a Library early on to avoid
+    issues later on. E.g., use code like:
+
+    <Modulo>
+        <Library src="/static/components/MyWebComponents.html"></Library>
+    </Modulo>
+-->
+
+
+<!-- ######################################################################### -->
+<!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
+<div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
+    <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
+    Modulo.fetchQ.enqueue('.', text => {
+        this.nextSibling.textContent = text;
+        navigator.clipboard.writeText(text); 
+        this.textContent += '  [☑ Copied to clipboard!]';
+    })">COPY DEMO</a><pre></pre>
+</div>
+<!-- ######################################################################### -->
+

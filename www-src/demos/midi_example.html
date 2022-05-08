@@ -8,10 +8,14 @@
 
     <Template>
         <div>
-            <h2>Midi</h2>
-            <p>Is ready:{{ midi.isReady }}</p>
-            <p>Is error:{{ midi.isError }}</p>
-            <p>Is error:{{ midi.error }}</p>
+            <h3>Midi Status</h3>
+            <p>Is ready: {{ midi.isReady }}</p>
+            <p>Is error: {{ midi.isError }} {{ midi.error|default:'' }}</p>
+
+            <h3>Select a midi device below:</h3>
+            <p>(Make sure you select "Allow" when the browser prompts for
+            permissions, and then try plugging in a USB midi keyboard.)</p>
+
             {% if midi.isReady %}
                 {% for input in midi.inputs %}
                     <div class="input">
@@ -25,46 +29,39 @@
             {% endif %}
         </div>
 
-        <button @click:=tonesynth.start>Power On Synth</button>
-        <div class="keyboard">
-            {% for keyInfo in midikeyboard.keys %}
-                <div class="
-                    {% if keyInfo.isSharp %}
-                        sharp
-                    {% endif %}
-                    {% if midi.lastInputChannel %}
-                        {% if midi.lastInputChannel.notesState|get:keyInfo.i %}
-                            active
+        {% if midi.lastInputChannel %}
+            <div class="keyboard">
+                {% for key in midikeyboard.keys %}
+                    <div class="
+                        {% if key.isSharp %}
+                            sharp
                         {% endif %}
-                    {% endif %}
-                    "
-                    @mousedown:=midi.noteOn
-                    @mouseup:=midi.noteOff
-                    payload="{{ keyInfo.letter }}"
-                    >
-                    {{ keyInfo.letter }}
-                    {% if midi.lastInputChannel %}
-                        {% if midi.lastInputChannel.notesState|get:keyInfo.i %}
-                            &bull;
+                        {% if midi.lastInputChannel %}
+                            {% if midi.lastInputChannel.notesState|get:key.i %}
+                                active
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
+                        "
+                        >
+                        {{ key.letter }}
+                        {% if midi.lastInputChannel %}
+                            {% if midi.lastInputChannel.notesState|get:key.i %}
+                                &bull;
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </Template>
 
-    <State
-    ></State>
-
+    <!-- Midi is a experimental CPart that wraps around WebMidi.js to provide a
+    high-level interface for USB Midi devices -->
     <Midi></Midi>
+
+    <!-- MidiKeyboard provides a few utilities (notably, an array of "keys")
+    for doing stuff with music keyboards -->
     <MidiKeyboard></MidiKeyboard>
-
-    <ToneSynth
-        FMSynth
-    ></ToneSynth>
-
-    <Script>
-    </Script>
 
     <Style>
         .keyboard {
@@ -81,7 +78,7 @@
         }
 
         .keyboard > div.active {
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 5px rgba(0, 0, 100, 0.5);
         }
         .keyboard > div.sharp {
             background: gray;
@@ -98,7 +95,6 @@
 
 <!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
 <script src="https://cdn.jsdelivr.net/npm/webmidi@next/dist/iife/webmidi.iife.js"></script>
-<script src="https://unpkg.com/tone"></script>
 <script src="/js/Modulo.js"></script>
 <script src="/demos/mdu/cparts/Midi.js"></script>
 
