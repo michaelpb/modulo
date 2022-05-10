@@ -613,7 +613,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     dataPropMount({ el, value, attrName, rawName }) { // element, 
-        const { get } = Modulo.utils;
+        const { get, set } = Modulo.utils;
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
             el.dataProps = {};
@@ -622,22 +622,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        el.dataProps[attrName] = val;
+        set(el.dataProps, attrName, val); // set according to path given
         el.dataPropsAttributeNames[rawName] = attrName;
-
-        /*
-        //const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {}; // not sure why I was doing it this way?
-        // TODO: Refactor this:
-        const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
-        const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        //needs work for dataObj support (e.g. building objs with '.' syntax)
-        const index = attrName.lastIndexOf('.') + 1;
-        const key = attrName.slice(index);
-        const path = attrName.slice(0, index);
-        const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
-        dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
-        */
-
     }
 
     dataPropUnmount({ el, attrName, rawName }) {
@@ -900,33 +886,35 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         }
 
         this.boundElements = {}; // initialize
-        for (const name of Object.keys(this.data)) {
-            this.boundElements[name] = [];
-        }
         return this.data;
     }
 
     bindMount({ el, attrName, value }) {
-        const { assert } = Modulo;
         const name = el.getAttribute('name') || attrName;
-        assert(name in this.data, `[state.bind]: key "${name}" not in ${ Object.keys(this.data).join(', ') }`);
+        const val = Modulo.utils.get(this.data, name);
+        Modulo.assert(val !== undefined, `state.bind "${name}" is undefined`);
         const listen = () => {
-            // TODO: redo
+            // TODO: Refactor this function + propagate to be more consistent +
+            // extendable with types / conversions -- MAYBE even just attach it
+            // as stateChangeCallback!
             let { value, type, checked, tagName } = el;
             if (type && type === 'checkbox') {
                 value = !!checked;
             } else if (type && (type === 'range' || type === 'number')) {
                 value = Number(value); // ensure ranges & numbers get evaled
             }
-            this.set(name, value);
+            this.set(name, value, el);
         };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
         const evName = value ? value : (isText ? 'keyup' : 'change');
         //assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
 
+        if (!(name in this.boundElements)) {
+            this.boundElements[name] = [];
+        }
         this.boundElements[name].push([ el, evName, listen ]);
-        el.value = this.data[name];
-        el.addEventListener(evName, listen);
+        el.addEventListener(evName, listen); // todo: make optional, e.g. to support cparts?
+        this.propagate(name, val); // trigger initial assignment(s)
     }
 
     bindUnmount({ el, attrName }) {
@@ -951,28 +939,26 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
-    set(name, value) { //, originalEl) {
-        /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } */
-        this.data[name] = value;
+    set(name, value, originalEl) {
+        /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } if ((name in this.boundElements) && this.boundElements[name].length > 1) { } */
+        Modulo.utils.set(this.data, name, value);
+        this.propagate(name, value, originalEl);
         this.element.rerender();
-        if ((name in this.boundElements) && this.boundElements[name].length > 1) {
-            this.propagate(name, value); //, originalEl);
-        }
     }
 
     eventCallback() {
         this._oldData = Object.assign({}, this.data);
     }
 
-    propagate(name, val, originalEl) {
-        for (const [ el, evName, listen ] of this.boundElements[name]) {
-            //if (originalEl && el === originalEl) {
-            //    continue;
-            //}
+    propagate(name, val, originalEl = null) {
+        for (const [ el, evName, cb ] of (this.boundElements[name] || [])) {
+            if (originalEl && el === originalEl) {
+                continue; // don't propagate to self
+            }
             if (el.stateChangedCallback) {
-                el.stateChangedCallback(name, val);
+                el.stateChangedCallback(name, val, originalEl);
             } else if (el.type === 'checkbox') {
-                el.checked = !!val;
+                el.checked = !!val; // ensure is bool
             } else {
                 el.value = val;
             }
@@ -980,6 +966,7 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     eventCleanupCallback() {
+        // TODO: Instead, should JUST do _oldData with each key from boundElements, and thus more efficiently loop through
         for (const name of Object.keys(this.data)) {
             Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
             const val = this.data[name];
@@ -1674,7 +1661,16 @@ Modulo.utils = class utils {
     }
 
     static get(obj, key) {
+        // TODO:  It's get that should autobind functions!!
         return key.split('.').reduce((o, name) => o[name], obj);
+    }
+
+    static set(obj, keyPath, val, ctx = null) {
+        const index = keyPath.lastIndexOf('.') + 1; // 0 if not found
+        const key = keyPath.slice(index);
+        const path = keyPath.slice(0, index - 1); // exclude .
+        const dataObj = index ? Modulo.utils.get(obj, path) : obj;
+        dataObj[key] = val;// typeof val === 'function' ? val.bind(ctx) : val;
     }
 
     static dirname(path) {

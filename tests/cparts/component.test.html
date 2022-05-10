@@ -30,3 +30,29 @@
 </component>
 
 
+<component name="ComponentCPart_TestDataPropDirective">
+    <Template><div testprop:='{}' testprop.val:='"abc"'></div>
+    </Template>
+
+    <testsuite>
+
+        <test name="Testing data prop">
+
+            <script name="Was defined">
+                assert: element.firstChild.dataProps
+            </script>
+
+            <script name="Has parsed prop">
+                assert: element.firstChild.dataProps.testprop
+            </script>
+
+            <script name="Parsed prop has exp value">
+                const expected = JSON.stringify({ val: 'abc' });
+                const actual = JSON.stringify(element.firstChild.dataProps.testprop);
+                assert: actual === expected
+            </script>
+        </test>
+
+    </testsuite>
+</component>
+

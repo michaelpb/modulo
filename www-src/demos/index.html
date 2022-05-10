@@ -15,6 +15,8 @@
     pagetitle="Examples"
     navbar="docs">
 
+
+
 <h1>Examples</h1>
 
 <p>This page has a collection of larger demos and library of mini-examples.</p>
@@ -24,31 +26,31 @@ NOT pre-rendered! That means you can use "View Source" (Right click, or Ctrl+U)
 to see how Modulo's own website was built.</p>
 
 
-<mws-Section name="library">
-    Example Library
-</mws-Section>
-
-<mws-AllExamples></mws-AllExamples>
-
-
-<mws-Section name="demos">
-    Demos
-</mws-Section>
-
 <section class="Tutorial-tryit">
     <h4>How to "fork" a Modulo.js demo</h4>
-    <p>The tiles below link to a collection of full-page demonstration apps.
-    These are intended as a reference of copy &amp; paste recipes so you can
-    get started even quicker with building Modulo apps.</p>
+    <p>Some of tiles below link to full-page demonstration apps.  These are
+    intended as a reference of &ldquo;copy &amp; paste recipes&rdquo; so you
+    can get started even quicker with incorporating Modulo into your
+    project.</p>
     <p>Every demo can be "forked" (copied) by clicking the "COPY SOURCE" button
     in the top-right. Then, it can be pasted into a local HTML file in your
-    text editor. The demos have been designed so they should "just work" if
-    pasted in any HTML code.</p>
+    text editor. <!--All demos have been designed with absolute URLs, so they
+    should &ldquo;just work&rdquo; if pasted in any HTML code, whether that is
+    a backend app template (e.g. PHP, Rails, Django), or a static HTML
+    file. (Alpha note: Some are relative, need correcting.)--></p>
 </section>
 
-<h2>Snippet and page starter files</h2>
-<p>Use one of these demo pages to get a head-start with your own Modulo
-project.</p>
+<mws-Section name="starter">
+    Starter Files
+</mws-Section>
+
+
+<p>These HTML and Zip files are intended to help you start new projects, with
+example components already made, to make remembering syntax easier, and Modulo
+all configured and ready to go.  Use one of these demo pages to get a
+head-start with your own Modulo project.</p>
+
+<!--<h2>Snippets</h2>-->
 
 <ul class="DemoPanels">
     <li>
@@ -62,16 +64,17 @@ project.</p>
         <p>This starting snippet defines a small collection of example
         components, demonstrating how to build a site or app.</p>
     </li>
+
     <!--
     <li>
         <a href="/demos/basic_page.html">Basic Page</a>
-        <p> This demo includes the page boilerplate (e.g. <tt>head</tt>) for a
-        fully valid HTML file.</p>
+        <p>This SPA-style demo includes the page boilerplate (e.g.
+        <tt>head</tt>) for a fully valid HTML file.</p>
     </li>
 
     <li>
         <a href="/demos/bootstrap_page.html">Bootstrap Page</a>
-        <p>Similar to the starter page, but with Bootstrap 5 CDN already
+        <p>Similar to the SPA starter page, but with Bootstrap 5 CDN already
         included.</p>
     </li>
     -->
@@ -94,6 +97,24 @@ omit HTML boilerplate in your Modulo-powered valid HTML file.</p>
 </ul>
 -->
 
+
+<mws-Section name="library">
+    Example Library
+</mws-Section>
+
+<mws-AllExamples></mws-AllExamples>
+
+
+<mws-Section name="experiments">
+    Experiments
+</mws-Section>
+
+<p><strong>Experimental:</strong> The following demos show off some of the cool
+and unusual things you can get Modulo to do! However, they are designated
+"experimental" either because they might be using internal APIs that could
+change before the Modulo <em>beta</em>, or require a bit more polish before
+they become fully recommended.</p>
+
 <h2>MDU demos</h2>
 
 <p>These demos show off a few MDU CParts, which are still in development.</p>
@@ -110,6 +131,28 @@ omit HTML boilerplate in your Modulo-powered valid HTML file.</p>
         with custom CPart to enable React-style JSX-syntax in Modulo.</p>
     </li>
 </ul>
+
+<h2>Modulo for Sound & Music</h2>
+
+<p>Modulo's declarative, configuration-focused approach  is especially
+well-suited for sound and music related applications. The Tone JS CPart becomes
+your own sound engineering "rack" of instruments and effects units, where any
+"knob" or configuration setting can be bound to state, and thus to form
+controls, just like anything else in Modulo.</p>
+
+<ul class="DemoPanels">
+    <li>
+        <a href="/demos/tone_example.html">Tone.js Synth</a>
+        <p>A fully functional 2-OSC synthesizer, with a simple step sequencer
+        and knobs to tweak. Plug-in a USB MIDI keyboard to jam away!</p>
+    </li>
+    <li>
+        <a href="/demos/midi_example.html">USB MIDI Keyboard</a>
+        <p>Demonstration of receiving MIDI keyboard input in Modulo, useful for
+        sound synthesis, DAW, or apps in music ed.</p>
+    </li>
+</ul>
+
 
 
 </x-Page>

@@ -156,32 +156,92 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
 
     bindToAllState() {
         const { state } = this.element.cparts;
-        this.boundState = state;
-        for (const key of Object.keys(this.boundState.data)) {
-            this.boundState.boundElements[key].push([ this, null, null ]);
+        for (const key of Object.keys(state.data)) {
+            if (!(key in state.boundElements)) {
+                state.boundElements[key] = [];
+            }
+            state.boundElements[key].push([ this, null, null ]);
         }
+        // todo have unbinding?
+        this.boundState = state;
     }
 
     bindToState(stateKey, deviceName) {
+        const { get } = Modulo.utils;
         if (!(stateKey in this.devicesByStateKey)) {
             this.devicesByStateKey[stateKey] = [];
         }
         this.devicesByStateKey[stateKey].push(deviceName);
+
+        const { state } = this.element.cparts;
+        this.boundState = state;
+
+        // Bind to the top-level object (e.g. state.envelope)
+        if (!(stateKey in state.boundElements)) {
+            state.boundElements[stateKey] = [];
+        }
+        state.boundElements[stateKey].push([ this, null, null ]);
+
+        // Bind to sub-keys as well (e.g. state.envelope.attack)
+        const getSubKeys = (obj, stateKey) => {
+            console.log('theres', obj, stateKey);
+            const subObj = get(obj, stateKey);
+            const keyArr = [];
+            for (const keySuffix of Object.keys(subObj)) {
+                const key = `${stateKey}.${keySuffix}`;
+                keyArr.push(key);
+                if (typeof subObj[keySuffix] === 'object') {
+                    keyArr.push(...getSubKeys(obj, key)); // descend into obj
+                }
+            }
+            return keyArr;
+        };
+
+        for (const key of getSubKeys(state.data, stateKey)) {
+            console.log('keyyy', key);
+            if (!(key in state.boundElements)) {
+                state.boundElements[key] = [];
+            }
+            state.boundElements[key].push([ this, null, null ]);
+        }
+
+        // TODO: Possibly replace this, if state gets this feature built-in
+    }
+
+    _dotNotationToSparseObj(keyPath, val) {
+        // Converts ("a.b.c", 3) into {a: {b: {c: 3}}}
+        let obj = {};
+        let lastObj = obj;
+        for (const key of keyPath.split('.')) { // build the objects
+            lastObj[key] = {};
+            lastObj = lastObj[key];
+        }
+        const { set } = Modulo.utils;
+        set(obj, keyPath, val); // finally, do the assign TODO refactor
+        return obj;
     }
 
     stateChangedCallback(name, val) {
-        if (name in this.devicesByStateKey && this.devicesByStateKey[name].length) {
-            for (const deviceName of this.devicesByStateKey[name]) {
+        // TODO refactor
+        for (const stateKey of Object.keys(this.devicesByStateKey)) {
+            // Find statKeys that equal OR prefix this
+            if (!name.startsWith(stateKey)) {
+                continue;
+            }
+
+            for (const deviceName of this.devicesByStateKey[stateKey]) {
+                // Matched on prefix!
                 const device = this.data[deviceName];
                 if (device.deviceType in TONE_JS_API_EVENT_TYPED && Array.isArray(val)) {
                     device.set({ events: val }); // Update events, since it's an array type
                 } else {
-                    throw new Erorr('not implemented');
-                    //device[name].value = val[name]; // TODO: check this is correct
+                    const subKey = name.substring(stateKey.length + 1); // remove top-level key
+                    device.set(this._dotNotationToSparseObj(subKey, val));
                 }
             }
-            return;
         }
+
+        // TODO Make this a "globallyBoundDeviceArray"
         for (const device of this.data.deviceArray) {
             if (name in device) {
                 device[name].value = val; // set individual value of parameter

@@ -143,11 +143,62 @@ Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
 
 ## Config Directives + Modulo config
 
+### 2022-05-ideas
+
+- Current idea: 
+    - UNIVERSAL CONFIG system
+    - class Modulo is core CPart type
+    - Attrs and config are the same
+    - 1:1 translation from static HTML to JSON format (good for later new
+      build types)
+    - Maybe Config builds into factory function, with hardcoded config JSON
+      (Modulo.assets['xfrea'] in place of built stuff)?
+- Every sub template deep-forks
+
+ModuloConfig = {
+    "component": {
+        // dataProps get set at this tier, but resolve at config tier
+        "name": "XyZ",
+        "mode": "shadow"
+    },
+    // But on the Modulo / Config tier, they start (& resolve) at Config-tier
+    // e.g. <Config template.engine:=MyTemplateEngine></Config>
+    // e.g. <Config template.filter.push:=MyTemplateEngine></Config>
+    // Config could auto-export functions and scripts
+    "script": {
+        "Content": "function getclick() ...", // "Content" is the .textContent
+        "Src": "" // "Src" loads Content
+    },
+    "state": {
+        "Src": "", // "Src" loads Content? OR it's for ANY libray, e.g. -content?
+        "mode": "rerender"
+        "Spares": [ { } ]
+    },
+}
+
+- Maybe over-thought idea, but:
+    - All of Modulo is a single Config (accessible with Modulo obj)
+    - dataPropMount patches happen before each factory (loadCallback)
+        - cpartMount patches happen before each factory (factoryCallback)
+            - Modulo config is used synchronously to instantiate object (constructor)
+            - Possibly, Modulo is forked at this point into "this.modulo"
+        - cpartUnmount patches happen after each factory call
+    - dataPropUnmount patches happen after each factory call
+
+- Might need to support whatever.src="" alt dataProp syntax (e.g. no ":",
+  meaning, so plain string, but still reflected in dataProps for
+  consistency)
+
+- e.g. <!-- <State info={} info.stuff="Hi" info.other="Okay"></State> -->
+
+
+### 2022-04-ideas
+
 - Another idea: have "dash" prefix be for modifying config, e.g.
-    '-name="Component"' or something. Maybe only for State/Props/etc, things
-    that need it?
-- Create a directive like "%" used at load, that sets silo'ed config based on
-  path:
+  '-name="Component"' or something. Maybe only for State/Props/etc, things
+  that need it?
+- Create a directive like "%" used at load, that sets silo'ed config based
+  on path:
     - Top level: `{ "component": { "mode": "regular" } }`
     - `<Component %mode="vanish"></Component>`
     -  (turns into component.mode = "vanish" in silo'ed modulo)

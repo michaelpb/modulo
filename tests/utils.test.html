@@ -110,6 +110,41 @@
 </test>
 
 
+
+<test name="utils.get and utils.set">
+    <script name="Ensure defined">
+        const { set, get } = Modulo.utils;
+        assert: set && get
+    </script>
+
+    <script name="Ensure get works">
+        const { get } = Modulo.utils;
+        const expected = 'hij';
+        const result = get({ abc: { def: "hij" }}, 'abc.def');
+        assert: result === expected
+    </script>
+
+    <script name="Ensure set works for plain assignment">
+        const { set } = Modulo.utils;
+        const obj = { abc: { def: "hij" }};
+        set(obj, 'klm', 'nop');
+        const expected = JSON.stringify({ abc: { def: "hij" }, klm: 'nop' })
+        const result = JSON.stringify(obj);
+        assert: result === expected
+    </script>
+
+    <script name="Ensure set works for path">
+        const { set } = Modulo.utils;
+        const obj = { abc: { def: "hij" }};
+        set(obj, 'abc.def', 'nop');
+        const expected = JSON.stringify({ abc: { def: "nop" } })
+        const result = JSON.stringify(obj);
+        assert: result === expected
+    </script>
+
+</test>
+
+
 <test name="utils.transformTag">
     <script name="Ensure defined">
         const { transformTag } = Modulo.utils;
