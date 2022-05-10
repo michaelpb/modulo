@@ -141,6 +141,13 @@ around rendering and state triggering for proper performance. -->
         notes:='["C3", "C3", "C3", "C3", "C3", "C3", "C3", "C3" ]'
     ></State>
 
+    <!--
+        The Tone CPart exposes all Tone.js classes as attributes. This allows
+        us to create a "stack" of instruments and sound effects that we can
+        combine.  Keeping the configuration of these instruments in state
+        allows us to then bind that state to form elements in HTML, allowing
+        for quickly assembling a UI, like the one above.
+    -->
     <Tone
         Meter
         Chorus=state.chorus
@@ -158,7 +165,7 @@ around rendering and state triggering for proper performance. -->
         }
 
         function selectSeq(i) {
-            // Just cycle through letters
+            // This will cycle through the note at the current state to the next one
             const currentNote = state.notes[Number(i)];
             const currentLetter = currentNote[0];
             const nextLetter = { C: 'D', D: 'E', E: 'F', F: 'G', G: 'A', A: 'B', B: 'C' }[currentLetter];
@@ -229,7 +236,6 @@ around rendering and state triggering for proper performance. -->
     </Style>
   </Component>
 
-
 </template>
 
 <!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
@@ -246,8 +252,8 @@ around rendering and state triggering for proper performance. -->
 <x-HelloWorld></x-HelloWorld>
 <hr />
 
-<p><strong>NOTE:</strong> This audio experiment may be Chromium or Chrome
-only!</p>
+<p><strong>NOTE:</strong> This audio experiment may not work on all
+platforms!</p>
 
 <p><strong>Instructions:</strong> Press the "Play" triangle button to start the
 sequencer playing back. Click on the note steps (initially all C3, designating
