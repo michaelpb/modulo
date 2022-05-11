@@ -1645,21 +1645,6 @@ Modulo.utils = class utils {
         return `./${filename}`; // by default, return local path
     }
 
-    static loadNodeData(node) {
-        // DEAD CODE
-        //const {parseAttrs} = Modulo.utils;
-        const {tagName, dataProps} = node;
-        const attrs = Object.assign(/*parseAttrs(node), */dataProps);
-        const {name} = attrs;
-        let type = tagName.toLowerCase();
-        const splitType = (node.getAttribute('type') || '').split('/');
-        const content = tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
-        if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
-            type = splitType[1];
-        }
-        return {attrs, type, name, content};
-    }
-
     static get(obj, key) {
         // TODO:  It's get that should autobind functions!!
         return key.split('.').reduce((o, name) => o[name], obj);

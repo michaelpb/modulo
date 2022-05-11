@@ -1,21 +1,15 @@
 <script src="/js/Modulo.js"></script>
+<script src="/_misc/Mod2.js"></script>
 
-<template modulo-embed>
-    <Component name="Test">
-        <Template>
-            {% for item in staticdata %}
-                <p>{{ item.userId }}: {{ item.title|truncate }}</p>
-            {% endfor %}
-        </Template>
-        <StaticData
-            src="https://jsonplaceholder.typicode.com/posts"
-        ></StaticData>
-    </Component>
+<template modulo-embed type="modulo/modulo">
+    <Library -src="./scratch5lib.html"></Library>
+    <!--<Library src="/_misc/scratch5lib.html"></Library>-->
 </template>
 
-<p>bef</p>
-<x-Test></x-Test>
-<p>af</p>
+
+<hr />
+<x-Posties></x-Posties>
+<hr />
 
 <script> Modulo.defineAll() </script>
 

@@ -1,0 +1,15 @@
+
+<Component name="Posties"  engine="ModRec">
+    <Template>
+        <p>Hello world</p>
+        {% for item in staticdata %}
+            <p>{{ item.userId }}: {{ item.title|truncate }}</p>
+        {% endfor %}
+    </Template>
+    <StaticData
+        src="https://jsonplaceholder.typicode.com/posts"
+    ></StaticData>
+</Component>
+<!--
+-->
+

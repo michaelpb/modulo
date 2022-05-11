@@ -145,7 +145,7 @@ Modulo.cparts.mycpart = class MyCPart extends Modulo.cparts.FetchState {
 
 ### 2022-05-ideas
 
-- Current idea: 
+- Current idea:
     - UNIVERSAL CONFIG system
     - class Modulo is core CPart type
     - Attrs and config are the same
@@ -178,6 +178,7 @@ ModuloConfig = {
 
 - Maybe over-thought idea, but:
     - All of Modulo is a single Config (accessible with Modulo obj)
+    - When instancing:
     - dataPropMount patches happen before each factory (loadCallback)
         - cpartMount patches happen before each factory (factoryCallback)
             - Modulo config is used synchronously to instantiate object (constructor)
