@@ -1,15 +1,43 @@
 
 <Component name="Posties"  engine="ModRec">
+    <Props
+        testingprop
+    ></Props>
     <Template>
-        <p>Hello world</p>
+        <p class="blue">Hello world (Style: should be blue)</p>
+
+        <p>State: Starts at 42: {{ state.num }}
+          <button @click:=script.getClicked>Event and Script: Click to make go up</button>
+        </p>
+
+        <p>Props: Do they work? See message: {{ props.testingprop }}</p>
+
+        <h2>StaticData: 100 items below:</h2>
+
         {% for item in staticdata %}
             <p>{{ item.userId }}: {{ item.title|truncate }}</p>
         {% endfor %}
     </Template>
+    <State
+        num:=42
+    ></State>
     <StaticData
         src="https://jsonplaceholder.typicode.com/posts"
     ></StaticData>
+    <Script>
+        console.log('script world!');
+        function getClicked() {
+            console.log('this is state', state);
+            state.num++;
+        }
+    </Script>
+    <Style>
+        .blue {
+            background: blue;
+            color: white;
+            padding: 5px;
+        }
+    </Style>
 </Component>
-<!--
--->
+
 

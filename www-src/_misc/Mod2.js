@@ -1,45 +1,17 @@
 /*
 
+Next steps:
 
-<Component> // No name
-    <State> // Creates default state for all subsequent Components
-    </State>
-</Component>
-
-<Component name=""> // With name, becomes Factory type
-</Component>
-
-
-
-
-
-
-
-
-
-
-
----------------------------------------------
-
-
-Development approach of this file:
-
-
-Goal: Rewrite the entire loading / configuring core in a better and hopefully
-shorter / simpler way
-
-Steps:
-
-1. Work on loading the component library into this config format (below)
-    - in progress
-2. Validate & test this 
-3. Register components based on this
-4. Fork parts of Modulo.js for legacy modulo node if necessary
-
-ComponentFactory should mostly be obsolete as well, so it will gradually get
-duped, then deduped in the Modul2 system
-
+  1. Merge the ComponentFactory into the CPartDef
+  2. Cleanup, e.g. merge CPartDef with Modul2
+  3. Write adaptors until we can run tests again
+  4. Write tests for new config system
+  5. Gradually reactor with tests running (possibly write more tests as well)
+  6. Identify points of CPart and/or middleware code insertion, and with the
+  help of the new config system refactor further and finalize "config / load /
+  factory" lifecycle names
 */
+
 /*
   Everything without a name (or Name e.g. -name):
       - Singular
@@ -52,25 +24,53 @@ duped, then deduped in the Modul2 system
       - Named CParts can hold other CParts (e.g. Component, Library)
       - Then, all CParts are instantiated (CParts), OR registered for instantation (Components)
 
+E.G:
+
+<Component> // No name
+    <State> // Creates default state for all subsequent Components
+    </State>
+</Component>
+
+<Component name="Thing"> // With name, becomes Factory type
+</Component>
+
+---------------------------------------------
+
+- Library idea: "name" vs "namespace": "name='modlib'" is a human-readable
+  internal name that gets rewritten into a hash after (as opposed to namespace,
+  which defaults to null and thus gets a hash as a default, but will never be
+  rewritten)
 */
 
-/*
-      - Library idea: "name='modlib'" is a human-readable name that gets
-        changed into a hash after (as opposed to namespace, which defaults to
-        null and thus gets a hash as a default)
-*/
+class DataPropCPartBase {
+    dataPropMount({ el, value, attrName, rawName }) { // element, 
+        const { get, set } = Modulo.utils;
+        // Resolve the given value and attach to dataProps
+        if (!el.dataProps) {
+            el.dataProps = {};
+            el.dataPropsAttributeNames = {};
+        }
+        const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
+        //const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
+        const renderObj = this.config;
+        const val = isVar ? get(renderObj, value) : JSON.parse(value);
+        set(el.dataProps, attrName, val); // set according to path given
+        el.dataPropsAttributeNames[rawName] = attrName;
+    }
 
+    dataPropUnmount({ el, attrName, rawName }) {
+        delete el.dataProps[attrName];
+        delete el.dataPropsAttributeNames[rawName];
+    }
+}
 
-// Another idea: Start writing the core of Modulo based on an internal API that
-// makes sense as a set of tools for building Modulo-like APIs
-class CPartConf {
+class CPartDef {
     constructor(partialPartConf, config) {
         this.config = Modulo.utils.deepClone(config);
         if (partialPartConf.tagName) {
             partialPartConf = this.loadPartialConfigFromNode(partialPartConf);
         }
         const { Type, Name } = partialPartConf;
-        console.log ( { Type, Name } ) ;
         this.partConf = this.config[Type] = Object.assign(
             {},
             this.config[Type],
@@ -103,19 +103,35 @@ class CPartConf {
         return config;
     }
 
-    makeFactory() {
-        this.fullName = `${this.loader.namespace}-${name}`;
-        this.isModule = this.loader.namespace === name; // if name = namespace
-        Modulo.ComponentFactory.registerInstance(this);
+    runFactoryLifecycle() {
+        const baseRenderObj = {};
+        for (let { partConf } of this.children) {
+            const { Type } = partConf;
+            const cpCls = this.config.modulo.cparts[Type];
 
-        this.componentClass = this.createClass();
-        this.childrenLoadObj = childrenLoadObj;
-        this.baseRenderObj = this.runFactoryLifecycle(this.childrenLoadObj);
+            /// XXX
+            // mock nonsense -v
+            this.loader = { localNameMap: { }, namespace: 'x' };
+            this.fullName = `${this.loader.namespace}-${name}`;
+            this.name = this.config.component.name;
+            Modulo.factoryInstances = {};
+            /////
+
+            const data = cpCls.factoryCallback(partConfToData(partConf), this, baseRenderObj) || partConf;
+            baseRenderObj[Type] = data; // TODO: flatten baseRenderObj with config
+        }
+        const cpCls = this.config.modulo.cparts[this.partConf.Type];
+        baseRenderObj[this.partConf.Type] = this.partConf;
+        const data = cpCls.factoryCallback(baseRenderObj, this) || this.partConf;
+        baseRenderObj[this.partConf.Type] = data; // refactor
+        return baseRenderObj;
     }
 }
 
-class Modul3 {
+class Modul2 extends DataPropCPartBase {
     constructor(config, baseConfig = null) {
+        super();
+        this.dataPropLoad = this.dataPropMount.bind(this); // duplicate for Load
         this.config = Modulo.utils.deepClone(baseConfig || Modul2.defaults);
         this.children = [];
         if (typeof config === 'string') { // String of HTML to load
@@ -135,11 +151,10 @@ class Modul3 {
             if (!name) {
                 continue;
             }
-            const conf = new CPartConf(node, config);
+            const conf = new CPartDef(node, config);
             parentConf.children.push(conf);
-            console.log('LOADING DEPS FOR:', conf.partConf);
             conf.loadDependencies(() => {
-                const { isContainer, isFactory, isSelfContaining } = config.modulo.cparts[name];
+                const { isContainer, isFactory } = config.modulo.cparts[name];
                 if (isContainer) {
                     const subNodes = this.loadString(conf.partConf.Content || '');
                     this.loadChildrenNodes(subNodes, conf.config, conf); // use silo'ed config to load
@@ -148,16 +163,8 @@ class Modul3 {
                 Modulo.fetchQ.wait(() => {
                     if (!isFactory) { return; }
                     // TODO: hacky adaptor
-                    const mockLoader = { localNameMap: { }, namespace: 'x' };
-                    const childrenLoadObj = conf.children.map(({ partConf }) =>
-                        [ partConf.Type, partConfToData(partConf) ]);
-                    if (isSelfContaining) {
-                        childrenLoadObj.unshift([ 'component', partConfToData(conf.partConf) ]); // Add "self" as CPart
-                    }
                     const name = conf.partConf.Name || conf.partConf.name; // TODO?
-                    conf.partConf.Factory = new Modulo.ComponentFactory(mockLoader, name, childrenLoadObj);
-                    conf.partConf.Factory.register();
-                    //console.log(childrenLoadObj )
+                    conf.runFactoryLifecycle();
                 });
             });
         }
@@ -165,45 +172,14 @@ class Modul3 {
 
     loadString(text) {
         this.reconciler = new Modulo.reconcilers.ModRec({
-            directives: { 'modulo.dataPropMount': this },
+            directives: { 'modulo.dataPropLoad': this },
             directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
         });
         return this.reconciler.loadString(text, {});
     }
 
-    dataPropMount({ el, value, attrName, rawName }) { // element, 
-        const { get, set } = Modulo.utils;
-        // Resolve the given value and attach to dataProps
-        if (!el.dataProps) {
-            el.dataProps = {};
-            el.dataPropsAttributeNames = {};
-        }
-        const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
-        //const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
-        const renderObj = this.config;
-        const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        set(el.dataProps, attrName, val); // set according to path given
-        el.dataPropsAttributeNames[rawName] = attrName;
-    }
-
-    dataPropUnmount({ el, attrName, rawName }) {
-        delete el.dataProps[attrName];
-        delete el.dataPropsAttributeNames[rawName];
-    }
-
     onReady(callback) {
         this.onReadyCallback = callback;
-    }
-}
-
-
-class Modul2 {
-    constructor(config, partConf = null) {
-        this.config = config;
-        this.partConf = partConf;
-        this.modul2 = window.modul2; // TODO, should be window.modulo
-        this.childConfigs = [];
-        this.instances = [];
     }
 
     register(path, value) {
@@ -215,157 +191,6 @@ class Modul2 {
             set(this.config, path, value);
         }
     }
-
-    configure(node) {
-        if (typeof node === 'string') {
-            this.partConf = Object.assign(this.partConf, { Content: node });
-            this.loadElement = this.applyLoadDirectives();
-            this.configureChildren(this.loadElement); // And configure self
-        } else {
-            if (node) {
-                this.configureNode(node); // configure self
-            }
-            this.loadElement = this.applyLoadDirectives();
-            if (node) {
-                node.replaceWith(this.loadElement); // Replace with loaded version
-            }
-            this.configureChildren(this.loadElement); // And configure self
-        }
-    }
-
-    configureNode(node) {
-        const partType = String(this.getNodeCPartName(node));
-        const partConf = this.loadNodeConfig(node, this.config[partType.toLowerCase()]);
-        partConf.Type = partType;
-        const name = partConf.Name || partConf.name; // TODO possibly remove lc name alias
-        if (name) {
-            const key = 'modulo.factories' + '.' + partType + '.' + name;
-            Modulo.utils.set(this.config, key, partConf);
-        } else {
-            this.config[partType.toLowerCase()] = partConf;
-        }
-
-        if (!this.partConf) { // loading self, apply
-            this.partConf = partConf;
-        } else {
-            this.childConfigs.push(partConf);
-        }
-    }
-
-    configureChildren(elem) {
-        const nodes = elem.content ? elem.content.childNodes : elem.children;
-        for (const node of nodes) {
-            const name = this.getNodeCPartName(node);
-            this.configureNode(node);
-        }
-    }
-
-    loadNodeConfig(node, defaults) {
-        const config = Modulo.utils.mergeAttrs(node, defaults);
-        const content = node.tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
-        config.Content = (config.Content || '') + content; // concatenate
-        return config;
-    }
-
-    getDataPropContext(el) {
-        // idea: Component overwrites?
-        return this.config;
-    }
-
-    dataPropMount({ el, value, attrName, rawName }) { // element, 
-        const { get, set } = Modulo.utils;
-        // Resolve the given value and attach to dataProps
-        if (!el.dataProps) {
-            el.dataProps = {};
-            el.dataPropsAttributeNames = {};
-        }
-        const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
-        //const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
-        const renderObj = this.getDataPropContext(el);
-        const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        set(el.dataProps, attrName, val); // set according to path given
-        el.dataPropsAttributeNames[rawName] = attrName;
-    }
-
-    dataPropUnmount({ el, attrName, rawName }) {
-        delete el.dataProps[attrName];
-        delete el.dataPropsAttributeNames[rawName];
-    }
-
-    applyLoadDirectives() {
-        this.loadReconciler = new Modulo.reconcilers.ModRec({
-            directives: { 'modulo.dataPropMount': this },
-            directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
-        });
-        return this.loadReconciler.loadString(this.partConf.Content, {});
-    }
-
-    // TODO: Rename all these methods with a consistent naming, e.g. config -> load -> factory
-    runLoadLifecycle() {
-        const array = [];
-        for (const partConf of this.childConfigs) {
-            const cPartName = partConf.Type;
-            const cpartClass = this.config.modulo.cparts[cPartName];
-            console.log('thsi si cpart', partConf);
-            Modulo.assert(cpartClass, 'Unable to load, no cpart:' + cPartName);
-
-            const cb = cpartClass.loadConfigCallback || ((data) => {
-                // TODO: loadConfigCallback default should be in base, for now an adaptor to old load style
-                const dependencies = data.Src || data.src;
-                const content = data.Content;
-                const attrs = data;
-                return { dependencies, content, attrs };
-            });
-
-            const data = cb(partConf);
-            array.push([ cPartName, data ]);
-
-            if (data.dependencies) {
-                // Ensure any CPart dependencies are loaded (relative to src)
-                const basePath = Modulo.utils.resolvePath(this.src, '..');
-                const loadCb = cpartClass.loadedCallback.bind(cpartClass);
-                const cb = (text, label, src) => loadCb(data, text, label, this, src);
-                Modulo.fetchQ.enqueue(data.dependencies, cb, basePath);
-            }
-
-        }
-        return array;
-    }
-
-    _hackGetMockLoader() {
-        if (!this.mockLoader) {
-            this.mockLoader = {
-                localNameMap: { },
-                namespace: 'x',
-            }
-        }
-        return this.mockLoader;
-    }
-}
-
-class Factor2 {
-  static loadedCallback(data, content, label, modulo) {
-        const libraryModulo = new Modul2(modulo.config, modulo.partConf); // todo: do deep copies here, so the isolation is enforced by Library
-        console.log('loadedCallback', content);
-        libraryModulo.configure(content); // maybe make this part of constr?
-
-        // Loop through children, loading:
-        const childrenLoadObj = libraryModulo.runLoadLifecycle();
-        Modulo.fetchQ.wait(() => {
-            for (const factoryObj of Object.values(libraryModulo.config.modulo.factories)) {
-                for (const [ name, partConf ] of Object.entries(factoryObj)) {
-                    const cPartName = partConf.Type;
-                    const cpartClass = libraryModulo.partConf.cparts[cPartName];
-                    cpartClass.factoryLoadedCallback(libraryModulo, name, partConf);
-                }
-            }
-        });
-    }
-}
-
-class Librar2 extends Factor2 {
-    static factoryLoadedCallback(libraryModulo, name, partConf) {
-    }
 }
 
 const partConfToData = (pc) => {
@@ -375,25 +200,6 @@ const partConfToData = (pc) => {
     const attrs = pc;
     return { dependencies, content, attrs };
 };
-
-
-/*
-Modulo.cparts.component.loadedCallback = Factor2.prototype.loadedCallback;
-Modulo.cparts.component.factoryLoadedCallback = (modulo, name, partConf) => {
-    const libraryModulo = new Modul2(modulo.config, modulo.partConf);
-    libraryModulo.configure(partConf.Content);
-    const childrenLoadObj = libraryModulo.runLoadLifecycle(); // descend
-    childrenLoadObj.unshift([ 'component', partConfToData(partConf) ]); // Add "self" as CPart
-    const mockLoader = modulo._hackGetMockLoader();
-    // Let children load
-    Modulo.fetchQ.wait(() => {
-        console.log('facLoadedCallback, after wait', childrenLoadObj);
-        const factory = new Modulo.ComponentFactory(mockLoader, name, childrenLoadObj);
-        factory.register();
-    });
-}
-*/
-
 
 Modulo.utils.deepClone = obj => {
     if (obj === null || typeof obj !== 'object') {
@@ -418,13 +224,14 @@ Modul2.defaults = {
     modulo: {
         cparts: {
             modulo: Modul2,
-            library: Librar2,
+            library: class Librar2 { },
             template: Modulo.cparts.template,
             script: Modulo.cparts.script,
             component: Modulo.cparts.component,
             state: Modulo.cparts.state,
             staticdata: Modulo.cparts.staticdata,
             style: Modulo.cparts.style,
+            props: Modulo.cparts.props,
         },
         factories: {
             component: {},
@@ -438,11 +245,78 @@ Modul2.defaults.modulo.cparts.library.isContainer = true;
 Modul2.defaults.modulo.cparts.component.isContainer = true;
 Modul2.defaults.modulo.cparts.modulo.isContainer = true;
 Modul2.defaults.modulo.cparts.component.isFactory = true;
-Modul2.defaults.modulo.cparts.component.isSelfContaining = true;
 
-//window.modul2 = new Modul2(Modul2.defaults);
-window.modul2 = new Modul3();
 
+const hackBuildCParts = function (childrenLoadObj, element) {
+    // This function does the heavy lifting of actually constructing a
+    // component, and is invoked when the component is mounted to the page.
+    element.cparts = { element }; // Include "element", for lifecycle method
+    element.cpartSpares = {}; // no need to include, since only 1 element
+
+    // Loop through the parsed array of objects that define the Component
+    // Parts for this component, checking for errors.
+    for (const [name, partOptions] of childrenLoadObj) {
+        Modulo.assert(name in Modulo.cparts, `Unknown cPart: ${name}`);
+        if (!(name in element.cpartSpares)) {
+            element.cpartSpares[name] = [];
+        }
+        console.log('this is stuff', name, partOptions);
+        const instance = new Modulo.cparts[name](element, partOptions);
+        element.cpartSpares[name].push(instance);
+        element.cparts[name] = instance;
+    }
+}
+
+Modul2.defaults.modulo.cparts.component.factoryCallback = function (baseRenderObj, def) {
+      // Register the Custom Web Component with the browser
+
+      const name = def.partConf.Name || def.partConf.name; // maybe rm lower name
+      const namespace = def.partConf.namespace || 'x';
+      const fullName = namespace + '-' + name; // TODO fix
+
+      const data = {};
+      const loader = { localNameMap: { }, namespace: 'x' }; // HACK loader adapter
+
+      const hackFactoryAdaptor = { fullName, baseRenderObj, loader, name }
+
+      // TODO: Use meta programming:
+      // Build the Component into a class with a name, using a function asset,
+      // so it's built into the build! That way it shows as having that class
+      // when debugging. Invoking the function should create and register the
+      // class. Possibly could be helpful with deduping fetchQ in builds?
+
+      // Create the class that the browser will use to actually instantiate
+      // each Modulo Element (e.g. Component)
+      let id = 1;
+      data.elementClass = class CustomElement extends Modulo.Elemen2 {
+          factory() {
+              hackFactoryAdaptor.buildCParts = (element) => {
+                  const childrenLoadObj = def.children.map(({ partConf }) => [ partConf.Type, partConfToData(partConf) ]);
+                  const cData = partConfToData(def.partConf);
+                  cData.attrs.uniqueId = ++id;
+                  cData.attrs.directiveShortcuts = [
+                      [ /^@/, 'component.event' ],
+                      [ /:$/, 'component.dataProp' ],
+                  ];
+                  childrenLoadObj.unshift([ 'component',  cData]); // Add "self" as CPart
+                  hackBuildCParts(childrenLoadObj, element);
+              }
+              return hackFactoryAdaptor;
+          }
+      };
+
+      // TODO: This is actually the "biggest" try-catch, catching defining a
+      // new component. Need to work on better error messages here.
+      try {
+          console.log('registering ', fullName, data.elementClass);
+          Modulo.globals.customElements.define(fullName.toLowerCase(), data.elementClass);
+      } catch (err) {
+          console.log(`Component ${fullName} failed to define`, err);
+      }
+      return data;
+};
+
+window.modul2 = new Modul2();
 
 
 Modulo.defineAll = function testMod2() {
@@ -450,8 +324,8 @@ Modulo.defineAll = function testMod2() {
     for (const elem of Modulo.globals.document.querySelectorAll(query)) {
         //window.modul2.configure(elem);
         //window.modul2.runLoadLifecycle();
-        window.modul2 = new Modul3(elem);
-        console.log(window.modul2.config, window.modul2.partConf);
+        window.modul2 = new Modul2(elem);
+        //console.log(window.modul2.config, window.modul2.partConf);
     }
 }
 
@@ -484,25 +358,300 @@ Modulo.utils.getNodeCPartName = (node, config) => {
     return cPartName;
 }
 
-/*
-            if (cpartClass.childrenLoadedCallback) { // a factory type
-                const minimodulo = new Modul2(this.config, partConf);
-                minimodulo.configure(); // maybe make this part of constr?
-                data.children = minimodulo.runLoadLifecycle(); // descend
-                const cb = cpartClass.childrenLoadedCallback.bind(cpartClass);
 
-                // Wait for enqueued loads (side-effect of loadFromDOMElement)
-                const mockLoader = this._hackGetMockLoader();
-                Modulo.fetchQ.wait(() => cb(data.children, mockLoader, data));
+/// ELEMENT and COMPONENT code getting ported
+
+Modulo.Elemen2 = class ModuloElemen2 extends HTMLElement {
+    constructor() {
+        super();
+        this.initialize();
+    }
+
+    getDirectives() {
+        return []; // TODO: after moving more into Factory, maybe remove, and also remove from lifecycle?
+    }
+
+    initialize() {
+        this.cparts = {};
+        this.isMounted = false;
+        this.isModulo = true;
+        this.originalHTML = null;
+        this.originalChildren = [];
+        this.fullName = this.factory().fullName;
+        this.initRenderObj = Object.assign({}, this.factory().baseRenderObj);
+    }
+
+    setupCParts() {
+        this.factory().buildCParts(this);
+    }
+
+    rerender(original = null) {
+        if (original) { // TODO: this logic needs refactor
+            if (this.originalHTML === null) {
+                this.originalHTML = original.innerHTML;
             }
+            this.originalChildren = Array.from(original.hasChildNodes() ?
+                                               original.childNodes : []);
+        }
+        this.lifecycle([ 'prepare', 'render', 'reconcile', 'update' ]);
+    }
 
-*/
+    lifecycle(lifecycleNames, rObj={}) {
+        this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
+        for (const lc of lifecycleNames) {
+            for (const [ cpartName, cPart ] of Object.entries(this.cparts)) {
+                const method = cPart[lc + 'Callback'];
+                if (method) {
+                    const result = method.call(cPart, this.renderObj);
+                    if (result) {
+                        this.renderObj[cpartName] = result;
+                    }
+                }
+            }
+        }
+        //this.renderObj = null; // ?rendering is over, set to null
+    }
 
-        /*
-        const cb = Librar2.childrenLoadedCallback;
-        Modulo.fetchQ.wait(() => cb(data.children, mockLoader, data));
-        const cb = cpartClass.childrenLoadedCallback.bind(cpartClass);
-        // Wait for enqueued loads (side-effect of loadFromDOMElement)
-        const mockLoader = modulo._hackGetMockLoader();
-        Modulo.fetchQ.wait(() => cb(data.children, mockLoader, data));
-        */
+    getCurrentRenderObj() {
+        return (this.eventRenderObj || this.renderObj || this.initRenderObj);
+    }
+
+    connectedCallback() {
+        if (this.isMounted) {
+            return; // TODO: possibly just return?
+        }
+
+        if (Modulo.isBackend) { // TODO rm
+            this.parsedCallback(); // ensure synchronous
+        } else {
+            // TODO Consider putting all async into single queue / loop
+            setTimeout(this.parsedCallback.bind(this), 0);
+        }
+    }
+
+    parsedCallback() {
+        let original = this;
+        if (this.hasAttribute('modulo-original-html')) {
+            original = Modulo.utils.makeDiv(this.getAttribute('modulo-original-html'));
+        }
+        this.setupCParts();
+        this.lifecycle([ 'initialized' ]);
+        this.rerender(original); // render and re-mount it's own childNodes
+
+        // XXX - TODO: Needs refactor, should do this somewhere else:
+        if (this.hasAttribute('modulo-original-html')) {
+            const { reconciler } = this.cparts.component;
+            reconciler.patch = reconciler.applyPatch; // Apply patches immediately
+            reconciler.patchAndDescendants(this, 'Mount');
+            reconciler.patch = reconciler.pushPatch;
+        }
+        // XXX --------------------------
+        this.isMounted = true;
+    }
+}
+
+
+Modulo.cparts.component = class Component extends DataPropCPartBase {
+    static getAttrDefaults() {
+        return {
+            mode: 'regular',
+            rerender: 'event',
+            engine: 'ModRec',
+        };
+    }
+
+    static factoryCallback(opts, factory, loadObj) {
+        opts.directiveShortcuts = [
+            [ /^@/, 'component.event' ],
+            [ /:$/, 'component.dataProp' ],
+        ];
+        opts.uniqueId = ++factory.id;
+    }
+
+    headTagLoad({ el }) {
+        //el.remove();
+        // DAED CODE
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    metaTagLoad({ el }) {
+        // TODO: Refactor the following
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    linkTagLoad({ el }) {
+        // TODO: Refactor the following
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    titleTagLoad({ el }) {
+        // TODO: Refactor the following
+        this.element.ownerDocument.head.append(el); // move to head
+    }
+
+    scriptTagLoad({ el }) {
+        const newScript = el.ownerDocument.createElement('script');
+        newScript.src = el.src; // TODO: Possibly copy other attrs?
+        el.remove(); // delete old element
+        this.element.ownerDocument.head.append(newScript);
+    }
+
+    initializedCallback(renderObj) {
+        this.localNameMap = this.element.factory().loader.localNameMap;
+        this.mode = this.attrs.mode || 'regular'; // TODO rm and check tests
+        if (this.mode === 'shadow') {
+            this.element.attachShadow({ mode: 'open' });
+        }
+        this.newReconciler(this.element.initRenderObj.component);
+    }
+
+    getDirectives() {
+        const dirs = [
+            'component.dataPropMount',
+            'component.dataPropUnmount',
+            'component.eventMount',
+            'component.eventUnmount',
+            //'component.childrenLoad',
+            'component.slotLoad',
+        ];
+        if (this.attrs.mode === 'vanish-into-document') {
+            dirs.push('link', 'title', 'meta', 'script');
+        }
+        if (this.attrs.mode !== 'shadow') {
+            // TODO: clean up Load callbacks, either eliminate slotLoad (and
+            // discontinue [component.slot]) in favor of only slotTagLoad, or
+            // refactor somehow
+            dirs.push('slot');
+            this.slotTagLoad = this.slotLoad.bind(this);
+        }
+        return dirs;
+    }
+
+    newReconciler({ directiveShortcuts }) {
+        const opts = { directiveShortcuts, directives: [] };
+        for (const cPart of Object.values(this.element.cparts)) {
+            for (const directiveName of cPart.getDirectives()) {
+                opts.directives[directiveName] = cPart;
+            }
+        }
+        console.log('rec opts', opts);
+        this.reconciler = new Modulo.reconcilers[this.attrs.engine](opts);
+    }
+
+    prepareCallback() {
+        const { originalHTML } = this.element;
+        return { originalHTML, innerHTML: null, patches: null };
+    }
+
+    reconcileCallback(renderObj) {
+        let { innerHTML, patches, root } = renderObj.component;
+        if (innerHTML !== null) {
+
+            // XXX ----------------
+            // HACK for vanish-into-document to preserve Modulo stuff
+            if (this.mode === 'vanish-into-document') {
+                const dE = this.element.ownerDocument.documentElement;
+                const elems = dE.querySelectorAll('template[modulo-embed],modulo');
+                this.element.ownerDocument.head.append(...Array.from(elems));
+            }
+            // XXX ----------------
+
+            if (this.mode === 'regular' || this.mode === 'vanish') {
+                root = this.element; // default, use element as root
+            } else if (this.mode === 'shadow') {
+                root = this.element.shadowRoot;
+            } else if (this.mode === 'vanish-into-document') {
+                root = this.element.ownerDocument.body; // render into body
+            } else {
+                Modulo.assert(this.mode === 'custom-root', 'Err:', this.mode);
+            }
+            patches = this.reconciler.reconcile(root, innerHTML || '', this.localNameMap);// rm last arg
+        }
+        return { patches, innerHTML }; // TODO remove innerHTML from here
+    }
+
+    updateCallback(renderObj) {
+        const { patches, innerHTML } = renderObj.component;
+        if (patches) {
+            this.reconciler.applyPatches(patches);
+        }
+
+        if (!this.element.isMounted && (this.mode === 'vanish' ||
+                                        this.mode === 'vanish-into-document')) {
+            // First time initialized, and is one of the vanish modes
+            this.element.replaceWith(...this.element.childNodes); // Replace self
+            this.element.remove(); // TODO: rm when fully tested
+        }
+    }
+
+    handleEvent(func, payload, ev) {
+        this.element.lifecycle([ 'event' ]);
+        const { value } = (ev.target || {}); // Get value if is <INPUT>, etc
+        func.call(null, payload === undefined ? value : payload, ev);
+        this.element.lifecycle([ 'eventCleanup' ]); // todo: should this go below rerender()?
+        if (this.attrs.rerender !== 'manual') {
+            this.element.rerender(); // always rerender after events
+        }
+    }
+
+    slotLoad({ el, value }) {
+        let chosenSlot = value || el.getAttribute('name') || null;
+        const getSlot = c => c.getAttribute ? (c.getAttribute('slot') || null) : null;
+        let childs = this.element.originalChildren;
+        childs = childs.filter(child => getSlot(child) === chosenSlot);
+
+        if (!el.moduloSlotHasLoaded) { // clear innerHTML if this is first load
+            el.innerHTML = '';
+            el.moduloSlotHasLoaded = true;
+        }
+        el.append(...childs);
+    }
+
+    eventMount({ el, value, attrName, rawName }) {
+        // Note: attrName becomes "event name"
+        // TODO: Make it @click.payload, and then have this see if '.' exists
+        // in attrName and attach as payload if so
+        const { resolveDataProp } = Modulo.utils;
+        const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
+        const func = get(attrName);
+        Modulo.assert(func, `No function found for ${rawName} ${value}`);
+        if (!el.moduloEvents) {
+            el.moduloEvents = {};
+        }
+        const listen = ev => {
+            ev.preventDefault();
+            const payload = get(attrName + '.payload', 'payload');
+            const currentFunction = resolveDataProp(attrName, el);
+            this.handleEvent(currentFunction, payload, ev);
+        };
+        el.moduloEvents[attrName] = listen;
+        el.addEventListener(attrName, listen);
+    }
+
+    eventUnmount({ el, attrName }) {
+        el.removeEventListener(attrName, el.moduloEvents[attrName]);
+        // Modulo.assert(el.moduloEvents[attrName], 'Invalid unmount');
+        delete el.moduloEvents[attrName];
+    }
+
+    dataPropMount({ el, value, attrName, rawName }) { // element, 
+        const { get, set } = Modulo.utils;
+        // Resolve the given value and attach to dataProps
+        if (!el.dataProps) {
+            el.dataProps = {};
+            el.dataPropsAttributeNames = {};
+        }
+        const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
+        const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
+        const val = isVar ? get(renderObj, value) : JSON.parse(value);
+        set(el.dataProps, attrName, val); // set according to path given
+        el.dataPropsAttributeNames[rawName] = attrName;
+    }
+
+    dataPropUnmount({ el, attrName, rawName }) {
+        delete el.dataProps[attrName];
+        delete el.dataPropsAttributeNames[rawName];
+    }
+}
+
+

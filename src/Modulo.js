@@ -513,6 +513,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                 opts.directives[directiveName] = cPart;
             }
         }
+        console.log('rec opts', opts);
         this.reconciler = new Modulo.reconcilers[this.attrs.engine](opts);
     }
 
@@ -635,7 +636,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     static factoryCallback({ attrs }, { componentClass }, renderObj) {
         /* untested / daedcode ---v */
-        componentClass.observedAttributes = Object.keys(attrs);
+        //componentClass.observedAttributes = Object.keys(attrs);
     }
     initializedCallback(renderObj) {
         const props = {};
@@ -666,9 +667,9 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({ content }, { loader, name }, loadObj) {
-        if (loadObj.component.attrs.mode === 'shadow') {
-            return;
-        }
+        //if (loadObj.component.attrs.mode === 'shadow') { // TODO finish
+        //    return;
+        //}
         const { prefixAllSelectors } = Modulo.cparts.style;
         content = prefixAllSelectors(loader.namespace, name, content);
         Modulo.assets.registerStylesheet(content);
