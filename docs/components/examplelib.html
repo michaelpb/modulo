@@ -194,6 +194,73 @@ as static data in with JS, so it does not refresh. -->
 </component>
 
 
+<component name="ColorSelector">
+<Template>
+    <div style="float: right">
+        <p><label>Hue:<br />
+            <input [state.bind] name="hue" type="range" min="0" max="359" step="1" />
+        </label></p>
+        <p><label>Saturation: <br />
+            <input [state.bind] name="sat" type="range" min="0" max="100" step="1" />
+            </label></p>
+        <p><label>Luminosity:<br />
+            <input [state.bind] name="lum" type="range" min="0" max="100" step="1" />
+            </label></p>
+    </div>
+    <div style="
+        width: 80px; height: 80px;
+        background: hsl({{ state.hue }}, {{ state.sat }}%, {{ state.lum }}%)">
+    </div>
+</Template>
+<State
+    hue:=130
+    sat:=50
+    lum:=50
+></State>
+</component>
+
+
+
+<component name="API">
+<Template>
+<p>{{ state.name }} | {{ state.location }}</p>
+<p>{{ state.bio }}</p>
+<a href="https://github.com/{{ state.search }}/" target="_blank">
+    {% if state.search %}github.com/{{ state.search }}/{% endif %}
+</a>
+<input [state.bind] name="search"
+    placeholder="Type GitHub username" />
+<button @click:=script.fetchGitHub>Get Info</button>
+</Template>
+
+<State
+    search=""
+    name=""
+    location=""
+    bio=""
+></State>
+
+<Script>
+    function fetchGitHub() {
+        fetch(`https://api.github.com/users/${state.search}`)
+            .then(response => response.json())
+            .then(githubCallback);
+    }
+    function githubCallback(apiData) {
+        state.name = apiData.name;
+        state.location = apiData.location;
+        state.bio = apiData.bio;
+        element.rerender();
+    }
+</Script>
+
+<testsuite
+    src="./examplelib-tests/API-tests.html"
+></testsuite>
+
+</component>
+
+
 
 
 
@@ -320,6 +387,181 @@ an example of more complicated HTML and JS behavior -->
 
 
 
+<component name="DateNumberPicker">
+<Template>
+    <p>ISO: <tt>{{ state.year }}-{{ state.month }}-{{ state.day }}</tt></p>
+    {% for part in state.ordering %}
+        <label>
+            {{ state|get:part }}
+            <div>
+                <button @click:=script.next payload="{{ part }}">&uarr;</button>
+                <button @click:=script.previous payload="{{ part }}">&darr;</button>
+            </div>
+        </label>
+    {% endfor %}
+</Template>
+
+<State
+    day:=1
+    month:=1
+    year:=2022
+    ordering:='["year", "month", "day"]'
+></State>
+
+<Script>
+    function isValid({ year, month, day }) {
+        month--; // Months are zero indexed
+        const d = new Date(year, month, day);
+        return d.getMonth() === month && d.getDate() === day && d.getFullYear() === year;
+    }
+    function next(part) {
+        state[part]++;
+        if (!isValid(state)) { // undo if not valid
+            state[part]--;
+        }
+    }
+    function previous(part) {
+        state[part]--;
+        if (!isValid(state)) { // undo if not valid
+            state[part]++;
+        }
+    }
+</Script>
+
+<Style>
+    :host {
+        border: 1px solid black;
+        padding: 10px;
+        margin: 10px;
+        margin-left: 0;
+        display: flex;
+        flex-wrap: wrap;
+        font-weight: bold;
+    }
+    div {
+        float: right;
+    }
+    label {
+        display: block;
+        width: 100%;
+    }
+</Style>
+</component>
+
+
+<component name="FlexibleForm">
+<!-- Here, we have a form that's easy to update. If this gets used more
+than a couple times, it could be turned into a reusable component where
+the "ordering" and initial values get set via Props. -->
+<Template>
+    <form>
+        {% for field in state.fields %}
+            <div class="field-pair">
+                <label for="{{ field }}_{{ component.uniqueId }}">
+                    <strong>{{ field|capfirst }}:</strong>
+                </label>
+                <input
+                    [state.bind]
+                    type='{% if state|get:field|type == "string" %}text{% else %}checkbox{% endif %}'
+                    name="{{ field }}"
+                    id="{{ field }}_{{ component.uniqueId }}"
+                />
+            </div>
+        {% endfor %}
+    </form>
+</Template>
+
+<State
+    name="Spartacus"
+    topic="On the treatment of Thracian gladiators"
+    subscribe:=true
+    private:=false
+    comment="So, like, Romans claim to be all about virtue, but do you know what I think? I think they stink."
+    fields:='["name", "topic", "comment", "private", "subscribe"]'
+></State>
+</component>
+
+
+
+
+
+<component name="FlexibleFormWithAPI">
+<!-- Combining the code from the previous exercise, we can interact with
+APIs. Here we use a Typicode's placeholder API to make posts -->
+<Template>
+    <form>
+        {% for field in state.fields %}
+            <div class="field-pair">
+                <label for="{{ field }}_{{ component.uniqueId }}">
+                    <strong>{{ field|capfirst }}:</strong>
+                </label>
+                <input
+                    [state.bind]
+                    type='{% if state|get:field|type == "number" %}number{% else %}text{% endif %}'
+                    name="{{ field }}"
+                    id="{{ field }}_{{ component.uniqueId }}"
+                />
+            </div>
+        {% endfor %}
+        <button @click:=script.submit>Post comment</button>
+        <hr />
+
+        {% for post in state.posts|reversed %}
+            <p>
+                {{ post.userId }}:
+                <strong>{{ post.title|truncate:15 }}</strong>
+                {{ post.body|truncate:18 }}
+            </p>
+        {% endfor %}
+    </form>
+</Template>
+
+<State
+    user:=1337
+    topic="On the treatment of Thracian gladiators"
+    comment="So, like, Romans claim to be all about virtue, but do you know what I think? I think they stink."
+    fields:='["user", "topic", "comment"]'
+    posts:='[]'
+></State>
+
+<Script>
+    const URL = 'https://jsonplaceholder.typicode.com/posts';
+    const fakedPosts = []; // Since Typicode API doesn't save it's POST
+                           // data, we'll have to fake it here
+    function initializedCallback() {
+        refresh();
+    }
+
+    function refresh(lastdata) {
+        fetch(URL).then(r => r.json()).then(data => {
+            state.posts = data.concat(fakedPosts);
+            element.rerender();
+        });
+    }
+
+    function submit() {
+        // Rename the state variables to be what the API suggests
+        const postData = {
+              userId: state.user,
+              title: state.topic,
+              body: state.comment,
+        };
+        state.topic = ''; // clear the comment & topic text
+        state.comment = '';
+        fakedPosts.push(postData); // Add to faked list
+
+        // Set up  the POST fetch, and then refresh after
+        const opts = {
+            method: 'POST',
+            body: JSON.stringify(postData),
+            headers: { 'Content-type': 'application/json; charset=UTF-8' },
+        };
+        fetch(URL, opts).then(r => r.json()).then(refresh);
+    }
+</Script>
+
+</component>
+
 
 
 
@@ -348,8 +590,107 @@ DemoModal and DemoChart are already defined. Try using below! -->
 
 
 
+<component name="OscillatingGraph">
+<Template>
+
+    <!-- Note that even with custom components, core properties like "style"
+        are available, making CSS variables a handy way of specifying style
+        overrides. -->
+    <x-DemoChart
+        data:=state.data
+        animated:=true
+        style="
+            --align: center;
+            --speed: {{ state.anim }};
+        "
+    ></x-DemoChart>
+
+    <p>
+        {% if not state.playing %}
+            <button @click:=script.play alt="Play">&#x25B6;  tick: {{ state.tick }}</button>
+        {% else %}
+            <button @click:=script.pause alt="Pause">&#x2016;  tick: {{ state.tick }}</button>
+        {% endif %}
+    </p>
+
+    {% for name in script.exports.properties %}
+        <label>{{ name|capfirst }}:
+            <input [state.bind]
+                name="{{ name }}"
+                type="range"
+                min="1" max="20" step="1" />
+        </label>
+    {% endfor %}
+</Template>
+
+<State
+    playing:=false
+    speed:=10
+    easing="linear"
+    align="flex-end"
+    tick:=1
+    width:=10
+    anim:=10
+    speed:=10
+    pulse:=1
+    offset:=1
+    data:=[]
+></State>
+<Script>
+    let timeout = null;
+    script.exports.properties = ["anim", "speed", "width", "pulse"];//, "offset"];
+    function play() {
+        state.playing = true;
+        nextTick();
+    }
+    function pause() {
+        state.playing = false;
+    }
+    function setEasing(payload) {
+        state.easing = payload;
+    }
+
+    function nextTick() {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        const el = element;
+        timeout = setTimeout(() => {
+            el.rerender();
+        }, 2000 / state.speed);
+    }
+
+    function updateCallback() {
+        if (state.playing) {
+            while (state.data.length <= state.width) {
+                state.tick++;
+                state.data.push(Math.sin(state.tick / state.pulse) + 1); // add to right
+            }
+            state.data.shift(); // remove one from left
+            nextTick();
+        }
+    }
+</Script>
+<Style>
+    input {
+        width: 50px;
+    }
+</Style>
+</component>
 
 
+
+
+<!--
+
+    {% comment "Uncomment this comment to try changing the easing!" %}
+    <x-DemoSelector
+        [state.bind]
+        name="easing"
+        options:='["linear", "ease-out", "ease-in", "ease-in-out"]'
+    ></x-DemoSelector>
+    {% endcomment %}
+-->
 
 <component name="PrimeSieve">
 <!-- Demos mouseover, template filters, template control flow,

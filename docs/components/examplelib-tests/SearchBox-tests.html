@@ -1,12 +1,13 @@
 <test name="Renders based on state">
     <template name="Ensure initial render is correct" test-values>
-        <p>Start typing a book name to see "search as you type"
+        <p>Type a book name for "search as you type"
         (e.g. try “the lord of the rings”)</p>
         <input
             [state.bind]
             name="search"
+            @keyup:=script.typingCallback
             value=""
-            @keyup:=script.typingCallback />
+          />
         <div class="results ">
             <div class="results-container">
                 <p>No books found.</p>
@@ -19,16 +20,17 @@
     ></state>
 
     <template name="Shows loading when typing" test-values>
-        <p>Start typing a book name to see "search as you type"
+        <p>Type a book name for "search as you type"
         (e.g. try “the lord of the rings”)</p>
         <input
             [state.bind]
             name="search"
+            @keyup:=script.typingCallback
             value="the lord of the rings"
-            @keyup:=script.typingCallback />
-        <div class="results visible">
+        />
+        <div class="results visible ">
             <div class="results-container">
-                <img style="margin-top: 30px"
+                <img
                     src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif"
                     alt="loading" />
             </div>
@@ -82,36 +84,18 @@
     </script>
 
     <template name="ensure rerender is as expected">
-        <p>Start typing a book name to see "search as you type" (e.g. try “the lord of the rings”)</p>
-        <input [state.bind]="" name="search" @keyup:="script.typingCallback">
-        <div class="results visible">
-            <div class="results-container">
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/9255566-S.jpg">
-                    <label>The Lord of the Rings</label>
-                </div>
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/8474036-S.jpg">
-                    <label>The Fellowship of the Ring</label>
-                </div>
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/528867-S.jpg">
-                    <label>The Lord of the Rings Trilogy (Lord of the Rings)</label>
-                </div>
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/1454705-S.jpg">
-                    <label>Lord of the Rings</label>
-                </div>
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/2111453-S.jpg">
-                    <label>Lord of the Rings</label>
-                </div>
-                <div class="result">
-                    <img src="http://covers.openlibrary.org/b/id/undefined-S.jpg">
-                    <label>Lords of the ring</label>
-                </div>
-            </div>
+      <p>Type a book name for "search as you type" (e.g. try “the lord of the rings”)</p>
+      <input [state.bind]="" name="search" @keyup:="script.typingCallback">
+      <div class="results visible ">
+        <div class="results-container">
+          <div class="result"><img src="https://covers.openlibrary.org/b/id/9255566-S.jpg"><label>The Lord of the Rings</label></div>
+          <div class="result"><img src="https://covers.openlibrary.org/b/id/8474036-S.jpg"><label>The Fellowship of the Ring</label></div>
+          <div class="result"><img src="https://covers.openlibrary.org/b/id/528867-S.jpg"><label>The Lord of the Rings Trilogy (Lord of the Rings)</label></div>
+          <div class="result"><img src="https://covers.openlibrary.org/b/id/1454705-S.jpg"><label>Lord of the Rings</label></div>
+          <div class="result"><img src="https://covers.openlibrary.org/b/id/2111453-S.jpg"><label>Lord of the Rings</label></div>
+          <div class="result"><img src="https://covers.openlibrary.org/b/id/undefined-S.jpg"><label>Lords of the ring</label></div>
         </div>
+      </div>
     </template>
 </test>
 

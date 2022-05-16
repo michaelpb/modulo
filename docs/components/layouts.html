@@ -168,17 +168,21 @@
 <component name="DemoChart">
     <Props
         data
+        animated
     ></Props>
     <Template>
-        <div class="chart-container">
+        <div class="chart-container
+        {% if props.animated %}animated{% endif %}">
             {% for percent in script.percent %}
                 <div style="height: {{ percent }}px; width: {{ script.width }}px">
                 </div>
             {% endfor %}
         </div>
-        {% for value in props.data %}
-            <label style="width: {{ script.width }}px">{{ value }}</label>
-        {% endfor %}
+        {% if not props.animated %}
+            {% for value in props.data %}
+                <label style="width: {{ script.width }}px">{{ value }}</label>
+            {% endfor %}
+        {% endif %}
     </Template>
 
     <Script>
@@ -210,6 +214,10 @@
             border-radius: 1px 5px 1px 5px;
             box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
             margin-top: -5px;
+        }
+
+        .chart-container.animated > div {
+            transition: height calc(var(--speed, 10) * 0.1s) var(--easing, linear);
         }
         .chart-container > div:first-of-type {
             margin-left: -4px;
@@ -318,4 +326,67 @@
         }
     </Style>
 </Component>
+
+
+<!-- Used by demos! -->
+<component name="DemoSelector">
+    <Props
+        onchange
+        options
+        name
+    ></Props>
+
+    <Template>
+        {% for option in props.options %}
+            <input
+                type="radio" 
+                id="{{ props.name }}_{{ option }}"
+                name="{{ props.name }}"
+                payload="{{ option }}"
+                @change:=script.setValue
+            /><label for="{{ props.name }}_{{ option }}">{{ option }}</label>
+        {% endfor %}
+    </Template>
+
+    <State
+        value=""
+    ></State>
+
+    <Script>
+        function prepareCallback() {
+            state.value = element.value;
+        }
+
+        function setValue(val) {
+            state.value = val;
+            element.value = val;
+            element.dispatchEvent(new Event('change'));
+        }
+    </Script>
+
+
+    <Style>
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 1px 5px 1px 5px;
+            background:  #b90183;
+            color: black;
+            border: 1px solid grey;
+            box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
+            cursor: default;
+            margin-top: 0px;
+            padding: 5px;
+            background-color: white;
+            margin-bottom: 4px;
+            margin-left: 3px;
+        }
+        input:checked + label {
+            box-shadow: inset 5px 5px 1px 1px hsla(0,0%,39.2%,.3);
+            margin-top: 5px;
+        }
+    </Style>
+</Component>
+
+
 

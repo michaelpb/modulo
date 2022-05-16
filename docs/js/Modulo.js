@@ -1,7 +1,7 @@
 'use strict';
-// Modulo, when released as BETA, will have clean and commented code.  Until
-// then, the code is a mess, riddled with TODO's, not "literate" and thus
-// merely aspires to much better comments, formatting, lower complexity, etc.
+// Modulo, when released as BETA, will have clean and commented code, at <2k
+// lines.  Until then, the code is riddled with TODO's and thus merely aspires
+// to much better comments, formatting, lower complexity, etc.
 
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
@@ -25,7 +25,8 @@ Modulo.defineAll = function defineAll() { // NEEDS REFACTOR after config stack
     }
 };
 
-Modulo.ComponentPart = class ComponentPart {
+// TODO: Temp, hack allowing extending of ComponentPart
+Modulo.ComponentPart = typeof ModuloComponentPart !== 'undefined' ? ModuloComponentPart  : class ComponentPart {
     static getAttrDefaults(node, loader) {
         return {};
     }
@@ -209,6 +210,7 @@ Modulo.ComponentFactory = class ComponentFactory {
         this.loader = loader;
         this.config = this.loader.config;
         this.name = name;
+        this.id = 1;
         this.fullName = `${this.loader.namespace}-${name}`;
 
         this.isModule = this.loader.namespace === name; // if name = namespace
@@ -443,6 +445,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
         ];
+        opts.uniqueId = ++factory.id;
     }
 
     headTagLoad({ el }) {
@@ -488,11 +491,11 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             'component.dataPropUnmount',
             'component.eventMount',
             'component.eventUnmount',
-            //'component.childrenLoad',
             'component.slotLoad',
         ];
+        const vanishTags = [ 'link', 'title', 'meta', 'script' ];
         if (this.attrs.mode === 'vanish-into-document') {
-            dirs.push('link', 'title', 'meta', 'script');
+            dirs.push(...vanishTags);
         }
         if (this.attrs.mode !== 'shadow') {
             // TODO: clean up Load callbacks, either eliminate slotLoad (and
@@ -531,7 +534,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                 this.element.ownerDocument.head.append(...Array.from(elems));
             }
             // XXX ----------------
-
 
             if (this.mode === 'regular' || this.mode === 'vanish') {
                 root = this.element; // default, use element as root
@@ -591,11 +593,12 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const { resolveDataProp } = Modulo.utils;
         const get = (key, key2) => resolveDataProp(key, el, key2 && get(key2));
         const func = get(attrName);
-        Modulo.assert(func, `Bad @${attrName} event: ${value} is falsy`);
+        Modulo.assert(func, `No function found for ${rawName} ${value}`);
         if (!el.moduloEvents) {
             el.moduloEvents = {};
         }
         const listen = ev => {
+            ev.preventDefault();
             const payload = get(attrName + '.payload', 'payload');
             const currentFunction = resolveDataProp(attrName, el);
             this.handleEvent(currentFunction, payload, ev);
@@ -611,7 +614,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     }
 
     dataPropMount({ el, value, attrName, rawName }) { // element, 
-        const { get } = Modulo.utils;
+        const { get, set } = Modulo.utils;
         // Resolve the given value and attach to dataProps
         if (!el.dataProps) {
             el.dataProps = {};
@@ -620,22 +623,8 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        el.dataProps[attrName] = val;
+        set(el.dataProps, attrName, val); // set according to path given
         el.dataPropsAttributeNames[rawName] = attrName;
-
-        /*
-        //const renderObj = isVar ? (obj || element.getCurrentRenderObj()) : {}; // not sure why I was doing it this way?
-        // TODO: Refactor this:
-        const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
-        const val = isVar ? get(renderObj, value) : JSON.parse(value);
-        //needs work for dataObj support (e.g. building objs with '.' syntax)
-        const index = attrName.lastIndexOf('.') + 1;
-        const key = attrName.slice(index);
-        const path = attrName.slice(0, index);
-        const dataObj = index > 0 ? get(el.dataProps, path) : el.dataProps;
-        dataObj[key] = typeof val === 'function' ? val.bind(dataObj) : val;
-        */
-
     }
 
     dataPropUnmount({ el, attrName, rawName }) {
@@ -647,7 +636,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 Modulo.cparts.props = class Props extends Modulo.ComponentPart {
     static factoryCallback({ attrs }, { componentClass }, renderObj) {
         /* untested / daedcode ---v */
-        componentClass.observedAttributes = Object.keys(attrs);
+        //componentClass.observedAttributes = Object.keys(attrs);
     }
     initializedCallback(renderObj) {
         const props = {};
@@ -678,17 +667,19 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     static factoryCallback({ content }, { loader, name }, loadObj) {
-        if (loadObj.component.attrs.mode === 'shadow') {
-            return;
-        }
-        const { prefixAllSelectors } = Modulo.cparts.style;
-        content = prefixAllSelectors(loader.namespace, name, content);
+        //if (loadObj.component.attrs.mode === 'shadow') { // TODO finish
+        //    return;
+        //}
+        //if (loadObj.component.attrs.mode === 'regular') { // TODO finish
+            const { prefixAllSelectors } = Modulo.cparts.style;
+            content = prefixAllSelectors(loader.namespace, name, content);
+        //}
         Modulo.assets.registerStylesheet(content);
     }
 
     initializedCallback(renderObj) {
         const { component, style } = renderObj;
-        if (component.attrs && component.attrs.mode === 'shadow') { // TODO Finish
+        if (component && component.attrs && component.attrs.mode === 'shadow') { // TODO Finish
             console.log('Shadow styling!');
             const style = Modulo.globals.document.createElement('style');
             style.setAttribute('modulo-ignore', 'true');
@@ -698,7 +689,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     }
 
     static prefixAllSelectors(namespace, name, text='') {
-        // TODO - Refactor this into a helper (has old tests that can be resurrected)
+        // TODO - Refactor this into a helper in asset manager (has old tests that can be resurrected)
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
 
@@ -734,15 +725,6 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
 
 Modulo.cparts.template = class Template extends Modulo.ComponentPart {
-    /*
-    static factoryCallback(opts, factory, loadObj) {
-        // TODO: Delete this after we are done with directive-based expansion
-        const tagPref = '$1' + factory.loader.namespace + '-';
-        const content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
-        return { content };
-    }
-    */
-
     static factoryCallback(partOptions, factory, renderObj) {
         const engineClass = Modulo.templating[partOptions.attrs.engine || 'MTL'];
         const opts = Object.assign({}, partOptions.attrs, {
@@ -753,10 +735,12 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
     constructor(element, options) {
         super(element, options);
-        if (!options.instance) { // TODO: Remove, needed for tests
-            Modulo.cparts.template.factoryCallback(options);
+        if (options) {
+            if (!options.instance) { // TODO: Remove, needed for tests
+                Modulo.cparts.template.factoryCallback(options);
+            }
+            this.instance = options.instance;
         }
-        this.instance = options.instance;
     }
 
     prepareCallback(renderObj) {
@@ -834,7 +818,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         super(element, options);
 
         // Attach callbacks from script to this, to hook into lifecycle.
-        const { script } = element.initRenderObj;
+        const { script } = this.element.initRenderObj;
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
@@ -888,41 +872,45 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     initializedCallback(renderObj) {
         if (!this.data) {
             // Initialize with deep copy of attributes
-            // TODO: Need to do proper deep-copy... is this okay?
-            // this.data = JSON.parse(JSON.stringify(this.attrs));
             let { attrs } = this;
             if (attrs.attrs) { // TODO: Hack code here, not sure why its like this
                 attrs = attrs.attrs;
             }
             this.data = Object.assign({}, attrs);
+            // TODO: Need to do proper deep-copy... is this okay?
+            this.data = JSON.parse(JSON.stringify(this.data));
         }
 
         this.boundElements = {}; // initialize
-        for (const name of Object.keys(this.data)) {
-            this.boundElements[name] = [];
-        }
         return this.data;
     }
 
     bindMount({ el, attrName, value }) {
-        const { assert } = Modulo;
         const name = el.getAttribute('name') || attrName;
-        assert(name in this.data, `[state.bind]: key "${name}" not in state`);
+        const val = Modulo.utils.get(this.data, name);
+        Modulo.assert(val !== undefined, `state.bind "${name}" is undefined`);
         const listen = () => {
-            // TODO: redo
+            // TODO: Refactor this function + propagate to be more consistent +
+            // extendable with types / conversions -- MAYBE even just attach it
+            // as stateChangeCallback!
             let { value, type, checked, tagName } = el;
             if (type && type === 'checkbox') {
-                value === !!checked;
+                value = !!checked;
+            } else if (type && (type === 'range' || type === 'number')) {
+                value = Number(value); // ensure ranges & numbers get evaled
             }
-            this.set(name, value);
+            this.set(name, value, el);
         };
         const isText = el.tagName === 'TEXTAREA' || el.type === 'text';
         const evName = value ? value : (isText ? 'keyup' : 'change');
         //assert(!this.boundElements[name], `[state.bind]: Duplicate "${name}"`);
 
+        if (!(name in this.boundElements)) {
+            this.boundElements[name] = [];
+        }
         this.boundElements[name].push([ el, evName, listen ]);
-        el.value = this.data[name];
-        el.addEventListener(evName, listen);
+        el.addEventListener(evName, listen); // todo: make optional, e.g. to support cparts?
+        this.propagate(name, val); // trigger initial assignment(s)
     }
 
     bindUnmount({ el, attrName }) {
@@ -947,9 +935,10 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
-    set(name, value) {
-        /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } */
-        this.data[name] = value;
+    set(name, value, originalEl) {
+        /* if (valueOrEv.target) { this.data[valueOrEv.target.name] = name; } else { } if ((name in this.boundElements) && this.boundElements[name].length > 1) { } */
+        Modulo.utils.set(this.data, name, value);
+        this.propagate(name, value, originalEl);
         this.element.rerender();
     }
 
@@ -957,18 +946,28 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
         this._oldData = Object.assign({}, this.data);
     }
 
+    propagate(name, val, originalEl = null) {
+        for (const [ el, evName, cb ] of (this.boundElements[name] || [])) {
+            if (originalEl && el === originalEl) {
+                continue; // don't propagate to self
+            }
+            if (el.stateChangedCallback) {
+                el.stateChangedCallback(name, val, originalEl);
+            } else if (el.type === 'checkbox') {
+                el.checked = !!val; // ensure is bool
+            } else {
+                el.value = val;
+            }
+        }
+    }
+
     eventCleanupCallback() {
+        // TODO: Instead, should JUST do _oldData with each key from boundElements, and thus more efficiently loop through
         for (const name of Object.keys(this.data)) {
             Modulo.assert(name in this._oldData, `There is no "state.${name}"`);
             const val = this.data[name];
             if (name in this.boundElements && val !== this._oldData[name]) {
-                for (const [ el, evName, listen ] of this.boundElements[name]) {
-                    if (el.type === 'checkbox') {
-                        el.checked = !!val;
-                    } else {
-                        el.value = val;
-                    }
-                }
+                this.propagate(name, val);
             }
         }
         this._oldData = null;
@@ -980,6 +979,9 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
         this.compiledCode = this.compile(text);
+        const unclosed = this.stack.map(({ close }) => close).join(', ');
+        Modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`);
+
         if (!this.renderFunc) {
             this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
         }
@@ -1168,6 +1170,7 @@ Modulo.templating.defaultOptions.filters = (function () {
         pluralize: (s, arg) => (arg.split(',')[(s === 1) * 1]) || '',
         subtract: (s, arg) => s - arg,
         truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
+        type: s => s === null ? 'null' : (Array.isArray(s) ? 'array' : typeof s),
         renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
         reversed: s => Array.from(s).reverse(),
         upper: s => s.toUpperCase(),
@@ -1638,23 +1641,17 @@ Modulo.utils = class utils {
         return `./${filename}`; // by default, return local path
     }
 
-    static loadNodeData(node) {
-        // DEAD CODE
-        //const {parseAttrs} = Modulo.utils;
-        const {tagName, dataProps} = node;
-        const attrs = Object.assign(/*parseAttrs(node), */dataProps);
-        const {name} = attrs;
-        let type = tagName.toLowerCase();
-        const splitType = (node.getAttribute('type') || '').split('/');
-        const content = tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
-        if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
-            type = splitType[1];
-        }
-        return {attrs, type, name, content};
+    static get(obj, key) {
+        // TODO:  It's get that should autobind functions!!
+        return key.split('.').reduce((o, name) => o[name], obj);
     }
 
-    static get(obj, key) {
-        return key.split('.').reduce((o, name) => o[name], obj);
+    static set(obj, keyPath, val, ctx = null) {
+        const index = keyPath.lastIndexOf('.') + 1; // 0 if not found
+        const key = keyPath.slice(index);
+        const path = keyPath.slice(0, index - 1); // exclude .
+        const dataObj = index ? Modulo.utils.get(obj, path) : obj;
+        dataObj[key] = val;// typeof val === 'function' ? val.bind(ctx) : val;
     }
 
     static dirname(path) {
@@ -1696,7 +1693,13 @@ Modulo.utils = class utils {
     }
 
     static cleanWord(text) {
+        // should merge with stripWord ?
         return (text + '').replace(/[^a-zA-Z0-9$_\.]/g, '') || '';
+    }
+
+    static stripWord(text) {
+        return text.replace(/^[^a-zA-Z0-9$_\.]/, '')
+                   .replace(/[^a-zA-Z0-9$_\.]$/, '');
     }
 
     static transformTag(n1, tag2) {
@@ -1719,8 +1722,7 @@ Modulo.utils = class utils {
     static parseDirectives(rawName, directiveShortcuts) { //, foundDirectives) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
-            // TODO: If we ever support key= as a shortcut, this
-            // will break
+            // TODO: If we ever support key= as a shortcut, this will break
         }
 
         // "Expand" shortcuts into their full versions
@@ -1735,9 +1737,9 @@ Modulo.utils = class utils {
         }
 
         // There are directives... time to resolve them
-        const { cleanWord } = Modulo.utils;
+        const { cleanWord, stripWord } = Modulo.utils;
         const arr = [];
-        const attrName = cleanWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
+        const attrName = stripWord((name.match(/\][^\]]+$/) || [ '' ])[0]);
         for (const directiveName of name.split(']').map(cleanWord)) {
             // Skip the bare name itself, and filter for valid directives
             if (directiveName !== attrName) {// && directiveName in directives) {
