@@ -1,8 +1,7 @@
-
 'use strict';
-// Modulo, when released as BETA, will have clean and commented code.  Until
-// then, the code is a mess, riddled with TODO's, not "literate" and thus
-// merely aspires to much better comments, formatting, lower complexity, etc.
+// Modulo, when released as BETA, will have clean and commented code, at <2k
+// lines.  Until then, the code is riddled with TODO's and thus merely aspires
+// to much better comments, formatting, lower complexity, etc.
 
 if (typeof HTMLElement === 'undefined') {
     var HTMLElement = class {}; // Node.js compatibilty
