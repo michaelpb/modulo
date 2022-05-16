@@ -1,3 +1,4 @@
+
 'use strict';
 // Modulo, when released as BETA, will have clean and commented code.  Until
 // then, the code is a mess, riddled with TODO's, not "literate" and thus
@@ -25,7 +26,8 @@ Modulo.defineAll = function defineAll() { // NEEDS REFACTOR after config stack
     }
 };
 
-Modulo.ComponentPart = class ComponentPart {
+// TODO: Temp, hack allowing extending of ComponentPart
+Modulo.ComponentPart = typeof ModuloComponentPart !== 'undefined' ? ModuloComponentPart  : class ComponentPart {
     static getAttrDefaults(node, loader) {
         return {};
     }
@@ -490,11 +492,11 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
             'component.dataPropUnmount',
             'component.eventMount',
             'component.eventUnmount',
-            //'component.childrenLoad',
             'component.slotLoad',
         ];
+        const vanishTags = [ 'link', 'title', 'meta', 'script' ];
         if (this.attrs.mode === 'vanish-into-document') {
-            dirs.push('link', 'title', 'meta', 'script');
+            dirs.push(...vanishTags);
         }
         if (this.attrs.mode !== 'shadow') {
             // TODO: clean up Load callbacks, either eliminate slotLoad (and
@@ -513,7 +515,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
                 opts.directives[directiveName] = cPart;
             }
         }
-        console.log('rec opts', opts);
         this.reconciler = new Modulo.reconcilers[this.attrs.engine](opts);
     }
 
@@ -670,14 +671,16 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
         //if (loadObj.component.attrs.mode === 'shadow') { // TODO finish
         //    return;
         //}
-        const { prefixAllSelectors } = Modulo.cparts.style;
-        content = prefixAllSelectors(loader.namespace, name, content);
+        //if (loadObj.component.attrs.mode === 'regular') { // TODO finish
+            const { prefixAllSelectors } = Modulo.cparts.style;
+            content = prefixAllSelectors(loader.namespace, name, content);
+        //}
         Modulo.assets.registerStylesheet(content);
     }
 
     initializedCallback(renderObj) {
         const { component, style } = renderObj;
-        if (component.attrs && component.attrs.mode === 'shadow') { // TODO Finish
+        if (component && component.attrs && component.attrs.mode === 'shadow') { // TODO Finish
             console.log('Shadow styling!');
             const style = Modulo.globals.document.createElement('style');
             style.setAttribute('modulo-ignore', 'true');
@@ -687,7 +690,7 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
     }
 
     static prefixAllSelectors(namespace, name, text='') {
-        // TODO - Refactor this into a helper (has old tests that can be resurrected)
+        // TODO - Refactor this into a helper in asset manager (has old tests that can be resurrected)
         const fullName = `${namespace}-${name}`;
         let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
 
@@ -723,15 +726,6 @@ Modulo.cparts.style = class Style extends Modulo.ComponentPart {
 
 
 Modulo.cparts.template = class Template extends Modulo.ComponentPart {
-    /*
-    static factoryCallback(opts, factory, loadObj) {
-        // TODO: Delete this after we are done with directive-based expansion
-        const tagPref = '$1' + factory.loader.namespace + '-';
-        const content = (opts.content || '').replace(/(<\/?)my-/ig, tagPref);
-        return { content };
-    }
-    */
-
     static factoryCallback(partOptions, factory, renderObj) {
         const engineClass = Modulo.templating[partOptions.attrs.engine || 'MTL'];
         const opts = Object.assign({}, partOptions.attrs, {
@@ -742,10 +736,12 @@ Modulo.cparts.template = class Template extends Modulo.ComponentPart {
 
     constructor(element, options) {
         super(element, options);
-        if (!options.instance) { // TODO: Remove, needed for tests
-            Modulo.cparts.template.factoryCallback(options);
+        if (options) {
+            if (!options.instance) { // TODO: Remove, needed for tests
+                Modulo.cparts.template.factoryCallback(options);
+            }
+            this.instance = options.instance;
         }
-        this.instance = options.instance;
     }
 
     prepareCallback(renderObj) {
@@ -823,7 +819,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         super(element, options);
 
         // Attach callbacks from script to this, to hook into lifecycle.
-        const { script } = element.initRenderObj;
+        const { script } = this.element.initRenderObj;
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
