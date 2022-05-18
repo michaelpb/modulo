@@ -1,169 +1,25 @@
-<div id="output"></div>
-<!-- Load Babel -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
 <script src="/js/Modulo.js"></script>
-
-<script>
-    Modulo.cparts.jsxtemplate = class JSXTemplate extends Modulo.ComponentPart {
-        static factoryCallback(partOptions, factory, renderObj) {
-            const DEFAULT_CONF = { presets: [ "env", "react" ] };
-            let { content, attrs } = partOptions;
-            if (!attrs.multiline) {
-                content = `return (\n${content}\n);`;
-            }
-            const opts = { babel: (attrs.babel || DEFAULT_CONF) };
-
-
-            /*
-            Modulo.js:
-            const lcName = instance.name.toLowerCase();
-            instance.loader.localNameMap[lcName] = instance.fullName;
-            Modulo.factoryInstances[instance.fullName] = instance;
-            */
-
-            const nameMap = Object.fromEntries(
-                Object.entries(factory.loader.localNameMap).map(
-                    ([key, fullName]) => [
-                        Modulo.factoryInstances[fullName].name,
-                        fullName,
-                    ]));
-            console.log('this is map', nameMap);
-            //this.localNameMap = this.element.factory().loader.localNameMap;
-            const args = [
-                "React",
-                ...Object.keys(nameMap),
-                ...Object.keys(Modulo.cparts),
-            ];
-            const func = Modulo.assets.registerFunction(args, content, opts);
-            Object.assign(partOptions, { args, func, nameMap });
-        }
-
-        constructor(element, options) {
-            super(element, options);
-            this.renderFunc = options.func;
-            this.renderArgs = options.args;
-            this.renderMap = options.nameMap;
-        }
-
-        prepareCallback(renderObj) {
-            const stored = {};
-            // Setup a "React-like" interface
-            renderObj.React = {
-                createElement: (name, attrs, ...children) => {
-                    const attrStr = this.serializeAttrs(attrs, stored);
-                    // Flatten arrays
-                    const sumArr = arr => arr.reduce((a, b) => (
-                                (Array.isArray(a) ? sumArr(a) : a) +
-                                (Array.isArray(b) ? sumArr(b) : b)
-                            ), '');
-                    return `<${name}${attrStr}>${sumArr(children)}</${name}>`;
-                },
-            };
-            return { stored }
-        }
-
-        serializeAttrs(attrs, stored) {
-            if (!attrs) {
-                return '';
-            }
-            let result = '';
-            const { escapeText } = Modulo.templating.MTL.prototype;
-            for (let [ key, value ] of Object.entries(attrs)) {
-                if (key === 'style' && typeof value === 'object') {
-                    value = Object.entries(value)
-                        .map(([key, value]) =>
-                            `${key}: ${value}${Number.isNumber(value) ? 'px' : ''};`)
-                        .join(';\n');
-                }
-
-                if (typeof value !== 'string') {
-                    let storeKey = key;
-                    let count = 0;
-                    while (storeKey in stored) {
-                        storeKey = key + String(++count);
-                    }
-                    stored[storeKey] = value;
-                    key += ":";
-                    value = 'jsxtemplate.stored.' + storeKey;
-                }
-
-                if (/on[A-Z]/.test(key)) {
-                    key = '@' + key.toLowerCase().substr(2);
-                }
-                result += ` ${key}="${escapeText(value)}"`;
-            }
-            return result;
-        }
-
-        renderCallback(renderObj) {
-            const values = [];
-            for (const arg of this.renderArgs) {
-                if (arg in this.renderMap) { // local -> true name map
-                    values.push(this.renderMap[arg]);
-                } else { // Normal renderObj value
-                    values.push(renderObj[arg]);
-                }
-            }
-            renderObj.component.innerHTML = this.renderFunc.apply(null, values);
-        }
-    }
-
-    Modulo.AssetManager.prototype.wrapFunctionText = (({ wrapFunctionText }) => {
-        //const { wrapFunctionText } = Modulo.AssetManager.prototype;
-        return function (params, text, opts = {}) {
-            let result = wrapFunctionText.call(this, params, text, opts);
-            if (opts.babel) {
-                result = Babel.transform(result, opts.babel).code;
-            }
-            return result;
-        }
-    })(Modulo.AssetManager.prototype);
-    Modulo.assets = new Modulo.AssetManager();
-</script>
-
-
-
+<script src="/demos/mdu/cparts/TestSuite.js"></script>
 
 <template modulo-embed>
-    <Component name="Child">
-        <Props
-            stuff
-        ></Props>
-        <script type="modulo/JSXTemplate">
-            <div>
-                <h2>Example prop: {props.stuff}</h2>
-            </div>
-        </script>
-    </Component>
-
-    <Component name="MahBtn">
+    <Component name="MahComponent">
         <Props
             txt
         ></Props>
-        <script type="modulo/JSXTemplate">
+        <Template>
             <div>
-                <h1>Props: {props.txt}</h1>
-                <button onClick={script.getClicked}>COUNTING {state.count}</button>
-                <Child stuff="heyo"></Child>
-                {
-                    [...Array(5).keys()].map((val) => 
-                        <button onClick={() => alert('look this works: ' + val)}>say:{val}</button>
-                    )
-                }
+                <h1>Props: {{ props.txt }}</h1>
+                <button @click:=script.getClicked>State: {{ state.count }}</button>
             </div>
-        </script>
+        </Template>
 
         <State
             count:=5
         ></State>
 
         <Script>
-            // Okay this is line 1
             function getClicked() {
                 state.count++;
-                //const a = 123;
-                //a();
             }
         </Script>
 
@@ -174,6 +30,30 @@
                 background: black;
             }
         </Style>
+
+        <TestSuite>
+            <Test name="testing test">
+                <Props txt="Testing 123"></Props>
+
+                <template>
+                    <div>
+                        <h1>Props: Testing 123</h1>
+                        <button @click:=script.getClicked>State: 5</button>
+                    </div>
+                </template>
+
+                <script>
+                    event: click button
+                </script>
+
+                <template>
+                    <div>
+                        <h1>Props: Testing 123</h1>
+                        <button @click:=script.getClicked>State: 6</button>
+                    </div>
+                </template>
+            </Test>
+        </TestSuite>
     </Component>
 
 </template>
@@ -182,7 +62,5 @@
 
 
 <button>Before button</button>
-<x-MahBtn txt="Hello"></x-MahBtn>
+<x-MahComponent txt="Hello"></x-MahComponent>
 <button>After button</button>
-
-<mws-ErrorCauser></mws-ErrorCauser>

@@ -1,0 +1,55 @@
+<script src="/js/Modulo.js"></script>
+<script src="/demos/mdu/cparts/TestSuite.js"></script>
+
+<template modulo-embed>
+    <Component name="TestReporter">
+        <Template>
+            <div>
+                Status:
+                {% if state.success != null %}
+                    {% if state.success %}
+                        OK
+                    {% else %}
+                        FAILURE
+                    {% endif %}
+                    (See console for details.)
+                {% else %}
+                    <em>(Not started.)</em>
+                {% endif %}
+            </div>
+            <button @click:=script.doTests>Run tests</button>
+            <p>Remember to show the Dev Tools console to see the output!</p>
+        </Template>
+        <State
+            success:=null
+        ></State>
+        <Script>
+            function doTests() {
+                state.success = Modulo.cmd.test();
+            }
+        </Script>
+    </Component>
+
+    <Library src="/demos/tests/reconciler1.test.html"></Library>
+    <Library src="/demos/tests/reconciler2.test.html"></Library>
+    <Library src="/demos/tests/reconciler3.test.html"></Library>
+    <Library src="/demos/tests/reconciler-directives.test.html"></Library>
+    <Library src="/demos/tests/mtl.test.html"></Library>
+    <Library src="/demos/tests/utils.test.html"></Library>
+    <Library src="/demos/tests/composition.test.html"></Library>
+    <Library src="/demos/tests/browser_build.test.html"></Library>
+    <Library src="/demos/tests/domcursor.test.html"></Library>
+    <Library src="/demos/tests/cparts/component_mode.test.html"></Library>
+    <Library src="/demos/tests/cparts/component.test.html"></Library>
+    <Library src="/demos/tests/cparts/config.test.html"></Library>
+    <Library src="/demos/tests/cparts/state.test.html"></Library>
+
+    <Library src="/components/examplelib.html"></Library>
+    <Library src="/components/embeddedexampleslib.html"></Library>
+
+</template>
+
+<script> Modulo.defineAll() </script>
+
+<x-TestReporter></x-TestReporter>
+

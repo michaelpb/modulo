@@ -1,4 +1,3 @@
-
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static stateInit(cpart, element, initData) {
         element.cparts.state.eventCallback();
@@ -7,7 +6,12 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 
     static propsInit(cpart, element, initData) {
-        element.initRenderObj.props = initData;
+        element.initRenderObj.props = initData.attrs;
+        element.renderObj.props = initData.attrs;
+        if (element.eventRenderObj) {
+            element.eventRenderObj.props = initData.attrs;
+        }
+        element.cparts.props.prepareCallback = () => {}; // Turn prepare into a dummy, to avoid overriding above
     }
 
     static templateAssertion(cpart, element, stepConf) {
@@ -108,28 +112,44 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 
     static doTestStep(element, sName, data) {
-        const {testsuite} = Modulo.cparts;
+        const { testsuite } = Modulo.cparts;
         const attrs = {content: data.content, attrs: data};
         const stepConf = data.attrs;
+
         const isInit = (sName + 'Init') in testsuite;
         const assertionMethod = testsuite[sName + 'Assertion'];
+
+        // Instantiate a base CPart that this testing assertion or init will
+        // piggy-back on
         let cpart = null;
         if (sName === 'template' || isInit) {
             cpart = new Modulo.cparts[sName](element, attrs);
         }
+
+        // If it is an init, then run the base CPart's own initializedCallback,
+        // and finally invoke any custom code
         if (isInit) {
-            const initData = cpart.initializedCallback({[sName]: data});
+            const initData = cpart.initializedCallback({[ sName ]: data});
             testsuite[sName + 'Init'](cpart, element, initData);
             return null;
         } else if (!assertionMethod) {
             throw new Error('Could not find', sName);
         }
 
+        // At this point, it 1) exists, and 2) is not an init, thus must be an
+        // "Assertion Step" (e.g. one that can fail or succeed).
+
+        // Using skip-rerender or skip-rerender=y to prevent automatic rerender
         if (!('skipRerender' in stepConf)) {
-            // ensure re-rendered before running script
-            element.factory().doTestRerender(element);
+            //Modulo.utils.doTestRerender(element);
+            element.rerender(); // ensure re-rendered before running script
         }
-        const [result, message] = assertionMethod(cpart, element, stepConf, data);
+
+        // Invoke the assertion itself, getting either a truthy result, or a
+        // result exactly equal to "false", which indicates a failure, at which
+        // point an Array (or string) message should return value should give
+        // indication as to what went wrong.
+        const [ result, message ] = assertionMethod(cpart, element, stepConf, data);
         if (result) {
             return true;
         } else if (result === false) {
@@ -146,15 +166,15 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 
     static runTests(attrs, factory) {
-        const {content} = attrs;
-        const {testsuite} = Modulo.cparts;
+        const { content } = attrs;
+        const { testsuite } = Modulo.cparts;
 
         let total = 0;
         let failure = 0;
 
         const parentNode = factory.loader._stringToDom(content);
         for (const testNode of parentNode.children) {
-            const element = factory.createTestElement();
+            const element = Modulo.utils.createTestElement(factory);
             // Could be implied first test?
             Modulo.assert(element.isMounted, 'Successfully mounted element');
 
@@ -186,11 +206,11 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 }
 
-Modulo.cparts.testsuite.testCommand = function test(config, modulo, isSrcServe=false) {
+Modulo.CommandMenu.prototype.test = function test() {
     let discovered = [];
     let soloMode = false;
     let skippedCount = 0;
-    for (const factory of Object.values(modulo.factoryInstances)) {
+    for (const factory of Object.values(Modulo.factoryInstances)) {
         //console.log('factory', factory.fullName);
         const { testsuite } = factory.baseRenderObj;
         if (!testsuite) {
@@ -210,7 +230,7 @@ Modulo.cparts.testsuite.testCommand = function test(config, modulo, isSrcServe=f
     }
 
     console.log('[%]', discovered.length + ' test suites found');
-    const { runTests } = modulo.cparts.testsuite;
+    const { runTests } = Modulo.cparts.testsuite;
     let success = 0;
     let failure = 0;
     let omission = 0;
@@ -237,10 +257,13 @@ Modulo.cparts.testsuite.testCommand = function test(config, modulo, isSrcServe=f
     }
 
     if (skippedCount > 0) {
-        console.log(TERM.YELLOW_FG, 'SKIPPED', TERM.RESET, skippedCount,
-                    'TestSuite(s) skipped');
+        console.log('%cSKIPPED', 'color: yellow');
+        console.log(skippedCount, 'TestSuite(s) skipped');
     }
 
+    // TODO Reimplement testLog, by using "saveFileAs" to save file, just like
+    // with build
+    const config = { testLog: false };
     if (config.testLog) {
         let testLogData;
         let highscore = 0;
@@ -274,17 +297,33 @@ Modulo.cparts.testsuite.testCommand = function test(config, modulo, isSrcServe=f
     }
 
     if (!failure && !omission && success) {
-        console.log(TERM.GREEN_FG, 'OK', TERM.RESET,
-                    `${success} assertions passed`);
-        return true;// process.exit(0);
+        console.log('%cOK', 'color: green');
+        console.log(`${success} assertions passed`);
+        return true;
     } else {
         console.log('SUCCESSES:', success, 'assertions passed');
         if (omission) {
             console.log('OMISSIONS:', omission, 'empty test suites or ' +
                         'expected assertions');
         }
-        console.log(TERM.RED_FG, 'FAILURE ', TERM.RESET, failure,
-          'assertions failed\n Failing components:', failedComponents);
-        return false;// process.exit(1);
+        console.log('%cFAILURE', 'color: red');
+        console.log(`${failure} assertions failed. Failing components:`, failedComponents);
+        return false;
     }
 }
+
+
+// TODO attach somewhere else?
+Modulo.utils.createTestElement = function createTestElement (factory) {
+    const element = new factory.componentClass();
+    delete element.cparts.testsuite; // Within the test itself, don't include
+    element.connectedCallback(); // Call connectedCallback synchronously
+    element.parsedCallback(); // And also ensure parsedCallback called synchronously
+    return element;
+}
+
+//Modulo.utils.doTestRerender = function doTestRerender(elem, testInfo) {
+//    elem.rerender();
+//}
+
+
