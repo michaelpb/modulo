@@ -1,3 +1,4 @@
+
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static stateInit(cpart, element, initData) {
         element.cparts.state.eventCallback();
@@ -87,8 +88,12 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             }
             element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
         `);
-        const document = element.ownerDocument;
-        const extra = { _reportValues, element, Modulo, document };
+        const extra = {
+            _reportValues,
+            element,
+            Modulo,
+            document: element.mockDocument,
+        };
         const vars = Object.assign(element.getCurrentRenderObj(), extra);
         let func;
         try {
@@ -168,17 +173,31 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static runTests(attrs, factory) {
         const { content } = attrs;
         const { testsuite } = Modulo.cparts;
+        testsuite.setupMocks();
 
         let total = 0;
         let failure = 0;
 
         const parentNode = factory.loader._stringToDom(content);
         for (const testNode of parentNode.children) {
-            const element = Modulo.utils.createTestElement(factory);
-            // Could be implied first test?
-            Modulo.assert(element.isMounted, 'Successfully mounted element');
+            let element;
+            let err;
+            try {
+                element = Modulo.utils.createTestElement(factory);
+            } catch (e) {
+                err = e;
+            }
+            if (!element) {
+                failure++;
+                console.log('[%]', '         ! ELEMENT FAILED TO MOUNT');
+                if (err) {
+                    console.log('[%]', '         ! ', err);
+                    console.log('[%]', '         ! ');
+                }
+                continue;
+            }
 
-            // TODO: Switch to new cpart-container system used by "component" and "module"
+            // TODO: Switch to new cpart-container system used by "component" and "library"
             const stepArray = factory.loader.loadFromDOMElement(testNode);
             const testName = testNode.getAttribute('name') || '<test>';
 
@@ -202,7 +221,44 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             console.groupEnd();
             console.log(`[%]  ${isOk} - ${testName} (${successes}/${testTotal})`);
         }
+        testsuite.teardownMocks(); // teardown mocking for saveFileAs
         return [total - failure, failure];
+    }
+
+    static setupMocks() {
+        // Mock saveFileAs & appendToHead to prevent test leaking
+        Modulo.utils.originalSaveFileAs = Modulo.utils.saveFileAs;
+        Modulo.utils.saveFileAs = function saveFileAsMock(filename, text) {
+            if (!window._moduloMockedFileSaves) {
+                window._moduloMockedFileSaves = [];
+            }
+            window._moduloMockedFileSaves.push([ filename, text ]);
+            const doc = window._moduloMockDocument;
+            const element = document.createElement('a');
+            const enc = encodeURIComponent(text); // TODO silo in globals
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
+            element.setAttribute('download', filename);
+            doc.appendChild(element);
+            return `./${filename}`; // by default, return local path
+        }
+
+        Modulo.utils.originalAppendToHead = Modulo.AssetManager.prototype.appendToHead;
+        Modulo.AssetManager.prototype.appendToHead = function appendToHeadMocked(tagName, codeStr) {
+            if (!window._moduloMockedHeadAppends) {
+                window._moduloMockedHeadAppends = [];
+            }
+            window._moduloMockedHeadAppends.push([ tagName, codeStr ]);
+            if (tagName === 'script') { // TODO rm
+                codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace 1st
+                eval(codeStr, this); // TODO Fix this, limitation of JSDOM
+            }
+        }
+
+    }
+
+    static teardownMocks() {
+        Modulo.utils.saveFileAs = Modulo.utils.originalSaveFileAs;
+        Modulo.AssetManager.prototype.appendToHead = Modulo.utils.originalAppendToHead;
     }
 }
 
@@ -257,8 +313,8 @@ Modulo.CommandMenu.prototype.test = function test() {
     }
 
     if (skippedCount > 0) {
-        console.log('%cSKIPPED', 'color: yellow');
-        console.log(skippedCount, 'TestSuite(s) skipped');
+        console.log('%c SKIPPED ', 'background-color: yellow');
+        console.log(`${skippedCount} TestSuite(s) skipped`);
     }
 
     // TODO Reimplement testLog, by using "saveFileAs" to save file, just like
@@ -297,7 +353,7 @@ Modulo.CommandMenu.prototype.test = function test() {
     }
 
     if (!failure && !omission && success) {
-        console.log('%cOK', 'color: green');
+        console.log('%c     OK    ', 'background-color: green');
         console.log(`${success} assertions passed`);
         return true;
     } else {
@@ -306,7 +362,7 @@ Modulo.CommandMenu.prototype.test = function test() {
             console.log('OMISSIONS:', omission, 'empty test suites or ' +
                         'expected assertions');
         }
-        console.log('%cFAILURE', 'color: red');
+        console.log('%c FAILURE ', 'background-color: red');
         console.log(`${failure} assertions failed. Failing components:`, failedComponents);
         return false;
     }
@@ -315,15 +371,29 @@ Modulo.CommandMenu.prototype.test = function test() {
 
 // TODO attach somewhere else?
 Modulo.utils.createTestElement = function createTestElement (factory) {
-    const element = new factory.componentClass();
+    const { fullName, componentClass } = factory;
+    // Double check, prevents "Illegal constructor" https://stackoverflow.com/questions/61881027/custom-element-illegal-constructor
+    //Modulo.globals.customElements.define(fullName.toLowerCase(), componentClass);
+    /* try { } catch { }*/
+
+    const element = new componentClass();
     delete element.cparts.testsuite; // Within the test itself, don't include
-    element.connectedCallback(); // Call connectedCallback synchronously
-    element.parsedCallback(); // And also ensure parsedCallback called synchronously
+
+    //element.connectedCallback(); // Call connectedCallback synchronously
+
+    // Create a simple test DOM of a document fragment and div
+    window._moduloMockDocument = element.mockDocument = new Modulo.globals.DocumentFragment();
+    //const div = Modulo.globals.document.createElement('div');
+    element.mockDocument.appendChild(element);
+    //div.appendChild(element);
+
+    element.parsedCallback(); // Ensure parsedCallback called synchronously
     return element;
 }
 
 //Modulo.utils.doTestRerender = function doTestRerender(elem, testInfo) {
 //    elem.rerender();
 //}
+
 
 

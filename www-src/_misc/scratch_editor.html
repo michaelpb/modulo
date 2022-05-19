@@ -1,0 +1,76 @@
+<script src="/js/Modulo.js"></script>
+<script src="/demos/mdu/cparts/TestSuite.js"></script>
+
+<template modulo-embed>
+    <Component name="Editor">
+        <Props
+            value
+        ></Props>
+        <Template>
+            <div class="editor-wrapper">
+                <pre class="editor-shadow">{{ state.value }}</pre>
+                <textarea name="value" [state.bind] [script.text]>{{ state.value }}</textarea>
+            </div>
+        </Template>
+
+        <State
+            value=""
+        ></State>
+
+        <Script>
+            function syntaxHighlight(text) {
+            }
+
+            function textMount({ el }){
+                console.log('text area mounting!', props);
+                element.textArea = el;
+                element.value = props.value;
+                state.value = props.value;
+                el.value = props.value;
+            }
+
+            Modulo.templating.defaultOptions.filters.syntaxHighlight = syntaxHighlight;
+        </Script>
+
+        <Style>
+            .editor-wrapper {
+                position: relative;
+            }
+
+            pre,
+            textarea {
+                top: 0;
+                left: 0;
+                font-size: 16px;
+                width: 100%;
+                border: none;
+                padding: 0;
+                margin: 0;
+                min-height:  200px;
+                font-family: monospace;
+                text-align: start;
+                resize: none;
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
+                box-sizing: border-box;
+            }
+            pre {
+                position: absolute;
+            }
+
+            textarea {
+                position: relative;
+                color: rgba(0, 0, 0, 0.001);
+                background: none;
+            }
+        </Style>
+    </Component>
+
+</template>
+
+<script> Modulo.defineAll() </script>
+
+
+<button>Before button</button>
+<x-Editor value="Initial value"></x-Editor>
+<button>After button</button>
