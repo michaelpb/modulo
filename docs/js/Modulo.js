@@ -377,7 +377,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
             this.parsedCallback(); // ensure synchronous
         } else {
             // TODO Consider putting all async into single queue / loop
-            setTimeout(this.parsedCallback.bind(this), 0);
+            setTimeout(() => this.parsedCallback(), 0);
         }
     }
 
@@ -634,10 +634,6 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
 }
 
 Modulo.cparts.props = class Props extends Modulo.ComponentPart {
-    static factoryCallback({ attrs }, { componentClass }, renderObj) {
-        /* untested / daedcode ---v */
-        //componentClass.observedAttributes = Object.keys(attrs);
-    }
     initializedCallback(renderObj) {
         const props = {};
         const { resolveDataProp } = Modulo.utils;
@@ -647,22 +643,20 @@ Modulo.cparts.props = class Props extends Modulo.ComponentPart {
         }
         return props;
     }
+
     prepareCallback(renderObj) {
-        const props = {};
-        const { resolveDataProp } = Modulo.utils;
-        for (const [ propName, def ] of Object.entries(this.attrs)) {
-            props[propName] = resolveDataProp(propName, this.element, def);
-            // TODO: Implement type-checked, and required
-        }
-        return props;
+        /* TODO: Remove after observedAttributes is implemented, e.g.:
+          static factoryCallback({ attrs }, { componentClass }, renderObj) {
+              //componentClass.observedAttributes = Object.keys(attrs);
+          }
+        */
+        return this.initializedCallback(renderObj);
     }
 }
 
+// The following "Dummy" definition causes TestSuite CParts to be ignored:
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
-    static factoryCallback() {
-        //console.count('Ignored test-suite');
-        return {}; // wipe contents
-    }
+    static factoryCallback() { return {}; }
 }
 
 Modulo.cparts.style = class Style extends Modulo.ComponentPart {

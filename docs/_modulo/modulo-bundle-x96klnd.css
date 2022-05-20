@@ -1390,7 +1390,36 @@ x-DemoSelector input:checked + label {
             box-shadow: inset 5px 5px 1px 1px hsla(0,0%,39.2%,.3);
             margin-top: 5px;
         }
-    mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
+    
+x-ExampleBtn .my-btn {
+                display: inline-block;
+                box-sizing: border-box;
+                font-family: sans-serif;
+                border: 1px solid gray;
+                transition: 0.1s;
+                box-shadow:
+                    inset -3px -3px
+                    1px 1px rgba(100, 100, 100, 0.3);
+                border-radius: 1px 8px 1px 8px;
+                cursor: default;
+                text-align: center;
+                padding: 3px;
+                padding-right: 5px;
+                padding-bottom: 5px;
+                height: 30px;
+                background: turquoise;
+                font-weight: bold;
+            }
+
+x-ExampleBtn .my-btn:active {
+                box-shadow: inset 3px 3px 1px 1px rgba(100, 100, 100, 0.3);
+            }
+x-ExampleBtn .my-btn__square {
+            }
+x-ExampleBtn .my-btn__round {
+                border-radius: 150px;
+            }
+        mws-Demo .demo-wrapper.demo-wrapper__minipreview .CodeMirror {
     height: 200px;
 }
 

@@ -221,46 +221,6 @@ as static data in with JS, so it does not refresh. -->
 
 
 
-<component name="API">
-<Template>
-<p>{{ state.name }} | {{ state.location }}</p>
-<p>{{ state.bio }}</p>
-<a href="https://github.com/{{ state.search }}/" target="_blank">
-    {% if state.search %}github.com/{{ state.search }}/{% endif %}
-</a>
-<input [state.bind] name="search"
-    placeholder="Type GitHub username" />
-<button @click:=script.fetchGitHub>Get Info</button>
-</Template>
-
-<State
-    search=""
-    name=""
-    location=""
-    bio=""
-></State>
-
-<Script>
-    function fetchGitHub() {
-        fetch(`https://api.github.com/users/${state.search}`)
-            .then(response => response.json())
-            .then(githubCallback);
-    }
-    function githubCallback(apiData) {
-        state.name = apiData.name;
-        state.location = apiData.location;
-        state.bio = apiData.bio;
-        element.rerender();
-    }
-</Script>
-
-<testsuite
-    src="./examplelib-tests/API-tests.html"
-></testsuite>
-
-</component>
-
-
 
 
 

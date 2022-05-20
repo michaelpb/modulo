@@ -959,6 +959,34 @@ docseg-Tutorial_P1 { /* styles the entire component */
     box-shadow: 10px 10px 0 0 turquoise;
 }
 
+/* ...and any CSS here! */
+e14g1-Example strong {
+    color: blue;
+}
+e14g1-Example .neat {
+    font-variant: small-caps;
+}
+e14g1-Example { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+
+/* ...and any CSS here! */
+e7g1-Example strong {
+    color: blue;
+}
+e7g1-Example .neat {
+    font-variant: small-caps;
+}
+e7g1-Example { /* styles the entire component */
+    display: inline-block;
+    background-color: cornsilk;
+    padding: 5px;
+    box-shadow: 10px 10px 0 0 turquoise;
+}
+
 docseg-Templating_Escaping .msgcontent {
         background: #999;
         padding: 10px;
@@ -970,6 +998,10 @@ docseg-Templating_PrepareCallback input { display: inline; width: 25px }
 docseg-Tutorial_P3_state_demo {
         font-size: 0.8rem;
     }
+
+e11g1-Example input { display: inline; width: 25px }
+
+e4g1-Example input { display: inline; width: 25px }
 
 eg-ConwayGameOfLife {
         display: flex;
