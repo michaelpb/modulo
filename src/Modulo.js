@@ -377,7 +377,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
             this.parsedCallback(); // ensure synchronous
         } else {
             // TODO Consider putting all async into single queue / loop
-            setTimeout(this.parsedCallback.bind(this), 0);
+            setTimeout(() => this.parsedCallback(), 0);
         }
     }
 

@@ -79,7 +79,9 @@
             </template>
 
             <script name="Empty head" skip-rerender>
-                assert: document.head.innerHTML === ''
+                const { innerHTML } = document.head;
+                const testTitle = '<title>testworld</title>'; // used in new tests
+                assert: innerHTML === '' || innerHTML === testTitle;
             </script>
         </test>
 
@@ -87,7 +89,7 @@
             <state
                 rootmode="vanish"
             ></state>
-            <template>
+            <template name="Vanish root mode removes element">
                 <div id="a">
                     <link href="whatevs.css">
                     <h1>Hello World</h1>
@@ -96,7 +98,9 @@
             </template>
 
             <script name="Empty head" skip-rerender>
-                assert: document.head.innerHTML === ''
+                const { innerHTML } = document.head;
+                const testTitle = '<title>testworld</title>'; // used in new tests
+                assert: innerHTML === '' || innerHTML === testTitle;
             </script>
         </test>
 
@@ -118,7 +122,9 @@
             </script>
 
             <script name="Empty head" skip-rerender>
-                assert: document.head.innerHTML === ''
+                const { innerHTML } = document.head;
+                const testTitle = '<title>testworld</title>'; // used in new tests
+                assert: innerHTML === '' || innerHTML === testTitle;
             </script>
         </test>
 
@@ -136,8 +142,9 @@
             <script name="HTML head element is as expected" skip-rerender>
                 const expectedHead = '<link href="whatevs.css"><title>Hello Vanish</title>';
                 const actual = document.head.innerHTML;
+                const testTitle = '<title>testworld</title>'; // used in new tests
 
-                assert: actual === expectedHead
+                assert: actual === expectedHead || actual === (testTitle + expectedHead)
             </script>
         </test>
 

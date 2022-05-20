@@ -16,7 +16,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 
     static templateAssertion(cpart, element, stepConf) {
-        const {makeDiv, normalize} = Modulo.utils;
+        const { makeDiv, normalize } = Modulo.utils;
         const _process = 'testWhitespace' in stepConf ? s => s : normalize;
         const text1 = _process(cpart.instance.render(stepConf));
 
@@ -146,8 +146,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
 
         // Using skip-rerender or skip-rerender=y to prevent automatic rerender
         if (!('skipRerender' in stepConf)) {
-            //Modulo.utils.doTestRerender(element);
-            element.rerender(); // ensure re-rendered before running script
+            Modulo.utils.doTestRerender(element);
         }
 
         // Invoke the assertion itself, getting either a truthy result, or a
@@ -239,7 +238,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             const enc = encodeURIComponent(text); // TODO silo in globals
             a.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
             a.setAttribute('download', filename);
-            window._moduloMockDocument.appendChild(a);
+            window._moduloMockDocument.body.appendChild(a);
             return `./${filename}`; // by default, return local path
         }
 
@@ -267,8 +266,8 @@ Modulo.CommandMenu.prototype.test = function test() {
     let discovered = [];
     let soloMode = false;
     let skippedCount = 0;
+    console.log('%c%', 'font-size: 50px; line-height: 0.7; padding: 5px; border: 3px solid black;');
     for (const factory of Object.values(Modulo.factoryInstances)) {
-        //console.log('factory', factory.fullName);
         const { testsuite } = factory.baseRenderObj;
         if (!testsuite) {
             continue;
@@ -286,7 +285,8 @@ Modulo.CommandMenu.prototype.test = function test() {
         discovered = discovered.filter(([fac, {attrs}]) => 'solo' in attrs);
     }
 
-    console.log('[%]', discovered.length + ' test suites found');
+    console.log('%c[%] ' + discovered.length + ' test suites found',
+        'border: 3px solid #B90183; padding: 10px;');
     const { runTests } = Modulo.cparts.testsuite;
     let success = 0;
     let failure = 0;
@@ -299,7 +299,8 @@ Modulo.CommandMenu.prototype.test = function test() {
     }
     for (const [ factory, testsuite ] of discovered) {
         const info = ' ' + (testsuite.name || '');
-        console.group('[%]', 'TestSuite: ' + factory.fullName + info);
+        console.groupCollapsed('%cTestSuite: ' + factory.fullName + info,
+          'border-top: 3px dotted #aaa; margin-top: 5px;');
         const [ successes, failures ] = runTests(testsuite, factory)
         if (failures) {
             failedComponents.push(factory.fullName);
@@ -311,6 +312,13 @@ Modulo.CommandMenu.prototype.test = function test() {
             omission++; // no assertions = 1 omission failure
         }
         console.groupEnd();
+        const total = failures + successes;
+        const isOk = failures || !successes ? '!      ' : 'OK     ';
+        console.log(`[%]  ${isOk} -             [${successes}/${total}]`);
+        if (failures) {
+            console.log(`%c[%]  FAILURE -             ${failures} assertion(s) failed`,
+              'border-top: 2px red dashed;');
+        }
     }
 
     if (skippedCount > 0) {
@@ -378,23 +386,39 @@ Modulo.utils.createTestElement = function createTestElement (factory) {
     /* try { } catch { }*/
 
     const element = new componentClass();
+    element.connectedCallback = () => {}; // Prevent double calling
     delete element.cparts.testsuite; // Within the test itself, don't include
 
-    //element.connectedCallback(); // Call connectedCallback synchronously
-
     // Create a simple test DOM of a document fragment and div
-    window._moduloMockDocument = element.mockDocument = new Modulo.globals.DocumentFragment();
+    //const doc = new Modulo.globals.DocumentFragment();
+    const doc = Modulo.globals.document.implementation.createHTMLDocument('testworld');
+    const head = doc.createElement('head'); // Mock head
+    const body = doc.createElement('body'); // Mock body
+    doc.documentElement.appendChild(head);
+    doc.documentElement.appendChild(body);
+    window._moduloMockDocument = element.mockDocument = doc;
+
     //const div = Modulo.globals.document.createElement('div');
-    element.mockDocument.appendChild(element);
     //div.appendChild(element);
 
+    doc.body.appendChild(element);
     element.parsedCallback(); // Ensure parsedCallback called synchronously
     return element;
 }
 
-//Modulo.utils.doTestRerender = function doTestRerender(elem, testInfo) {
-//    elem.rerender();
-//}
+Modulo.utils.doTestRerender = function doTestRerender(elem, testInfo) {
+    elem.rerender();
+
+    // Trigger all children's parsedCallbacks
+    const descendants = Array.from(elem.querySelectorAll('*'));
+    const isWebComponent = ({ tagName }) => tagName.includes('-');
+    for (const webComponent of descendants.filter(isWebComponent)) {
+        if (webComponent.parsedCallback) {
+            webComponent.parsedCallback(); // ensure gets immediately invoked
+            webComponent.parsedCallback = () => {}; // Prevent double calling
+        }
+    }
+}
 
 
 
