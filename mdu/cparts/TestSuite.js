@@ -233,12 +233,13 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                 window._moduloMockedFileSaves = [];
             }
             window._moduloMockedFileSaves.push([ filename, text ]);
-            const doc = window._moduloMockDocument;
-            const element = document.createElement('a');
+
+            // Do original saveas (except for simulating click)...
+            const a = document.createElement('a');
             const enc = encodeURIComponent(text); // TODO silo in globals
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
-            element.setAttribute('download', filename);
-            doc.appendChild(element);
+            a.setAttribute('href', 'data:text/plain;charset=utf-8,' + enc);
+            a.setAttribute('download', filename);
+            window._moduloMockDocument.appendChild(a);
             return `./${filename}`; // by default, return local path
         }
 

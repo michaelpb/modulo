@@ -1,4 +1,4 @@
-<Component name="BrowserBuildTester"><TestSuite solo>
+<Component name="BrowserBuildTester"><TestSuite >
 
 <Test name="Test AssetManager functionality">
     <script name="Ensure instantiates with expected properties">
@@ -68,17 +68,21 @@
         Modulo.cmd.teardown = () => {
             Modulo.globals.document = oldDoc;
         }
+
+        // New codepath: Already mocking the function
+        if (Modulo.utils.originalSaveFileAs) {
+            Modulo.cmd.setup = (doc) => {
+                for (const tag of doc.querySelectorAll('a')) { tag.remove(); }
+                return doc;
+            };
+            Modulo.cmd.teardown = () => {};
+        }
     </script>
 
     <script name="Snapshot: Ensure buildcss works as expected">
         Modulo.assets.registerStylesheet('a { color: blue }');
 
-        let mockDoc = Modulo.cmd.setup();
-        if (!mockDoc) {
-            // TODO, either do 2 code paths, OR have it repatch the thing, but
-            // only skipping the click (or write a separate unit test for the DOM / click)
-            mockDoc = document;
-        }
+        let mockDoc = Modulo.cmd.setup(document);
         Modulo.cmd.buildcss({ type: 'tst' }); // Try building CSS
         Modulo.cmd.teardown();
 
@@ -93,12 +97,7 @@
         Modulo.assets.registerFunction([ 'a', 'b' ], 'return a + b');
         Modulo.fetchQ.data = {};
 
-        let mockDoc = Modulo.cmd.setup();
-        if (!mockDoc) {
-            // TODO, either do 2 code paths, OR have it repatch the thing, but
-            // only skipping the click (or write a separate unit test for the DOM / click)
-            mockDoc = document;
-        }
+        let mockDoc = Modulo.cmd.setup(document);
         Modulo.cmd.buildjs({ type: 'tst' }); // Try building JS
         Modulo.cmd.teardown();
 
@@ -121,12 +120,7 @@
             embeddedSources: ['mno', 'pqr'],
         };
 
-        let mockDoc = Modulo.cmd.setup();
-        if (!mockDoc) {
-            // TODO, either do 2 code paths, OR have it repatch the thing, but
-            // only skipping the click (or write a separate unit test for the DOM / click)
-            mockDoc = document;
-        }
+        let mockDoc = Modulo.cmd.setup(document);
         Modulo.cmd.buildjs(opts); // Try building JS
         Modulo.cmd.teardown();
 
@@ -143,12 +137,7 @@
         Modulo.assets.registerFunction([ 'a', 'b' ], 'return a + b');
         Modulo.fetchQ.data = {};
 
-        let mockDoc = Modulo.cmd.setup();
-        if (!mockDoc) {
-            // TODO, either do 2 code paths, OR have it repatch the thing, but
-            // only skipping the click (or write a separate unit test for the DOM / click)
-            mockDoc = document;
-        }
+        let mockDoc = Modulo.cmd.setup(document);
         mockDoc.innerHTML = '<modulo>abc</modulo>';
         Modulo.cmd.buildjs(); // Try building JS
         Modulo.cmd.teardown();
