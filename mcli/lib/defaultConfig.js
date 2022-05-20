@@ -95,6 +95,10 @@ const defaultConfig = {
         // Specify the desired file path of your test log file. Do not ignore
         // this file in VCS: Share when collaborating to "lock in" test count.
 
+    testLibrary: '',
+        // Used for "test" command: Specify the single file that you want to
+        // execute tests on.
+
     isSkip: '^(\\.|_)',
         // For SSG, specify a RegExp string that is tested against every "path
         // part", or each directory or filename that make up a file path. If

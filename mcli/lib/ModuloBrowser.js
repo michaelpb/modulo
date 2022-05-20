@@ -53,11 +53,11 @@ class ModuloBrowser {
         return `http://127.0.0.1:${this.port}/${relPath}`;
     }
 
-    run(htmlPath, callback) {
+    run(htmlPath, command, callback) {
         (async () => {
             await this._startExpress();
             await this._startBrowser();
-            const res = await this.runAsync(htmlPath);
+            const res = await this.runAsync(htmlPath, command);
             callback(res);
         })();
     }
@@ -67,7 +67,7 @@ class ModuloBrowser {
         return Object.keys(this.dependencyGraph[url] || {})
     }
 
-    async runAsync(htmlPath, command = null) {
+    async runAsync(htmlPath, command) {
         const url = this.getURL(htmlPath);
         const runSettings = { command } ; ///
 
@@ -96,8 +96,9 @@ class ModuloBrowser {
 
         await page.goto(url, { waitUntil: 'networkidle0' });
         // TODO: Refactor -v
-        const artifacts = await page.evaluate(runSettings => {
+        const { artifacts, results } = await page.evaluate(runSettings => {
             const artifacts = [];
+            const { command } = runSettings;
             if (typeof Modulo === 'undefined') {
                 return artifacts; // Don't attempt any Modulo-specific actions
             }
@@ -113,9 +114,9 @@ class ModuloBrowser {
             };
 
             return new Promise((resolve, reject) => {
-                Modulo.cmd.bundle(); // XXX hardcoded, should get from runSettings
+                const results = Modulo.cmd[command]();
                 Modulo.fetchQ.wait(() => {
-                    resolve(artifacts);
+                    resolve({ artifacts, results });
                 });
             });
         }, runSettings);
@@ -130,7 +131,7 @@ class ModuloBrowser {
                 buildArtifacts.push(info);
             }
         }
-        return [ html, buildArtifacts ];
+        return [ html, buildArtifacts, results ];
     }
 
     close(callback) {
