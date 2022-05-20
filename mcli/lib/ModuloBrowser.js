@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { processBrowserConsoleLog } = require('./cliUtils');
+
 
 class ModuloBrowser {
     constructor(config) {
@@ -86,11 +88,33 @@ class ModuloBrowser {
             this.dependencyGraph[reqUrl][url] = true;
         });
 
-        const { verbose } = this.config;
-        page.on('console', message => {
+        const { verbose, quietConsole } = this.config;
+
+        this._indent = 0;
+        // let inCollapsedGroup = false; // Not implementing this feature
+        page.on('console', async (message) => {
             const code = message.type().substr(0, 3).toUpperCase();
-            if (verbose || code === 'ERR') {
+            if (verbose || (code === 'ERR' && quietConsole)) {
                 console.log(`|%| BROWSER ${code} |%| ${message.text()}`);
+            }
+
+            if (!quietConsole) {
+                const type = message.type();
+                const indent = this._indent;
+
+                if (type === 'startGroup' || type === 'startGroupCollapsed') {
+                    this._indent++;
+                } else if (type === 'endGroup') {
+                    this._indent--;
+                }
+
+                if (type === 'startGroup' || type === 'startGroupCollapsed' || type === 'log') {
+                    const indentStr = indent > 0 ? '    '.repeat(indent) : '';
+                    const asString = hand => hand.executionContext().evaluate(o => String(o), hand);
+                    const args = await Promise.all(message.args().map(o => asString(o)));
+                    processBrowserConsoleLog(args);
+                    console.log(indentStr + args.join(' '));
+                }
             }
         });
 
@@ -100,8 +124,10 @@ class ModuloBrowser {
             const artifacts = [];
             const { command } = runSettings;
             if (typeof Modulo === 'undefined') {
-                return artifacts; // Don't attempt any Modulo-specific actions
+                // Don't attempt any Modulo-specific actions
+                return { artifacts, results: null };
             }
+
             // Patch saveFileAs to just add to artifacts array
             Modulo.utils.saveFileAs = (filename, text) => {
                 artifacts.push({ filename, text });
@@ -124,7 +150,7 @@ class ModuloBrowser {
         // XXX this logic should be handled in generate.js
         let html = '';
         let buildArtifacts = [];
-        for (const info of artifacts) {
+        for (const info of artifacts || []) {
             if (info.filename.endsWith('.html')) {
                 html = info.text;
             } else {

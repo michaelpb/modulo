@@ -35,6 +35,9 @@ const defaultConfig = {
         // --output command. Note that the "--input" should contain
         // "--inputFile"
 
+    quietConsole: false,
+        // Silence console.log's generated from within Modulo components
+
     buildPath: '/_modulo/',
         // Path prefix used for built JS and CSS files, when building or
         // bundling JS and CSS during SSG step.
@@ -95,7 +98,7 @@ const defaultConfig = {
         // Specify the desired file path of your test log file. Do not ignore
         // this file in VCS: Share when collaborating to "lock in" test count.
 
-    testLibrary: '',
+    testPath: '',
         // Used for "test" command: Specify the single file that you want to
         // execute tests on.
 

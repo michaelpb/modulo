@@ -183,6 +183,29 @@ const TERM = {
 TERM.LOGO = TERM.MAGENTA_FG + '[%]' + TERM.RESET;
 TERM.LOGOLINE = TERM.MAGENTA_FG + '[%]' + TERM.RESET + TERM.UNDERSCORE;
 
+function processBrowserConsoleLog(args) {
+    if (!args || !args.length) {
+        return; // do nothing with falsy args or empty lists
+    }
+
+    if (!args[0].startsWith('%c')) {
+        return; // It's NOT a CSS declaration, nothing to change
+    }
+
+    args[0] = args[0].substr(2); // remove %c
+    const style = args.pop(); // remove style specification
+    if (style.includes('red')) {
+        args[0] = TERM.RED_FG + args[0] + TERM.RESET;
+    } else if (style.includes('yellow')) {
+        args[0] = TERM.YELLOW_FG + args[0] + TERM.RESET;
+    } else if (style.includes('green')) {
+        args[0] = TERM.GREEN_FG + args[0] + TERM.RESET;
+    }
+    if (style.includes('border')) {
+        args[0] = TERM.UNDERSCORE + args[0] + TERM.RESET;
+    }
+}
+
 
 module.exports = {
     ACTIONS,
@@ -196,4 +219,5 @@ module.exports = {
     getAction,
     walkSync,
     logStatusBar,
+    processBrowserConsoleLog,
 }
