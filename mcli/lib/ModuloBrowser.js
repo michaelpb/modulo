@@ -69,7 +69,7 @@ class ModuloBrowser {
 
     async runAsync(htmlPath, command = null) {
         const url = this.getURL(htmlPath);
-        const runSettings = {} ; ///
+        const runSettings = { command } ; ///
 
         await this._startExpress(); // setup stuff
         await this._startBrowser();

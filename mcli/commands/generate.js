@@ -11,15 +11,16 @@ const {
     mirrorMTimesAsync,
 } = require('../lib/cliUtils');
 
+
+// ///////////////////////////////////
 function hackPostprocess(html, buildArtifacts) {
+    // XXX DEAD CODE
     if (!/^<!doctype html>/i.test(html)) {
         // Ensure all documents start with doctype
         html = '<!DOCTYPE HTML>\n' + html;
     }
 
-    // --- XXX --- HACK
     // Inject hacky script after loading Modulo.js
-    // TODO: Remove in favor of a consistent treatment, once m.bundle() is done
     html = html.replace('<script src="/js/Modulo.js"></script>', `
         <meta charset="utf8" />
         <script src="/js/Modulo.js"></script>
@@ -35,7 +36,6 @@ function hackPostprocess(html, buildArtifacts) {
         };
         </script>
     `);
-    // --- XXX --- HACK
 
     for (const { absUriPath, filename } of buildArtifacts) {
         if (filename.toLowerCase().endsWith('.js')) {
