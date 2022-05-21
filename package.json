@@ -4,16 +4,16 @@
   "version": "0.0.1",
   "description": "Minimalist Web Component based framework",
   "homepage": "https://modulojs.org/",
-  "main": "mcli/modulocli.js",
+  "main": "modulocli/modulocli.js",
   "bin": {
-        "mdu-cli": "mcli/modulocli.js",
-        "modulocli": "mcli/modulocli.js"
+        "mdu-cli": "modulocli/modulocli.js",
+        "modulocli": "modulocli/modulocli.js"
   },
   "scripts": {
     "serve": "npm run cli -- serve",
     "start": "npm run cli -- devserve",
     "build-docs": "npm run cli -- ssg",
-    "cli": "node ./mcli/modulocli.js",
+    "cli": "node ./modulocli/modulocli.js",
     "test": "npm run cli -- test"
   },
   "devDependencies": {
