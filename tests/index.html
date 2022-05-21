@@ -4,21 +4,18 @@
 <template modulo-embed>
     <Component name="TestReporter">
         <Template>
-            <div>
-                Status:
+            <h1>Status:
                 {% if state.success != null %}
                     {% if state.success %}
-                        OK
+                        <span style="background: seagreen">OK</span>
                     {% else %}
-                        FAILURE
+                        <span style="background: red">FAILURE</span>
                     {% endif %}
-                    (See console for details.)
                 {% else %}
-                    <em>(Incomplete.)</em>
+                    <button @click:=script.doTests>Run tests</button>
                 {% endif %}
-            </div>
-            <button @click:=script.doTests>Run tests</button>
-            <p>Remember to show the Dev Tools console to see the output!</p>
+            </h1>
+            <p><em>Tip: Use the Developer Console to see the output.</em></p>
         </Template>
         <State
             success:=null
@@ -30,6 +27,7 @@
         </Script>
     </Component>
 
+    <!-- Load tests for core Modulo.js library -->
     <Library src="/demos/tests/reconciler1.test.html"></Library>
     <Library src="/demos/tests/reconciler2.test.html"></Library>
     <Library src="/demos/tests/reconciler3.test.html"></Library>
@@ -44,8 +42,9 @@
     <Library src="/demos/tests/cparts/config.test.html"></Library>
     <Library src="/demos/tests/cparts/state.test.html"></Library>
 
-    <Library src="/components/examplelib.html"></Library>
-    <Library src="/components/embeddedexampleslib.html"></Library>
+    <!-- Load tests for documentation examples -->
+    <Library namespace="eglib" src="/components/examplelib.html"></Library>
+    <Library namespace="embeglib" src="/components/embeddedexampleslib.html"></Library>
 
 </template>
 
