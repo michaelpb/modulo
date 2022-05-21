@@ -1,5 +1,6 @@
 {
   "name": "mdu-cli",
+  "author": "michaelb",
   "version": "0.0.1",
   "description": "Minimalist Web Component based framework",
   "homepage": "https://modulojs.org/",
@@ -9,17 +10,11 @@
         "modulocli": "mcli/modulocli.js"
   },
   "scripts": {
-    "build-complexity-report": "complexity-report-html ./src/",
-    "build-docs": "node tools/modulocli.js ssg docs-src/ --output docs/",
-    "update-and-build-docs-full": "npm run build-docco && npm run update-docs-js && npm run build-docs",
-    "update-and-build-docs": "npm run update-docs-js && npm run build-docs",
-    "build-docs-watch": "find tools/ src/ docs-src/ -iname '*.*' | entr npm run update-and-build-docs",
-    "build-docco": "docco ./src/Modulo.js --template ./tools/resources/modified_parallel_docco.ejs --css ./tools/resources/modified_parallel_docco.css --output ./docs-src/literate && rm -r ./docs-src/literate/public",
-    "update-docs-js-old": "cp ./src/Modulo.js docs-src/js/Modulo.js && cp ./src/ModuloDebugger.js docs-src/js/ModuloDebugger.js",
-    "update-docs-js": "cp ./src/Modulo.js docs-src/js/Modulo.js",
-    "new-build": "node ./mcli/modulocli.js -v build",
-    "cli": "node ./modulocli/modulocli.js",
-    "test": "npm run cli -- test ./tests/all.html"
+    "serve": "npm run cli -- serve",
+    "start": "npm run cli -- devserve",
+    "build-docs": "npm run cli -- ssg",
+    "cli": "node ./mcli/modulocli.js",
+    "test": "npm run cli -- test"
   },
   "devDependencies": {
     "complexity-report-html": "0.0.3",
@@ -31,6 +26,11 @@
     "linkedom": "0.14.5",
     "xmldom": "0.4.0"
   },
+  "peerDependencies": {
+    "express": "^4.17.1",
+    "node-watch": "^0.7.2",
+    "puppeteer": "^13.5.2"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/michaelpb/modulo.git"
@@ -38,14 +38,8 @@
   "keywords": [
     "framework"
   ],
-  "author": "michaelb",
   "license": "LGPL-2.1",
   "bugs": {
     "url": "https://github.com/michaelpb/modulo/issues"
-  },
-  "dependencies": {
-    "express": "4.17.1",
-    "node-watch": "0.7.2",
-    "puppeteer": "13.5.2"
   }
 }

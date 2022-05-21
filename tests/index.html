@@ -4,17 +4,15 @@
 <template modulo-embed>
     <Component name="TestReporter">
         <Template>
-            <h1>Status:
-                {% if state.success != null %}
-                    {% if state.success %}
-                        <span style="background: seagreen">OK</span>
-                    {% else %}
-                        <span style="background: red">FAILURE</span>
-                    {% endif %}
+            {% if state.success != null %}
+                {% if state.success %}
+                    <h1 style="background: seagreen">OK</h1>
                 {% else %}
-                    <button @click:=script.doTests>Run tests</button>
+                    <h1 style="background: red">FAILURE</h1>
                 {% endif %}
-            </h1>
+            {% else %}
+                <button @click:=script.doTests>Run tests</button>
+            {% endif %}
             <p><em>Tip: Use the Developer Console to see the output.</em></p>
         </Template>
         <State
@@ -22,7 +20,9 @@
         ></State>
         <Script>
             function doTests() {
-                state.success = Modulo.cmd.test();
+                if (state.success === null) { // prevent double runs
+                    state.success = Modulo.cmd.test();
+                }
             }
         </Script>
     </Component>
