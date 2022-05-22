@@ -262,17 +262,6 @@ Modulo.ComponentFactory = class ComponentFactory {
         }
     }
 
-    createTestElement() {
-        const element = new this.componentClass();
-        delete element.cparts.testsuite; // for testing, never include testsuite
-        element.connectedCallback(); // ensure this is called
-        return element;
-    }
-
-    doTestRerender(elem, testInfo) {
-        elem.rerender(); // presently no other steps
-    }
-
     register() {
         // Register the Custom Web Component with the browser
         const tagName = this.fullName.toLowerCase();
@@ -369,13 +358,7 @@ Modulo.Element = class ModuloElement extends HTMLElement {
     }
 
     connectedCallback() {
-        if (this.isMounted) {
-            return; // TODO: possibly just return?
-        }
-
-        if (Modulo.isBackend) { // TODO rm
-            this.parsedCallback(); // ensure synchronous
-        } else {
+        if (!this.isMounted) {
             // TODO Consider putting all async into single queue / loop
             setTimeout(() => this.parsedCallback(), 0);
         }
@@ -799,7 +782,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
     }
 
     cb(func) {
-        // DEAD CODE (but used in documentation...)
+        // DEAD-ish CODE (used in documentation, needs replacement...)
         const renderObj = this.element.getCurrentRenderObj();
         return (...args) => {
             this.prepLocalVars(renderObj);
@@ -847,7 +830,7 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
             console.error('ERROR: Script CPart missing from renderObj:', renderObj);
             return false;
         }
-        const {setLocalVariable, localVars} = renderObj.script;
+        const { setLocalVariable, localVars } = renderObj.script;
         setLocalVariable('element', this.element);
         setLocalVariable('cparts', this.element.cparts);
         for (const localVar of localVars) {
@@ -922,11 +905,6 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
             }
         }
         this.boundElements[name] = remainingBound;
-    }
-
-    reloadCallback(oldPart) {
-        // DEAD CODE: Used for hot-reloading: Merge data with oldPart's data
-        this.data = Object.assign({}, oldPart.data, this.data, oldPart.data);
     }
 
     set(name, value, originalEl) {
@@ -1472,6 +1450,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
                         // TODO: Instead of having one big "rerender" patch,
                         // maybe run a "rerender" right away, but collect
                         // patches, then insert in the patch list here?
+                        // Could have renderObj = { component: renderContextRenderObj ... }
+                        // And maybe even then dataProps resolve like:
+                        // renderObj.component.renderContextRenderObj || renderObj;
+                        // OR: Maybe even a simple way to reuse renderObj?
                         this.patch(child, 'rerender', rival);
                     } else if (!this.shouldNotDescend) {
                         cursor.saveToStack();
@@ -1706,13 +1688,6 @@ Modulo.utils = class utils {
         return n1.replaceWith(n2) || n2;
     }
 
-    static rpartition(s, seperator) {
-        // DEAD CODE
-        const index = s.lastIndexOf(separator) + 1;
-        return [s.slice(0, index - 1), s.slice(index)];
-        //return [index ? s.slice(0, index - 1) : s, s.slice(index)];
-    }
-
     static parseDirectives(rawName, directiveShortcuts) { //, foundDirectives) {
         if (/^[a-z0-9-]$/i.test(rawName)) {
             return null; // if alpha-only, stop right away
@@ -1746,6 +1721,7 @@ Modulo.utils = class utils {
     static getBuiltHTML(opts) {
         // Scan document for modulo elements, attaching modulo-original-html=""
         // as needed, or clearing
+        // TODO: Copy original innerHTML to detatched doc, then make modifications
         const doc = Modulo.globals.document;
         for (const elem of doc.querySelectorAll('*')) {
             if (elem.hasAttribute('modulo-asset')) {
@@ -1815,7 +1791,6 @@ Modulo.FetchQueue = class FetchQueue {
             Modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
-                // v- uncomment after switch to new BE
                 //.catch(err => console.error('Modulo Load ERR', src, err));
         } else {
             this.queue[src].push(callback); // add to end of src queue
@@ -1866,6 +1841,9 @@ Modulo.AssetManager = class AssetManager {
 
     getAssets(type, extra = null) {
         // Get an array of assets of the given type, in a stable ordering
+        // TODO: This is incorrect: It needs to be ordered like it was in the
+        // original document. Sorting will cause JS / CSS files to be loaded in
+        // wrong order:
         return (extra || []).concat(Object.values(this.rawAssets[type]).sort());
     }
 
@@ -1892,6 +1870,7 @@ Modulo.AssetManager = class AssetManager {
     getSymbolsAsObjectAssignment(contents) {
         const regexpG = /function\s+(\w+)/g;
         const regexp2 = /function\s+(\w+)/; // hack, refactor
+        // TODO: Get classes as well, for CParts, etc! (used by <script Config></script>)
         const matches = contents.match(regexpG) || [];
         return matches.map(s => s.match(regexp2)[1])
             .filter(s => s && !Modulo.INVALID_WORDS.has(s))
@@ -1928,12 +1907,7 @@ Modulo.AssetManager = class AssetManager {
         } else {
             doc.head.append(elem);
         }
-        if (Modulo.isBackend && tagName === 'script') { // TODO rm
-            codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace 1st
-            eval(codeStr, this); // TODO Fix this, limitation of JSDOM
-        } else {
-            elem.textContent = codeStr; // Blocking, causes eval
-        }
+        elem.textContent = codeStr; // Blocking, causes eval
     }
 }
 

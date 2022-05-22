@@ -4,32 +4,30 @@
 <template modulo-embed>
     <Component name="TestReporter">
         <Template>
-            <div>
-                Status:
-                {% if state.success != null %}
-                    {% if state.success %}
-                        OK
-                    {% else %}
-                        FAILURE
-                    {% endif %}
-                    (See console for details.)
+            {% if state.success != null %}
+                {% if state.success %}
+                    <h1 style="background: seagreen">OK</h1>
                 {% else %}
-                    <em>(Incomplete.)</em>
+                    <h1 style="background: red">FAILURE</h1>
                 {% endif %}
-            </div>
-            <button @click:=script.doTests>Run tests</button>
-            <p>Remember to show the Dev Tools console to see the output!</p>
+            {% else %}
+                <button @click:=script.doTests>Run tests</button>
+            {% endif %}
+            <p><em>Tip: Use the Developer Console to see the output.</em></p>
         </Template>
         <State
             success:=null
         ></State>
         <Script>
             function doTests() {
-                state.success = Modulo.cmd.test();
+                if (state.success === null) { // prevent double runs
+                    state.success = Modulo.cmd.test();
+                }
             }
         </Script>
     </Component>
 
+    <!-- Load tests for core Modulo.js library -->
     <Library src="/demos/tests/reconciler1.test.html"></Library>
     <Library src="/demos/tests/reconciler2.test.html"></Library>
     <Library src="/demos/tests/reconciler3.test.html"></Library>
@@ -44,8 +42,9 @@
     <Library src="/demos/tests/cparts/config.test.html"></Library>
     <Library src="/demos/tests/cparts/state.test.html"></Library>
 
-    <Library src="/components/examplelib.html"></Library>
-    <Library src="/components/embeddedexampleslib.html"></Library>
+    <!-- Load tests for documentation examples -->
+    <Library namespace="eglib" src="/components/examplelib.html"></Library>
+    <Library namespace="emblib" src="/components/embeddedexampleslib.html"></Library>
 
 </template>
 
