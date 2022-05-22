@@ -386,12 +386,12 @@ sample code editors only focus on the CPart definitions within.</p>
 <mws-Section name="load">3. Loading Libraries</mws-Section>
 
 <blockquote> <p><strong>Why use load?</strong>
-Think of the <code>&lt;Load&gt;</code> tag as being analogous to the
+Think of the <code>&lt;Library&gt;</code> tag as being analogous to the
 <code>&lt;link&gt;</code> tag, which lets multiple HTML files share the
 same CSS. The same rationale applies here: Components are "write once, use
 everywhere", so the way we get access to them "everywhere" is by
 <em>loading</em> them into each file that needs to use them. Other
-reasons include that <code>&lt;Load&gt;</code> smooths over certain browser
+reasons include that <code>&lt;Library&gt;</code> smooths over certain browser
 limitations, and that it can keep your files neater.</p>
 </blockquote>
 
@@ -400,17 +400,17 @@ limitations, and that it can keep your files neater.</p>
 <p>Up until now, we have practiced with a component embedded on the same page
 that it is used. This is not recommended. Instead, you should put your
 components in a separate <em>component library</em> HTML file, and then use the
-<code>&lt;Load&gt;</code> tag to import your components into every HTML file
+<code>&lt;Library&gt;</code> tag to import your components into every HTML file
 that needs them.</p>
 
 
-<p>"Load" tags look like the following:</p>
+<p>"Library" tags look like the following:</p>
 
 <pre>
-&lt;Load
+&lt;Library
     src="./components/my-stuff.html"
     namespace="coolstuff"&gt;
-&lt;/Load&gt;
+&lt;/Library&gt;
 </pre>
 
 <p>Let's break this down:</p>
@@ -455,9 +455,9 @@ that needs them.</p>
     </li>
 
 
-    <li><strong>Where to put it:</strong> Loaders can go anywhere. For
-    neatness, consider putting them either within the
-    <code>&lt;head&gt;</code> tag, or near the <code>&lt;/body&gt;</code>
+    <li><strong>Where to put it:</strong> The Modulo and Library tags can go
+    anywhere in your HTML. For neatness, consider putting them either within
+    the <code>&lt;head&gt;</code> tag, or near the <code>&lt;/body&gt;</code>
     closing tag.</li>
 </ul>
 
@@ -504,10 +504,10 @@ text='
 <mws-Demo
 text='
 <template modulo-embed>
-    <Load
+    <Library
         src="./components/my-component-lib.html"
         namespace="lib"
-    ></Load>
+    ></Library>
 </template>
 '></mws-Demo></li>
 
@@ -545,10 +545,10 @@ with simply <code>&lt;Modulo&gt;</code>, as such:</p>
 <mws-Demo
 text='
 <Modulo>
-    <Load
+    <Library
         src="./components/my-component-lib.html"
         namespace="lib"
-    ></Load>
+    ></Library>
 </Modulo>
 '></mws-Demo>
 
