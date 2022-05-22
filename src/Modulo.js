@@ -1721,6 +1721,7 @@ Modulo.utils = class utils {
     static getBuiltHTML(opts) {
         // Scan document for modulo elements, attaching modulo-original-html=""
         // as needed, or clearing
+        // TODO: Copy original innerHTML to detatched doc, then make modifications
         const doc = Modulo.globals.document;
         for (const elem of doc.querySelectorAll('*')) {
             if (elem.hasAttribute('modulo-asset')) {
@@ -1790,7 +1791,7 @@ Modulo.FetchQueue = class FetchQueue {
             Modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
-                .catch(err => console.error('Modulo Load ERR', src, err));
+                //.catch(err => console.error('Modulo Load ERR', src, err));
         } else {
             this.queue[src].push(callback); // add to end of src queue
         }
@@ -1840,6 +1841,9 @@ Modulo.AssetManager = class AssetManager {
 
     getAssets(type, extra = null) {
         // Get an array of assets of the given type, in a stable ordering
+        // TODO: This is incorrect: It needs to be ordered like it was in the
+        // original document. Sorting will cause JS / CSS files to be loaded in
+        // wrong order:
         return (extra || []).concat(Object.values(this.rawAssets[type]).sort());
     }
 

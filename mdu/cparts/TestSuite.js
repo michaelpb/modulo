@@ -391,7 +391,12 @@ Modulo.utils.createTestElement = function createTestElement (factory) {
 
     // Create a simple test DOM of a document fragment and div
     //const doc = new Modulo.globals.DocumentFragment();
-    const doc = Modulo.globals.document.implementation.createHTMLDocument('testworld');
+    let doc;
+    if (Modulo.utils.createTestDocument) {
+        doc = Modulo.utils.createTestDocument(factory);
+    } else {
+        doc = Modulo.globals.document.implementation.createHTMLDocument('testworld');
+    }
     const head = doc.createElement('head'); // Mock head
     const body = doc.createElement('body'); // Mock body
     doc.documentElement.appendChild(head);

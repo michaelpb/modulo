@@ -15,13 +15,9 @@ class PageVM extends EventEmitter {
     }
 
     async setupContext() {
-        const contextObj = this.getContext();
-        this.vmContext = vm.createContext(contextObj);
-    }
-
-    getContext() {
-        return {
-        };
+        // TODO: Figure out how to inject into testing script?
+        //this.contextObj = this.makeContext();
+        //this.vmContext = vm.createContext(contextObj);
     }
 
     async goto(url, gotoOpts) {
