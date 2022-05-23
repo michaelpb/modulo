@@ -35,7 +35,7 @@ Modulo.ComponentPart = typeof ModuloComponentPart !== 'undefined' ? ModuloCompon
         const defaults = this.getAttrDefaults(node, loader);
         const attrs = Modulo.utils.mergeAttrs(node, defaults);
         // TODO is this still useful? --v
-        const content = node.tagName.startsWith('TE') ? node.innerHTML
+        const content = node.tagName.toLowerCase().startsWith('te') ? node.innerHTML
                                                       : node.textContent;
         return { attrs, content, dependencies: attrs.src || null };
     }

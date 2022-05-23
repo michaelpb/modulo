@@ -87,13 +87,12 @@
 
 <script>
     setTimeout(() => {
-        const vm = new Modulo.utils.ModuloVM();
+        const vm = new Modulo.virtualdom.ModuloVM();
         vm.loadBundle(() => {
             // Once defined, we can run the test command within the virtual machine / virtualdom
             vm.Modulo.fetchQ.wait(() => {
                 console.log('loaded!', vm.document.innerHTML);
                 console.log('loaded!', vm.window);
-                vm.Modulo.defineAll();
                 vm.Modulo.cmd.test();
             });
         });
