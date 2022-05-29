@@ -60,15 +60,30 @@
 - IDEA: Config.template(...) -- apply as context to given template string
 
 
+-----------------------------
+
+## requirejs
+
+- A way to do silo'd JS file loading and requirements
+
+- Likely, a highly useful core feature:
+
+// Creates a dummy js.TagLex class, and Queues up a requirement
+Modulo.assets.requirejs('https://cdn.com/mdu/taglex.js', 'TagLex');
+// Does a simple wrapFunction type thing where it auto-exports. Maybe even
+// Modulo.utils.TagLex?
+
+// Extension - possibly extending real class, possibly dummy
+Modulo.utils.SuperTagLex = class SuperTagLex extends Modulo.assets.js.TagLex {
+}
+
+// Finally, when real class gets loaded, set "prototype" of dummy TagLex to the
+// new class, so SuperTagLex extends DummyTagLex which extends the real TagLex
+
+// Eventually: Recommended ways of interop with JS Modules
+
 --------
 
-ModDOM dev idea:
-
-Start by making a MagicMock that just "proxies" everything, with "warnings"
-when it's not found. Run in Node.js VM and put it as HTMLElement, window,
-document, etc. Then, one by one eliminate warnings.
-
---------
 
 Possible repo setup:
 
@@ -246,6 +261,30 @@ ModuloConfig = {
 - Generalize / improve global lock to prevent simultaneous SSG builds
 - Generalize a "dependency" backwards to allow generate and delete to do
   partial builds
+
+
+## MDU Interop tools
+
+### Django-Modulo
+
+- Does pregens on pages served
+- Could serve squashed templates as static files so that {% include %} and {%
+  extends %} works client-side
+- Exposes JSON routes that can be loaded for things like urls
+- Modes:
+    - Component-only:
+        - Dev gen only, stored in JSON file or SQLite or something, and
+          preloaded in memory
+        - Simply runs "npx mdu-cli interactivessr" which accepts files into
+          STDIN and outputs tarballs of results
+        - JSON format should just be the same as a fixture format
+        - Prod gen, stored in DB (index by hash, unindexed, nullable textblob
+          for both input and output)
+    - Full-page:
+        - Same as above, but hashing and checking every HTML response
+
+- End goal: Modulo.py and mdu.py (transpiled implementation of Modulo + MDU in
+  Python)
 
 
 
