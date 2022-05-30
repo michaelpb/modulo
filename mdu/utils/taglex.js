@@ -1,65 +1,54 @@
-Modulo.utils.taglex = (function () {
-    // Define and setup constants
+if (!Modulo.utils.taglex) {
     const ROOT = 'tag_root';
     const TEXT_NODE  = 1;
     const TAG_NODE   = 2;
     const POP        = 1;
     const DOUBLE_POP = 2;
     const NOOP       = 3;
-    const exports = { ROOT, TEXT_NODE, TAG_NODE, POP, DOUBLE_POP, NOOP };
+    Modulo.utils.taglex = { ROOT, TEXT_NODE, TAG_NODE, POP, DOUBLE_POP, NOOP };
+}
 
-    const reverse = {};
-    reverse[POP] = 'POP';
-    reverse[DOUBLE_POP] = 'DOUBLE_POP';
-    reverse[NOOP] = 'NOOP';
-
-    const utility = {};
-
-    utility.extend = function extend (origin, add) {
-        var keys = Object.keys(add || {}), i = keys.length;
-        while (i--) { origin[keys[i]] = add[keys[i]]; }
-        return origin;
-    };
-    utility.arg_coerce = function arg_coerce (arg) {
-        return Array.prototype.slice.call(arg);
-    };
-    utility.escape_for_regexp = function escape_for_regexp (str) {
-        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-    };
-
-    class EventEmitter { // Very simple EventEmitter implementation
-        constructor() {
-            this._callbacks = {};
+// Very simple internal EventEmitter implementation, subclassed below
+Modulo.utils.taglex.EventEmitter = class EventEmitter {
+    constructor() {
+        this._callbacks = {};
+    }
+    on(evName, cb) {
+        if (!(evName in this._callbacks)) {
+            this._callbacks[evName] = [];
         }
-        on(evName, cb) {
-            if (!(evName in this._callbacks)) {
-                this._callbacks[evName] = [];
-            }
-            this._callbacks[evName].push(cb);
+        this._callbacks[evName].push(cb);
+    }
+    emit(evName, ...args) {
+        for (const cb of this._callbacks[evName] || []) {
+            cb(...args);
         }
-        emit(evName, ...args) {
-            for (const cb of this._callbacks[evName] || []) {
-                cb(...args);
-            }
+    }
+}
+
+
+Modulo.utils.escapeForRegExp = function escapeForRegExp (str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+};
+
+Modulo.utils.taglex.Lexer = class Lexer extends Modulo.utils.taglex.EventEmitter {
+    constructor(ruleset, default_state, on_func) {
+        super();
+        this.ruleset = ruleset;
+        this.default_state = default_state;
+        this.state = default_state;
+
+        // Shortcut for adding a listener to token
+        if (on_func) {
+            this.on('token', on_func);
         }
     }
 
-    class Lexer extends EventEmitter {
-        constructor(ruleset, default_state, on_func) {
-            super();
-            this.ruleset = ruleset;
-            this.default_state = default_state;
-            this.state = default_state;
+    write(text) {
+        // NOTE XXX - Only the child classes of this write get tested,
+        // should refactor
 
-            // Shortcut for adding a listener to token
-            if (on_func) {
-                this.on('token', on_func);
-            }
-        }
-    }
-
-    Lexer.prototype.write = function (text) {
-        /* Feed text into the lexer */
+        // Feed text into the lexer
         // console.log("------------", text);
         var res = { text: text };
         while (res.text.length > 0) {
@@ -73,9 +62,11 @@ Modulo.utils.taglex = (function () {
             this._emit_and_token(res.next_state,
                 res.initial_text, res.normalized, res.token);
         }
-    };
+    }
 
-    Lexer.prototype._emit_and_token = function (next_state, initial_text, normalized, token) {
+    _emit_and_token(next_state, initial_text, normalized, token) {
+        const { TEXT_NODE, TAG_NODE, NOOP } = Modulo.utils.taglex;
+
         // Check state for error conditions
         if (next_state === null) {
             var msg = "Entered unknown state with token " + token;
@@ -95,14 +86,12 @@ Modulo.utils.taglex = (function () {
             // store next state for next iteration
             this.state = next_state;
         }
-    };
+    }
 
+    _process(text, state) {
+        const { TEXT_NODE } = Modulo.utils.taglex;
 
-
-    /*
-    Process 1 text node, or 1 text node and 1 tag node
-    */
-    Lexer.prototype._process = function (text, state) {
+        // Process 1 text node, or 1 text node and 1 tag node
         var regexps = this.ruleset.regexps;
         if (!regexps) { // ensure it's compiled
             throw new Error("RuleSet: Writing without compiled");
@@ -149,21 +138,20 @@ Modulo.utils.taglex = (function () {
             normalized: normalized,
             text: remaining_text,
         };
-    };
-
-    class StackParser extends Lexer {
-        constructor(ruleset, default_state, on_func) {
-            super(ruleset, default_state, on_func);
-            this.reset();
-        }
     }
+}
 
-    StackParser.prototype.reset = function () {
+Modulo.utils.taglex.StackParser = class StackParser extends Modulo.utils.taglex.Lexer {
+    constructor(ruleset, default_state, on_func) {
+        super(ruleset, default_state, on_func);
+        this.reset();
+    }
+    reset() {
         this.stack = [];
         this.stack_obj = {};
-    };
+    }
 
-    StackParser.prototype.write = function (text) {
+    write(text) {
         /* Feed text into the parser */
         //console.log("------------", text);
         var res = { text: text, next_state: this.state };
@@ -176,14 +164,15 @@ Modulo.utils.taglex = (function () {
             this._transition_state_stack(
                 this.state, res.next_state, res.initial_text, res.normalized, res.token);
         }
-    };
+    }
 
-    StackParser.prototype.peak = function () {
+    peak() {
         var length = this.stack.length;
         return length > 0 ? this.stack[length-1] : this.default_state;
-    };
+    }
 
-    StackParser.prototype._transition_state_stack = function (state, next_state, initial_text, normalized, token) {
+    _transition_state_stack(state, next_state, initial_text, normalized, token) {
+        const { TEXT_NODE, TAG_NODE, POP, DOUBLE_POP, NOOP } = Modulo.utils.taglex;
         /////////////////////////////////
         // Collapse feature logic
         // A collapse action pops all the way up to target
@@ -260,12 +249,9 @@ Modulo.utils.taglex = (function () {
             this.stack.push(next_state);
             this.emit("stack_push", next_state, state, token, normalized);
         }
+    }
 
-        // Finally, return remaining text
-        //return remaining_text;
-    };
-
-    StackParser.prototype._split_stack_at = function (search_states) {
+    _split_stack_at(search_states) {
         // search_states, obj containing as keys the states to split
         // the stack at
         var i = this.stack.length-1; // don't ever split at top
@@ -277,23 +263,23 @@ Modulo.utils.taglex = (function () {
             }
         }
         return null;
-    };
+    }
+}
 
-
-    class TagParser extends StackParser {
-        // Improved version of StackParser that emits more info based on TagRuleSet
-        constructor(ruleset, default_state, on_func) {
-            super(ruleset, default_state, on_func);
-            this._prep_events();
-        }
+Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.StackParser {
+    // Improved version of StackParser that emits more info based on TagRuleSet
+    constructor(ruleset, default_state, on_func) {
+        super(ruleset, default_state, on_func);
+        this._prep_events();
     }
 
-    TagParser.prototype._prep_events = function () {
+    _prep_events() {
+        const { TEXT_NODE } = Modulo.utils.taglex;
+
         var ruleset = this.ruleset;
         var me = this;
         var combining = null;
         this.current_tag = null;
-
 
         /// helper function that checks if we are combining states
         var _check_combining = (state) => {
@@ -386,21 +372,29 @@ Modulo.utils.taglex = (function () {
                 }
             }
         });
-    };
-
-    TagParser.prototype.end = function () {
+    }
+    end() {
         if (this.ruleset.opts.close_at_end) {
             this.stack.reverse().forEach(function (state) {
                 this.emit("stack_pop", state);
             }, this);
         }
         this.reset();
-    };
+    }
+}
+
+
+;// Gotta love old JS syntax gotchas!
+
+(function (exports) {
+    // Define and setup constants
+    const { ROOT, TEXT_NODE, TAG_NODE, POP, DOUBLE_POP, NOOP } = exports;
+    const { EventEmitter, Lexer, StackParser, TagParser } = exports;
 
 
     // Streaming tokenizer based on tags and state stack
     var RuleSet = function (options) {
-        var opts = utility.extend({
+        var opts = Object.assign({
             ignore_case: false,
             normalizer: null,
             lexer_class: Lexer,
@@ -457,10 +451,11 @@ Modulo.utils.taglex = (function () {
         };
 
         this.regexps = {};
+        const { escapeForRegExp } = Modulo.utils;
         for (var state_name in this._states) {
             var patterns = [];
             this._states[state_name].forEach(function (token_name) {
-                patterns.push(utility.escape_for_regexp(token_name));
+                patterns.push(escapeForRegExp(token_name));
             });
 
             // Sort patterns by length, so that longer is first
@@ -510,7 +505,7 @@ Modulo.utils.taglex = (function () {
 
         this._add_regexp(token, state, regexp);
 
-        this._reference_grammar.push(utility.arg_coerce(arguments));
+        this._reference_grammar.push(Array.from(arguments));
     };
 
     RuleSet.prototype._add_regexp = function (token, state, regexp) {
@@ -576,7 +571,7 @@ Modulo.utils.taglex = (function () {
 
     RuleSet.prototype.add_stack_collapser = function (token, collapse_to_state, regexp) {
         this._collapsers[token] = [collapse_to_state, regexp || null];
-        this._reference_grammar_collapse.push(utility.arg_coerce(arguments));
+        this._reference_grammar_collapse.push(Array.from(arguments));
     };
 
 
@@ -620,7 +615,7 @@ Modulo.utils.taglex = (function () {
     // Improved ruleset with handy utility functions for tags
     class TagRuleSet extends RuleSet {
         constructor(options) {
-            var opts = utility.extend({
+            var opts = Object.assign({
                 parser_class: TagParser,
                 root_ignore_text: false,
             }, options);
@@ -764,76 +759,84 @@ Modulo.utils.taglex = (function () {
             this.target_state = target_state;
             this.clear();
             this._prep_tree_events();
-        };
-    }
-
-    SourceBufferer.prototype.write = function () {
-        this.parser.apply(this.parser, arguments);
-    };
-
-    SourceBufferer.prototype.clear = function () {
-        this.event_buffer = [];
-        this.source_buffer = [];
-    };
-
-    SourceBufferer.prototype.flush = function () {
-        // Emit the source code
-        this.emit('source_buffer', this.source_buffer.join(''));
-
-        // Emit the event buffer
-        var length = this.event_buffer.length;
-        var i = 0;
-        while (i < length) {
-            this.emit.apply(this, this.event_buffer[i++]);
         }
 
-        this.clear();
-    };
+        write() {
+            this.parser.apply(this.parser, arguments);
+        }
 
-    /*
-    Analogous to Parser.end(), first ends the internal parser, then flushes
-    whatever might remain
-    */
-    SourceBufferer.prototype.end = function () {
-        this.parser.end();
-        this.flush();
-    };
+        clear() {
+            this.event_buffer = [];
+            this.source_buffer = [];
+        }
 
-    SourceBufferer.prototype._prep_tree_events = function () {
-        var me = this;
+        flush() {
+            // Emit the source code
+            this.emit('source_buffer', this.source_buffer.join(''));
 
-        this.parser.on('token', function (type, v) {
-            me.source_buffer.push(v); // keep track of source
-        });
-
-        var make_tree_event = function (name) {
-            return function () {
-                var args = utility.arg_coerce(arguments);
-                args.unshift(name);
-                me.event_buffer.push(args);
-            };
-        };
-
-        this.parser.on('text_node', make_tree_event("text_node"));
-        this.parser.on('tag_open', make_tree_event("tag_open"));
-        this.parser.on('symbol', make_tree_event("symbol"));
-
-        this.parser.on('tag_close', make_tree_event("tag_close"));
-        // and add extra logic:
-        this.parser.on('tag_close', function () {
-            if (me.parser.peak() === me.target_state) {
-                me.flush();
+            // Emit the event buffer
+            var length = this.event_buffer.length;
+            var i = 0;
+            while (i < length) {
+                this.emit.apply(this, this.event_buffer[i++]);
             }
-        });
-    };
 
-    exports.EventEmitter = EventEmitter;
-    exports.Lexer = Lexer;
+            this.clear();
+        }
+
+        end() {
+            // Analogous to Parser.end(), first ends the internal parser, then
+            // flushes whatever might remain
+            this.parser.end();
+            this.flush();
+        }
+
+        _prep_tree_events() {
+            var me = this;
+
+            this.parser.on('token', function (type, v) {
+                me.source_buffer.push(v); // keep track of source
+            });
+
+            var make_tree_event = function (name) {
+                return function () {
+                    var args = Array.from(arguments);
+                    args.unshift(name);
+                    me.event_buffer.push(args);
+                };
+            };
+
+            this.parser.on('text_node', make_tree_event("text_node"));
+            this.parser.on('tag_open', make_tree_event("tag_open"));
+            this.parser.on('symbol', make_tree_event("symbol"));
+
+            this.parser.on('tag_close', make_tree_event("tag_close"));
+            // and add extra logic:
+            this.parser.on('tag_close', function () {
+                if (me.parser.peak() === me.target_state) {
+                    me.flush();
+                }
+            });
+        }
+    }
+
+
+    //exports.EventEmitter = EventEmitter;
+    //exports.Lexer = Lexer;
     exports.StackParser = StackParser;
     exports.TagParser = TagParser;
     exports.RuleSet = RuleSet;
     exports.TagRuleSet = TagRuleSet;
     exports.SourceBufferer = SourceBufferer;
+})(Modulo.utils.taglex);
 
-    return exports;
-})();
+/*
+    ////////////////////////////////////// XXX DEAD CODE
+    const reverse = {};
+    reverse[POP] = 'POP';
+    reverse[DOUBLE_POP] = 'DOUBLE_POP';
+    reverse[NOOP] = 'NOOP';
+    //////////////////////////////////////
+*/
+
+

@@ -1,3 +1,7 @@
+<!--
+    Note: This test suite was copied from an old, NodeUnit set of tests. It
+    will be gradually ported to the Modulo style of assertions.
+-->
 <Component name="UtilsTaglexTester"><TestSuite>
 
 <test name="RuleSet tests">
@@ -547,15 +551,11 @@
       ruleset.add_symbol({ name: 'dash', symbol: '---', parents: ['root', 'underline', 'emphasis'], });
 
       /////////////// TEST 1
-      console.log("TEST 1");
       contents = []; node_contents = [];
       parser = ruleset.new_parser(null, emit);
-      console.log("TEST 1 instanced");
       text = "a *b c d---* e--- f u{g h *i j* k} l m n o";
       setup_tagparser(parser);
-      console.log("TEST 1 instanced 2");
       parser.write(text);
-      console.log("TEST 1 instanced 3");
       result = [ [ 1, 'a ' ],
                   [ 2, '*' ], [ 1, 'b c d' ], [ 2, '---' ], [ 2, '*' ],
                   [ 1, ' e' ], [ 2, '---' ], [ 1, ' f ' ],
@@ -564,7 +564,6 @@
                       [ 1, ' k' ], [ 2, '}' ],
                   [ 1, ' l m n o' ] ];
       test.deepEqual(result, contents);
-      console.log("TEST 1 instanced 4");
 
       // check node emissions
       result = [ [ 'TEXT', 'a ' ],
@@ -580,7 +579,6 @@
 
       /////////////// TEST 2
       // test strong too
-      console.log("TEST 2");
       contents = [];
       parser = ruleset.new_parser(null, emit);
       text = "a} **b c d** e f **g h *i j* k*** l m u{n o";
@@ -739,9 +737,33 @@
   </script>
 
 
-  <script name="test_tag_parser_event_buffering">
+  <script name="test_complex_markdown_examples">
       const { taglex, NodeUnitHelper } = Modulo.utils;
       const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      // TODO: Finish this
+      const test_examples = function (test) {
+          var mockery = require('mockery');
+          mockery.enable();
+          mockery.registerMock('taglex', taglex);
+          mockery.warnOnUnregistered(false);
+          var out = [];
+          mockery.registerMock('sys', {
+              print: function (s) { out.push(s); },
+          });
+
+          var check = function (name) {
+              out = [];
+              var example = require('./examples/' + name);
+              test.deepEqual(out.join("").split("\n"), example.expected, 'Example ' + name);
+          };
+
+          check('lexing_regular_language');
+          check('markdown');
+
+          mockery.disable();
+          test.done();
+      };
 
 
       assert: test.failed === false
