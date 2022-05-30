@@ -737,38 +737,348 @@
   </script>
 
 
-  <script name="test_complex_markdown_examples">
-      const { taglex, NodeUnitHelper } = Modulo.utils;
-      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+  <script name="test_complex_lexing_example">
+    const { taglex, NodeUnitHelper } = Modulo.utils;
+    const test = new NodeUnitHelper(); // Implements subset of nodeunit
 
-      // TODO: Finish this
-      const test_examples = function (test) {
-          var mockery = require('mockery');
-          mockery.enable();
-          mockery.registerMock('taglex', taglex);
-          mockery.warnOnUnregistered(false);
-          var out = [];
-          mockery.registerMock('sys', {
-              print: function (s) { out.push(s); },
-          });
+    /*
+        This is an example showing using TagLex purely for tokenizing.
 
-          var check = function (name) {
-              out = [];
-              var example = require('./examples/' + name);
-              test.deepEqual(out.join("").split("\n"), example.expected, 'Example ' + name);
-          };
+        The "state" feature in this case has no stack, because we are using
+        the Lexer class instead of a Parser class.
+    */
+    var out = [];
+    var ruleset = new taglex.RuleSet({ ignore_case: true });
+    ruleset.add("."); // taglex.ROOT, taglex.NOOP is default
+    ruleset.add("*");
+    ruleset.add("/*", taglex.ROOT, "comment");
+    ruleset.add("*/", "comment", taglex.ROOT);
 
-          check('lexing_regular_language');
-          check('markdown');
+    var lexer = ruleset.new_lexer();
 
-          mockery.disable();
-          test.done();
-      };
+    lexer.on('token', function (type, value) {
+        if (type === taglex.TAG_NODE) {
+            if (value === ".") {
+                out.push(","); // replace "." with ","
+            }
+            // ignore "*", "/*", and "*/"
 
+        } else {
+            if (lexer.state !== "comment") {
+                // don't print text nodes within comments
+                out.push(value);
+            }
+        }
+    });
 
-      assert: test.failed === false
+    lexer.write("A simple. Lexing. ***Example.\n")
+    lexer.write("/* Ignore me... */Back... to root state");
+
+    // Expected results (as a list, instead  of new lines)
+    const expected = [
+        "A simple, Lexing, Example,",
+        "Back,,, to root state",
+    ];
+
+    // TODO: make just direct equal
+    test.deepEqual(out.join("").split("\n"), expected, 'Example ' + name);
+
+    assert: test.failed === false
   </script>
 
+  <script name="test_complex_markdown_example">
+    const { taglex, NodeUnitHelper } = Modulo.utils;
+    const test = new NodeUnitHelper(); // Implements subset of nodeunit
+    const out = [];
+
+    /*
+        This is an example showing using TagLex for outputing a Markdown-like
+        markup from HTML
+    */
+    var ruleset = new taglex.TagRuleSet({
+        // Specifying a "normalizer" is necessary if you plan on using regular
+        // expressions. This function must "clean up" any token to a unique,
+        // canonical form.  In this case, since the regular expressions in use
+        // match extraneous spaces, this normalizer cleans that up.
+        normalizer: function (token) {
+            return token.replace(/ /g, '')
+                        .replace(/\r?\n\s*\r?\n[\s*\r\n]*/g, "\n\n");
+        },
+    });
+
+    // TagClassManager is a helper function that lets you create "tag classes" that
+    // tags can belong to, and have parents, thus solving the chicken-and-egg
+    // problem of defining "parents" when adding tags
+    var classes = new taglex.TagClassManager();
+
+    // Let's start with a simple italic tag, specified _like this_
+    ruleset.add_tag({
+        name: 'italic',
+        open: '_', close: '_',
+
+        // contained by "style" and "containers"
+        parents: classes.get('style', 'container'),
+
+        // payload can be in any structure we want
+        payload: {start: '<em>', finish: '</em>'},
+    });
+    classes.add('italic', 'style') // we give it the class "style"
+
+    // Same thing for bold
+    ruleset.add_tag({
+        name: 'bold',
+        open: '*', close: '*',
+        parents: classes.get('style', 'container'),
+        payload: {start: '<strong>', finish: '</strong>'}
+    });
+    classes.add('bold', 'style')
+
+    ///// inline code syntax
+    // We don't this add to "style", so that it won't parse _, etc, although we
+    // still want it to be parented by style and container
+    ruleset.add_tag({
+        name: 'code',
+        open: "`", close: "`",
+        parents: classes.get('style', 'container'),
+        payload: {start: '<code>', finish: '</code>', pre: true}
+    });
+
+    // Note that open or close can be a javascript object as below. We'll use this
+    // for all block-level elements:
+    var PARA_CLOSE = {
+        token: "\n\n",                    // canonical token form
+        re: "\\s*\\r?\\n\\s*\\r?\\n\\s*", // regular expression to match above
+    };
+
+    // Here we have
+    ruleset.add_tag({
+        name: 'paragraph',
+        force_close: true, // force_close "auto-closes" sloppy / unclosed tags
+        open: "", close: PARA_CLOSE,
+        parents: classes.get('blockcontainer', 'root'), // "root" is the default
+        payload: {start: '<p>', finish: '</p>'}
+    });
+    classes.add('paragraph', 'container')
+
+
+    ///// Pre-format syntax
+    /*ruleset.add_tag({
+        name: 'pre',
+        open: "    ", close: PARA_CLOSE,
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<pre>', finish: '</pre>', pre: true}
+    });*/
+
+    ///// Codeblock
+    // For fun, we add a some simple syntax highlighting
+    ruleset.add_tag({
+        name: 'codeblock',
+        open: "```\n", close: "\n```",
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<pre>', finish: '</pre>', pre: true}
+    });
+
+    ruleset.add_tag({
+        name: 'c_string',
+        open: '"', close: '"',
+        parents: ['codeblock', 'code'],
+        payload: {
+            start: '<span style="color: blue">',
+            finish: '</span>',
+            include_tag: true,
+            pre: true,
+        },
+    });
+
+    ruleset.add_tag({
+        name: 'c_comment',
+        open: '/*', close: '*/',
+        parents: ['codeblock', 'code'],
+        payload: {
+            start: '<span style="color: green">',
+            finish: '</span>',
+            include_tag: true,
+            pre: true,
+        },
+    });
+
+    //// SECTION
+    ruleset.add_tag({
+        name: 'section',
+        force_close: true,
+        open: '#', close: PARA_CLOSE,
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<h1>', finish: '</h1>'}
+    });
+    classes.add('section', 'container')
+
+    //// SUBSECTION
+    ruleset.add_tag({
+        name: 'subsection',
+        force_close: true,
+        open: '##', close: PARA_CLOSE,
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<h2>', finish: '</h2>'}
+    });
+    classes.add('subsection', 'container')
+
+    //// SUBSUBSECTION
+    ruleset.add_tag({
+        name: 'subsubsection',
+        force_close: true,
+        open: '###', close: PARA_CLOSE,
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<h3>', finish: '</h3>'}
+    });
+    classes.add('subsubsection', 'container')
+
+    //// BLOCKQUOTE
+    ruleset.add_tag({
+        name: 'blockquote',
+        force_close: true,
+        one_child: true, // when child gets popped, pop this tag
+        combine: true, // combine adjacent ones
+        open: '>', close: PARA_CLOSE,
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<blockquote>', finish: '</blockquote>'}
+    });
+    classes.add('blockquote', 'blockcontainer')
+
+
+    // Here we include the table example from the README
+    ruleset.add_tag({
+        name: 'table',
+        ignore_text: true,
+        open: '{{{', close: '}}}',
+        parents: classes.get('blockcontainer', 'root'),
+        payload: {start: '<table>', finish: '</table>'}
+    });
+
+    ruleset.add_tag({
+        name: 'row',
+        ignore_text: true,
+        open: '[', close: ']',
+        parents: ['table'],
+        payload: {start: '<tr>', finish: '</tr>'}
+    });
+
+    ruleset.add_tag({
+        name: 'cell',
+        force_close: true,
+        open: '[', close: ']',
+        parents: ['row'],
+        payload: {start: '<td>', finish: '</td>'}
+    });
+    classes.add('cell', 'blockcontainer')
+
+    // There, now we create the new parser!
+    var parser = ruleset.new_parser();
+
+    parser.on('tag_open', function (payload, token) {
+        out.push(payload.start);
+        if (payload.include_tag) {
+            out.push(token);
+        }
+    });
+
+    parser.on('text_node', function (text) {
+        if (parser.current_tag.pre) {
+            out.push(text);
+        } else {
+            // escape html & normalize whitespace
+            out.push(text
+                    .replace(/^\s*/, "")
+                    .replace(/\s*$/, "")
+                    .replace(/[\s\n\r]+/g, " ")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&lt;"));
+        }
+    });
+
+    parser.on('tag_close', function (payload, token) {
+        if (payload.include_tag) {
+            out.push(token);
+            out.push(payload.finish);
+        } else {
+            out.push(payload.finish + "\n");
+        }
+    });
+
+    var input = [
+        "# First section",
+        "",
+        "Here's an example",
+        " of a paragraph",
+        " ", // trailing whitespace
+        "And another paragraph.",
+        'This one *with* some _styling_, and `code("example")`',
+        "",
+        "",
+        "## On nesting",
+        "",
+        ">Blockquotes can even contain",
+        "",
+        ">### Headers",
+        //"", ">> or other block quotes!", // broken, need to debug
+        "",
+        "{{{",
+        "[ [ Tables ] [ work ] ]",
+        "[ [> with nested ] [",
+        " or multiple",
+        "",
+        " elements",
+        "] ]",
+        "}}}",
+        "",
+        "```",
+        '/* Even some simple "syntax highlighting"! */',
+        'console.log("Hello, /*Syntax*/ World!");',
+        "```",
+    ].join("\n");
+
+    parser.write(input);
+
+    // parser automatically close remaining tags when .end() is called
+    parser.end();
+
+    // Expected results (as a list, instead  of new lines)
+    const expected = [
+        "<h1>First section</h1>",
+        "<p>Here's an example of a paragraph</p>",
+        "<p>And another paragraph. This one<strong>with</strong>",
+        "some<em>styling</em>",
+        ', and<code>code(<span style="color: blue">"example"</span>)</code>',
+        "</p>",
+        "<h2>On nesting</h2>",
+        "<blockquote><p>Blockquotes can even contain</p>",
+        "<h3>Headers</h3>",
+        "</blockquote>",
+        "<table><tr><td><p>Tables</p>",
+        "</td>",
+        "<td><p>work</p>",
+        "</td>",
+        "</tr>",
+        "<tr><td><blockquote><p>with nested</p>",
+        "</blockquote>",
+        "</td>",
+        "<td><p>or multiple</p>",
+        "<p>elements</p>",
+        "</td>",
+        "</tr>",
+        "</table>",
+        "<p></p>",
+        "<pre><span style=\"color: green\">/* Even some simple \"syntax highlighting\"! */</span>",
+        "console.log(<span style=\"color: blue\">\"Hello, /*Syntax*/ World!\"</span>);</pre>",
+        "",
+    ];
+
+
+    // TODO: make just direct equal
+    test.deepEqual(out.join("").split("\n"), expected, 'Example ' + name);
+
+    assert: test.failed === false
+  </script>
 </test>
 
 

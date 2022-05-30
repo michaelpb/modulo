@@ -820,6 +820,39 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         }
     }
 
+    // TODO: RM this, once a new pattern is established in tests
+    var TagClassManager = function () {
+        this.classes = {
+            'root': ['root'], // default
+        };
+    };
+
+    TagClassManager.prototype.add = function () {
+        // Adds tag_name to class(es).  (tag_name, classes..)
+        var args = Array.from(arguments);
+        var name = args.shift();
+        args.forEach(function (classname) {
+            if (!this.classes[classname]) {
+                this.classes[classname] = [];
+            }
+
+            this.classes[classname].push(name);
+        }, this);
+    };
+
+    TagClassManager.prototype._get = function (classname) {
+        if (!this.classes[classname]) {
+            this.classes[classname] = [];
+        }
+
+        return this.classes[classname];
+    };
+
+    TagClassManager.prototype.get = function () {
+        return Array.prototype.map.call(arguments, this._get, this);
+    };
+
+    exports.TagClassManager = TagClassManager;
 
     //exports.EventEmitter = EventEmitter;
     //exports.Lexer = Lexer;
