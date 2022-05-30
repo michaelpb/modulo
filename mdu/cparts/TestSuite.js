@@ -102,11 +102,25 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             return [false, `Error occured, cannot compile: ${err}`]
         }
 
-        try {
+        const getParams = String(Modulo.globals.location ?
+                                 Modulo.globals.location.search : '').substr(1);
+
+        if (getParams.includes('stacktrace=y')) {
+            // Let exceptions crash process and halt future tests, exposing
+            // stack-trace
+            // TODO: Look into more consistent system using console.trace, and
+            // then move to conf and have on by default
             result = func.apply(null, Object.values(vars));
-        } catch (err) {
-            return [false, `Error occured: ${err}`]
+        } else {
+            try {
+                // Catch exceptions during test and mark as failure, continuing
+                // with future tests
+                result = func.apply(null, Object.values(vars));
+            } catch (err) {
+                return [false, `Error occured: ${err}`]
+            }
         }
+
         if (!isAssertion) {
             return [undefined, undefined];
         }
@@ -326,8 +340,8 @@ Modulo.CommandMenu.prototype.test = function test() {
         console.log(`${skippedCount} TestSuite(s) skipped`);
     }
 
-    // TODO Reimplement testLog, by using "saveFileAs" to save file, just like
-    // with build
+    // TODO Reimplement testLog, by using "saveFileAs" to save file (and/or
+    // possibly have a localStorage fallback), just like with build
     const config = { testLog: false };
     if (config.testLog) {
         let testLogData;

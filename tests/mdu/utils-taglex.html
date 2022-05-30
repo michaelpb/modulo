@@ -1,0 +1,753 @@
+<Component name="UtilsTaglexTester"><TestSuite>
+
+<test name="RuleSet tests">
+    <script name="TagLex classes are loaded and available">
+        const { taglex } = Modulo.utils;
+        const { EventEmitter, Lexer, StackParser, TagParser, RuleSet, TagRuleSet } = (taglex || {});
+        assert: EventEmitter && Lexer && StackParser && TagParser && RuleSet && TagRuleSet
+    </script>
+
+    <script name="Can correctly lex text into tokens">
+        const { taglex, NodeUnitHelper } = Modulo.utils;
+        const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+        var ruleset = new taglex.RuleSet();
+
+        var result, parser, text, contents;
+        var emit = function (t, c) { contents.push([t, c]); };
+
+        // Add in two rules
+        // Add paragraph X emphasis relation
+        ruleset.add('*', 'tag_paragraph', 'tag_emphasis');
+        ruleset.add('*', 'tag_emphasis', taglex.POP);
+
+        // Add paragraph X underline relation
+        ruleset.add('u{', 'tag_paragraph', 'tag_underline');
+        ruleset.add('}', 'tag_underline', taglex.POP);
+
+        // underline can contain emphasis, but not the other way around
+        ruleset.add('*', 'tag_underline', 'tag_emphasis');
+
+        /////////////// TEST 1
+        contents = [];
+        parser = ruleset.new_parser('tag_paragraph', emit);
+        text = "a *b c d* e f u{g h *i j* k} l m n o";
+        parser.write(text);
+        result = [ [ 1, 'a ' ],
+                    [ 2, '*' ], [ 1, 'b c d' ], [ 2, '*' ],
+                    [ 1, ' e f ' ],
+                    [ 2, 'u{' ], [ 1, 'g h ' ],
+                        [ 2, '*' ], [ 1, 'i j' ], [ 2, '*' ],
+                        [ 1, ' k' ], [ 2, '}' ],
+                    [ 1, ' l m n o' ] ];
+        test.deepEqual(result, contents);
+
+        /////////////// TEST 2
+        // ensure we cannot have underline within emphasis, also case sensitive
+        contents = [];
+        parser = ruleset.new_parser('tag_paragraph', emit);
+        text = "a *b u{c} d* e f u{g h *i j* k} l U{m} n o";
+        parser.write(text);
+        result = [ [ 1, 'a ' ],
+                    [ 2, '*' ], [ 1, 'b u{c} d' ], [ 2, '*' ],
+                    [ 1, ' e f ' ],
+                    [ 2, 'u{' ], [ 1, 'g h ' ],
+                        [ 2, '*' ], [ 1, 'i j' ], [ 2, '*' ],
+                        [ 1, ' k' ], [ 2, '}' ],
+                    [ 1, ' l U{m} n o' ] ];
+        test.deepEqual(result, contents);
+
+
+        /////////////// TEST 3
+        // ensure arbitrary multiple writes work fine
+        contents = [];
+        parser = ruleset.new_parser('tag_paragraph', emit);
+        var texts = ["a *", "b u{c} d*",
+                " e f u{", "g h *i", " j* k", "} l U{", "m} n o", ""];
+        for (var i in texts) { parser.write(texts[i]); }
+        result = [ [ 1, 'a ' ],
+                    [ 2, '*' ], [ 1, 'b u{c} d' ], [ 2, '*' ],
+                    [ 1, ' e f ' ],
+                    [ 2, 'u{' ], [ 1, 'g h ' ],
+                        [ 2, '*' ], [ 1, 'i' ], [ 1, ' j' ], [ 2, '*' ],
+                        [ 1, ' k' ], [ 2, '}' ],
+                    [ 1, ' l U{' ], [ 1, 'm} n o' ],
+                ];
+        test.deepEqual(result, contents);
+
+
+        /////////////// TEST 4
+        // many short edge cases
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [ [ 2, '*' ], [ 1, 'test' ], [ 2, '*' ], ];
+        parser.write("*test*");
+        test.deepEqual(result, contents);
+
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [  [ 2, 'u{' ], [ 1, 'test' ], [ 2, '}' ], ];
+        parser.write("u{test}");
+        test.deepEqual(result, contents);
+
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [  [ 1, 'test' ], ];
+        parser.write("test");
+        test.deepEqual(result, contents);
+
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [  [ 2, '*' ], [ 2, '*' ], ];
+        parser.write("**");
+        test.deepEqual(result, contents);
+
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [  [ 2, 'u{' ], [ 2, '*' ], [ 2, '*' ], [ 2, '*' ], [ 2, '*' ], [ 2, '}' ], ];
+        parser.write("u{****}");
+        test.deepEqual(result, contents);
+
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [  [ 2, 'u{' ], [ 2, '*' ], [ 2, '*' ], [ 2, '*' ], [ 2, '*' ], [ 2, '*' ], [ 1, '}' ], ];
+        parser.write("u{*****}");
+        test.deepEqual(result, contents);
+
+        contents = []; parser = ruleset.new_parser('tag_paragraph', emit);
+        result = [  [ 2, 'u{' ], [ 2, '*' ], [ 1, '}' ], [ 2, '*' ], [ 2, '}' ], ];
+        parser.write("u{*}*}");
+        test.deepEqual(result, contents);
+
+        /////////////// TEST 5
+        // test prefixes, add in strong too
+        ruleset.add('**', 'tag_paragraph', 'tag_strong');
+        ruleset.add('**', 'tag_emphasis', 'tag_strong');
+        ruleset.add('**', 'tag_strong', taglex.POP);
+        ruleset.add('*', 'tag_strong', 'tag_emphasis');
+        contents = [];
+        parser = ruleset.new_parser('tag_paragraph', emit);
+        text = "a} **b c d** e f **g h *i j* k*** l m u{n o";
+        parser.write(text);
+        result = [ [ 1, 'a} ' ],
+                    [ 2, '**' ], [ 1, 'b c d' ], [ 2, '**' ],
+                    [ 1, ' e f ' ],
+                    [ 2, '**' ], [ 1, 'g h ' ],
+                        [ 2, '*' ], [ 1, 'i j' ], [ 2, '*' ],
+                        [ 1, ' k' ], [ 2, '**' ],
+                        [ 2, '*' ],
+                    [ 1, ' l m u{n o' ] ];
+        test.deepEqual(result, contents);
+
+
+        /////////////// TEST 6
+        // test recursion, make underline recursive
+        ruleset.add('u{', 'tag_underline', 'tag_underline');
+        contents = [];
+        parser = ruleset.new_parser('tag_paragraph', emit);
+        text = "a} u{b c d} e f u{g h u{i j} k} l u{u{u{u{m}}}** n} ** o **";
+        parser.write(text);
+        result = [ [ 1, 'a} ' ],
+                    [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                    [ 1, ' e f ' ],
+                    [ 2, 'u{' ], [ 1, 'g h ' ],
+                        [ 2, 'u{' ], [ 1, 'i j' ], [ 2, '}' ],
+                        [ 1, ' k' ], [ 2, '}' ],
+                    [ 1, ' l ' ],
+                        [ 2, 'u{' ], [ 2, 'u{' ], [ 2, 'u{' ], [ 2, 'u{' ],
+                                            [ 1, 'm' ],
+                                [ 2, '}' ], [ 2, '}' ], [ 2, '}' ],
+                            [ 2, '*' ], [ 2, '*' ],
+                            [ 1, ' n' ],
+                        [ 2, '}' ], [ 1, ' ' ],
+                        [ 2, '**' ], [ 1, ' o ' ], [ 2, '**' ],
+                    ];
+        test.deepEqual(result, contents);
+
+        /////////////// TEST 7
+        // test descendant and parent state helper functions
+        test.deepEqual(ruleset.get_descendant_states("tag_underline").sort(),
+            ["tag_emphasis", "tag_strong", "tag_underline"]);
+
+        test.deepEqual(ruleset.get_ancestor_states("tag_underline").sort(),
+            ["tag_paragraph", "tag_underline"]);
+
+        test.deepEqual(ruleset.get_descendant_states("tag_emphasis").sort(),
+            ["tag_emphasis", "tag_strong"]);
+
+        test.deepEqual(ruleset.get_ancestor_states("tag_emphasis").sort(),
+            ["tag_emphasis", "tag_paragraph", "tag_strong", "tag_underline"]);
+
+        test.deepEqual(ruleset.get_descendant_states("tag_strong").sort(),
+            ["tag_emphasis", "tag_strong"]);
+
+        test.deepEqual(ruleset.get_ancestor_states("tag_strong").sort(),
+            ["tag_emphasis", "tag_paragraph", "tag_strong", "tag_underline"]);
+
+        test.deepEqual(ruleset.get_descendant_states("tag_paragraph").sort(),
+            ["tag_emphasis", "tag_strong", "tag_underline"]);
+
+        test.deepEqual(ruleset.get_ancestor_states("tag_paragraph").sort(),
+            []);
+
+        assert: test.failed === false
+    </script>
+
+  <script name="Test RuleSet with overlapping tokens">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var ruleset = new taglex.RuleSet();
+
+      var result, parser, text, contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      // Add in old rules
+      ruleset.add('*', 'tag_paragraph', 'tag_emphasis');
+      ruleset.add('*', 'tag_emphasis', taglex.POP);
+      ruleset.add('u{', 'tag_paragraph', 'tag_underline');
+      ruleset.add('}', 'tag_underline', taglex.POP);
+      ruleset.add('*', 'tag_underline', 'tag_emphasis');
+
+      // add in new rules
+      ruleset.add('k{', 'tag_paragraph', 'tag_k');
+      ruleset.add('}', 'tag_k', taglex.POP);
+      ruleset.add('j{', 'tag_paragraph', 'tag_j');
+      ruleset.add('}', 'tag_j', taglex.POP);
+      ruleset.add('j{', 'tag_j', 'tag_j2');
+      ruleset.add('};', 'tag_j2', taglex.POP);
+
+      /////////////// TEST 1
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a u{g h *I J* k}u{b c d}k{}j{} e f j{g h j{I } J}; k} l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, 'u{'], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'I J' ], [ 2, '*' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                  [ 2, 'k{' ], [ 2, '}' ],
+                  [ 2, 'j{' ], [ 2, '}' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'j{'], [ 1, 'g h ' ],
+                      [ 2, 'j{' ], [ 1, 'I } J' ], [ 2, '};' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_lexer_stack_pass ">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var ruleset = new taglex.RuleSet();
+
+      var result, parser, text, contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      // Add in old rules
+      ruleset.add('*', 'tag_paragraph', 'tag_emphasis');
+      ruleset.add('--', 'tag_emphasis', taglex.NOOP);
+      ruleset.add('*', 'tag_emphasis', taglex.POP);
+
+      /////////////// TEST 1
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a *g h --I J k* l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, '*'], [ 1, 'g h ' ],
+                      [ 2, '--' ], [ 1, 'I J k' ],
+                      [ 2, '*' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+      assert: test.failed === false
+  </script>
+
+  <script name="test_lexer_empty_match">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var ruleset = new taglex.RuleSet();
+
+      var result, parser, text, contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      // Add in old rules
+      ruleset.add('*', 'tag_paragraph', 'tag_emphasis');
+      ruleset.add('', 'tag_emphasis', 'tag_empty');
+      ruleset.add('|', 'tag_empty', taglex.POP);
+      ruleset.add('*', 'tag_empty', taglex.DOUBLE_POP);
+
+
+      /////////////// TEST 1
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a *g h |I J k* l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, '*'],
+                      [ 2, '' ],
+                      [ 1, 'g h ' ],
+                      [ 2, '|' ],
+                      [ 2, '' ],
+                      [ 1, 'I J k' ],
+                      [ 2, '*' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+      ruleset.add('?', 'tag_emphasis', 'tag_alt');
+      ruleset.add('*', 'tag_alt', taglex.DOUBLE_POP);
+
+      /////////////// TEST 2
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a *g h |?I J k* l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, '*'],
+                      [ 2, '' ],
+                      [ 1, 'g h ' ],
+                      [ 2, '|' ],
+                      [ 2, '?' ],
+                      [ 1, 'I J k' ],
+                      [ 2, '*' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+
+      /////////////// TEST 3, starting empty
+      ruleset.add('', 'tag_root', 'new_state');
+      ruleset.add('test', 'new_state', 'new_state');
+
+      contents = [];
+      parser = ruleset.new_parser('tag_root', emit);
+      text = "asdf";
+      parser.write(text);
+      result = [ [ 2, '' ], [ 1, 'asdf'] ];
+      test.deepEqual(result, contents);
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_lexer_ignore_case">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var ruleset = new taglex.RuleSet({ignore_case: true});
+
+      var result, parser, text, contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      // Add in old rules
+      ruleset.add('*', 'tag_paragraph', 'tag_emphasis');
+      ruleset.add('*', 'tag_emphasis', taglex.POP);
+      ruleset.add('u{', 'tag_paragraph', 'tag_underline');
+      ruleset.add('}', 'tag_underline', taglex.POP);
+      ruleset.add('*', 'tag_underline', 'tag_emphasis');
+
+      /////////////// TEST 1
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a u{b c d} e f U{g h *I J* k} l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'u{', 'U{', ], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'I J' ], [ 2, '*' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_lexer_regexp">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var ruleset = new taglex.RuleSet({
+          normalizer: function (v) { return v.replace(/^_+/, '_'); }
+      });
+
+      var result, parser, text, contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      // Add in old rules
+      ruleset.add('_', 'tag_paragraph', 'tag_emphasis', '_+');
+      ruleset.add('_', 'tag_emphasis', taglex.POP, '_+');
+      ruleset.add('u{', 'tag_paragraph', 'tag_underline');
+      ruleset.add('}', 'tag_underline', taglex.POP);
+      ruleset.add('_', 'tag_underline', 'tag_emphasis', '_+');
+
+      /////////////// TEST 1
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a ___b c d__ e f u{g h __I J_ k} l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, '_', '___', ], [ 1, 'b c d' ], [ 2, '_', '__' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'u{', ], [ 1, 'g h ' ],
+                      [ 2, '_', '__' ], [ 1, 'I J' ], [ 2, '_' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+      assert: test.failed === false
+  </script>
+
+
+
+  <script name="test_lexer_collapse">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var ruleset = new taglex.RuleSet();
+
+      var result, parser, text, contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      // Add in old rules
+      ruleset.add('*', 'tag_paragraph', 'tag_emphasis');
+      ruleset.add('*', 'tag_emphasis', taglex.POP);
+      ruleset.add('u{', 'tag_paragraph', 'tag_underline');
+      ruleset.add('}', 'tag_underline', taglex.POP);
+      ruleset.add('*', 'tag_underline', 'tag_emphasis');
+      // Add in collapser for 
+      ruleset.add_stack_collapser('}', 'tag_underline');
+
+      /////////////// TEST 1
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a u{b c d} e f u{g h *I J k} l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'u{', ], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'I J k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+
+      /////////////// TEST 2 (extra non-collapse rules)
+      // add in new rules
+      ruleset.add('k{', 'tag_paragraph', 'tag_k');
+      ruleset.add('k{', 'tag_underline', 'tag_k');
+      ruleset.add('}', 'tag_k', taglex.POP);
+      ruleset.add('j{', 'tag_paragraph', 'tag_j');
+      ruleset.add('j{', 'tag_underline', 'tag_j');
+      ruleset.add('}', 'tag_j', taglex.POP);
+      ruleset.add('j{', 'tag_j', 'tag_j2');
+      ruleset.add('};', 'tag_j2', taglex.POP);
+
+
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a u{g h *I J k}u{b c d}k{}j{} e f j{g h j{I } J}; k} l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, 'u{'], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'I J k' ],
+                      [ 2, '}' ],
+                  [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                  [ 2, 'k{' ], [ 2, '}' ],
+                  [ 2, 'j{' ], [ 2, '}' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'j{'], [ 1, 'g h ' ],
+                      [ 2, 'j{' ],
+
+                      [ 1, 'I }'], [ 1, ' J' ], // NOTE: XXX anti-feature, too many text nodes
+
+                      [ 2, '};' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+
+
+      /////////////// TEST 3 (trickier interweaving of similar tokens)
+      // add in new rules
+      contents = [];
+      parser = ruleset.new_parser('tag_paragraph', emit);
+      text = "a u{g h j{I J k}u{b c d}}k{}j{} e f j{g h j{I } J}; k} l m n o";
+      parser.write(text);
+      result = [ [ 1, 'a ' ],
+                  [ 2, 'u{'], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'I J' ], [ 2, 'j{' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                  [ 2, '}' ],
+                  [ 2, 'k{' ], [ 2, '}' ],
+                  [ 2, 'j{' ], [ 2, '}' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'j{'], [ 1, 'g h ' ],
+                      [ 2, 'j{' ], 
+                      [ 1, 'I }'], [ 1, ' J' ], // NOTE: XXX anti-feature, too many text nodes
+                      [ 2, '};' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.done();
+
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_tag_parser_basic">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var result, parser, text, contents, node_contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      var setup_tagparser = function (parser) {
+          node_contents = [];
+          parser.on('tag_open', function (tagname) { node_contents.push(['OPEN', tagname]); });
+          parser.on('tag_close', function (tagname) { node_contents.push(['CLOSE', tagname]); });
+          parser.on('text_node', function (val) { node_contents.push(['TEXT', val]); });
+          parser.on('symbol', function (val) { node_contents.push(['SYMBOL', val]); });
+      };
+
+
+      var ruleset = new taglex.TagRuleSet();
+      ruleset.add_tag({ name: 'emphasis', open: '*', close: '*', parents: ['underline', 'strong', 'root'], });
+      ruleset.add_tag({ name: 'underline', open: 'u{', close: '}', parents: ['root', 'underline'], });
+      ruleset.add_tag({ name: 'strong', open: '**', close: '**', parents: ['root', 'emphasis'], });
+      ruleset.add_symbol({ name: 'dash', symbol: '---', parents: ['root', 'underline', 'emphasis'], });
+
+      /////////////// TEST 1
+      console.log("TEST 1");
+      contents = []; node_contents = [];
+      parser = ruleset.new_parser(null, emit);
+      console.log("TEST 1 instanced");
+      text = "a *b c d---* e--- f u{g h *i j* k} l m n o";
+      setup_tagparser(parser);
+      console.log("TEST 1 instanced 2");
+      parser.write(text);
+      console.log("TEST 1 instanced 3");
+      result = [ [ 1, 'a ' ],
+                  [ 2, '*' ], [ 1, 'b c d' ], [ 2, '---' ], [ 2, '*' ],
+                  [ 1, ' e' ], [ 2, '---' ], [ 1, ' f ' ],
+                  [ 2, 'u{' ], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'i j' ], [ 2, '*' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l m n o' ] ];
+      test.deepEqual(result, contents);
+      console.log("TEST 1 instanced 4");
+
+      // check node emissions
+      result = [ [ 'TEXT', 'a ' ],
+                  [ 'OPEN', 'emphasis' ], [ 'TEXT', 'b c d' ], [ 'SYMBOL', 'dash'], [ 'CLOSE', 'emphasis' ],
+                  [ 'TEXT', ' e'], [ 'SYMBOL', 'dash'],
+                  [ 'TEXT', ' f ' ],
+                  [ 'OPEN', 'underline' ], [ 'TEXT', 'g h ' ],
+                      [ 'OPEN', 'emphasis' ], [ 'TEXT', 'i j' ], [ 'CLOSE', 'emphasis' ],
+                      [ 'TEXT', ' k' ], [ 'CLOSE', 'underline' ],
+                  [ 'TEXT', ' l m n o' ] ];
+      test.deepEqual(result, node_contents);
+
+
+      /////////////// TEST 2
+      // test strong too
+      console.log("TEST 2");
+      contents = [];
+      parser = ruleset.new_parser(null, emit);
+      text = "a} **b c d** e f **g h *i j* k*** l m u{n o";
+      setup_tagparser(parser);
+      parser.write(text);
+      result = [ [ 1, 'a} ' ],
+                  [ 2, '**' ], [ 1, 'b c d' ], [ 2, '**' ],
+                  [ 1, ' e f ' ],
+                  [ 2, '**' ], [ 1, 'g h ' ],
+                      [ 2, '*' ], [ 1, 'i j' ], [ 2, '*' ],
+                      [ 1, ' k' ], [ 2, '**' ],
+                      [ 2, '*' ],
+                  [ 1, ' l m u{n o' ] ];
+      test.deepEqual(result, contents);
+
+      // check node emissions
+      result = [ [ 'TEXT', 'a} ' ],
+                  [ 'OPEN', 'strong' ], [ 'TEXT', 'b c d' ], [ 'CLOSE', 'strong' ],
+                  [ 'TEXT', ' e f ' ],
+                  [ 'OPEN', 'strong' ], [ 'TEXT', 'g h ' ],
+                      [ 'OPEN', 'emphasis' ], [ 'TEXT', 'i j' ], [ 'CLOSE', 'emphasis' ],
+                      [ 'TEXT', ' k' ], [ 'CLOSE', 'strong' ],
+                      [ 'OPEN', 'emphasis' ],
+                  [ 'TEXT', ' l m u{n o' ] ];
+      test.deepEqual(result, node_contents);
+
+
+      /////////////// TEST 3
+      // test recursion, make underline recursive
+      contents = [];
+      parser = ruleset.new_parser(null, emit);
+      text = "a} u{b c d} e f u{g h u{i j} k} l u{u{u{u{m}}}** n} ** o **";
+      // setup_tagparser(parser); // Modern note: This wasn't here, why?
+      parser.write(text);
+      result = [ [ 1, 'a} ' ],
+                  [ 2, 'u{' ], [ 1, 'b c d' ], [ 2, '}' ],
+                  [ 1, ' e f ' ],
+                  [ 2, 'u{' ], [ 1, 'g h ' ],
+                      [ 2, 'u{' ], [ 1, 'i j' ], [ 2, '}' ],
+                      [ 1, ' k' ], [ 2, '}' ],
+                  [ 1, ' l ' ],
+                      [ 2, 'u{' ], [ 2, 'u{' ], [ 2, 'u{' ], [ 2, 'u{' ],
+                                          [ 1, 'm' ],
+                              [ 2, '}' ], [ 2, '}' ], [ 2, '}' ],
+                          [ 2, '*' ], [ 2, '*' ],
+                          [ 1, ' n' ],
+                      [ 2, '}' ], [ 1, ' ' ],
+                      [ 2, '**' ], [ 1, ' o ' ], [ 2, '**' ],
+                  ];
+      test.deepEqual(result, contents);
+
+      test.done();
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_tag_parser_root_ignore_text">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var result, parser, text, contents, node_contents;
+      var emit = function (t, c, z) {
+          var e = [t, c];
+          if (z && z !== c) { e.push(z); }
+          contents.push(e);
+      };
+
+      var setup_tagparser = function (parser) {
+          node_contents = [];
+          parser.on('tag_open', function (tagname) { node_contents.push(['OPEN', tagname]); });
+          parser.on('tag_close', function (tagname) { node_contents.push(['CLOSE', tagname]); });
+          parser.on('text_node', function (val) { node_contents.push(['TEXT', val]); });
+          parser.on('symbol', function (val) { node_contents.push(['SYMBOL', val]); });
+      };
+
+
+      var ruleset = new taglex.TagRuleSet({
+          root_ignore_text: true,
+      });
+      ruleset.add_tag({ name: 'emphasis', open: '*', close: '*', parents: ['underline', 'strong', 'root'], });
+      ruleset.add_tag({ name: 'underline', open: 'u{', close: '}', parents: ['root', 'underline'], });
+      ruleset.add_tag({ name: 'strong', open: '**', close: '**', parents: ['root', 'emphasis'], });
+      ruleset.add_symbol({ name: 'dash', symbol: '---', parents: ['root', 'underline', 'emphasis'], });
+
+      /////////////// TEST 1
+      contents = []; node_contents = [];
+      parser = ruleset.new_parser(null, emit);
+      text = "a *b c d---* e--- f u{g h *i j* k} l m n o";
+      setup_tagparser(parser);
+      parser.write(text);
+
+      // check node emissions
+      result = [ 
+                  [ 'OPEN', 'emphasis' ], [ 'TEXT', 'b c d' ], [ 'SYMBOL', 'dash'], [ 'CLOSE', 'emphasis' ],
+                  [ 'SYMBOL', 'dash'],
+                  [ 'OPEN', 'underline' ], [ 'TEXT', 'g h ' ],
+                      [ 'OPEN', 'emphasis' ], [ 'TEXT', 'i j' ], [ 'CLOSE', 'emphasis' ],
+                      [ 'TEXT', ' k' ], [ 'CLOSE', 'underline' ],
+                  ];
+      test.deepEqual(result, node_contents);
+      test.done();
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_tag_parser_event_buffering">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+      var result, parser, text, contents, node_contents, bufferer;
+      var source_buffer_result = [];
+
+      var setup_bufferer = function (b) {
+          node_contents = [];
+          b.on('source_buffer', function (v) { source_buffer_result.push(v); });
+          b.on('tag_open', function (tagname) { node_contents.push(['OPEN', tagname]); });
+          b.on('tag_close', function (tagname) { node_contents.push(['CLOSE', tagname]); });
+          b.on('text_node', function (val) { node_contents.push(['TEXT', val]); });
+          b.on('symbol', function (val) { node_contents.push(['SYMBOL', val]); });
+      };
+
+      var ruleset = new taglex.TagRuleSet();
+      ruleset.add_tag({ name: 'emphasis',  open: '*',  close: '*',  parents: ['underline', 'strong', 'root'], });
+      ruleset.add_tag({ name: 'underline', open: 'u{', close: '}',  parents: ['root', 'underline'], });
+      ruleset.add_tag({ name: 'strong',    open: '**', close: '**', parents: ['root', 'emphasis'], });
+      ruleset.add_symbol({ name: 'dash', symbol: '---', parents: ['root', 'underline', 'emphasis'], });
+
+      /////////////// TEST 1
+      contents = []; node_contents = [];
+      parser = ruleset.new_parser();
+      bufferer = new taglex.SourceBufferer(parser, taglex.ROOT);
+      setup_bufferer(bufferer);
+      text = "a *b c d---* e--- f u{g h *i j* k} l m n o";
+      parser.write(text);
+      bufferer.flush();
+
+      // ensure source gets replicated
+      var buffers = ["a *b c d---*", " e--- f u{g h *i j* k}", " l m n o"];
+      test.deepEqual(buffers, source_buffer_result);
+
+      // check node emissions
+      result = [ [ 'TEXT', 'a ' ],
+                  [ 'OPEN', 'emphasis' ], [ 'TEXT', 'b c d' ], [ 'SYMBOL', 'dash'], [ 'CLOSE', 'emphasis' ],
+                  [ 'TEXT', ' e'], [ 'SYMBOL', 'dash'],
+                  [ 'TEXT', ' f ' ],
+                  [ 'OPEN', 'underline' ], [ 'TEXT', 'g h ' ],
+                      [ 'OPEN', 'emphasis' ], [ 'TEXT', 'i j' ], [ 'CLOSE', 'emphasis' ],
+                      [ 'TEXT', ' k' ], [ 'CLOSE', 'underline' ],
+                  [ 'TEXT', ' l m n o' ] ];
+      test.deepEqual(result, node_contents);
+      test.done();
+
+      assert: test.failed === false
+  </script>
+
+
+  <script name="test_tag_parser_event_buffering">
+      const { taglex, NodeUnitHelper } = Modulo.utils;
+      const test = new NodeUnitHelper(); // Implements subset of nodeunit
+
+
+      assert: test.failed === false
+  </script>
+
+</test>
+
+
+</TestSuite></Component>
