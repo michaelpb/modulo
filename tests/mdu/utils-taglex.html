@@ -806,10 +806,18 @@
         },
     });
 
-    // TagClassManager is a helper function that lets you create "tag classes" that
-    // tags can belong to, and have parents, thus solving the chicken-and-egg
-    // problem of defining "parents" when adding tags
-    var classes = new taglex.TagClassManager();
+    // (DEPRECATED: TagClassManager is a helper function that lets you create
+    // "tag classes" that tags can belong to, and have parents, thus solving
+    // the chicken-and-egg problem of defining "parents" when adding tags)
+    var legacy_classes = new taglex.TagClassManager();
+    var classes = {
+        root: ['root'],
+        blockcontainer: ['blockquote', 'cell'],
+        style: ['italic', 'bold'],
+        container: ['paragraph', 'section', 'subsection', 'subsubsection'],
+    };
+    classes.styleContainers = classes.style.concat(classes.container);
+    classes.blockContainers = classes.blockcontainer.concat(classes.root);
 
     // Let's start with a simple italic tag, specified _like this_
     ruleset.add_tag({
@@ -817,21 +825,21 @@
         open: '_', close: '_',
 
         // contained by "style" and "containers"
-        parents: classes.get('style', 'container'),
+        parents: classes.styleContainers,
 
         // payload can be in any structure we want
         payload: {start: '<em>', finish: '</em>'},
     });
-    classes.add('italic', 'style') // we give it the class "style"
+    legacy_classes.add('italic', 'style') // we give it the class "style"
 
     // Same thing for bold
     ruleset.add_tag({
         name: 'bold',
         open: '*', close: '*',
-        parents: classes.get('style', 'container'),
+        parents: classes.styleContainers,
         payload: {start: '<strong>', finish: '</strong>'}
     });
-    classes.add('bold', 'style')
+    legacy_classes.add('bold', 'style')
 
     ///// inline code syntax
     // We don't this add to "style", so that it won't parse _, etc, although we
@@ -839,7 +847,7 @@
     ruleset.add_tag({
         name: 'code',
         open: "`", close: "`",
-        parents: classes.get('style', 'container'),
+        parents: classes.styleContainers,
         payload: {start: '<code>', finish: '</code>', pre: true}
     });
 
@@ -855,17 +863,17 @@
         name: 'paragraph',
         force_close: true, // force_close "auto-closes" sloppy / unclosed tags
         open: "", close: PARA_CLOSE,
-        parents: classes.get('blockcontainer', 'root'), // "root" is the default
+        parents: classes.blockContainers,
         payload: {start: '<p>', finish: '</p>'}
     });
-    classes.add('paragraph', 'container')
+    legacy_classes.add('paragraph', 'container')
 
 
     ///// Pre-format syntax
     /*ruleset.add_tag({
         name: 'pre',
         open: "    ", close: PARA_CLOSE,
-        parents: classes.get('blockcontainer', 'root'),
+        parents: classes.blockContainers,
         payload: {start: '<pre>', finish: '</pre>', pre: true}
     });*/
 
@@ -874,7 +882,7 @@
     ruleset.add_tag({
         name: 'codeblock',
         open: "```\n", close: "\n```",
-        parents: classes.get('blockcontainer', 'root'),
+        parents: classes.blockContainers,
         payload: {start: '<pre>', finish: '</pre>', pre: true}
     });
 
@@ -907,30 +915,30 @@
         name: 'section',
         force_close: true,
         open: '#', close: PARA_CLOSE,
-        parents: classes.get('blockcontainer', 'root'),
+        parents: legacy_classes.get('blockcontainer', 'root'),
         payload: {start: '<h1>', finish: '</h1>'}
     });
-    classes.add('section', 'container')
+    legacy_classes.add('section', 'container')
 
     //// SUBSECTION
     ruleset.add_tag({
         name: 'subsection',
         force_close: true,
         open: '##', close: PARA_CLOSE,
-        parents: classes.get('blockcontainer', 'root'),
+        parents: legacy_classes.get('blockcontainer', 'root'),
         payload: {start: '<h2>', finish: '</h2>'}
     });
-    classes.add('subsection', 'container')
+    legacy_classes.add('subsection', 'container')
 
     //// SUBSUBSECTION
     ruleset.add_tag({
         name: 'subsubsection',
         force_close: true,
         open: '###', close: PARA_CLOSE,
-        parents: classes.get('blockcontainer', 'root'),
+        parents: legacy_classes.get('blockcontainer', 'root'),
         payload: {start: '<h3>', finish: '</h3>'}
     });
-    classes.add('subsubsection', 'container')
+    legacy_classes.add('subsubsection', 'container')
 
     //// BLOCKQUOTE
     ruleset.add_tag({
@@ -939,10 +947,10 @@
         one_child: true, // when child gets popped, pop this tag
         combine: true, // combine adjacent ones
         open: '>', close: PARA_CLOSE,
-        parents: classes.get('blockcontainer', 'root'),
+        parents: legacy_classes.get('blockcontainer', 'root'),
         payload: {start: '<blockquote>', finish: '</blockquote>'}
     });
-    classes.add('blockquote', 'blockcontainer')
+    legacy_classes.add('blockquote', 'blockcontainer')
 
 
     // Here we include the table example from the README
@@ -950,7 +958,7 @@
         name: 'table',
         ignore_text: true,
         open: '{{{', close: '}}}',
-        parents: classes.get('blockcontainer', 'root'),
+        parents: legacy_classes.get('blockcontainer', 'root'),
         payload: {start: '<table>', finish: '</table>'}
     });
 
@@ -969,7 +977,7 @@
         parents: ['row'],
         payload: {start: '<td>', finish: '</td>'}
     });
-    classes.add('cell', 'blockcontainer')
+    legacy_classes.add('cell', 'blockcontainer')
 
     // There, now we create the new parser!
     var parser = ruleset.new_parser();

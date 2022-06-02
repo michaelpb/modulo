@@ -821,11 +821,13 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
     }
 
     // TODO: RM this, once a new pattern is established in tests
-    var TagClassManager = function () {
-        this.classes = {
-            'root': ['root'], // default
-        };
-    };
+    class TagClassManager {
+        constructor() {
+            this.classes = {
+                'root': ['root'], // default
+            };
+        }
+    }
 
     TagClassManager.prototype.add = function () {
         // Adds tag_name to class(es).  (tag_name, classes..)
