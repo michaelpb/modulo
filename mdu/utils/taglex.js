@@ -50,7 +50,7 @@ Modulo.utils.taglex.Lexer = class Lexer extends Modulo.utils.taglex.EventEmitter
 
         // Feed text into the lexer
         // console.log("------------", text);
-        var res = { text: text };
+        let res = { text: text };
         while (res.text.length > 0) {
             // Process returns remaining text, so we loop through processing
             // all the text
@@ -69,7 +69,7 @@ Modulo.utils.taglex.Lexer = class Lexer extends Modulo.utils.taglex.EventEmitter
 
         // Check state for error conditions
         if (next_state === null) {
-            var msg = "Entered unknown state with token " + token;
+            let msg = "Entered unknown state with token " + token;
             this.emit("error", new Error(msg));
         }
 
@@ -92,13 +92,13 @@ Modulo.utils.taglex.Lexer = class Lexer extends Modulo.utils.taglex.EventEmitter
         const { TEXT_NODE } = Modulo.utils.taglex;
 
         // Process 1 text node, or 1 text node and 1 tag node
-        var regexps = this.ruleset.regexps;
+        let regexps = this.ruleset.regexps;
         if (!regexps) { // ensure it's compiled
             throw new Error("RuleSet: Writing without compiled");
         }
 
-        var opts = this.ruleset.opts;
-        var regexp = regexps[state];
+        let opts = this.ruleset.opts;
+        let regexp = regexps[state];
         //console.log(state, text);
 
         if (!regexp) {
@@ -106,7 +106,7 @@ Modulo.utils.taglex.Lexer = class Lexer extends Modulo.utils.taglex.EventEmitter
         }
 
         // perform regexp
-        var match = text.match(regexp);
+        let match = text.match(regexp);
 
         if (match === null) {
             // entirely text match
@@ -115,21 +115,21 @@ Modulo.utils.taglex.Lexer = class Lexer extends Modulo.utils.taglex.EventEmitter
         }
 
         // Found a match, figure out what we matched
-        var index = match.index;
-        var token = match[0];
+        let index = match.index;
+        let token = match[0];
 
         // Normalize the token (based on options) to get state
-        var normalized = opts.normalizer ? opts.normalizer(token) : token;
+        let normalized = opts.normalizer ? opts.normalizer(token) : token;
         if (opts.ignore_case) {
             normalized = normalized.toLowerCase();
         }
 
         // Fetch the next state, ensure is valid
-        var next_state = this.ruleset.state_edges[state][normalized] || null;
+        let next_state = this.ruleset.state_edges[state][normalized] || null;
 
         // Split text based on token
-        var initial_text = text.substring(0, index);
-        var remaining_text = text.substring(index + token.length, text.length);
+        let initial_text = text.substring(0, index);
+        let remaining_text = text.substring(index + token.length, text.length);
 
         return {
             next_state: next_state,
@@ -154,7 +154,7 @@ Modulo.utils.taglex.StackParser = class StackParser extends Modulo.utils.taglex.
     write(text) {
         /* Feed text into the parser */
         //console.log("------------", text);
-        var res = { text: text, next_state: this.state };
+        let res = { text: text, next_state: this.state };
         while (res.text.length > 0) {
             this.state = this.peak();
             res = this._process(res.text, this.state);
@@ -167,7 +167,7 @@ Modulo.utils.taglex.StackParser = class StackParser extends Modulo.utils.taglex.
     }
 
     peak() {
-        var length = this.stack.length;
+        let length = this.stack.length;
         return length > 0 ? this.stack[length-1] : this.default_state;
     }
 
@@ -178,9 +178,9 @@ Modulo.utils.taglex.StackParser = class StackParser extends Modulo.utils.taglex.
         // A collapse action pops all the way up to target
         // avoid double match for identical transitions
         if (next_state !== POP && next_state !== DOUBLE_POP) {
-            var collapse_to = this.ruleset.get_collapsers(state, normalized);
+            let collapse_to = this.ruleset.get_collapsers(state, normalized);
             if (collapse_to) {
-                var to_collapse = this._split_stack_at(collapse_to);
+                let to_collapse = this._split_stack_at(collapse_to);
 
                 if (to_collapse) {
 
@@ -192,9 +192,10 @@ Modulo.utils.taglex.StackParser = class StackParser extends Modulo.utils.taglex.
 
                     initial_text = ''; // clear so we don't emit twice
 
-                    to_collapse.reverse().forEach(function (state) {
+                    to_collapse.reverse();
+                    for (const state of to_collapse) {
                         this.emit("stack_pop", state);
-                    }, this);
+                    }
                     state = this.peak();
                     next_state = POP;
                 } else {
@@ -254,7 +255,7 @@ Modulo.utils.taglex.StackParser = class StackParser extends Modulo.utils.taglex.
     _split_stack_at(search_states) {
         // search_states, obj containing as keys the states to split
         // the stack at
-        var i = this.stack.length-1; // don't ever split at top
+        let i = this.stack.length-1; // don't ever split at top
         while (i-- > 0) {
             if (this.stack[i] in search_states) {
                 // knock off stack at this point (splice splits in
@@ -276,21 +277,21 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
     _prep_events() {
         const { TEXT_NODE } = Modulo.utils.taglex;
 
-        var ruleset = this.ruleset;
-        var me = this;
-        var combining = null;
+        let ruleset = this.ruleset;
+        let me = this;
+        let combining = null;
         this.current_tag = null;
 
         /// helper function that checks if we are combining states
-        var _check_combining = (state) => {
-            var res = false;
+        let _check_combining = (state) => {
+            let res = false;
 
             if (combining) {
                 if (state && state === combining.state) {
                     res = true;
                 } else {
                     // emit "late" tag close
-                    var s = combining.state, t = combining.token,
+                    let s = combining.state, t = combining.token,
                         n = combining.normalized;
                     combining = null;
                     me.emit('stack_pop', s, t, n, true);
@@ -301,7 +302,7 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         };
 
         this.on('stack_push', (next_state, state, token, normalized) => {
-            var taginfo = ruleset.by_state[next_state];
+            let taginfo = ruleset.by_state[next_state];
             me.current_tag = taginfo.payload;
             if (!taginfo.combine) {
                 _check_combining(false);
@@ -321,7 +322,7 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         this.on('stack_pop', (state, token, normalized, skip_combining) => {
             _check_combining(false);
 
-            var taginfo = ruleset.by_state[state];
+            let taginfo = ruleset.by_state[state];
             me.current_tag = taginfo.payload;
 
             if (!taginfo) {
@@ -340,7 +341,7 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             this.emit('tag_close', taginfo.payload, token, normalized);
 
             ///// One child feature
-            var parent_tag = ruleset.by_state[this.peak()] || null;
+            let parent_tag = ruleset.by_state[this.peak()] || null;
             if (parent_tag && parent_tag.one_child) {
                 // force a repeat
                 this.emit("stack_pop", this.stack.pop(), token, normalized);
@@ -351,7 +352,7 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         this.on('stack_pass', (normalized, token, state) => {
             _check_combining(false);
             //console.log("STACK PASS", taginfo);
-            var taginfo = ruleset.symbol_by_token[state] &&
+            let taginfo = ruleset.symbol_by_token[state] &&
                             ruleset.symbol_by_token[state][normalized];
             if (!taginfo) {
                 this.emit('symbol_unknown', token);
@@ -375,9 +376,10 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
     }
     end() {
         if (this.ruleset.opts.close_at_end) {
-            this.stack.reverse().forEach(function (state) {
+            this.stack.reverse();
+            for (const state of this.stack) {
                 this.emit("stack_pop", state);
-            }, this);
+            }
         }
         this.reset();
     }
@@ -393,8 +395,8 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
 
 
     // Streaming tokenizer based on tags and state stack
-    var RuleSet = function (options) {
-        var opts = Object.assign({
+    let RuleSet = function (options) {
+        let opts = Object.assign({
             ignore_case: false,
             normalizer: null,
             lexer_class: Lexer,
@@ -428,14 +430,14 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
     RuleSet.prototype.compile = function () {
         // First, compile collapses into standard state transitions
         this.collapsers = {};
-        for (var token in this._collapsers) {
-            var _pair = this._collapsers[token],
+        for (let token in this._collapsers) {
+            let _pair = this._collapsers[token],
                     collapse_to = _pair[0],
                     regexp = _pair[1];
-            //var parent_states = this.get_ancestor_states(tagname);
-            var descendant_states = this.get_descendant_states(collapse_to);
-            for (var i in descendant_states) {
-                var d_state = descendant_states[i];
+            //let parent_states = this.get_ancestor_states(tagname);
+            let descendant_states = this.get_descendant_states(collapse_to);
+            for (let i in descendant_states) {
+                let d_state = descendant_states[i];
 
                 // self-collapser is meaningless, skip
                 if (d_state === collapse_to) { continue; }
@@ -452,11 +454,11 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
 
         this.regexps = {};
         const { escapeForRegExp } = Modulo.utils;
-        for (var state_name in this._states) {
-            var patterns = [];
-            this._states[state_name].forEach(function (token_name) {
+        for (let state_name in this._states) {
+            let patterns = [];
+            for (const token_name of this._states[state_name]) {
                 patterns.push(escapeForRegExp(token_name));
-            });
+            }
 
             // Sort patterns by length, so that longer is first
             // (prevents lexing "****" as "*", "*", "*", "*", not "**", "**")
@@ -466,8 +468,8 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             patterns = this._regexps[state_name].concat(patterns);
 
             // create the regex for this state context
-            var exp = '(' + patterns.join('|') + ')';
-            var regexp = new RegExp(exp, this.ignore_case ? 'i' : '');
+            let exp = '(' + patterns.join('|') + ')';
+            let regexp = new RegExp(exp, this.ignore_case ? 'i' : '');
             this.regexps[state_name] = regexp;
         }
     };
@@ -535,14 +537,15 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             return this._cache.dstates[state]; } */
 
         desc_states = desc_states || {};
-        (this._direct_edges[state] || [])
-            .filter(function (s) { return !(s in desc_states); })
-            .forEach(function (s) {
-                desc_states[s] = true;
-                this.get_descendant_states(s, desc_states);
-            }, this);
+        const edges = (this._direct_edges[state] || [])
+            .filter(function (s) { return !(s in desc_states); });
 
-        var result = Object.keys(desc_states);
+        for (const s of edges) {
+            desc_states[s] = true;
+            this.get_descendant_states(s, desc_states);
+        }
+
+        let result = Object.keys(desc_states);
         //this._cache.dstates[state] = result;
         return result;
     };
@@ -557,14 +560,15 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             return this._cache.pstates[state]; } // return memoized version*/
 
         parent_states = parent_states || {};
-        (this._reverse_edges[state] || [])
-            .filter(function (s) { return !(s in parent_states); })
-            .forEach(function (s) {
-                parent_states[s] = true;
-                this.get_ancestor_states(s, parent_states);
-            }, this);
+        const edges = (this._reverse_edges[state] || [])
+            .filter(function (s) { return !(s in parent_states); });
 
-        var result = Object.keys(parent_states);
+        for (const s of edges) {
+            parent_states[s] = true;
+            this.get_ancestor_states(s, parent_states);
+        }
+
+        let result = Object.keys(parent_states);
         //this._cache.pstates[state] = result;
         return result;
     };
@@ -615,7 +619,7 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
     // Improved ruleset with handy utility functions for tags
     class TagRuleSet extends RuleSet {
         constructor(options) {
-            var opts = Object.assign({
+            let opts = Object.assign({
                 parser_class: TagParser,
                 root_ignore_text: false,
             }, options);
@@ -633,13 +637,13 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         };
     };
 
-    var TAG_STATE_PREFIX = "tag_";
+    let TAG_STATE_PREFIX = "tag_";
     TagRuleSet.prototype.add_tag = function (taginfo) {
         this.regexps = null; // reset so it needs to be re-compiled
         this._cache = {};    // reset internal cache too
 
-        var tag_name = taginfo.name;
-        var state_name = TAG_STATE_PREFIX + tag_name;
+        let tag_name = taginfo.name;
+        let state_name = TAG_STATE_PREFIX + tag_name;
         //this.tags[tag_name] = taginfo;
 
         if (!taginfo.aliases) { taginfo.aliases = []; }
@@ -660,22 +664,22 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         RuleSet.prototype.compile.call(this);
     };
 
-    var _flatten = function (arr) {
+    let _flatten = function (arr) {
         if (typeof arr[0] !== "string") {
             return arr.reduce(function(a, b) { return a.concat(b); });
         }
         return arr;
     };
 
-    var _prep_match = function (match) {
+    let _prep_match = function (match) {
         return typeof match === "string"
                     ? { token: match, re: null, }
                     : match;
     };
 
     TagRuleSet.prototype._precompile_taginfo = function (taginfo) {
-        var tag_name = taginfo.name;
-        var state_name = TAG_STATE_PREFIX + tag_name;
+        let tag_name = taginfo.name;
+        let state_name = TAG_STATE_PREFIX + tag_name;
 
         // in case it's an array of arrays
         taginfo.parents = _flatten(taginfo.parents);
@@ -688,15 +692,15 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         }
 
 
-        taginfo.aliases.forEach(function (_pair) {
-            var open_match = _prep_match(_pair[0]);
-            var close_match = _prep_match(_pair[1]);
+        for (const _pair of taginfo.aliases) {
+            let open_match = _prep_match(_pair[0]);
+            let close_match = _prep_match(_pair[1]);
 
             // Add opening tag
-            taginfo.parents.forEach(function (parent_tag) {
-                var parent_state_name = TAG_STATE_PREFIX + parent_tag;
+            for (const parent_tag of taginfo.parents) {
+                let parent_state_name = TAG_STATE_PREFIX + parent_tag;
                 this.add(open_match.token, parent_state_name, state_name, open_match.re);
-            }, this);
+            }
 
             // Add closing tag to this state
             this.add(close_match.token, state_name, POP, close_match.re);
@@ -708,13 +712,12 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
 
             // hook state name
             this.by_state[state_name] = taginfo;
-
-        }, this);
+        }
     };
 
     TagRuleSet.prototype.add_symbol = function (symbolinfo) {
-        var tag_name = symbolinfo.name;
-        //var state_name = TAG_STATE_PREFIX + tag_name;
+        let tag_name = symbolinfo.name;
+        //let state_name = TAG_STATE_PREFIX + tag_name;
         if (!symbolinfo.aliases) { symbolinfo.aliases = []; }
         if (symbolinfo.symbol) { symbolinfo.aliases.push(symbolinfo.symbol); }
         if (!symbolinfo.payload) { symbolinfo.payload = tag_name; }
@@ -723,25 +726,25 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
     };
 
     TagRuleSet.prototype._precompile_symbolinfo = function (symbolinfo) {
-        var tag_name = symbolinfo.name;
-        //var state_name = TAG_STATE_PREFIX + tag_name;
+        let tag_name = symbolinfo.name;
+        //let state_name = TAG_STATE_PREFIX + tag_name;
 
         // in case it's an array of arrays
         symbolinfo.parents = _flatten(symbolinfo.parents);
-    
-        symbolinfo.aliases.forEach(function (match) {
+
+        for (const match of symbolinfo.aliases) {
             // Add opening tag to all parent tags
-            var match_obj = _prep_match(match);
-            symbolinfo.parents.forEach(function (parent_tag) {
-                var parent_state_name = TAG_STATE_PREFIX + parent_tag;
+            let match_obj = _prep_match(match);
+            for (const parent_tag of symbolinfo.parents) {
+                let parent_state_name = TAG_STATE_PREFIX + parent_tag;
                 if (!this.symbol_by_token[parent_state_name]) {
                     this.symbol_by_token[parent_state_name] = {};
                 }
                 this.symbol_by_token[parent_state_name][match_obj.token] = symbolinfo;
                 this.add(match_obj.token, parent_state_name, NOOP, match_obj.re);
                 //   add(token,           state,             new_state, regexp) {
-            }, this);
-        }, this);
+            }
+        }
     };
 
     // Optional classes which can be used to wrap the parser, to modify the stream
@@ -775,8 +778,8 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             this.emit('source_buffer', this.source_buffer.join(''));
 
             // Emit the event buffer
-            var length = this.event_buffer.length;
-            var i = 0;
+            let length = this.event_buffer.length;
+            let i = 0;
             while (i < length) {
                 this.emit.apply(this, this.event_buffer[i++]);
             }
@@ -792,15 +795,15 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
         }
 
         _prep_tree_events() {
-            var me = this;
+            let me = this;
 
             this.parser.on('token', function (type, v) {
                 me.source_buffer.push(v); // keep track of source
             });
 
-            var make_tree_event = function (name) {
+            let make_tree_event = function (name) {
                 return function () {
-                    var args = Array.from(arguments);
+                    let args = Array.from(arguments);
                     args.unshift(name);
                     me.event_buffer.push(args);
                 };
@@ -819,42 +822,6 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             });
         }
     }
-
-    // TODO: RM this, once a new pattern is established in tests
-    class TagClassManager {
-        constructor() {
-            this.classes = {
-                'root': ['root'], // default
-            };
-        }
-    }
-
-    TagClassManager.prototype.add = function () {
-        // Adds tag_name to class(es).  (tag_name, classes..)
-        var args = Array.from(arguments);
-        var name = args.shift();
-        args.forEach(function (classname) {
-            if (!this.classes[classname]) {
-                this.classes[classname] = [];
-            }
-
-            this.classes[classname].push(name);
-        }, this);
-    };
-
-    TagClassManager.prototype._get = function (classname) {
-        if (!this.classes[classname]) {
-            this.classes[classname] = [];
-        }
-
-        return this.classes[classname];
-    };
-
-    TagClassManager.prototype.get = function () {
-        return Array.prototype.map.call(arguments, this._get, this);
-    };
-
-    exports.TagClassManager = TagClassManager;
 
     //exports.EventEmitter = EventEmitter;
     //exports.Lexer = Lexer;

@@ -1,0 +1,45 @@
+<Component>
+
+<MarkdownTemplate>
+
+# Welcome to my site!
+
+How are things going?
+
+- Pretty well?
+- Not so well?
+
+
+<MyComponent
+    name=""
+></MyComponent>
+
+
+</MarkdownTemplate>
+
+
+<MarkdownConfig>
+    <Template name="blockquote">
+        {# Create Template CParts that are rendered with given context (same engine rules apply) #}
+        <blockquote>
+            {% for child in children %}
+                {{ child.outerHTML }}
+            {% endfor %}
+        </blockquote>
+    </Template>
+
+    <Tag
+        name="blockquote"
+        open="bq["
+        close="]"
+    ></Tag>
+
+    <Tag
+        name="MyComponent"
+        open="<MyComponent"
+        close="</MyComponent>"
+    ></Tag>
+</MarkdownConfig>
+
+
+</Component>
