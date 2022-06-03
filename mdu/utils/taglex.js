@@ -328,7 +328,7 @@ Modulo.utils.taglex.TagParser = class TagParser extends Modulo.utils.taglex.Stac
             if (!taginfo) {
                 this.emit('tag_unknown', state, token, normalized);
                 return;
-            } 
+            }
 
             ///// Combine feature
             if (taginfo.combine && !skip_combining) {

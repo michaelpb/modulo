@@ -1,40 +1,122 @@
 <script src="/js/Modulo.js"></script>
 <script src="/demos/mdu/cparts/TestSuite.js"></script>
+<script src="/demos/mdu/utils/taglex.js"></script>
 
 <template modulo-embed>
-    <Component name="Editor">
+    <Component name="Editor" rerender="manual">
         <Props
             value
         ></Props>
         <Template>
             <div class="editor-wrapper">
-                <pre class="editor-shadow">{{ state.value }}</pre>
-                <textarea name="value" [state.bind] [script.text]>{{ state.value }}</textarea>
+                <pre class="editor-shadow">{{ state.value|syntaxHighlight }}</pre>
+                <textarea [script.text]>{{ state.value }}</textarea>
             </div>
         </Template>
 
         <State
+            last=""
             value=""
         ></State>
 
         <Script>
+            const { escapeText } = Modulo.templating.MTL.prototype;
+            const { safe } = Modulo.templating.defaultOptions.filters;
+
             function syntaxHighlight(text) {
+                text = escapeText(text);
+                text = text.replace(/&quot;.*?&quot;/g, '<span class="syn-string">$&</span>');
+                text = text.replace(/&gt;.*?&lt;/g, '<span class="syn-tag">$&</span>');
+                return safe(text);
+            }
+
+            function findFirstDifference(a, b, i = 0) {
+                while (i < a.length && a[i] === b[i]) {
+                    i++;
+                }
+                return i;
+            }
+
+            function mergeStrings(a, b, sigil) {
+            }
+
+            function isCharacterKeyPress(ev) {
+                if (typeof ev.which == "number" && ev.which > 0) {
+                    return !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.which !== 8;
+                }
+                return false;
+            }
+
+            // TODO wrap cbs below in callback
+            let globalDebounce = null;
+            function keyDown(ev) {
+                const key = ev.key;
+                const textarea = ev.target;
+                hardUpdate(textarea); // Ensure state is updated with val 
+                if (globalDebounce) {
+                    clearTimeout(globalDebounce);
+                }
+                if (!isCharacterKeyPress(ev)) { // If it's not "normal typing"
+                    globalDebounce = setTimeout(() => hardUpdate(textarea), 10);
+                } else {
+                    // Do faster "spaced" trick
+                    textarea.removeEventListener('keydown', keyDown);
+                    const value = textarea.value;
+                    const sigil = String.fromCharCode(160); // nbsp
+                    //const sigil = String.fromCharCode(1); // SOH - Start of Header
+                    const sigilRe = new RegExp(sigil, 'g');
+                    textarea.value = value.replace(/[^\r\n ]/g, sigil);
+                    textarea.classList.add('space-hack');
+                    globalDebounce = setTimeout(() => {
+                        let composedText = '';
+                        for (const ch of textarea.value) {
+                            if (ch === sigil) {
+                            }
+                        }
+                        const newlyTyped = textarea.value.replace(sigilRe, ''); // TODO: just insert old value based on index!
+                        console.log('this is newlyTyped', newlyTyped);
+                        textarea.value = value + newlyTyped;
+                        hardUpdate(textarea);
+                        textarea.addEventListener('keydown', keyDown);
+                    }, 100);
+                }
+            }
+
+            function hardUpdate(textarea) {
+                if (state.value !== textarea.value) {
+                    state.value = textarea.value;
+                    element.rerender();
+                }
             }
 
             function textMount({ el }){
                 console.log('text area mounting!', props);
-                element.textArea = el;
+                const textarea = el;
+                element.textArea = textarea;
                 element.value = props.value;
                 state.value = props.value;
-                el.value = props.value;
+                textarea.value = props.value;
+                element.rerender();
+                textarea.addEventListener('keydown', keyDown);
             }
 
             Modulo.templating.defaultOptions.filters.syntaxHighlight = syntaxHighlight;
         </Script>
 
         <Style>
+            :host {
+                position: relative;
+                display: block;
+                padding: 10px;
+                border: 1px solid black;
+            }
+
             .editor-wrapper {
                 position: relative;
+            }
+
+            .syn-string {
+                color: green;
             }
 
             pre,
@@ -60,8 +142,13 @@
 
             textarea {
                 position: relative;
-                color: rgba(0, 0, 0, 0.001);
                 background: none;
+                color: rgba(0, 0, 0, 0.001);
+                caret-color: rgb(0, 0, 0);
+            }
+
+            textarea.space-hack {
+                color: black;
             }
         </Style>
     </Component>
