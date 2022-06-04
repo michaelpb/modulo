@@ -1,6 +1,9 @@
 <Component name="MirrorEditor" rerender="manual">
     <Props
         value
+        name
+        spellcheck
+        component
         debounce-time
     ></Props>
     <Template>
@@ -15,15 +18,18 @@
                         {% if state.scrollTop %} top: -{{ state.scrollTop }}px; {% endif %}
                         {% if state.width %} width: {{ state.width }}px; {% endif %}
                     ">
-                    <pre class="editor-shadow">{{ state.editorShadowHtml|safe }}</pre>
+                    <{{ props.component|default:"mdu-SyntaxHighlighter" }}
+                        value="{{ state.value }}"
+                    ></{{ props.component|default:"mdu-SyntaxHighlighter" }}>
                 </div>
             </div>
 
             <textarea
                 [script.text]
                 @scroll:=script.updateDimensions
-                spellcheck="false"
                 data-gramm="false"
+                name="{{ props.name|default:'editor' }}"
+                spellcheck="{{ props.spellcheck|default:'false' }}"
             ></textarea>
         </div>
     </Template>
@@ -41,8 +47,21 @@
     <Script src="./editor/MirrorEditor.js"></Script>
 
     <Style>
+        :host {
+            display: block;
+            position: relative;
+            min-height: 100px;
+            min-width: 100px;
+
+            /* Outline default is 50% gray, 90% opacity, so it should be
+               passable for both "lightmode" and "darkmode" type designs */
+            --outline-color: rgba(127, 127, 127, 0.9);
+            --outline-width: 3px;
+            --text-color: #151515;
+        }
         .editor-wrapper {
             position: relative;
+            height: 100%;
         }
 
         .syn-bold { font-weight: bold; }
@@ -76,13 +95,15 @@
             border: none;
             padding: 0;
             margin: 0;
-            min-height:  200px;
+            min-height: 1rem;
+            height: 100%;
             font-family: monospace;
             text-align: start;
             resize: none;
             white-space: pre-wrap;
             overflow-wrap: break-word;
             box-sizing: border-box;
+            color: var(--text-color);
         }
 
         .editor-underlay-container {
@@ -100,7 +121,12 @@
             background: none;
             /*color: rgba(0, 0, 0, 0.001);*/
             color: rgba(0, 0, 0, 0);
-            caret-color: rgb(0, 0, 0);
+            caret-color: var(--text-color);
+        }
+
+        textarea:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 var(--outline-width) var(--outline-color);
         }
     </Style>
 </Component>

@@ -2,6 +2,37 @@ const SIGIL = String.fromCharCode(160); // NBSP (non-breaking space)
 const { escapeText } = Modulo.templating.MTL.prototype;
 const { safe } = Modulo.templating.defaultOptions.filters;
 
+function textMount({ el }){
+    // Mounting of the actual <textarea>, which functions as the main
+    // "initialized" callback where everything gets set-up and rerendered with
+    // the value provided
+    const value = (props.value || '').trim();
+    const textarea = el;
+    element.textarea = textarea;
+    textarea.value = value;
+
+    // For low-level control over speed, we 1) manually rerender, and 2)
+    // manually handle single event listeners
+    setStateAndRerender(textarea);
+    textarea.addEventListener('keydown', keyDown);
+
+    // The stateChangedCallback is required for [state.bind] compatibility:
+    // Parent components can bind this as though it were a normal textarea
+    element.stateChangedCallback = (name, val, originalEl) => {
+        textarea.value = val;
+        textarea.setSelectionRange(state.selectionStart, state.selectionStart);
+        setStateAndRerender(textarea);
+    };
+
+    // Finally, attach a resize observer, so it can keep the backing mirror the
+    // exact same size as the textarea
+    try {
+        new ResizeObserver(updateDimensions).observe(textarea);
+    } catch {
+        console.error('Could not listen to resize of textarea');
+    }
+}
+
 function syntaxHighlight(text) {
     text = escapeText(text);
     //text = text.replace(/&quot;.*?&quot;/g, '<span class="syn-string">$&</span>');
@@ -59,7 +90,7 @@ function keyDown(ev) {
     const after = originalValue.substr(state.selectionStart);
     const isOnEmptyLine = /^\s*$/.test(after) || /^\s+[\n\r]+/.test(after);
     if (!isOnEmptyLine || !isCharacterKeyPress(ev)) { // If it's not "normal typing"
-        globalDebounce = setTimeout(() => setStateAndRerender(textarea), 50);
+        globalDebounce = setTimeout(() => setStateAndRerender(textarea), 0);
         return;
     }
 
@@ -84,7 +115,7 @@ function keyDown(ev) {
 }
 
 function updateDimensions() {
-    //console.count('updateDimensions ' + Modulo.utils.hash(props.value));
+    // Updates the backing div to mirror the textarea
     const { textarea } = element;
     if (!textarea) {
         return;
@@ -107,20 +138,6 @@ function setStateAndRerender(textarea) {
         state.editorShadowHtml = syntaxHighlight(textarea.value);
         element.value = state.value;
         element.rerender();
-    }
-}
-
-function textMount({ el }){
-    const value = (props.value || '').trim();
-    const textarea = el;
-    element.textarea = textarea;
-    textarea.value = value;
-    setStateAndRerender(textarea);
-    textarea.addEventListener('keydown', keyDown);
-    try {
-        new ResizeObserver(updateDimensions).observe(textarea)
-    } catch {
-        console.error('Could not listen to resize of textarea');
     }
 }
 

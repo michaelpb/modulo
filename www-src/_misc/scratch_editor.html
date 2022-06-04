@@ -9,7 +9,13 @@
             value
         ></Props>
         <Template>
-            <mdu-MirrorEditor value="{{ props.value }}"></mdu-MirrorEditor>
+            <mdu-MirrorEditor
+                [state.bind]
+                name="ohhi"
+                style="height: 100%; width: 100%"
+                value="{{ props.value }}"
+            ></mdu-MirrorEditor>
+            <textarea></textarea>
             {% comment %}
                 <!-- Later, make it be composable -->
                 <mdu-SyntaxHighlighter
@@ -36,7 +42,6 @@
 <script> Modulo.defineAll() </script>
 
 
-<button>Before button</button>
 <!--
 <x-Editor value="abc
 def
@@ -81,4 +86,3 @@ hij"></x-Editor>
 
 "></x-Editor>
 
-<button>After button</button>
