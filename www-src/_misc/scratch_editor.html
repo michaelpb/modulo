@@ -3,41 +3,85 @@
 <script src="/demos/mdu/utils/taglex.js"></script>
 
 <template modulo-embed>
+    <Library src="/demos/mdu/libraries/editor.html"></Library>
     <Component name="Editor" rerender="manual">
         <Props
             value
         ></Props>
         <Template>
-            <div class="editor-wrapper">
-                <pre class="editor-shadow">{{ state.value|syntaxHighlight }}</pre>
-                <textarea [script.text]>{{ state.value }}</textarea>
+            <div class="editor-wrapper" @click:=script.updateScroll>
+                <div class="editor-underlay-container"
+                    style="
+                        {% if state.width %}  width: {{ state.width }}px; {% endif %}
+                        {% if state.height %} height: {{ state.height }}px; {% endif %}
+                    ">
+                    <div class="editor-underlay-offset-wrapper"
+                        style="
+                            {% if state.scrollTop %} top: -{{ state.scrollTop }}px; {% endif %}
+                            {% if state.width %} width: {{ state.width }}px; {% endif %}
+                        ">
+                        <pre class="editor-shadow">{{ state.editorShadowHtml|safe }}</pre>
+                        <!--<slot name="underlay"></slot>-->
+                        <!--<slot name="overlay"></slot>-->
+                    </div>
+                </div>
+
+                <textarea
+                    [script.text]
+                    @scroll:=script.updateScroll
+                    spellcheck="false"
+                    data-gramm="false"
+                ></textarea>
             </div>
         </Template>
 
         <State
+            selection-start:=0
+            scroll-ratio:=0
+            scroll-top:=0
+            width:=0
+            height:=0
             last=""
+            editor-shadow-html=""
             value=""
         ></State>
 
         <Script>
+            const SIGIL = String.fromCharCode(160); // NBSP (non-breaking space)
             const { escapeText } = Modulo.templating.MTL.prototype;
             const { safe } = Modulo.templating.defaultOptions.filters;
 
             function syntaxHighlight(text) {
                 text = escapeText(text);
-                text = text.replace(/&quot;.*?&quot;/g, '<span class="syn-string">$&</span>');
-                text = text.replace(/&gt;.*?&lt;/g, '<span class="syn-tag">$&</span>');
+                //text = text.replace(/&quot;.*?&quot;/g, '<span class="syn-string">$&</span>');
+                //text = text.replace(/&gt;.*?&lt;/g, '<span class="syn-tag">$&</span>');
+                text = text.replace(/\*.*?\*/g, '<span class="syn-bold">$&</span>');
+                text = text.replace(/_.*?_/g, '<span class="syn-italic">$&</span>');
+                text = text.replace(/^#+.*?$/gm, '<span class="syn-header">$&</span>');
+                text = text.replace(/^\s*[+*-] /gm, '<span class="syn-ul">$&</span>');
+                text = text.replace(/^\s*\d+[\.:]? /gm, '<span class="syn-ol">$&</span>');
+                text = text.replace(/^---+$/gm, '<span class="syn-hr">$&</span>');
+                text = text.replace(/`.*?`/g, '<span class="syn-code">$&</span>');
+                text = text.replace(/\!?\[.*?\]\(.*?\)/g, '<span class="syn-link">$&</span>');
                 return safe(text);
             }
 
-            function findFirstDifference(a, b, i = 0) {
-                while (i < a.length && a[i] === b[i]) {
-                    i++;
+            function mergeStrings(baseText, overlayText) {
+                let baseIndex = 0;
+                let overlayIndex = 0;
+                let results = '';
+                while (baseIndex < baseText.length || overlayIndex < overlayText.length) {
+                    const overlayChar = overlayText[overlayIndex];
+                    const baseChar = baseText[baseIndex];
+                    if (baseChar === SIGIL || baseChar === overlayChar) {
+                        results += (overlayChar && overlayChar !== SIGIL) ? overlayChar : ''; // Ensure str
+                        overlayIndex++;
+                    } else { // We are dealing with an insertion in the base:
+                        results += baseChar ? baseChar : ''; // Ensure str
+                    }
+                    baseIndex++; // Always progress through base
                 }
-                return i;
-            }
-
-            function mergeStrings(a, b, sigil) {
+                return results;
             }
 
             function isCharacterKeyPress(ev) {
@@ -52,74 +96,110 @@
             function keyDown(ev) {
                 const key = ev.key;
                 const textarea = ev.target;
-                hardUpdate(textarea); // Ensure state is updated with val 
+                setStateAndRerender(textarea); // Ensure state is updated with val 
+
+                // Always clear globalDebounce if it exists
                 if (globalDebounce) {
                     clearTimeout(globalDebounce);
                 }
+
                 if (!isCharacterKeyPress(ev)) { // If it's not "normal typing"
-                    globalDebounce = setTimeout(() => hardUpdate(textarea), 10);
-                } else {
-                    // Do faster "spaced" trick
-                    textarea.removeEventListener('keydown', keyDown);
-                    const value = textarea.value;
-                    const sigil = String.fromCharCode(160); // nbsp
-                    //const sigil = String.fromCharCode(1); // SOH - Start of Header
-                    const sigilRe = new RegExp(sigil, 'g');
-                    textarea.value = value.replace(/[^\r\n ]/g, sigil);
-                    textarea.classList.add('space-hack');
-                    globalDebounce = setTimeout(() => {
-                        let composedText = '';
-                        for (const ch of textarea.value) {
-                            if (ch === sigil) {
-                            }
-                        }
-                        const newlyTyped = textarea.value.replace(sigilRe, ''); // TODO: just insert old value based on index!
-                        console.log('this is newlyTyped', newlyTyped);
-                        textarea.value = value + newlyTyped;
-                        hardUpdate(textarea);
-                        textarea.addEventListener('keydown', keyDown);
-                    }, 100);
+                    globalDebounce = setTimeout(() => setStateAndRerender(textarea), 50);
+                    return;
                 }
+
+                // Person is typing, remove keydown for as fast as possible
+                // interaction
+                textarea.removeEventListener('keydown', keyDown);
+                const originalValue = textarea.value;
+                // Replace all non-space with sigils, and add sigil to reserve space at caret
+                let value = originalValue;
+                value = value.replace(/[^\r\n ]/g, SIGIL);
+                //value = value.substr(0, state.selectionStart - 1) + SIGIL + value.substr(state.selectionStart - 1);
+                textarea.value = value; // Set "blanked" version of textarea
+                textarea.style.color = 'black'; // Ensure their text is visible
+                textarea.setSelectionRange(state.selectionStart, state.selectionStart);
+
+                globalDebounce = setTimeout(() => {
+                    state.selectionStart = textarea.selectionStart;
+                    textarea.value = mergeStrings(textarea.value, originalValue);
+                    textarea.setSelectionRange(state.selectionStart, state.selectionStart);
+                    setStateAndRerender(textarea);
+                    textarea.addEventListener('keydown', keyDown); // restore keydown
+                }, 50);
             }
 
-            function hardUpdate(textarea) {
+            function updateScroll() {
+                const { textarea } = element;
+                if (!textarea) {
+                    return;
+                }
+                console.log('updating scrolling!');
+                const { scrollTop, clientWidth, clientHeight } = textarea;
+                if (state.scrollTop !== scrollTop ||
+                        state.width !== clientWidth ||
+                        state.height !== clientHeight) {
+                    state.scrollTop = scrollTop;
+                    state.width = clientWidth;
+                    state.height = clientHeight;
+                    element.rerender();
+                }
+                //offsetWrapperDiv.style.top = '-' + textarea.scrollTop + 'px';
+            }
+
+            function setStateAndRerender(textarea) {
+                state.selectionStart = textarea.selectionStart;
                 if (state.value !== textarea.value) {
                     state.value = textarea.value;
+                    state.editorShadowHtml = syntaxHighlight(textarea.value);
+                    element.value = state.value;
                     element.rerender();
                 }
             }
 
             function textMount({ el }){
-                console.log('text area mounting!', props);
+                const value = (props.value || '').trim();
                 const textarea = el;
-                element.textArea = textarea;
-                element.value = props.value;
-                state.value = props.value;
-                textarea.value = props.value;
-                element.rerender();
+                element.textarea = textarea;
+                textarea.value = value;
+                setStateAndRerender(textarea);
                 textarea.addEventListener('keydown', keyDown);
+                try {
+                    new ResizeObserver(updateScroll).observe(textarea)
+                } catch {
+                    console.error('Could not listen to resize of textarea');
+                }
             }
-
-            Modulo.templating.defaultOptions.filters.syntaxHighlight = syntaxHighlight;
         </Script>
 
         <Style>
-            :host {
-                position: relative;
-                display: block;
-                padding: 10px;
-                border: 1px solid black;
-            }
-
             .editor-wrapper {
                 position: relative;
             }
 
-            .syn-string {
+            .syn-bold { font-weight: bold; }
+            .syn-italic { font-style: italic; }
+            .syn-header {
+                font-weight: bold;
+                background: black;
+                color: white;
+            }
+            .syn-code {
+                border-bottom: 1px dotted green;
                 color: green;
             }
+            .syn-link {
+                text-decoration: underline;
+                color: blue;
+            }
+            .syn-ol,
+            .syn-ul,
+            .syn-hr {
+                color: green;
+                font-weight: bold;
+            }
 
-            pre,
+            pre.editor-shadow,
             textarea {
                 top: 0;
                 left: 0;
@@ -136,19 +216,23 @@
                 overflow-wrap: break-word;
                 box-sizing: border-box;
             }
-            pre {
+
+            .editor-underlay-container {
+                position: absolute;
+                left: 0;
+                overflow: hidden;
+            }
+            .editor-underlay-offset-wrapper {
+                left: 0;
                 position: absolute;
             }
 
             textarea {
                 position: relative;
                 background: none;
-                color: rgba(0, 0, 0, 0.001);
+                /*color: rgba(0, 0, 0, 0.001);*/
+                color: rgba(0, 0, 0, 0);
                 caret-color: rgb(0, 0, 0);
-            }
-
-            textarea.space-hack {
-                color: black;
             }
         </Style>
     </Component>
@@ -159,5 +243,48 @@
 
 
 <button>Before button</button>
-<x-Editor value="Initial value"></x-Editor>
+<!--
+<x-Editor value="abc
+def
+hij"></x-Editor>
+-->
+
+<x-Editor value="
+
+# High priority
+
+- Loading relative component libraries is broken, e.g. ./scratchlib4.html
+
+# Medium priority
+
+- Decide on Loader / Module simplification
+    - Possibly: Rename + condense Loader / Module to only be Library
+    - Rationale: Less visually similar to Modulo, more descriptive, less
+      confusing since module is a vanilla JS feature (import)
+- Decide on Modulo / Config simplification
+    - Remove ALL global 'Modulo' object references, instead allow instantiating
+      entire framework / lib as encapsulated config instance
+    - Think about 'Modulo.register('cpart', 'Template', class Template extends
+      CPart { });'
+    - See directive idea below
+
+- ModRec & DOMCursor refactor
+    - Finish detangling repetitive directives and dead code
+    - Finish modulo-ignore and modulo-key
+    - Fix nested subrender directives
+    - Possibly: Implement new patch-set data structure
+
+- Template variable syntax change:
+    - Allow '-' in identifier names, and then just do 'camelcase' be default
+      identifier filter
+
+# Low priority
+
+- Simple API for component rerender: mark isDirty on any lifecycle, and will
+  always rerender
+- Fix Reconciler1 tests so they run on other Node versions (they rely on an
+  older '[object Object]' style toString that is inconsistent)
+
+"></x-Editor>
+
 <button>After button</button>
