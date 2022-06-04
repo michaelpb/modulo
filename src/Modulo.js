@@ -1336,6 +1336,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
           */
         }
         this.patch = this.pushPatch;
+        this.patches = [];
     }
 
     loadString(rivalHTML, tagTransforms) {
