@@ -863,6 +863,8 @@ Modulo.cparts.state = class State extends Modulo.ComponentPart {
     }
 
     bindMount({ el, attrName, value }) {
+        // TODO: BUG: This should be attrName || el.getATtribute('name') (todo:
+        // write failing tests, then flip and see green)
         const name = el.getAttribute('name') || attrName;
         const val = Modulo.utils.get(this.data, name);
         Modulo.assert(val !== undefined, `state.bind "${name}" is undefined`);

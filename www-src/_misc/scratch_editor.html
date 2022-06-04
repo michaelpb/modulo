@@ -9,19 +9,12 @@
             value
         ></Props>
         <Template>
-            <mdu-MirrorEditor
-                [state.bind]
+            <mdu-ExpandingMarkdownEditorWidget
                 name="ohhi"
-                style="height: 100%; width: 100%"
-                value="{{ props.value }}"
-            ></mdu-MirrorEditor>
-            <textarea></textarea>
-            {% comment %}
-                <!-- Later, make it be composable -->
-                <mdu-SyntaxHighlighter
-                    value="{{ props.value }}"
-                ></mdu-SyntaxHighlighter>
+                value="Test"
+            ></mdu-ExpandingMarkdownEditorWidget>
 
+            {% comment %}
             {% for post in staticdata %}
             <div style="border: 1px solid blue; padding: 10px; margin: 10px">
 <mdu-MirrorEditor value="# {{ post.title }}

@@ -1,8 +1,8 @@
 :host {
     display: block;
     position: relative;
-    min-height: 100px;
-    min-width: 100px;
+    min-height: 1rem;
+    min-width: 1rem;
 
     /* Outline default is 50% gray, 90% opacity, so it should be
         passable for both "lightmode" and "darkmode" type designs */

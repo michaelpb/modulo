@@ -1,3 +1,64 @@
+<Component name="ExpandingMarkdownEditorWidget">
+    <Props
+        value
+        name
+    ></Props>
+
+    <Template src="./editor/ExpandingMarkdownEditorWidget.html"></Template>
+
+    <State
+        expanded:=false
+        value=""
+    ></State>
+
+    <Script>
+        const DEFAULT_BUTTONS = [
+            { payload: '# $', label: 'H1', style: 'font-weight: bold' },
+            { payload: '*$*', label: 'B', style: 'font-weight: bold' },
+            { payload: '*I*', label: 'i', style: 'font-style: italic' },
+            { payload: '[]($)', label: '&#x1F517;' },
+            { payload: '![]($)', label: '&#x1F5BC;'  },
+        ];
+
+        function initializedCallback() {
+            state.value = props.value ? props.value : '';
+        }
+
+        function insertAction(payload) {
+        }
+
+        function sendAction(payload) {
+        }
+
+        function prepareCallback() {
+            let height = 30;
+            let toolbarWidth = 10;
+            let buttons = [];
+            if (state.expanded) {
+                height = 250;
+                toolbarWidth = 50;
+                buttons = DEFAULT_BUTTONS;
+            }
+            return { height, toolbarWidth, buttons };
+        }
+
+        function updateCallback() {
+            if (!element.isMounted) { // First render, ensure gets rerendered
+                element.cparts.state.propagate('value', state.value);
+            }
+        }
+
+        function toggleExpand() {
+            state.expanded = !state.expanded;
+        }
+    </Script>
+
+    <Style src="./editor/ExpandingMarkdownEditorWidget.css"></Style>
+
+</Component>
+
+
+
 <Component name="MirrorEditor" rerender="manual">
     <Props
         value
@@ -24,6 +85,7 @@
 <Component name="SyntaxHighlighter">
     <Props
         value
+        number
     ></Props>
 
     <Script>
@@ -41,7 +103,17 @@
             text = text.replace(/^---+$/gm, '<span class="syn-hr">$&</span>');
             text = text.replace(/`.*?`/g, '<span class="syn-code">$&</span>');
             text = text.replace(/\!?\[.*?\]\(.*?\)/g, '<span class="syn-link">$&</span>');
-            //return safe(text);
+
+            if (props.number && props.number !== 'false') {
+                const newlineSplit = text.split(/[\r\n]+/g);
+                let i = 1;
+                let results = '';
+                for (const line of newlineSplit) {
+                    results += `<span class="x-num">${ i }</span>` + line + "\n";
+                    i++;
+                }
+            }
+ 
             return text;
         }
 
@@ -83,6 +155,11 @@
             color: green;
             background: rgba(127, 127, 127, 0.1);
             font-weight: bold;
+        }
+        .x-num {
+            display: inline-block;
+            position: absolute;
+            left: 10px;
         }
     </Style>
 

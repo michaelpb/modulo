@@ -13,6 +13,7 @@ function textMount({ el }){
     // manually handle single event listeners
     setStateAndRerender(textarea);
     textarea.addEventListener('keydown', keyDown);
+    textarea.addEventListener('keyup', keyUp);
 
     // The stateChangedCallback is required for [state.bind] compatibility:
     // Parent components can bind this as though it were a normal textarea
@@ -51,36 +52,51 @@ function mergeStrings(baseText, overlayText) {
 }
 
 function isCharacterKeyPress(ev) {
-    if (typeof ev.which == "number" && ev.which > 0) {
-        return !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.which !== 8;
+    if (typeof ev.which === "number" && ev.which > 0) {
+        return !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.which !== 8 && ev.which !== 16;
     }
     return false;
+}
+
+function keyUp(ev) {
+    // Always clear globalDebounce if it exists
+    if (globalDebounce) {
+        clearTimeout(globalDebounce);
+        globalDebounce = null;
+    }
+    setStateAndRerender(ev.target); // Ensure state is updated with val 
 }
 
 // TODO wrap cbs below in callback
 let globalDebounce = null;
 function keyDown(ev) {
-    const key = ev.key;
     const textarea = ev.target;
-    setStateAndRerender(textarea); // Ensure state is updated with val 
 
-    // Always clear globalDebounce if it exists
-    if (globalDebounce) {
+    if (globalDebounce) { // Always clear globalDebounce if it exists
         clearTimeout(globalDebounce);
+        globalDebounce = null;
     }
-
-    // If cursor is before text on the same line
+    // If nothing / only whitespace is after this, then we can use the fast
+    // type-ahead effect
     const originalValue = textarea.value;
     const after = originalValue.substr(state.selectionStart);
-    const isOnEmptyLine = /^\s*$/.test(after) || /^\s+[\n\r]+/.test(after);
-    if (!isOnEmptyLine || !isCharacterKeyPress(ev)) { // If it's not "normal typing"
-        globalDebounce = setTimeout(() => setStateAndRerender(textarea), 0);
-        return;
+    const isOnEmptyLine = /^\s*$/.test(after) || /^\s*[\n\r]+/.test(after);
+    if (!isOnEmptyLine || !isCharacterKeyPress(ev)) { // Debounce at 10ms
+        globalDebounce = setTimeout(() => setStateAndRerender(textarea), 10);
+        return; // Don't do fast-type-ahead
     }
 
-    // Person is typing, remove keydown for as fast as possible
-    // interaction
+    // Fast type ahead: Remove keydown, and make textarea text visible, then
+    // after debounce timeout, "settle up" with what has been typed-ahead,
+    // actually rerendering (e.g. for syntax highlighting)
+
+    // Person is typing, remove keydown for as fast as possible interaction
     textarea.removeEventListener('keydown', keyDown);
+    textarea.removeEventListener('keyup', keyUp);
+
+
+    setStateAndRerender(textarea); // Ensure state is updated with val 
+
     // Replace all non-space with sigils, and add sigil to reserve space at caret
     let value = originalValue;
     value = value.replace(/[^\r\n ]/g, SIGIL);
@@ -95,7 +111,8 @@ function keyDown(ev) {
         textarea.setSelectionRange(state.selectionStart, state.selectionStart);
         setStateAndRerender(textarea);
         textarea.addEventListener('keydown', keyDown); // restore keydown
-    }, 20);
+        textarea.addEventListener('keyup', keyUp); // restore keydown
+    }, 30); // Debounce at 30
 }
 
 function updateDimensions() {
