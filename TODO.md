@@ -31,6 +31,14 @@
   always rerender
 - Fix Reconciler1 tests so they run on other Node versions (they rely on an
   older "[object Object]" style toString that is inconsistent)
+- Module syntax transformation
+    - import { stuff } from "thing/whatever.js"
+    - const { stuff } = Modulo.assets.functions["..hashOfScript"](Modulo);
+    - export default ... or export ...
+    - return ... or return ...
+    - Simple transformation:
+    - If elegant solution found, make part of core Script CPart / AssetManager
+    - Otherwise, have an extension to AssetManager
 
 
 -----------------------------

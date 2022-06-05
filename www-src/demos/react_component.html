@@ -1,0 +1,75 @@
+<script src="/js/Modulo.js"></script>
+
+<!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
+     to prevent it from being included when compiled into a final bundle. -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
+<script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
+
+<!-- Load React itself  -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+
+<!-- Load ReactComponent CPart, which is a Modulo CPart that behaves like
+Component, except it contains a React JS script and will register mount React
+components as named in the script -->
+<script src="/demos/mdu/cparts/ReactComponent.js"></script>
+
+
+<template modulo-embed>
+    <script type="modulo/ReactComponent" name="LikeButton">
+        class LikeButton extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = { liked: false };
+            }
+
+            render() {
+                if (this.state.liked) {
+                    return 'You liked this.';
+                }
+                return (
+                    <button onClick={() => this.setState({ liked: true })}>
+                        Like
+                    </button>
+                );
+            }
+        }
+    </script>
+</template>
+
+<script> Modulo.defineAll() </script>
+
+
+<h1>Custom CPart: ReactComponent Demo</h1>
+
+<p>ReactComponent CPart is a Modulo CPart that behaves like Component, except
+it contains a React JS script and will register mount React components as named
+in the script. This is both useful for integrating React components into a
+Modulo project, and also a handy way to ramp up to React development in
+general, e.g. it might be less complicated in many situations, for example,
+than ReactJS's official "Add React to a website" tutorial, which is intended as
+a similar ramp up.</p>
+
+<hr />
+
+<!-- Finally, instantiate our JSX-based component -->
+<x-LikeButton
+    message="Example props"
+></x-LikeButton>
+
+
+
+
+
+<!-- ######################################################################### -->
+<!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
+<div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
+    <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
+    Modulo.fetchQ.enqueue('.', text => {
+        this.nextSibling.textContent = text;
+        navigator.clipboard.writeText(text); 
+        this.textContent += '  [☑ Copied to clipboard!]';
+    })">COPY DEMO</a><pre></pre>
+</div>
+<!-- ######################################################################### -->
+

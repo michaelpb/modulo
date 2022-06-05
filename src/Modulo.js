@@ -1871,11 +1871,11 @@ Modulo.AssetManager = class AssetManager {
     }
 
     getSymbolsAsObjectAssignment(contents) {
-        const regexpG = /function\s+(\w+)/g;
-        const regexp2 = /function\s+(\w+)/; // hack, refactor
+        const regexpG = /(function|class)\s+(\w+)/g;
+        const regexp2 = /(function|class)\s+(\w+)/; // hack, refactor
         // TODO: Get classes as well, for CParts, etc! (used by <script Config></script>)
         const matches = contents.match(regexpG) || [];
-        return matches.map(s => s.match(regexp2)[1])
+        return matches.map(s => s.match(regexp2)[2])
             .filter(s => s && !Modulo.INVALID_WORDS.has(s))
             .map(s => `"${s}": typeof ${s} !== "undefined" ? ${s} : undefined,\n`)
             .join('');
