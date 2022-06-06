@@ -17,6 +17,7 @@ components as named in the script -->
 
 <template modulo-embed>
     <script type="modulo/ReactComponent" name="LikeButton">
+        // Example taken from React's "Like button" tutorial
         class LikeButton extends React.Component {
             constructor(props) {
                 super(props);
@@ -25,7 +26,7 @@ components as named in the script -->
 
             render() {
                 if (this.state.liked) {
-                    return 'You liked this.';
+                    return this.props.message;
                 }
                 return (
                     <button onClick={() => this.setState({ liked: true })}>
@@ -35,6 +36,28 @@ components as named in the script -->
             }
         }
     </script>
+
+    <Component name="LikeButtonModulo">
+        <!-- Same example as above, except in Modulo -->
+        <Props
+            message
+        ></Props>
+        <Template>
+            {% if state.liked %}
+                {{ props.message }}
+            {% else %}
+                <button @click:=script.like>Like</button>
+            {% endif %}
+        </Template>
+        <State
+            liked:=false
+        ></State>
+        <Script>
+            function like() {
+                state.liked = true;
+            }
+        </Script>
+    </Component>
 </template>
 
 <script> Modulo.defineAll() </script>
@@ -53,12 +76,16 @@ a similar ramp up.</p>
 <hr />
 
 <!-- Finally, instantiate our JSX-based component -->
+<h2>Like button example (React):</h2>
 <x-LikeButton
-    message="Example props"
+    message="You liked this (from React!)"
 ></x-LikeButton>
 
-
-
+<!-- And our normal Modulo / templating based component: -->
+<h2>Like button example (Modulo):</h2>
+<x-LikeButtonModulo
+    message="You liked this (from Modulo!)"
+></x-LikeButtonModulo>
 
 
 <!-- ######################################################################### -->

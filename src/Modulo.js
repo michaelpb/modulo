@@ -758,13 +758,13 @@ Modulo.cparts.script = class Script extends Modulo.ComponentPart {
         const module = moduleFac ? moduleFac.baseRenderObj : null;
 
         // Combine localVars + fixed args into allArgs
-        const args = [ 'Modulo', 'factory', 'module' ];
+        const args = [ 'Modulo', 'factory', 'module', 'require' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
         const opts = { exports: 'script' };
         const func = Modulo.assets.registerFunction(allArgs, code, opts);
 
         // Now, actually run code in Script tag to do factory method
-        const results = func.call(null, Modulo, factory, module);
+        const results = func.call(null, Modulo, factory, module, this.require);
         if (results.factoryCallback) {
             //this.prepLocalVars(renderObj); // ?
             results.factoryCallback(partOptions, factory, renderObj);
@@ -1854,7 +1854,7 @@ Modulo.AssetManager = class AssetManager {
         // Checks if text IS the hash, in which case use that, otherwise gen hash
         const hash = text in this.functions ? text : this.getHash(params, text);
         if (!(hash in this.functions)) {
-            const funcText = this.wrapFunctionText(params, text, opts);
+            const funcText = this.wrapFunctionText(params, text, opts, hash);
             this.rawAssets.js[hash] = funcText; // "use strict" only in tag
             this.appendToHead('script', '"use strict";\n' + funcText);
         }
@@ -1881,8 +1881,9 @@ Modulo.AssetManager = class AssetManager {
             .join('');
     }
 
-    wrapFunctionText(params, text, opts = {}) {
-        let prefix = `Modulo.assets.functions["${this.getHash(params, text)}"]`;
+    wrapFunctionText(params, text, opts = {}, hash = null) {
+        // TODO: e.g. change public API to this, make opts & hash required
+        let prefix = `Modulo.assets.functions["${hash || this.getHash(params, text)}"]`;
         prefix += `= function ${ opts.funcName || ''}(${ params.join(', ') }){`;
         let suffix = '};'
         if (opts.exports) {

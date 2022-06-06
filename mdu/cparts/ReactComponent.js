@@ -1,9 +1,37 @@
+// TODO:
+// - Move packagePaths to be in attrs, so that users can even define
+//   mappings (allows for easy patching).
+// - Move most the logic here into an "NPMAssetManager" or something, that
+//   gives Node-style "require" behavior.
+// - This would allow "require" style deps to be used in general.
+// - The packagePaths would be attached to the assetmanager
+// - Maybe expose a <NodeRequire react=""></NodeRequire> package?
+
+// Current breaking bug: Will be unable to load "./Button/Button.js", for two
+// reasons:
+//  - Relative, 2nd tier imports are not implemented (need to "enqueue" and try
+//  again)
+//  - When running a file, needs to think the URL of that file, so that
+//  relative URLs will work
 
 Modulo.cparts.reactcomponent = class ReactComponent extends Modulo.ComponentPart {
-    static defineComponent(code, attrs) {
+    static defineComponent(code, attrs, packagePaths) {
         const { name, namespace } = attrs;
 
-        const reactComponentClass = Modulo.utils.runInReactlikeEnviron(code, attrs);
+        const reactComponentClass = Modulo.utils.runInReactlikeEnviron(code, attrs, packagePaths);
+
+        if (!reactComponentClass) {
+            // Still needs to load dependencies, try again
+            // TODO: Add count to detect too many dependencies
+            Modulo.fetchQ.wait(() => {
+                console.log('tring again, after things are loaded');
+                Modulo.cparts.reactcomponent.defineComponent(code, attrs)
+            });
+            console.log('Fetching dependency:',
+                Modulo.utils.syncOnlyRequire._missingPath);
+            Modulo.utils.syncOnlyRequire._missingPath = null;
+            return;
+        }
 
         class ReactElement extends Modulo.ReactComponentElement {
             mountReactComponent() {
@@ -31,16 +59,20 @@ Modulo.cparts.reactcomponent = class ReactComponent extends Modulo.ComponentPart
     static loadCallback(node, loader, array) {
         // Do the base loadCallback
         const result = Modulo.ComponentPart.loadCallback(node, loader, array);
-        const { defineComponent } = Modulo.cparts.reactcomponent;
         if (!result.attrs.namespace) {
             result.attrs.namespace = loader.namespace; // TODO: (Hack) - Fix after CPartDef rewrite
+        }
+        result.packagePaths = {}; // For NPM packages
+
+        // If NPM dependencies are specified, enqueue
+        if (result.attrs.dependencies) {
+            Modulo.utils.enqueueDependencies(result.attrs.dependencies,
+                                             result.packagePaths);
         }
 
         const callback = () => {
             const { content, attrs } = result;
-            // TODO: Enqueue imports somehow, for a totally transparent
-            // transpiling process?
-            defineComponent(content, attrs)
+            Modulo.cparts.reactcomponent.defineComponent(content, attrs, result.packagePaths)
         };
 
         // Wait on queue if dependencies exist; otherwise, define synchronously
@@ -49,22 +81,67 @@ Modulo.cparts.reactcomponent = class ReactComponent extends Modulo.ComponentPart
     }
 }
 
-Modulo.utils.runInReactlikeEnviron = function runInReactlikeEnviron (code, attrs) {
-    const { syncOnlyRequire } = Modulo.utils;
+
+Modulo.utils.enqueueDependencies = function enqueueDependencies (dependencies, packagePaths) {
+    if (!Array.isArray(dependencies)) {
+        dependencies = Object.entries(dependencies);
+    }
+
+    // Update the packagePaths object to include new paths from deps
+    //Object.assign(packagePaths, Object.fromEntries(dependencies));
+
+    for (const [ pkg, version ] of dependencies) {
+        // TODO: Make it loop through packagejson dependencies as well
+        const pjsonURL = `https://unpkg.com/${ pkg }@${ version }/package.json`;
+        Modulo.fetchQ.enqueue(pjsonURL, data => {
+            const packageJson = JSON.parse(data);
+            const pathSuffix = packageJson.main || packageJson.module;
+            const url = `https://unpkg.com/${ pkg }@${ version }/lib/index.js`;
+            packagePaths[pkg] = url;
+            Modulo.fetchQ.enqueue(url, () => {}); // Load the main file
+
+            // Also, enqueue dependencies right away
+            if (packageJson.dependencies) {
+                Modulo.utils.enqueueDependencies(packageJson.dependencies,
+                                                 packagePaths);
+            }
+        });
+    }
+}
+
+Modulo.utils.runInReactlikeEnviron = function runInReactlikeEnviron (code, attrs, packagePaths) {
+    // Prep JS build options
     const DEFAULT_CONF = { presets: [ 'env', 'react' ] };
     const opts = {
         babel: ((attrs && attrs.babel) || DEFAULT_CONF),
         exports: 'module', // exposes module.exports
     };
+
+    // Prep arguments
+    const require = path => Modulo.utils.syncOnlyRequire(path, packagePaths);
     const allArgs = [ 'Modulo', 'React', 'require' ];
 
     // Register function (evalling code)
     const func = Modulo.assets.registerFunction(allArgs, code, opts);
-    const exports = func.call(null, Modulo, React, syncOnlyRequire);
-    if (!attrs) { // Just return export directly, don't try to do anything funny
+
+    let exports;
+    try {
+        exports = func.call(null, Modulo, React, require);
+    } catch (err) {
+        if (String(err).includes('INVALID_REQUIRE')) {
+            // Missing require, signal by returning null
+            console.log('invalid require', err);
+            return null;
+        } else {
+            throw err; // reraise
+        }
+    }
+
+    if (!attrs || !attrs.name) { // Just return export directly, don't try to do anything funny
         return exports;
     }
 
+    // TODO Move this code to outer:
     // Otherwise, get the named thing separately
     const { name } = attrs;
     let reactComponentClass = exports[name]; // Possibly have import / export implemented here?
@@ -74,17 +151,24 @@ Modulo.utils.runInReactlikeEnviron = function runInReactlikeEnviron (code, attrs
     return reactComponentClass;
 }
 
-Modulo.utils.syncOnlyRequire = function syncOnlyRequire (path) {
-    if (path === 'React') {
+Modulo.utils.syncOnlyRequire = function syncOnlyRequire (path, packagePaths) {
+    if (path === 'react') {
         // Note: Might want to have a few more hardcoded ones for common stuff
-        return React;
+        return Modulo.globals.React;
+    }
+    if (path in packagePaths) {
+        return Modulo.utils.syncOnlyRequire(packagePaths[path], packagePaths);
     }
 
     // Try enqueuing, to see if already cached, and error otherwise
     let jsCode = null;
-    Modulo.fetchQ.enqueue(path, responseData => { jsCode = reponseData; });
-    Modulo.assert(jsCode, `Invalid require, path not loaded: ${ path }`);
-    return Modulo.utils.runInReactlikeEnviron(jsCode);
+    Modulo.fetchQ.enqueue(path, responseData => { jsCode = responseData; });
+    if (jsCode === null) {
+        Modulo.utils.syncOnlyRequire._missingPath = path;
+        throw new Error(`INVALID_REQUIRE: ${ path }`);
+    }
+    const attrOpts = {}; // No need to change babel configs, etc
+    return Modulo.utils.runInReactlikeEnviron(jsCode, attrOpts, packagePaths);
 };
 
 Modulo.ReactComponentElement = class ReactComponentElement extends HTMLElement {
