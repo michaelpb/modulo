@@ -965,6 +965,7 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         // Join all modeTokens with | (OR in regex).
         // Replace space with wildcard capture.
         const re = '(' + this.modeTokens.join('|(').replace(/ +/g, ')(.+?)');
+        console.log('this is re', re);
         return text.split(RegExp(re)).filter(token => token !== undefined);
     }
 
@@ -1021,6 +1022,13 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         }
         return s.match(/^\d+$/) ? s : `CTX.${cleanWord(s)}`
     }
+
+    /*
+    nextMode(mode, token) {
+        // Dead code, might be useful for extension
+        return (mode === 'text') ? null : (mode ? 'text' : token);
+    }
+    */
 
     escapeText(text) {
         if (text && text.safe) {

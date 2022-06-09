@@ -343,6 +343,14 @@ ModuloConfig = {
     - /.autogen-package.json - Walking up above the input, first package.json
 
 
+### Notes on embedding JS code in templates
+
+- Could even just have:
+{% block js %}
+
+{% endblock js %}
+
+
 
 ### Simplest hot-reloading
 

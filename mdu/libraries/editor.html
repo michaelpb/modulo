@@ -24,12 +24,6 @@
             state.value = props.value ? props.value : '';
         }
 
-        function insertAction(payload) {
-        }
-
-        function sendAction(payload) {
-        }
-
         function prepareCallback() {
             let height = 30;
             let toolbarWidth = 10;
@@ -40,6 +34,12 @@
                 buttons = DEFAULT_BUTTONS;
             }
             return { height, toolbarWidth, buttons };
+        }
+
+        function insertAction(payload) {
+        }
+
+        function sendAction(payload) {
         }
 
         function updateCallback() {
