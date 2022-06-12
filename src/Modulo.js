@@ -34,10 +34,11 @@ Modulo.ComponentPart = typeof ModuloComponentPart !== 'undefined' ? ModuloCompon
     static loadCallback(node, loader) {
         const defaults = this.getAttrDefaults(node, loader);
         const attrs = Modulo.utils.mergeAttrs(node, defaults);
-        // TODO is this still useful? --v
-        const content = node.tagName.toLowerCase().startsWith('te') ? node.innerHTML
-                                                      : node.textContent;
-        return { attrs, content, dependencies: attrs.src || null };
+        // TODO: Changing behavior here...-v
+        //const content = node.tagName.toLowerCase().startsWith('te') ? node.innerHTML
+        //                                              : node.textContent;
+        const content = node.innerHTML;
+        return { attrs, content, dependencies: attrs.src || null, node };
     }
 
     static loadedCallback(data, content) {
@@ -965,7 +966,6 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         // Join all modeTokens with | (OR in regex).
         // Replace space with wildcard capture.
         const re = '(' + this.modeTokens.join('|(').replace(/ +/g, ')(.+?)');
-        console.log('this is re', re);
         return text.split(RegExp(re)).filter(token => token !== undefined);
     }
 

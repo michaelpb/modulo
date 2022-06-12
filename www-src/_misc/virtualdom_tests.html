@@ -1,9 +1,3 @@
-<!--
-    This demo shows how you can create simple unit tests using Modulo's
-    TestSuite CPart. Modulo's TestSuite CPart isn't intended to replace full
-    testing frameworks, but instead is intended for allowing quick development
-    of unit-testing of components in particular.
--->
 <template modulo-embed>
     <Component name="ExampleClickingComponent">
         <Props
@@ -78,6 +72,25 @@
         </TestSuite>
     </Component>
 
+    <!-- Load tests for core Modulo.js library -->
+    <Library src="/demos/tests/reconciler1.test.html"></Library>
+    <Library src="/demos/tests/reconciler2.test.html"></Library>
+    <Library src="/demos/tests/reconciler3.test.html"></Library>
+    <Library src="/demos/tests/reconciler-directives.test.html"></Library>
+    <Library src="/demos/tests/mtl.test.html"></Library>
+    <Library src="/demos/tests/utils.test.html"></Library>
+    <Library src="/demos/tests/composition.test.html"></Library>
+    <Library src="/demos/tests/browser_build.test.html"></Library>
+    <Library src="/demos/tests/domcursor.test.html"></Library>
+    <Library src="/demos/tests/cparts/component_mode.test.html"></Library>
+    <Library src="/demos/tests/cparts/component.test.html"></Library>
+    <Library src="/demos/tests/cparts/config.test.html"></Library>
+    <Library src="/demos/tests/cparts/state.test.html"></Library>
+
+    <!-- Load tests for documentation examples -->
+    <Library namespace="eglib" src="/components/examplelib.html"></Library>
+    <Library namespace="emblib" src="/components/embeddedexampleslib.html"></Library>
+
 </template>
 
 <!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
@@ -86,17 +99,18 @@
 <script src="/demos/mdu/extensions/virtualdom.js"></script>
 
 <script>
-    setTimeout(() => {
-        const vm = new Modulo.virtualdom.ModuloVM();
-        vm.loadBundle(() => {
-            // Once defined, we can run the test command within the virtual machine / virtualdom
-            vm.Modulo.fetchQ.wait(() => {
-                console.log('loaded!', vm.document.innerHTML);
-                console.log('loaded!', vm.window);
-                vm.Modulo.cmd.test();
+    Modulo.defineAll();
+    Modulo.fetchQ.wait(() => {
+        setTimeout(() => {
+            const vm = new Modulo.virtualdom.ModuloVM();
+            vm.loadBundle(() => {
+                // Once defined, we can run the test command within the virtual machine / virtualdom
+                vm.Modulo.fetchQ.wait(() => {
+                    vm.Modulo.cmd.test();
+                });
             });
-        });
-    }, 0);
+        }, 0);
+    });
 </script>
 
 

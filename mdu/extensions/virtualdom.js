@@ -27,92 +27,120 @@ Modulo.virtualdom.Attr = class Attr {
     }
 }
 
+// Thanks to Jason Miller for greatly inspiring this parser code
+// // https://github.com/developit/htmlParser/blob/master/src/htmlParser.js
+Modulo.virtualdom.regexps = {
+    // TODO: Swap out CDATA parser for SCRIPT, since we don't need to parse
+    // CDATA, but we do need to parse SCRIPT which is supposed to be parsed the
+    // same way.
+    //splitAttrsTokenizer: /([a-z0-9_\:\-]*)\s*?=\s*?(['"]?)(.*?)\2\s+/gim,
+    //splitAttrsTokenizer: /\s*([^=\s]+)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim,
+    splitAttrsTokenizer: /\s*([^=\s]+)\s*(=?)(['"]?)/gim,
+    domParserTokenizer: /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!\[CDATA\[)([\s\S]*?)(\]\]>))/gm,
+};
+
+Modulo.virtualdom.selfClosing = new Set([ 'area', 'base', 'br', 'col',
+                  'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link',
+                  'meta', 'param', 'source', 'track', 'wbr' ]);
+
 Modulo.virtualdom.parse = function parse(parentElem, text) {
-    // TODO: Move parser to separate function, and clean up
-    // Parse HTML, starting with very naive tokenizer
-
-    // TODO: Pass in ownerDocument instead
-    const { Element } = Modulo.virtualdom;
-    //const { HTMLElement, customElements } = parentElem.ownerDocument.moduloVmParent;
-    const { customElements } = parentElem.ownerDocument.moduloVmParent;
-
-    let inTag = false;
-    let skipParsingUntil = null;
-    let tagStack = [ parentElem ]; // put self at top of stack
-
-    const tokenized = text.split(/[<>]/g);
-    for (const token of tokenized) {
-        const topOfStack = tagStack[ tagStack.length - 1 ];
-        if (skipParsingUntil) {
-            if (token.toLowerCase() === skipParsingUntil.toLowerCase()) {
-                skipParsingUntil = null; // Found the end, "turn of" skipUntil
-                tagStack.pop(); // And finally pop off element
-            } else {
-                topOfStack._unparsedContent += token;
-            }
-            continue;
-        }
-
-        if (inTag === false) { // In text
-            //console.log('TEXT:', token);
-            inTag = true; // move to next edge
-            topOfStack.childNodes.push(new Element(token));
-        } else if (token.startsWith('!--')) {
-            // Comment, for now comment nodes are ignored
-            inTag = false; // Closing tag, move to next edge
-        } else if (token.startsWith('/')) {
-            //console.log('CLOSE:', token);
-            inTag = false; // Closing tag, move to next edge
-            tagStack.pop(); // Pop off top of stack
-        } else {
-            //console.log('OPEN:', token);
-            // OPENING tag
-            inTag = false; // move to next edge
-            let elemClass = parentElem.ownerDocument.moduloVmParent.HTMLElement;
-            //let elemClass = HTMLElement;
-            const opts = parentElem._parseTagOpening(token);
-            let elem;
-            if (opts.tagName.includes('-')) {
-                const lc = opts.tagName.toLowerCase();
-                if (lc in customElements.elemClassesLC) { // if it exists
-                    elemClass = customElements.elemClassesLC[lc];
-                    elem = new elemClass(opts)
-                } else {
-                    console.log('Unknown customElement:', opts.tagName);
-                }
-            }
-
-            if (!elem) {
-                elem = parentElem.ownerDocument.createElement(opts.tagName);
-                Object.assign(elem, opts);
-            }
-            if (elem._shouldSkipParsing) {
-                skipParsingUntil = '/' + elem.tagName;
-            }
-            topOfStack.childNodes.push(elem);
-            tagStack.push(elem);
-        }
+    const { splitAttrsTokenizer, domParserTokenizer } = Modulo.virtualdom.regexps;
+    const { ownerDocument } = parentElem;
+    const { HTMLElement } = Modulo.virtualdom;
+    let elemClassesLC = {};
+    if (ownerDocument.moduloVmParent.customElements) {
+        elemClassesLC = ownerDocument.moduloVmParent.customElements.elemClassesLC;
     }
 
+    const tagStack = [ parentElem ]; // put self at top of stack
+
+    let lastMatchEnd = 0;
+    let topOfStack = parentElem;
+    let skipParsing = null;
+
+    // If there's leading text, create a TextNode with that as content
+    const checkAndPushLeadingText = (node, index) => {
+        const textContent = text.slice(lastMatchEnd, index);
+        if (textContent) { // Add object for TextNode if any text matches
+            node.childNodes.push({ nodeType: 3, textContent });
+        }
+    };
+
+    for (const match of text.matchAll(domParserTokenizer)) {
+        // TODO: Refactor this, there's low hanging fruit
+        const topOfStack = tagStack[ tagStack.length - 1 ];
+        if (skipParsing !== null) {
+            topOfStack._unparsedContent += text.slice(lastMatchEnd, match.index);
+        } else {
+            checkAndPushLeadingText(topOfStack, match.index); // Handle leading text
+        }
+
+        lastMatchEnd = match.index + match[0].length;
+
+        if (skipParsing !== null) {
+           if (match[1] === '/' && match[2].toLowerCase() === skipParsing) {
+                skipParsing = null; // Found the end, "turn of" skipUntil
+                tagStack.pop(); // And finally pop off element
+            } else {
+                topOfStack._unparsedContent += match[0]; // add text
+            }
+
+        } else if (match[5]) { // COMMENT - In this implementation, discard text
+            topOfStack.childNodes.push(new HTMLElement({ nodeType: 8 }));
+
+        } else if (match[1] === '/') { // CLOSE - Pop parent tag
+            tagStack.pop();
+
+        } else { // OPEN - construct new element
+            const tagLC = match[2].toLowerCase();
+            const elem = tagLC.includes('-') && (tagLC in elemClassesLC) ?
+                        new elemClassesLC[tagLC]() :
+                        ownerDocument.createElement(tagLC);
+            elem._setAttrString(match[3]);
+            if (elem._isSelfClosing(topOfStack)) {
+                tagStack.pop();
+                tagStack[ tagStack.length - 1 ].push(elem);
+            } else {
+                topOfStack.childNodes.push(elem);
+            }
+            tagStack.push(elem);
+            skipParsing = elem._getSkipParsingUntil();
+        }
+    }
+    checkAndPushLeadingText(parentElem, text.length); // Handle trailing text
 }
+
 
 Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Element {
     constructor(opts) {
         super(Object.assign({
             childNodes: [],
             parentNode: null,
-            //nextSibling: null, // Might be a faster way that just keeps track
-            //previousSibling: null,
             nodeType: 1,
+            _parentIndex: -1,
             _textContent: '',
             _unparsedContent: '',
             _attributeNames: [],
             _attributeValues: {},
         }, opts));
+        if (this.tagName) { // Store tagnames in all-caps
+            this.tagName = this.tagName.toUpperCase();
+        }
+    }
+
+    remove() {
+        if (this.parentNode) {
+            this.parentNode.chidNodes.splice(this._parentIndex, 1);
+            this.parentNode = null;
+            this._parentIndex = -1;
+        }
     }
 
     append(...items) {
         for (const item of items) {
+            if (item.remove) {
+                item.remove(); // try removing, in case has parentNode
+            }
             item.parentNode = this;
             item._parentIndex = this.childNodes.length;
             this.childNodes.push(item);
@@ -123,19 +151,27 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         this.append(...items);
     }
 
+    isEqualNode(other) {
+        // TODO: See if storing outerHTML hashed is a cheap speedup for isEqualNode
+        return this.outerHTML === other.outerHTML;
+    }
+
+    get firstChild() {
+        return this.childNodes.length > 0 ? this.childNodes[0] : null;
+    }
+
     get nextSibling() {
-        const { childNodes} = this.parentNode;
-        if ((this._parentIndex + 1) >= childNodes.length) {
+        if ((this._parentIndex + 1) >= this.parentNode.childNodes.length) {
             return null;
         }
         return childNodes[this._parentIndex + 1];
     }
 
     get previousSibling() {
-        if (this._parentIndex > 0) {
+        if (this._parentIndex <= 0) {
             return null;
         }
-        return this.parentNode[this._parentIndex - 1];
+        return this.parentNode.childNodes[this._parentIndex - 1];
     }
 
     get content() {
@@ -192,19 +228,20 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         }
     }
 
+    hasAttribute(name) {
+        return name in this._attributeValues;
+    }
+
     _makeAttributeString() {
         let s = '';
         const { escapeText } = Modulo.templating.MTL.prototype;
+        // TODO: Add single quotes for JSON strings for canonical formatting
+        const attrVal = v => /^[\w\.]+$/.test(v) ? v : `"${ escapeText(v) }"`;
         for (const attrName of this._attributeNames) {
-            s += attrName;
             const value = this._attributeValues[attrName];
-            if (value) {
-                s += '=' + (/^\w+$/.test(value) ? value :
-                            '"' + escapeText(value) + '"');
-            }
-            s += ' ';
+            s += ' ' + attrName + (value ? '=' + attrVal(value) : '');
         }
-        return s.trim(); // remove space at end
+        return s;
     }
 
     setAttributeNode(node) {
@@ -221,38 +258,55 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
     }
 
     set innerHTML(text) {
-        const { parse } = Modulo.virtualdom;
         this.childNodes = []; // clear contents
-        parse(this, text);
+        Modulo.virtualdom.parse(this, text);
     }
 
-    _parseTagOpening(text) {
-        const _attributeNames = [];
-        const _attributeValues = {};
-        const tagName = text.split(' ')[0];
-        const attributeStrings = text.split(' ').slice(1);
-        for (const attrString of attributeStrings) {
-            const attrName = attrString.split('=')[0];
-            const attrValueRaw = attrString.split('=').slice(1).join('=');
-            const attrValue = attrValueRaw.replace(/(^["']|["']$)/g, '')
-            _attributeNames.push(attrName);
-            _attributeValues[attrName] = attrValue;
+    _setAttrString(text) {
+        const nextToken = regexp => { // Simple parser, consumes until regexp
+            const match = text.match(regexp) || { 0: '', index: text.length };
+            const leadingText = text.substr(0, match.index); // Get previous
+            text = text.substr(match.index + match[0].length); // Consume text
+            return [ leadingText, match ]; // Return previous text and match
+        };
+        while (text) { // Stop when text is empty ('' is falsy)
+            const [ name, match ] = nextToken(/\s*([= ])\s*(['"]?)/);
+            this._attributeNames.push(name); // Add to attr names list
+            this._attributeValues[name] = !match[1] ? '' : // Attribute only
+                nextToken(match[2] ? match[2] : ' ')[0]; // Quote or space delim
         }
-        return { _attributeNames, _attributeValues, tagName, nodeType: 1 };
     }
 
-    get _shouldSkipParsing() {
-        if (!this.tagName) {
-            return undefined;
+    _isSelfClosing(potentialParent) {
+        return false;
+        // Broken logic below:
+        const lc = this._lcName;
+        return Modulo.virtualdom.selfClosing.has(lc) && lc === potentialParent.tagName;
+    }
+
+    _getSkipParsingUntil() {
+        const lc = this._lcName;
+        return (lc === 'template' || lc === 'script') ? lc : null;
+    }
+
+    get _lcName() {
+        return (this.tagName || '').toLowerCase();
+    }
+
+    get _moduloTagName() {
+        const lc = this._lcName;
+        if (lc in Modulo.cparts) {
+            return Modulo.cparts[lc].name;
         }
-        const lc = this.tagName.toLowerCase();
-        return lc && (lc === 'template' || lc === 'script');
+        return lc;
     }
 
     get innerHTML() {
+        /*
         if (this._unparsedContent) {
             return this._unparsedContent;
         }
+        */
         const { escapeText } = Modulo.templating.MTL.prototype;
         let s = '';
         for (const child of this.childNodes) {
@@ -266,8 +320,11 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
     }
 
     get outerHTML() {
-        return (`<${this.tagName}${this._makeAttributeString()}>` +
-                `${this.innerHTML}</${this.tagName}>`);
+        if (!this.tagName) { // (Comment behavior)
+            return ''; // TODO: Create proper class hierarchy to solve this
+        }
+        return (`<${ this._moduloTagName }${ this._makeAttributeString() }>` +
+                `${ this.innerHTML }</${ this._moduloTagName }>`);
     }
 
     querySelector(cssSelector) {
@@ -340,10 +397,12 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
             titleNode.textContent = title;
             document.head.append(titleNode);
             document.implementation = { createHTMLDocument };
+            document.HTMLElement = HTMLElement;
             document.documentElement = document; // not sure if i need this
             return document;
         };
         const document = createHTMLDocument('modulovm');
+        const HTMLElement = document.HTMLElement;
         this.window = { document, HTMLElement, Modulo, customElements };
         Object.assign(this, this.window); // Expose window properties at top as well
     }
@@ -377,11 +436,11 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
             jsTexts.push(...Modulo.assets.getAssets('js'));
             const combinedCtx = Object.assign({ jsTexts }, opts, Modulo);
             const text = buildTemplate.render(combinedCtx);
-            console.log('ths is text', text.substr(text.length-100))
+            //console.log('ths is text', text.substr(text.length-100))
 
             // Run code "within" the "VM" and return Modulo object
             this.Modulo = this.run(text, 'Modulo');
-            console.log('Loaded!', this.Modulo);
+            //console.log('Loaded!', this.Modulo);
 
             if (onReady) {
                 this.Modulo.fetchQ.wait(onReady);

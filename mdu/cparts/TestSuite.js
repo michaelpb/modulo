@@ -1,4 +1,3 @@
-
 Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     static stateInit(cpart, element, initData) {
         element.cparts.state.eventCallback();
@@ -58,10 +57,14 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         const isAssertion = assertRe.test(data.content);
         let content = data.content;
         /*
+        // Breaks some tests, not sure if good or not --v
         if (!content.includes('assert:') && !content.includes('event:')) {
             return [false, 'Script tag uses no macro'];
         }
         */
+        if (!content.includes('assert:') && !content.includes('event:')) {
+            console.log('WARNING: Invalid script tag:', data);
+        }
 
         if (isAssertion) {
             assertionText = content.match(assertRe)[1];
@@ -108,8 +111,6 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         if (getParams.includes('stacktrace=y')) {
             // Let exceptions crash process and halt future tests, exposing
             // stack-trace
-            // TODO: Look into more consistent system using console.trace, and
-            // then move to conf and have on by default
             result = func.apply(null, Object.values(vars));
         } else {
             try {
@@ -117,6 +118,9 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                 // with future tests
                 result = func.apply(null, Object.values(vars));
             } catch (err) {
+                // TODO: Look into any more consistent systems using
+                // console.trace, and then move to conf and have on by default
+                //console.trace();
                 return [false, `Error occured: ${err}`]
             }
         }
@@ -180,7 +184,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             }
             return false;
         }
-        return null;
+        console.log('this is result, getting cast as null', result);
+        return null; // undefined, null, and 0 get cast as null, meaning no assertion
     }
 
     static runTests(attrs, factory) {
@@ -191,15 +196,22 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         let total = 0;
         let failure = 0;
 
+        const getParams = String(Modulo.globals.location ?
+                                 Modulo.globals.location.search : '').substr(1);
+        const useTry = getParams.includes('stacktrace=y');
+
         const parentNode = factory.loader._stringToDom(content);
         for (const testNode of parentNode.children) {
             let element;
             let err;
-            try {
+            if (useTry) {
+                try {
+                    element = Modulo.utils.createTestElement(factory);
+                } catch (e) { err = e; }
+            } else {
                 element = Modulo.utils.createTestElement(factory);
-            } catch (e) {
-                err = e;
             }
+
             if (!element) {
                 failure++;
                 console.log('[%]', '         ! ELEMENT FAILED TO MOUNT');
@@ -218,7 +230,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             Modulo.isTest = testName; // useful in tests, maybe remove, or document
             let testTotal = 0;
             let testFailed = 0;
-            for (let [sName, data] of stepArray) {
+            console.log(stepArray);
+            for (let [ sName, data ] of stepArray) {
                 const result = testsuite.doTestStep(element, sName, data);
                 if (result !== null) {
                     testTotal++;

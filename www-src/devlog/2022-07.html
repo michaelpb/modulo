@@ -1,0 +1,94 @@
+
+<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
+<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+
+<script src="/js/Modulo.js"></script>
+
+<modulo>
+    <load namespace="x" src="/components/layouts.html"></load>
+</modulo>
+<script>Modulo.defineAll()</script>
+
+
+<x-Page
+    pagetitle="Design goals of Modulo - DevLog - 2022-07 - Modulo"
+    navbar="about">
+
+<x-DevLogNav fn="2022-07"></x-DevLogNav>
+
+
+<p><em>a.k.a. Design philosophy, "Zen" of Modulo, etc</em></p>
+
+
+<h1>Design goals of Modulo</h1>
+
+<h2>HTML-first</h2>
+
+<p>One important design goal of Modulo is to be much more HTML-oriented
+compared to other web framework. In some ways, it's could be thought of as more
+of an <em>HTML framework written in JavaScript</em> than a <em>JavaScript
+framework written in JavaScript</em>.</p>
+
+<ol>
+
+<li><h3>HTML-first syntax</h3>
+    <p>Modulo is <em>HTML-first</em> in that it piggy-backs off of HTML
+    syntax.  CParts are declared using HTML tags, within other HTML tags,
+    as opposed to within JavaScript. Script tags embed JS into HTML, instead of
+    the other way around (e.g. JSX in React).</p>
+</li>
+
+<li><h3>HTML-first workflow</h3>
+    <p>Secondly, it is <em>HTML-first</em> in terms of development
+    workflow. A greenfield Modulo-powered website starts as a static site
+    of HTML and CSS files, created and edited by hand. As requirements
+    become more demanding, the vanilla HTML tags are gradually swapped for
+    Modulo web-components, with templated HTML and bundled CSS. Only as
+    requirements grow beyond the common use-cases offered by "canned"
+    CParts does JavaScript come into play.</p>
+</li>
+
+<li><h3>HTML-first enhancement</h3>
+    <p>Finally it is <em>HTML-first</em> in terms of interoperability.
+    Modulo exposes itself as a extension to vanilla HTML via the Web
+    Components standard. This means it will comfortably integrate with
+    anything that deals with HTML (PHP, Django, Rails, other frontend
+    frameworks, etc).</p>
+</li>
+</ol>
+
+
+<h2>Explicit complexity</h2>
+
+<p>A great deal of framework design revolves around distributing different
+types of complexity throughout an application
+
+<ol>
+
+<li><h3>Complexity layers</h3>
+</li>
+
+<li><h3>Transparent inner workings</h3>
+    <p>Patches are exposed at every
+    it's instead a very
+    </p>
+</li>
+
+
+<li><h3>Low complexity</h3>
+</li>
+
+
+</ol>
+
+
+</ol>
+
+    <li>Declarative</li>
+    <li>Isomorphic</li>
+    <li>Simple</li>
+    <li>Explicit</li>
+    <li>Explicit complexity layers</li>
+
+
+</x-Page>
