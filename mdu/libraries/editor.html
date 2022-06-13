@@ -3,58 +3,13 @@
         value
         name
     ></Props>
-
     <Template src="./editor/ExpandingMarkdownEditorWidget.html"></Template>
-
     <State
         expanded:=false
         value=""
     ></State>
-
-    <Script>
-        const DEFAULT_BUTTONS = [
-            { payload: '# $', label: 'H1', style: 'font-weight: bold' },
-            { payload: '*$*', label: 'B', style: 'font-weight: bold' },
-            { payload: '*I*', label: 'i', style: 'font-style: italic' },
-            { payload: '[]($)', label: '&#x1F517;' },
-            { payload: '![]($)', label: '&#x1F5BC;'  },
-        ];
-
-        function initializedCallback() {
-            state.value = props.value ? props.value : '';
-        }
-
-        function prepareCallback() {
-            let height = 30;
-            let toolbarWidth = 10;
-            let buttons = [];
-            if (state.expanded) {
-                height = 250;
-                toolbarWidth = 50;
-                buttons = DEFAULT_BUTTONS;
-            }
-            return { height, toolbarWidth, buttons };
-        }
-
-        function insertAction(payload) {
-        }
-
-        function sendAction(payload) {
-        }
-
-        function updateCallback() {
-            if (!element.isMounted) { // First render, ensure gets rerendered
-                element.cparts.state.propagate('value', state.value);
-            }
-        }
-
-        function toggleExpand() {
-            state.expanded = !state.expanded;
-        }
-    </Script>
-
+    <Script src="./editor/ExpandingMarkdownEditorWidget.js"></Script>
     <Style src="./editor/ExpandingMarkdownEditorWidget.css"></Style>
-
 </Component>
 
 
@@ -67,9 +22,7 @@
         component
         debounce-time
     ></Props>
-
     <Template src="./editor/MirrorEditor.html"></Template>
-
     <State
         selection-start:=0
         scroll-top:=0
@@ -77,7 +30,6 @@
         height:=0
         value=""
     ></State>
-
     <Script src="./editor/MirrorEditor.js"></Script>
     <Style src="./editor/MirrorEditor.css"></Style>
 </Component>

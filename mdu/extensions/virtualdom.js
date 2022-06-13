@@ -357,7 +357,7 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
 
     querySelectorAll(cssSelector) {
         const results = [];
-        for (const node of this.children) {
+        for (const node of this.children) { // loop through element nodes
             if (node._selectorMatches(cssSelector)) {
                 results.push(node);
             }
