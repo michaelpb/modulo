@@ -14,6 +14,20 @@ Modulo.virtualdom.Element = class Element {
             this._textContent = opts || '';
         }
     }
+
+    get textContent() {
+        return this._textContent;
+    }
+
+    // TODO: Refactor so that nodeValue is the actual backing value, and refactor class hierarchy
+    set nodeValue(value) {
+        //console.log('nodeValue getting set', nodeValue);
+        this._textContent = value;
+    }
+
+    get nodeValue() {
+        return this._textContent;
+    }
 }
 
 Modulo.virtualdom.Attr = class Attr {
@@ -27,6 +41,12 @@ Modulo.virtualdom.Attr = class Attr {
     }
 }
 
+Modulo.virtualdom.Event = class Event {
+    constructor(type) {
+        this.type = type;
+    }
+}
+
 // Thanks to Jason Miller for greatly inspiring this parser code
 // // https://github.com/developit/htmlParser/blob/master/src/htmlParser.js
 Modulo.virtualdom.regexps = {
@@ -35,8 +55,8 @@ Modulo.virtualdom.regexps = {
     // same way.
     //splitAttrsTokenizer: /([a-z0-9_\:\-]*)\s*?=\s*?(['"]?)(.*?)\2\s+/gim,
     //splitAttrsTokenizer: /\s*([^=\s]+)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim,
-    splitAttrsTokenizer: /\s*([^=\s]+)\s*(=?)(['"]?)/gim,
-    domParserTokenizer: /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!\[CDATA\[)([\s\S]*?)(\]\]>))/gm,
+    //splitAttrsTokenizer: /\s*([^=\s]+)\s*(=?)(['"]?)/gim,
+    domParserTokenizer: /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!\[CDATA\[)([\s\S]*?)(\]\]>))/gm,
 };
 
 Modulo.virtualdom.selfClosing = new Set([ 'area', 'base', 'br', 'col',
@@ -44,12 +64,13 @@ Modulo.virtualdom.selfClosing = new Set([ 'area', 'base', 'br', 'col',
                   'meta', 'param', 'source', 'track', 'wbr' ]);
 
 Modulo.virtualdom.parse = function parse(parentElem, text) {
-    const { splitAttrsTokenizer, domParserTokenizer } = Modulo.virtualdom.regexps;
     const { ownerDocument } = parentElem;
     const { HTMLElement } = Modulo.virtualdom;
+    const { domParserTokenizer } = Modulo.virtualdom.regexps;
+
     let elemClassesLC = {};
-    if (ownerDocument.moduloVmParent.customElements) {
-        elemClassesLC = ownerDocument.moduloVmParent.customElements.elemClassesLC;
+    if (ownerDocument.moduloVM.customElements) {
+        elemClassesLC = ownerDocument.moduloVM.customElements.elemClassesLC;
     }
 
     const tagStack = [ parentElem ]; // put self at top of stack
@@ -67,7 +88,7 @@ Modulo.virtualdom.parse = function parse(parentElem, text) {
     };
 
     for (const match of text.matchAll(domParserTokenizer)) {
-        // TODO: Refactor this, there's low hanging fruit
+        // TODO: Refactor this loop, there's low hanging fruit
         const topOfStack = tagStack[ tagStack.length - 1 ];
         if (skipParsing !== null) {
             topOfStack._unparsedContent += text.slice(lastMatchEnd, match.index);
@@ -93,18 +114,35 @@ Modulo.virtualdom.parse = function parse(parentElem, text) {
 
         } else { // OPEN - construct new element
             const tagLC = match[2].toLowerCase();
+            const tagName = tagLC.toUpperCase();
             const elem = tagLC.includes('-') && (tagLC in elemClassesLC) ?
-                        new elemClassesLC[tagLC]() :
+                        new elemClassesLC[tagLC]() : // Invoke custom class
                         ownerDocument.createElement(tagLC);
+            elem.tagName = tagLC.toUpperCase(); // hack
+            if (elem.constructor.name === 'CustomElement') {
+                console.log('---------------')
+                console.log('THIS IS ELEM', elem);
+                console.log('---------------')
+            }
             elem._setAttrString(match[3]);
             if (elem._isSelfClosing(topOfStack)) {
                 tagStack.pop();
                 tagStack[ tagStack.length - 1 ].push(elem);
             } else {
-                topOfStack.childNodes.push(elem);
+                topOfStack.append(elem);
             }
             tagStack.push(elem);
             skipParsing = elem._getSkipParsingUntil();
+            /*
+            if (skipParsing === 'script') {
+                const vals = Object.values(elem._attributeValues);
+                if (vals[0] && vals[0] === 'Text node is updated correctly') {
+                    //console.log('parsing script!', elem);
+                    //elem._HAX =true;
+                }
+            }
+            */
+            //console.log('skipParsing', skipParsing);
         }
     }
     checkAndPushLeadingText(parentElem, text.length); // Handle trailing text
@@ -122,33 +160,52 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
             _unparsedContent: '',
             _attributeNames: [],
             _attributeValues: {},
+            _eventListeners: {},
         }, opts));
-        if (this.tagName) { // Store tagnames in all-caps
-            this.tagName = this.tagName.toUpperCase();
+        if (this.tagName || this.fullName) { // Store tagnames in all-caps
+            this.tagName = (this.tagName || this.fullName).toUpperCase();
         }
     }
 
     remove() {
+        // TODO: This is broken, should be similar to insertBefore
         if (this.parentNode) {
-            this.parentNode.chidNodes.splice(this._parentIndex, 1);
+            this.parentNode.childNodes.splice(this._parentIndex, 1);
             this.parentNode = null;
             this._parentIndex = -1;
         }
     }
 
     append(...items) {
-        for (const item of items) {
-            if (item.remove) {
-                item.remove(); // try removing, in case has parentNode
+        for (const node of items) {
+            if (node.remove) {
+                node.remove(); // try removing, in case has parentNode
             }
-            item.parentNode = this;
-            item._parentIndex = this.childNodes.length;
-            this.childNodes.push(item);
+            this._appendNode(node);
         }
+    }
+
+    _appendNode(node) {
+        node.parentNode = this;
+        node._parentIndex = this.childNodes.length;
+        this.childNodes.push(node);
     }
 
     appendChild(...items) {
         this.append(...items);
+    }
+
+    insertBefore(node, nextSibling) {
+        if (nextSibling.parentNode !== this) {
+            throw new Error('Invalid insertBefore')
+        }
+        const { _parentIndex } = nextSibling;
+        const nextNodes = this.childNodes.slice(_parentIndex); // After index
+        this.childNodes = this.childNodes.slice(0, _parentIndex); // Before index
+        this._appendNode(node); // Now, push given node onto child nodes
+        for (const nextNode of nextNodes) { // And rebuild indices after
+            this._appendNode(nextNode);
+        }
     }
 
     isEqualNode(other) {
@@ -156,19 +213,36 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         return this.outerHTML === other.outerHTML;
     }
 
+    addEventListener(evName, listener) {
+        if (!(evName in this._eventListeners)) {
+            this._eventListeners[evName] = [];
+        }
+        return this._eventListeners[evName].push(listener);
+    }
+
+    dispatchEvent() {
+    }
+
+    removeEventListener(evName, listener) {
+        if (evName in this._eventListsners) {
+            this._eventListeners[evName] = this._eventListeners[evName]
+                                            .filter(func => func !== listener);
+        }
+    }
+
     get firstChild() {
         return this.childNodes.length > 0 ? this.childNodes[0] : null;
     }
 
     get nextSibling() {
-        if ((this._parentIndex + 1) >= this.parentNode.childNodes.length) {
+        if (!this.parentNode || (this._parentIndex + 1) >= this.parentNode.childNodes.length) {
             return null;
         }
-        return childNodes[this._parentIndex + 1];
+        return this.childNodes[this._parentIndex + 1];
     }
 
     get previousSibling() {
-        if (this._parentIndex <= 0) {
+        if (!this.parentNode || this._parentIndex <= 0) {
             return null;
         }
         return this.parentNode.childNodes[this._parentIndex - 1];
@@ -200,12 +274,12 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
     }
 
     set textContent(value) {
-        this.innerHTML = '';
+        this.childNodes = [];
         this._textContent = value;
         this._unparsedContent = '';
         if (this.tagName && this.tagName.toLowerCase() === 'script') {
             // If it's a script, evaluate immediately
-            this.ownerDocument.moduloVmParent.run(this._textContent);
+            this.ownerDocument.moduloVM.run(this._textContent);
         }
     }
 
@@ -277,6 +351,13 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         }
     }
 
+    _shouldCloseParent(potentialParent) {
+        // TODO: break selfclosing into these two
+    }
+
+    _shouldCloseSelf(potentialParent) {
+    }
+
     _isSelfClosing(potentialParent) {
         return false;
         // Broken logic below:
@@ -294,6 +375,9 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
     }
 
     get _moduloTagName() {
+        if (this.fullName) { // If it's a Modulo element
+            return this.fullName; // (todo: fix to new interface after cpartdef refactor)
+        }
         const lc = this._lcName;
         if (lc in Modulo.cparts) {
             return Modulo.cparts[lc].name;
@@ -302,11 +386,13 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
     }
 
     get innerHTML() {
-        /*
-        if (this._unparsedContent) {
+        // TODO: Maybe have lazy parse system, where it always goes to
+        // _unparsed first, then has a "this.parseIfNeeded()" invocation at top
+        // of misc funcs?
+        if (this._unparsedContent) { // Return unparsed HTML if relevant
             return this._unparsedContent;
         }
-        */
+
         const { escapeText } = Modulo.templating.MTL.prototype;
         let s = '';
         for (const child of this.childNodes) {
@@ -341,11 +427,11 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         for (const sel of selectors) {
             const s = sel.trim();
             if (s === '*') { return true; }
-            if (s === this.tagName) { return true; }
+            if (s.toLowerCase() === this._lcName) { return true; }
             if (s.includes('.')) {
                 const classes = s.split('.');
                 if (classes[0]) {
-                    if (classes[0] !== this.tagName) {
+                    if (classes[0].toLowerCase() !== this._lcName) {
                         continue;
                     }
                 }
@@ -377,8 +463,6 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
     }
 
     init(virtualdom) {
-        const Modulo = {};
-        const customElements = this.makeCustomElements();
         const createHTMLDocument = title => {
             const document = new virtualdom.HTMLElement({ nodeType: 1, tagName: 'html' });
 
@@ -389,22 +473,26 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
                 }
             }
 
-            document.moduloVmParent = this; // include back reference
+            document.moduloVM = this; // include back reference
             document.createElement = tagName => new HTMLElement({ nodeType: 1, tagName });
             document.head = document.createElement('head');
             document.body = document.createElement('body');
             const titleNode = document.createElement('title');
             titleNode.textContent = title;
             document.head.append(titleNode);
+
             document.implementation = { createHTMLDocument };
             document.HTMLElement = HTMLElement;
             document.documentElement = document; // not sure if i need this
             return document;
         };
+        const Modulo = {};
+        const customElements = this.makeCustomElements();
         const document = createHTMLDocument('modulovm');
         const HTMLElement = document.HTMLElement;
-        this.window = { document, HTMLElement, Modulo, customElements };
-        Object.assign(this, this.window); // Expose window properties at top as well
+        const win = { document, HTMLElement, Modulo, customElements };
+        Object.assign(this, win); // Expose some window properties at top as well
+        this.window = Object.assign({}, virtualdom, win); // Add in all vdom classes
     }
 
     makeCustomElements() {
@@ -452,6 +540,11 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
         const args = [ 'Modulo', 'window', 'document', 'HTMLElement' ];
         const code = `${ text }\n\n return ${ exportCode };`;
         const func = Modulo.assets.registerFunction(args, code);
+        if (exportCode === 'Modulo') {
+            //console.log(func);
+            //const { escapeText } = Modulo.templating.MTL.prototype;
+            //document.body.innerHTML = '<pre>' + escapeText(func.toString()) + '</pre>';
+        }
         return func(this.Modulo, this.window, this.document, this.HTMLElement);
     }
 }

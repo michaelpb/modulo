@@ -6,6 +6,8 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
     }
 
     static propsInit(cpart, element, initData) {
+        //console.log('this is initData', initData);
+        //element.factory().baseRenderObj.props = initData.attrs;
         element.initRenderObj.props = initData.attrs;
         element.renderObj.props = initData.attrs;
         if (element.eventRenderObj) {
@@ -184,7 +186,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             }
             return false;
         }
-        console.log('this is result, getting cast as null', result);
+        //console.log('this is result, getting cast as null', result);
         return null; // undefined, null, and 0 get cast as null, meaning no assertion
     }
 
@@ -230,7 +232,6 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             Modulo.isTest = testName; // useful in tests, maybe remove, or document
             let testTotal = 0;
             let testFailed = 0;
-            console.log(stepArray);
             for (let [ sName, data ] of stepArray) {
                 const result = testsuite.doTestStep(element, sName, data);
                 if (result !== null) {
@@ -412,10 +413,6 @@ Modulo.utils.createTestElement = function createTestElement (factory) {
     //Modulo.globals.customElements.define(fullName.toLowerCase(), componentClass);
     /* try { } catch { }*/
 
-    const element = new componentClass();
-    element.connectedCallback = () => {}; // Prevent double calling
-    delete element.cparts.testsuite; // Within the test itself, don't include
-
     // Create a simple test DOM of a document fragment and div
     //const doc = new Modulo.globals.DocumentFragment();
     let doc;
@@ -428,6 +425,15 @@ Modulo.utils.createTestElement = function createTestElement (factory) {
     const body = doc.createElement('body'); // Mock body
     doc.documentElement.appendChild(head);
     doc.documentElement.appendChild(body);
+
+    const element = new componentClass();
+    if (element._moduloTagName) { // virtualdom-based class
+        element.tagName = fullName.toUpperCase(); // (todo: rm after cpartdef refactor)
+    }
+
+    element.connectedCallback = () => {}; // Prevent double calling
+    delete element.cparts.testsuite; // Within the test itself, don't include
+
     window._moduloMockDocument = element.mockDocument = doc;
 
     //const div = Modulo.globals.document.createElement('div');

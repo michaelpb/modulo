@@ -4,7 +4,7 @@
 // to much better comments, formatting, lower complexity, etc.
 
 if (typeof HTMLElement === 'undefined') {
-    var HTMLElement = class {}; // Node.js compatibilty
+    var HTMLElement = class {}; // Node.js compatibilty (TODO rm this)
 }
 if (typeof Modulo === 'undefined') {
     var Modulo = {}; // TODO: have it instantiate a Modulo instance instead
@@ -35,9 +35,10 @@ Modulo.ComponentPart = typeof ModuloComponentPart !== 'undefined' ? ModuloCompon
         const defaults = this.getAttrDefaults(node, loader);
         const attrs = Modulo.utils.mergeAttrs(node, defaults);
         // TODO: Changing behavior here...-v
-        //const content = node.tagName.toLowerCase().startsWith('te') ? node.innerHTML
         //                                              : node.textContent;
-        const content = node.innerHTML;
+
+        // TODO Should probably just remove _unparsedContent, probably implemented fine now at node level
+        const content = node._unparsedContent || node.innerHTML;
         return { attrs, content, dependencies: attrs.src || null, node };
     }
 
@@ -1421,6 +1422,10 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     reconcileChildren(childParent, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
         const cursor = new Modulo.reconcilers.DOMCursor(childParent, rivalParent);
+
+        //console.log('Reconciling (1):', childParent, childParent.outerHTML);
+        //console.log('Reconciling (2):', rivalParent.outerHTML);
+
         while (cursor.hasNext()) {
             const [ child, rival ] = cursor.next();
 
@@ -1881,7 +1886,6 @@ Modulo.AssetManager = class AssetManager {
     getSymbolsAsObjectAssignment(contents) {
         const regexpG = /(function|class)\s+(\w+)/g;
         const regexp2 = /(function|class)\s+(\w+)/; // hack, refactor
-        // TODO: Get classes as well, for CParts, etc! (used by <script Config></script>)
         const matches = contents.match(regexpG) || [];
         return matches.map(s => s.match(regexp2)[2])
             .filter(s => s && !Modulo.INVALID_WORDS.has(s))

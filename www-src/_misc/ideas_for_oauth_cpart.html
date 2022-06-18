@@ -1,0 +1,54 @@
+
+<!-- Needs some more thought, but something like: -->
+
+<!-- Use default login -->
+<Component>
+    <Template>
+        <h1>Hi {{ oauth.user.username }}</h1>
+        <p>Here's your posts:</p>
+        {% for item in fetchstate.posts %}
+            <p>{{ item }}</p>
+        {% endfor %}
+    </Template>
+
+    <OAuth
+        some-conf:="1234"
+    ></OAuth>
+
+    <FetchState
+        posts="/api/user/posts?id={{ oauth.user.id }}&token={{ oauth.token }}"
+    ></FetchState>
+</Component>
+
+
+<!-- Use alternative login -->
+<OAuth>
+  <div class="login">
+    {% oauth_login %}
+  </div>
+</OAuth>
+
+
+
+
+<!-- (Maybe also add slot-render-mode="template" to allow templating within top-level?) -->
+<!-- Example of full page boilerplate for a login only page: -->
+
+<script Modulo
+  src="https://unpkg.com/modulo@0.1.1/src/Modulo.js"
+  -src="/static/libraries/index.html"
+></script>
+
+<x-AuthenticatedPage title="My posts">
+  <h1>Welcome {{ oauth.user.name }}!</h1>
+
+  <ol>
+    {% for post in fetchstate.posts %}
+        <li><a href="{{ post.url }}">{{ post.title }}</a> ({{ post.views }})</a></li>
+    {% endfor %}
+  </ol>
+</x-AuthenticatedPage>
+
+
+
+

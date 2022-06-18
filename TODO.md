@@ -41,9 +41,13 @@
     - Otherwise, have an extension to AssetManager
 - Aim for the simplest one-liner boilerplate entrypoint:
     - < script type="modulo/Modulo"
-        src="https://unpkg.com/modulo@0.1.1/src/Modulo.js"
-        -src="/static/libraries/all.html"
+          src="https://unpkg.com/modulo@0.1.1/src/Modulo.js"
+          -src="/static/libraries/all.html"
        >< /script >
+    - OR:
+    - < script Modulo (?) or... < script -Modulo> ?
+
+- Allow '-' in identifier names, and then just do "camelcase" be default
 
 
 -----------------------------
