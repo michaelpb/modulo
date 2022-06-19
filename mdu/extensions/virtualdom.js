@@ -21,11 +21,11 @@ Modulo.virtualdom.Element = class Element {
 
     // TODO: Refactor so that nodeValue is the actual backing value, and refactor class hierarchy
     set nodeValue(value) {
-        //console.log('nodeValue getting set', nodeValue);
         this._textContent = value;
     }
 
     get nodeValue() {
+        //console.log('nodeValue', this._textContent);
         return this._textContent;
     }
 }
@@ -45,6 +45,7 @@ Modulo.virtualdom.Event = class Event {
     constructor(type) {
         this.type = type;
     }
+    preventDefault() {}
 }
 
 // Thanks to Jason Miller for greatly inspiring this parser code
@@ -81,9 +82,9 @@ Modulo.virtualdom.parse = function parse(parentElem, text) {
 
     // If there's leading text, create a TextNode with that as content
     const checkAndPushLeadingText = (node, index) => {
-        const textContent = text.slice(lastMatchEnd, index);
-        if (textContent) { // Add object for TextNode if any text matches
-            node.childNodes.push({ nodeType: 3, textContent });
+        const _textContent = text.slice(lastMatchEnd, index);
+        if (_textContent) { // Add object for TextNode if any text matches
+            node.childNodes.push(new HTMLElement({ nodeType: 3, _textContent }));
         }
     };
 
@@ -114,16 +115,17 @@ Modulo.virtualdom.parse = function parse(parentElem, text) {
 
         } else { // OPEN - construct new element
             const tagLC = match[2].toLowerCase();
-            const tagName = tagLC.toUpperCase();
             const elem = tagLC.includes('-') && (tagLC in elemClassesLC) ?
                         new elemClassesLC[tagLC]() : // Invoke custom class
                         ownerDocument.createElement(tagLC);
             elem.tagName = tagLC.toUpperCase(); // hack
+            /*
             if (elem.constructor.name === 'CustomElement') {
                 console.log('---------------')
                 console.log('THIS IS ELEM', elem);
                 console.log('---------------')
             }
+            */
             elem._setAttrString(match[3]);
             if (elem._isSelfClosing(topOfStack)) {
                 tagStack.pop();
@@ -171,6 +173,7 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         // TODO: This is broken, should be similar to insertBefore
         if (this.parentNode) {
             this.parentNode.childNodes.splice(this._parentIndex, 1);
+            this.parentNode._rebuildNodeIndices();
             this.parentNode = null;
             this._parentIndex = -1;
         }
@@ -187,8 +190,9 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
 
     _appendNode(node) {
         node.parentNode = this;
-        node._parentIndex = this.childNodes.length;
+        //node._parentIndex = this.childNodes.length;
         this.childNodes.push(node);
+        this._rebuildNodeIndices();
     }
 
     appendChild(...items) {
@@ -199,33 +203,61 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         if (nextSibling.parentNode !== this) {
             throw new Error('Invalid insertBefore')
         }
-        const { _parentIndex } = nextSibling;
+        const nextNodes = this.childNodes.slice(_parentIndex); // After index
+        this.childNodes = this.childNodes.slice(0, _parentIndex); // Before index
+        this.childNodes.push(node);
+        this.childNodes.push(...nextNodes);
+        this._rebuildNodeIndices();
+        /*
+        this.childNodes = [
+            ...this.childNodes.slice(0, nextSibling._parentIndex),
+            node,
+            ...this.childNodes.slice(nextSibling._parentIndex),
+        ];
+        */
+        /*
         const nextNodes = this.childNodes.slice(_parentIndex); // After index
         this.childNodes = this.childNodes.slice(0, _parentIndex); // Before index
         this._appendNode(node); // Now, push given node onto child nodes
+        this.childNodes.push(...nextNodes);
+        this._rebuildNodeIndices();
+        */
+        /*
         for (const nextNode of nextNodes) { // And rebuild indices after
             this._appendNode(nextNode);
+        }
+        */
+    }
+
+    _rebuildNodeIndices() {
+        let i = 0;
+        for (const node of this.childNodes) {
+            node._parentIndex = i++;
         }
     }
 
     isEqualNode(other) {
         // TODO: See if storing outerHTML hashed is a cheap speedup for isEqualNode
+        //console.log('thsi is isEqualNode',this.outerHTML , other.outerHTML, this.outerHTML === other.outerHTML);
         return this.outerHTML === other.outerHTML;
     }
 
-    addEventListener(evName, listener) {
-        if (!(evName in this._eventListeners)) {
-            this._eventListeners[evName] = [];
+    addEventListener(evType, listener) {
+        if (!(evType in this._eventListeners)) {
+            this._eventListeners[evType] = [];
         }
-        return this._eventListeners[evName].push(listener);
+        this._eventListeners[evType].push(listener);
     }
 
-    dispatchEvent() {
+    dispatchEvent(ev) {
+        if (ev.type in this._eventListeners) {
+            this._eventListeners[ev.type].forEach(func => func(ev));
+        }
     }
 
-    removeEventListener(evName, listener) {
-        if (evName in this._eventListsners) {
-            this._eventListeners[evName] = this._eventListeners[evName]
+    removeEventListener(evType, listener) {
+        if (evType in this._eventListeners) {
+            this._eventListeners[evType] = this._eventListeners[evType]
                                             .filter(func => func !== listener);
         }
     }
@@ -238,7 +270,7 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         if (!this.parentNode || (this._parentIndex + 1) >= this.parentNode.childNodes.length) {
             return null;
         }
-        return this.childNodes[this._parentIndex + 1];
+        return this.parentNode.childNodes[this._parentIndex + 1];
     }
 
     get previousSibling() {
@@ -292,18 +324,18 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
     }
 
     getAttribute(name) {
-        return this._attributeValues[name];
+        return this._attributeValues[name.toLowerCase()];
     }
 
     setAttribute(name, value) {
-        this._attributeValues[name] = value;
-        if (!this._attributeNames.includes(name)) {
+        if (!this.hasAttribute(name)) {
             this._attributeNames.push(name);
         }
+        this._attributeValues[name.toLowerCase()] = value;
     }
 
     hasAttribute(name) {
-        return name in this._attributeValues;
+        return name.toLowerCase() in this._attributeValues;
     }
 
     _makeAttributeString() {
@@ -312,7 +344,7 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         // TODO: Add single quotes for JSON strings for canonical formatting
         const attrVal = v => /^[\w\.]+$/.test(v) ? v : `"${ escapeText(v) }"`;
         for (const attrName of this._attributeNames) {
-            const value = this._attributeValues[attrName];
+            const value = this._attributeValues[attrName.toLowerCase()];
             s += ' ' + attrName + (value ? '=' + attrVal(value) : '');
         }
         return s;
@@ -324,7 +356,7 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
 
     getAttributeNode(name) {
         const { Attr } = Modulo.virtualdom;
-        return new Attr({ name, value: this._attributeValues[name] });
+        return new Attr({ name, value: this._attributeValues[name.toLowerCase()] });
     }
 
     hasChildNodes() {
@@ -340,13 +372,13 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
         const nextToken = regexp => { // Simple parser, consumes until regexp
             const match = text.match(regexp) || { 0: '', index: text.length };
             const leadingText = text.substr(0, match.index); // Get previous
-            text = text.substr(match.index + match[0].length); // Consume text
+            text = text.substr(match.index + match[0].length).trim(); // Consume
             return [ leadingText, match ]; // Return previous text and match
         };
         while (text) { // Stop when text is empty ('' is falsy)
             const [ name, match ] = nextToken(/\s*([= ])\s*(['"]?)/);
             this._attributeNames.push(name); // Add to attr names list
-            this._attributeValues[name] = !match[1] ? '' : // Attribute only
+            this._attributeValues[name.toLowerCase()] = !match[1] ? '' : // Attribute only
                 nextToken(match[2] ? match[2] : ' ')[0]; // Quote or space delim
         }
     }
@@ -372,6 +404,10 @@ Modulo.virtualdom.HTMLElement = class HTMLElement extends Modulo.virtualdom.Elem
 
     get _lcName() {
         return (this.tagName || '').toLowerCase();
+    }
+
+    get nodeName() {
+        return this.tagName;
     }
 
     get _moduloTagName() {
@@ -464,6 +500,7 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
 
     init(virtualdom) {
         const createHTMLDocument = title => {
+            // TODO: just define as a class since that makes sense
             const document = new virtualdom.HTMLElement({ nodeType: 1, tagName: 'html' });
 
             // Define "Enhanced" HTMLElement, which has ownerDocument built-in
@@ -493,20 +530,17 @@ Modulo.virtualdom.ModuloVM = class ModuloVM {
         const win = { document, HTMLElement, Modulo, customElements };
         Object.assign(this, win); // Expose some window properties at top as well
         this.window = Object.assign({}, virtualdom, win); // Add in all vdom classes
+        Modulo.globals = this.window; // (todo: rm, not sure if necessary)
     }
 
     makeCustomElements() {
         const elemClasses = {};//[name, elemClass] = 
         const elemClassesLC = {};
-        return {
-            elemClasses,
-            elemClassesLC,
-            define: (name, elemClass) => {
-                //console.log('defining!', name, elemClass);
-                elemClasses[name] = elemClass;
-                elemClassesLC[name.toLowerCase()] = elemClass;
-            }
+        const define = (name, elemClass) => {
+            elemClasses[name] = elemClass;
+            elemClassesLC[name.toLowerCase()] = elemClass;
         };
+        return { elemClasses, elemClassesLC, define };
     }
 
     loadBundle(onReady) {

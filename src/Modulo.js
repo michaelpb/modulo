@@ -537,6 +537,7 @@ Modulo.cparts.component = class Component extends Modulo.FactoryCPart {
     updateCallback(renderObj) {
         const { patches, innerHTML } = renderObj.component;
         if (patches) {
+            //console.log('PATCHES', patches);
             this.reconciler.applyPatches(patches);
         }
 
@@ -1423,12 +1424,13 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
         const cursor = new Modulo.reconcilers.DOMCursor(childParent, rivalParent);
 
-        //console.log('Reconciling (1):', childParent, childParent.outerHTML);
+        //console.log('Reconciling (1):', childParent.outerHTML);
         //console.log('Reconciling (2):', rivalParent.outerHTML);
 
         while (cursor.hasNext()) {
             const [ child, rival ] = cursor.next();
 
+            //console.log('NEXT', child, rival, cursor.hasNext());
             // Does this node to be swapped out? Swap if exist but mismatched
             const needReplace = child && rival && (
                 child.nodeType !== rival.nodeType ||
@@ -1453,11 +1455,13 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             if (child && rival && !needReplace) {
                 // Both exist and are of same type, let's reconcile nodes
 
+                //console.log('NODE', child.isEqualNode(rival), child.innerHTML, rival.innerHTML);
                 if (child.nodeType !== 1) { // text or comment node
                     if (child.nodeValue !== rival.nodeValue) { // update
                         this.patch(child, 'node-value', rival.nodeValue);
                     }
                 } else if (!child.isEqualNode(rival)) { // sync if not equal
+                    //console.log('NOT EQUAL', child, rival);
                     this.reconcileAttributes(child, rival);
 
                     if (rival.hasAttribute('modulo-ignore')) {

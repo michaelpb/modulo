@@ -28,6 +28,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         }
 
         const text2 = _process(element.innerHTML);
+
         let verb = '---(IS NOT)---';
         let result = true;
         if ('stringCount' in stepConf) {

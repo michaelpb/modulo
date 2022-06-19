@@ -52,6 +52,13 @@
 
 -----------------------------
 
+## Misc editor ideas
+
+- ".modulo-container" format (just like .scrollid format)
+- Just a tar of a bare git repo, with the tar file ordering so that it can have
+  magic bytes / be sniffed
+- Maybe contains 1) UUID and 2) commit log in .modulo-container?
+
 ## Modulo Config simplification / ordering idea (22-05)
 
 - Maybe a "config" lifecycle, that comes after load, when all CParts have done
