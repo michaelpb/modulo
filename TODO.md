@@ -15,12 +15,6 @@
       CPart { });'
     - See directive idea below
 
-- ModRec & DOMCursor refactor
-    - Finish detangling repetitive directives and dead code
-    - Finish modulo-ignore and modulo-key
-    - Fix nested subrender directives
-    - Possibly: Implement new patch-set data structure
-
 - Template variable syntax change:
     - Allow '-' in identifier names, and then just do "camelcase" be default
       identifier filter
@@ -49,8 +43,18 @@
 
 - Allow '-' in identifier names, and then just do "camelcase" be default
 
+- ModRec & DOMCursor refactor
+    - Finish detangling repetitive directives and dead code
+    - Finish modulo-ignore and modulo-key
+    - Fix nested subrender directives
+    - Possibly: Implement new patch-set data structure
+
+
+
 
 -----------------------------
+
+
 
 ## Misc editor ideas
 

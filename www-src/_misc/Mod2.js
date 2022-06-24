@@ -62,8 +62,7 @@ class CPartDef {
     }
 
     loadDependencies(callback) {
-        // TODO Clean up
-        const src = this.partConf.Src || this.partConf.src;
+        const src = this.partConf.Src || this.partConf.src; // TODO Only permit Src
         if (src) {
             Modulo.fetchQ.enqueue(src, (text, label, src) => {
                 this.partConf.Content = text;
@@ -96,6 +95,7 @@ class CPartDef {
             if (cpCls.hackIsModern) {
                 data = cpCls.factoryCallback(baseRenderObj, def) || partConf;
             } else {
+                // OLDER MOCK
                 this.loader = { localNameMap: { }, namespace: 'x' };
                 this.fullName = `${this.loader.namespace}-${name}`;
                 this.name = this.config.component.name;
@@ -375,19 +375,18 @@ class Component extends DataPropCPartBase {
         );
     }
 
-    /*; */
     static factoryCallback (baseRenderObj, def) {
           // Register the Custom Web Component with the browser
-          const name = def.partConf.Name || def.partConf.name; // maybe rm lower name
+          const name = def.partConf.Name || def.partConf.name; // TODO maybe reduce
           const namespace = def.partConf.namespace || 'x';
           const fullName = namespace + '-' + name; // TODO fix
 
           // TODO: Use meta programming:
           // Build the Component into a class with a name, using a function
           // asset, so it's built into the build! That way it shows as having a
-          // named class when debugging. Invoking the function should create,
-          // register, and return the class. Possibly could be helpful with
-          // deduping fetchQ in builds?
+          // named class in console. Invoking the function should define with
+          // customElements, register, and return the class.  Possibly could be
+          // helpful with deduping fetchQ in builds?
 
           // Create the class that the browser will use to actually instantiate
           // each Modulo Element (e.g. Component)
