@@ -1,6 +1,5 @@
 /*
   What's next:
-    2) (INP) Get Library loading working
     3) Add enough hacks / bridges to get tests running again
         - This includes supporting -src / src, this.attrs, etc. and modulo-embed
     4) Swap Modulo.js & begin refactor!
@@ -108,7 +107,6 @@ window.Modulo = class Modulo {
     }
 
     loadFromDOM(elem, namePrefix = '', skipConf = false) {
-        console.log('LOAD', elem.outerHTML);
         const partialConfs = [];
         for (const node of elem.children) {
             const type = this.getNodeModuloType(node);
@@ -145,7 +143,7 @@ window.Modulo = class Modulo {
         return partialConfs;
     }
 
-    loadString(text, namePrefix = null) {
+    loadString(text, namePrefix = null, shouldSkip = true) {
         const tmp_Cmp = new modulo.registry.cparts.Component({}, {}, modulo);
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount; // XXX
         this.reconciler = new modulo.reconcilers.ModRec({
@@ -153,7 +151,7 @@ window.Modulo = class Modulo {
             directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
         });
         const div = this.reconciler.loadString(text, {});
-        const result = this.loadFromDOM(div, namePrefix, true);
+        const result = this.loadFromDOM(div, namePrefix, shouldSkip);
         //console.log('text', result);
         return result
     }
@@ -208,39 +206,11 @@ window.Modulo = class Modulo {
         this.assert(this._repeatTries++ < 10, `Max repeat: ${lcName}`);
         this.runLifecycle(lcObj, lcName);
         this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
-        this.runLifecycle(lcObj, lcName);
+        //this.runLifecycle(lcObj, lcName);
         this.fetchQueue.enqueueAll(() => this.repeatLifecycle(lcObj, lcName, cb));
         if (Object.keys(this.fetchQueue.queue).length === 0) {
             delete this._repeatTries;
             cb();
-        }
-    }
-
-    repeatLifecycleOld(lcObj, lifecycleName, callback) {
-        // First, run lifecycle, then repeat if there is anything left to load
-        if (!this._repeatTries) {
-            this._repeatTries = 0;
-        }
-        this._repeatTries++;
-        this.runLifecycle(lcObj, lifecycleName);
-        if (Object.keys(this.fetchQueue.queue).length > 0 && this._repeatTries < 10) {
-            /*
-            if (this._waitCallback) { return; } // XXX HACK?
-            this._waitCallback = () => {
-                delete this._waitCallback;
-                this.repeatLifecycle(lcObj, lifecycleName, callback);
-            }
-            this.fetchQueue.wait(this._waitCallback);
-            */
-            this.fetchQueue.wait(() => {
-                this.repeatLifecycle(lcObj, lifecycleName, callback);
-            });
-        } else {
-            if (this._repeatTries >= 10) {
-                console.error('Infinite loop:', lifecycleName, Object.keys(this.fetchQueue.queue));
-            }
-            delete this._repeatTries;
-            callback();
         }
     }
 
@@ -253,7 +223,7 @@ window.Modulo = class Modulo {
         if (nodeType !== 1) {
             // Text nodes, comment nodes, etc
             if (nodeType === 3 && textContent && textContent.trim()) {
-                console.error('Modulo.Loader: Unexpected text:', textContent);
+                console.error('Modulo: Unexpected text:', textContent);
             }
             return null;
         }
@@ -475,7 +445,7 @@ modulo.register('cpart', class Component extends LegacyCPart {
             } else if (this.mode === 'vanish-into-document') {
                 root = this.element.ownerDocument.body; // render into body
             } else {
-                Modulo.assert(this.mode === 'custom-root', 'Err:', this.mode);
+                this.modulo.assert(this.mode === 'custom-root', 'Err:', this.mode);
             }
             patches = this.reconciler.reconcile(root, innerHTML || '', this.localNameMap);// rm last arg
         }
@@ -743,7 +713,8 @@ modulo.register('util', function set(obj, keyPath, val, ctx = null) {
     const index = keyPath.lastIndexOf('.') + 1; // 0 if not found
     const key = keyPath.slice(index);
     const path = keyPath.slice(0, index - 1); // exclude .
-    const dataObj = index ? Modulo.utils.get(obj, path) : obj;
+    //const dataObj = index ? Modulo.utils.get(obj, path) : obj;
+    const dataObj = index ? modulo.registry.utils.get(obj, path) : obj;
     dataObj[key] = val;// typeof val === 'function' ? val.bind(ctx) : val;
 });
 
@@ -1171,11 +1142,12 @@ modulo.register('cpart', class Template extends LegacyCPart {
 
 modulo.register('cpart', class StaticData extends LegacyCPart {
     static factoryCallback(partOptions, factory, renderObj) {
+        const { modulo } = factory; // XXX
         const code = partOptions.content || ''; // TODO: trim whitespace?
         const defTransform = s => `return ${s.trim()};`;
         //(s => `return ${JSON.stringify(JSON.parse(s))}`);
         const transform = partOptions.attrs.transform || defTransform;
-        return Modulo.assets.registerFunction([], transform(code))();
+        return modulo.assets.registerFunction([], transform(code))();
     }
 });
 
@@ -1195,7 +1167,7 @@ modulo.register('cpart', class Script extends LegacyCPart {
         const module = null;
 
         // Combine localVars + fixed args into allArgs
-        const args = [ 'Modulo', 'factory', 'module', 'require' ];
+        const args = [ 'modulo', 'factory', 'module', 'require' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
         const opts = { exports: 'script' };
         const func = modulo.assets.registerFunction(allArgs, code, opts);
@@ -1891,7 +1863,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     reconcileChildren(childParent, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
-        const cursor = new Modulo.reconcilers.DOMCursor(childParent, rivalParent);
+        const cursor = new modulo.reconcilers.DOMCursor(childParent, rivalParent);
 
         //console.log('Reconciling (1):', childParent.outerHTML);
         //console.log('Reconciling (2):', rivalParent.outerHTML);
@@ -2049,10 +2021,42 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
     }
 }
 
+// LEGACY ADAPTOR ///////////////////////////////////////////
+if (window.ModuloPrevious && window.ModuloPrevious.defineAll) {
+    Modulo.ComponentPart = class ComponentPart extends LegacyCPart {
+      // TODO: Eventually copy all of LegacyCPart down here
+    }
+    Modulo.defineAll = () => {
+        console.count('LEGACY: defineAll');
+        // OVERRIDE Modulo class to point to legacy modulo
+        window.Modulo = window.ModuloPrevious;
 
-if (typeof document !== undefined && document.head) { // Browser environ
-    Modulo.globals = window;
-    modulo.globals = window; // TODO, remove?
+        // Copy over legacy cpart definition system
+        for (const type of [ 'cparts', 'utils' ]) {
+            const reg = window.Modulo[type];
+            for (const key of Object.keys(reg)) {
+                if (!(key in modulo.registry[type]) &&
+                      !(key in modulo.registry.dom)) {
+                    console.log('LEGACY: Patching', type, key)
+                    const cls = reg[key];
+                    if (!cls.name) {
+                        cls.name = key;
+                    }
+                    modulo.register(type, cls);
+                    //delete reg[key];
+                }
+            }
+        }
+        modulo.globals = window;
+
+        const query = 'template[modulo-embed],modulo';
+        for (const elem of document.querySelectorAll(query)) {
+            modulo.loadString(elem.innerHTML, null, false);
+        }
+    };
+} else if (typeof document !== undefined && document.head) { // Browser environ
+    Modulo.globals = window; // TODO, remove?
+    modulo.globals = window;
     modulo.loadFromDOM(document.head);
 } else if (typeof exports !== undefined) { // Node.js / silo'ed script
     exports = { Modulo, modulo };
