@@ -201,3 +201,8 @@ Modulo.cparts.fetchstate.getTemplateOptions = (defaultOptions) => ({
     },
 });
 
+// TODO: FetchState 2.0
+// - Maybe remove the "state" part?
+// - Instead focus on two-way binding with state
+// - Bind <FetchRoute [state.bind] name="" url="/api/{{ state.username }}/"></FetchRoute> with state
+

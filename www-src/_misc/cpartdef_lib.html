@@ -1,5 +1,18 @@
+<Library
+    -name="testing"
+    src="/_misc/mod3_another_lib.html"
+></Library>
+
 <Component name="Clicker">
+    <Template>
+        <button @click:=script.countUp>Hello {{ state.num }}</button>
+    </Template>
     <State
-        num=1
+        num:=1
     ></State>
+    <Script>
+        function countUp() {
+            state.num++;
+        }
+    </Script>
 </Component>

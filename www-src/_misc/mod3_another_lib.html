@@ -1,0 +1,17 @@
+
+<Component name="ClickUp">
+    <Template>
+        <button @click:=script.goUp>Hi {{ state.noom }}</button>
+    </Template>
+    <State
+        noom:=1
+    ></State>
+    <Script>
+        function goUp() {
+            state.noom++;
+        }
+    </Script>
+</Component>
+
+
+
