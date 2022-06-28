@@ -49,26 +49,22 @@
                 </template>
             </Test>
 
+            <!--
             <Test name="Check state reflects in rendering">
-                <!-- Another test, with a few more example steps -->
                 <props txt="Example props"></props>
 
-                <!-- Can force state to be a certain thing for testing: -->
                 <state count:=1></state>
 
-                <!-- Can check for exact (un-normalized) string occurrences
-                within the browser's innerHTML. Specify a string-count with any
-                count (including 0 to "ban" a string from occurring) -->
                 <template string-count=1>Example props</template>
                 <template string-count=1>State: 1</template>
                 <template string-count=0>State: 6</template>
 
-                <!-- Can write arbitrary assertions and code in script tag: -->
                 <script name="Check state and prop CParts">
                     assert: props.txt === 'Example props' && state.count === 1
                 </script>
-
             </Test>
+            -->
+
         </TestSuite>
     </Component>
 
@@ -112,5 +108,4 @@
         }, 0);
     });
 </script>
-
 

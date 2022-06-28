@@ -1,7 +1,11 @@
 
 <Component name="ClickUp">
+    <Props
+        word
+    ></Props>
     <Template>
         <button @click:=script.goUp>Hi {{ state.noom }}</button>
+        <p>WORD: {{ props.word }}</p>
     </Template>
     <State
         noom:=1

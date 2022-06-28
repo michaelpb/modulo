@@ -88,6 +88,24 @@
 - IDEA: Config.template(...) -- apply as context to given template string
 
 
+
+-----------------------------
+
+## TestSuite improvements
+
+1. Rewrite to use new Modulo / registry system
+2. New RegexpTemplate logic: Instead of outputing an HTML-escaped string, it
+will output regexp that can be compared to innerHTML (and thus use {% 
+        // Allowing templating: (currently deactivated)
+        // TODO: Rewrite templating language to make the generated function
+        // return a regular expression, thus allowing stuff like
+        // {% ignore TEXT %} or {% regexp "A-Za-z+" %} for more complicated matches
+        //const { MTL } = modulo.templating;
+        //const instance = new MTL(stepConf.Content, stepConf);
+        //const text1 = _process(instance.render(stepConf));
+
+
+
 -----------------------------
 
 ## requirejs

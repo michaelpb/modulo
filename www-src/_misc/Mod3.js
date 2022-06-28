@@ -52,32 +52,25 @@ class LegacyCPart {
 
 window.Modulo = class Modulo {
     constructor(parentModulo = null) {
-        this.config = {};
-        this.factories = {};
-        this.registry = {
-            dom: {},
-            cparts: {},
-            utils: {},
-            library: {},
-            core: {},
-            engines: {},
-        };
+        window._moduloID = this.id = (window._moduloID || 0) + 1; // Global ID
         if (parentModulo) {
-            const { deepClone, keyFilter, cloneStub } = modulo.registry.utils;
-            this.config = deepClone(parentModulo.config);
-            this.registry = deepClone(parentModulo.registry);
+            this.parentModulo = parentModulo;
+
+            const { deepClone, cloneStub } = modulo.registry.utils;
+            this.config = deepClone(parentModulo.config, parentModulo);
+            this.registry = deepClone(parentModulo.registry, parentModulo);
             this.factories = cloneStub(parentModulo.factories); // keep private
+
             this.assets = parentModulo.assetManager;
             this.reconcilers = parentModulo.reconcilers;
             this.templating = parentModulo.templating;
             this.globals = parentModulo.globals;
-            this.cmd = parentModulo.commandMenu;
-            this.parentModulo = parentModulo;
-            /*
-            this.config = Object.assign({}, this.config);
-            this.registry = Object.assign({}, this.registry);
-            this.factories = Object.assign({}, this.factories);
-            */
+
+        } else {
+            this.config = {};
+            this.factories = {};
+            const rCats = [ 'dom', 'cparts', 'utils', 'library', 'core', 'engines', 'commands' ];
+            this.registry = Object.fromEntries(rCats.map(cat => [ cat, {} ] ));
         }
     }
 
@@ -89,6 +82,12 @@ window.Modulo = class Modulo {
         if (type === 'cparts') { // CParts get loaded from DOM
             this.registry.dom[cls.name.toLowerCase()] = cls;
         }
+
+        if (type === 'commands') { // Attach globally to 'm' alias
+            window.m = window.m || {};
+            window.m[name] = () => cls(this);
+        }
+
         if (cls.name[0].toUpperCase() === cls.name[0]) { // is CapFirst
             const conf = Object.assign({ Type: cls.name }, cls.defaults, defaults);
             this.config[cls.name.toLowerCase()] = conf;
@@ -101,12 +100,11 @@ window.Modulo = class Modulo {
                 this[lowerName] = new cls(this);
                 this.assets = this.assetManager;
                 this.reconciler = this.modRec;
-                this.cmd = this.commandMenu;
             }
         }
     }
 
-    loadFromDOM(elem, namePrefix = '', skipConf = false) {
+    loadFromDOM(elem, parentFactoryName = '', skipConf = false) {
         const partialConfs = [];
         for (const node of elem.children) {
             const type = this.getNodeModuloType(node);
@@ -120,12 +118,14 @@ window.Modulo = class Modulo {
                 partialConf.Name = partialConf.name;
             }
             let name = partialConf.Name;
-            if (namePrefix) {
-                name = namePrefix + (name || 'default');
+            if (parentFactoryName) {
+                name = parentFactoryName + '_' + (name || 'default');
+                partialConf.Parent = parentFactoryName;
             }
             if (name) {
                 const facs = this.factories[type];
                 facs[name] = Object.assign(facs[name] || {}, partialConf);
+                partialConf.Name = name; // ensure Name field is updated
             } else {
                 this.config[type] = partialConf;
             }
@@ -143,7 +143,7 @@ window.Modulo = class Modulo {
         return partialConfs;
     }
 
-    loadString(text, namePrefix = null, shouldSkip = true) {
+    loadString(text, parentFactoryName = null, shouldSkip = true) {
         const tmp_Cmp = new modulo.registry.cparts.Component({}, {}, modulo);
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount; // XXX
         this.reconciler = new modulo.reconcilers.ModRec({
@@ -151,8 +151,7 @@ window.Modulo = class Modulo {
             directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
         });
         const div = this.reconciler.loadString(text, {});
-        const result = this.loadFromDOM(div, namePrefix, shouldSkip);
-        //console.log('text', result);
+        const result = this.loadFromDOM(div, parentFactoryName, shouldSkip);
         return result
     }
 
@@ -292,21 +291,23 @@ modulo.register('cpart', class Component extends LegacyCPart {
         const { Content, Name } = conf;
         if (Content) {
             delete conf.Content;
-            conf.Children = modulo.loadString(Content, Name ? `${Name}_` : null);
+            conf.Children = modulo.loadString(Content, Name ? Name : null);
         }
     }
 
     static defineCallback(modulo, conf) {
         // (Possibly rename as defineCallback or something?)
         const { Content, Name, Children } = conf;
+        const { stripWord } = modulo.registry.utils;
         if (!Children) {
             return;
         }
         delete conf.Children;
         const cpartTypes = Children.map(({ Type }) => Type);
+        const className = stripWord(Name);
         const code = `
             const r = {};
-            class ${ Name } extends modulo.registry.utils.BaseElement {
+            class ${ className } extends modulo.registry.utils.BaseElement {
                 constructor() {
                     super();
                     this.moduloComponentConf = ${ JSON.stringify(conf) };
@@ -320,11 +321,13 @@ modulo.register('cpart', class Component extends LegacyCPart {
             const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
             const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
             //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
+            //console.log("RUNNING LIFECYCLE FOR ${ className }");
             modulo.runLifecycle(cpartClasses, 'factoryHack');
             r.HACK = window.facHack;
             delete window.facHack;
-            modulo.globals.customElements.define(tagName, ${ Name });
-            console.log("Registered: ${ Name } as", tagName);
+            modulo.globals.customElements.define(tagName, ${ className });
+            console.log("Registered: ${ className } as", tagName);
+            return ${ className };
             ////////////////////
         `;
         const args = [ 'tagName', 'modulo' ];
@@ -333,6 +336,7 @@ modulo.register('cpart', class Component extends LegacyCPart {
         const namespace = conf.namespace || library.Name || library.name || 'x';
         conf.Hash = func.hash;
         conf.TagName = (conf.TagName || (namespace + '-' + Name)).toLowerCase();
+        conf.namespace = namespace; // ensure updated (todo remove when defaults)
         func(conf.TagName, modulo);
     }
 
@@ -553,7 +557,7 @@ modulo.register('cpart', class Modulo {
             });
         } else if (Content) {
             delete conf.Content; // prevent double loading
-            modulo.loadString(Content, Name ? `${Name}_` : null);
+            modulo.loadString(Content, Name ? Name : null);
         }
     }
 });
@@ -612,15 +616,22 @@ modulo.register('util', function cloneStub (obj, stubFunc = null) {
     return clone;
 });
 
-modulo.register('util', function deepClone (obj) {
+// TODO: pass in modulo more consistently
+modulo.register('util', function deepClone (obj, modulo) {
     if (obj === null || typeof obj !== 'object' || (obj.exec && obj.test)) {
-      return obj;
+        return obj;
     }
-    const clone = new obj.constructor();
+
+    const { constructor } = obj;
+    if (constructor.moduloClone) {
+        // Use a custom modulo-specific cloning function
+        return constructor.moduloClone(modulo, obj);
+    }
+    const clone = new constructor();
     const { deepClone } = modulo.registry.utils;
     for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
-            clone[key] = deepClone(obj[key]);
+            clone[key] = deepClone(obj[key], modulo);
         }
     }
     return clone;
@@ -745,6 +756,41 @@ modulo.register('util', function resolvePath(workingDir, relPath) {
     }
     const prefix = workingDir.startsWith('/') ? '/' : '';
     return prefix + newPath.join('/').replace(RegExp('//', 'g'), '/');
+});
+
+
+modulo.register('util', function prefixAllSelectors(namespace, name, text='') {
+    // NOTE - has old tests that can be resurrected
+    const fullName = `${namespace}-${name}`;
+    let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
+
+    // To prefix the selectors, we loop through them, with this RegExp that
+    // looks for { chars
+    content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
+        selector = selector.trim();
+        if (selector.startsWith('@') || selector.startsWith(fullName)
+              || selector.startsWith('from') || selector.startsWith('to')) {
+            // TODO: Make a regexp to check if matches other keyframe
+            // stuff, 90% etc
+            // Skip, is @media or @keyframes, or already prefixed
+            return selector;
+        }
+
+        // Upgrade the ":host" pseudo-element to be the full name (since
+        // this is not a Shadow DOM style-sheet)
+        selector = selector.replace(new RegExp(/:host(\([^)]*\))?/, 'g'), hostClause => {
+            // TODO: this needs more thorough testing
+            const notBare = (hostClause && hostClause !== ':host');
+            return fullName + (notBare ? `:is(${hostClause})` : '');
+        });
+
+        // If it is not prefixed at this point, then be sure to prefix
+        if (!selector.startsWith(fullName)) {
+            selector = `${fullName} ${selector}`;
+        }
+        return selector;
+    });
+    return content;
 });
 
 
@@ -906,6 +952,7 @@ modulo.register('core', class AssetManager {
         let suffix = '};'
         if (opts.exports) {
             const symbolsString = this.getSymbolsAsObjectAssignment(text);
+            // TODO test: params = params.filter(text.includes.bind(text)); // Slight optimization
             const localVarsIfs = params.map(n => `if (name === '${n}') ${n} = value;`).join(' ');
             prefix += `var ${ opts.exports } = { exports: {} };  `;
             prefix += `function __set(name, value) { ${ localVarsIfs } }`;
@@ -965,7 +1012,7 @@ modulo.register('core', class FetchQueue {
         } else if (!(src in this.queue)) {
             this.queue[src] = [ callback ];
             // TODO: Think about if we want to keep cache:no-store
-            console.log('FETCH', src);
+            //console.log('FETCH', src);
             Modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
@@ -976,7 +1023,6 @@ modulo.register('core', class FetchQueue {
     }
 
     receiveData(text, label, src) {
-        // console.log({ src }, Object.keys(this.queue));
         this.data[src] = text; // load data
         const queue = this.queue[src];
         delete this.queue[src]; // delete queue
@@ -999,7 +1045,7 @@ modulo.register('core', class FetchQueue {
     }
 
     wait(callback) {
-        console.log({ wait: Object.keys(this.queue).length === 0 }, Object.keys(this.queue));
+        //console.log({ wait: Object.keys(this.queue).length === 0 }, Object.keys(this.queue));
         this.waitCallbacks.push(callback); // add to end of queue
         this.checkWait(); // attempt to consume wait queue
     }
@@ -1042,12 +1088,20 @@ modulo.register('cpart', class Style extends LegacyCPart {
         //if (loadObj.component.attrs.mode === 'shadow') { // TODO finish
         //    return;
         //}
-        //if (loadObj.component.attrs.mode === 'regular') { // TODO finish
-            const { prefixAllSelectors } = Modulo.cparts.style;
-            content = prefixAllSelectors(loader.namespace, name, content);
-        //}
         */
-        modulo.assets.registerStylesheet(conf.Content);
+        let { Content, Parent } = conf;
+        if (!Content) {
+            return;
+        }
+        console.log(modulo.factories.component, Parent && (Parent in modulo.factories.component));
+        if (Parent && (Parent in modulo.factories.component)) {
+            const { namespace, mode, Name } = modulo.factories.component[Parent];
+            if (mode === 'regular') { // TODO finish
+                const { prefixAllSelectors } = modulo.registry.utils;
+                Content = prefixAllSelectors(namespace, Name, Content);
+            }
+        }
+        modulo.assets.registerStylesheet(Content);
     }
 
     initializedCallback(renderObj) {
@@ -1059,40 +1113,6 @@ modulo.register('cpart', class Style extends LegacyCPart {
             style.textContent = style.content;// `<style modulo-ignore>${style.content}</style>`;
             this.element.shadowRoot.append(style);
         }
-    }
-
-    static prefixAllSelectors(namespace, name, text='') {
-        // TODO - Refactor this into a helper in asset manager (has old tests that can be resurrected)
-        const fullName = `${namespace}-${name}`;
-        let content = text.replace(/\*\/.*?\*\//ig, ''); // strip comments
-
-        // To prefix the selectors, we loop through them, with this RegExp that
-        // looks for { chars
-        content = content.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/gi, selector => {
-            selector = selector.trim();
-            if (selector.startsWith('@') || selector.startsWith(fullName)
-                  || selector.startsWith('from') || selector.startsWith('to')) {
-                // TODO: Make a regexp to check if matches other keyframe
-                // stuff, 90% etc
-                // Skip, is @media or @keyframes, or already prefixed
-                return selector;
-            }
-
-            // Upgrade the ":host" pseudoselector to be the full name (since
-            // this is not a Shadow DOM style-sheet)
-            selector = selector.replace(new RegExp(/:host(\([^)]*\))?/, 'g'), hostClause => {
-                // TODO: this needs thorough testing
-                const notBare = (hostClause && hostClause !== ':host');
-                return fullName + (notBare ? `:is(${hostClause})` : '');
-            });
-
-            // If it is not prefixed at this point, then be sure to prefix
-            if (!selector.startsWith(fullName)) {
-                selector = `${fullName} ${selector}`;
-            }
-            return selector;
-        });
-        return content;
     }
 });
 
@@ -1375,6 +1395,11 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
         if (!this.renderFunc) {
             this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
         }
+    }
+
+    static moduloClone(modulo, other) {
+        // Possible idea: Return a serializable array as args for new()
+        return new this('', other);
     }
 
     tokenizeText(text) {
@@ -2022,7 +2047,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 }
 
 // LEGACY ADAPTOR ///////////////////////////////////////////
-if (window.ModuloPrevious && window.ModuloPrevious.defineAll) {
+if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefineAll) {
     Modulo.ComponentPart = class ComponentPart extends LegacyCPart {
       // TODO: Eventually copy all of LegacyCPart down here
     }
@@ -2047,12 +2072,18 @@ if (window.ModuloPrevious && window.ModuloPrevious.defineAll) {
                 }
             }
         }
+        Modulo.defineAll2();
+    }
+    Modulo.defineAll2 = () => {
         modulo.globals = window;
 
         const query = 'template[modulo-embed],modulo';
         for (const elem of document.querySelectorAll(query)) {
             modulo.loadString(elem.innerHTML, null, false);
         }
+        modulo.fetchQueue.wait(() => {
+            Modulo.factoryInstances = {};
+        });
     };
 } else if (typeof document !== undefined && document.head) { // Browser environ
     Modulo.globals = window; // TODO, remove?
