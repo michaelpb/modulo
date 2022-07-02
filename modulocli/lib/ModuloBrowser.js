@@ -129,19 +129,42 @@ class ModuloBrowser {
             }
 
             // Patch saveFileAs to just add to artifacts array
-            Modulo.utils.saveFileAs = (filename, text) => {
-                artifacts.push({ filename, text });
-                if (filename.endsWith('.js') || filename.endsWith('.css')) {
-                    // XXX hardcoded, should get from runSettings
-                    return '/_modulo/' + filename;
-                } else {
-                    return './' + filename;
-                }
-            };
+            if (typeof modulo !== 'undefined' && modulo.register) {
+                // Modulo Prealpha3
+                modulo.register('util', function saveFileAs (filename, text) {
+                    artifacts.push({ filename, text });
+                    if (filename.endsWith('.js') || filename.endsWith('.css')) {
+                        // XXX hardcoded, should get from runSettings
+                        return '/_modulo/' + filename;
+                    } else {
+                        return './' + filename;
+                    }
+                });
+            } else {
+                // Modulo Prealpha2
+                Modulo.utils.saveFileAs = (filename, text) => {
+                    artifacts.push({ filename, text });
+                    if (filename.endsWith('.js') || filename.endsWith('.css')) {
+                        // XXX hardcoded, should get from runSettings
+                        return '/_modulo/' + filename;
+                    } else {
+                        return './' + filename;
+                    }
+                };
+            }
 
             return new Promise((resolve, reject) => {
-                const results = Modulo.cmd[command]();
-                Modulo.fetchQ.wait(() => {
+                //          prealpha2         prealpha3
+                const fQ = Modulo.fetchQ || modulo.fetchQueue;
+                fQ.wait(() => {
+                    let results;
+                    if (typeof modulo !== 'undefined' && modulo.register) {
+                        // Modulo Prealpha3
+                        results = modulo.registry.commands[command](modulo);
+                    } else {
+                        // Modulo Prealpha2
+                        results = Modulo.cmd[command]();
+                    }
                     resolve({ artifacts, results });
                 });
             });

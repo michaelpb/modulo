@@ -1,57 +1,31 @@
 /*
-  What's next:
-    3) Add enough hacks / bridges to get tests running again
-        - This includes supporting -src / src, this.attrs, etc. and modulo-embed
-    4) Swap Modulo.js & begin refactor!
+    NEXT STEPS for Modulo:
+
+    1. Decide on modulo.set or config or something, then refactor into using
+    defaultConfig + register properly, etc, and remove templateDefaults
+
+    2. Continue low hanging fruit refactoring of Mod3.js (e.g.  confProcessors
+    like Src + Content)
+
+    3. git commit and tag this as "prealpha2", then make a "prealpha3" fork
+
+    4. Use Mod3.js (prealpha3) to replace Modulo.js
+
+    5. Start fixing all standard unit tests / static build of site / etc
+
+    6. Do refactoring of Mod3.js, and then push up!
+
+    7. Finish updating documentation, polish docs, finish misc articles, then
+    release alpha!
 */
 
-
-/*
-  Potentially unifying concept:
-    - Library (defines children in silo'ed Modulo)
-    - Component (defines children in silo'ed Modulo)
-    - ComponentInstance (defines children in silo'ed Modulo)
-*/
 
 // Avoid overwriting other Modulo versions / instances
 window.ModuloPrevious = window.Modulo;
 window.moduloPrevious = window.modulo;
 
-class LegacyCPart {
-    static getAttrDefaults(node, loader) {
-        return {};
-    }
-
-    static factoryHackCallback(modulo, conf) {
-        if (!this.factoryCallback) {
-            return;
-        }
-        if (!window.facHack){
-            window.facHack = {};
-        }
-        class mock {};
-        mock.modulo = modulo;
-        window.facHack[conf.Type.toLowerCase()] = conf;
-        const data = (this.factoryCallback(conf, mock, window.facHack) || conf);
-        window.facHack[conf.Type.toLowerCase()] = data;
-    }
-
-    getDirectives() {
-        return [];
-    }
-
-    constructor(element, options, modulo) {
-        const isLower = key => key[0].toLowerCase() === key[0];
-        const attrs = modulo.registry.utils.keyFilter(options, isLower);
-        this.element = element;
-        this.content = options.Content;
-        this.attrs = attrs;
-        this.modulo = modulo;
-    }
-}
-
 window.Modulo = class Modulo {
-    constructor(parentModulo = null) {
+    constructor(parentModulo = null, registryKeys = null) {
         window._moduloID = this.id = (window._moduloID || 0) + 1; // Global ID
         if (parentModulo) {
             this.parentModulo = parentModulo;
@@ -69,9 +43,12 @@ window.Modulo = class Modulo {
         } else {
             this.config = {};
             this.factories = {};
-            const rCats = [ 'dom', 'cparts', 'utils', 'library', 'core', 'engines', 'commands' ];
-            this.registry = Object.fromEntries(rCats.map(cat => [ cat, {} ] ));
+            this.registry = Object.fromEntries(registryKeys.map(cat => [ cat, {} ] ));
         }
+    }
+
+    static moduloClone(modulo, other) {
+        return modulo; // Never clone Modulos to prevent reference loops
     }
 
     register(type, cls, defaults = undefined) {
@@ -135,9 +112,9 @@ window.Modulo = class Modulo {
         // Then, run configure callback
         if (!skipConf) { // TODO: move this somewhere else, eg "loadAndDefine"
             this.repeatLifecycle(this.registry.cparts, 'configure', () => {
-                console.log('CONFIGURE FINISHED');
+                //console.log('CONFIGURE FINISHED');
                 modulo.runLifecycle(modulo.registry.cparts, 'define');
-                console.log('DEFINE FINISHED');
+                //console.log('DEFINE FINISHED');
             });
         }
         return partialConfs;
@@ -281,11 +258,14 @@ Modulo.INVALID_WORDS = new Set((`
     typeof var let void  while with await async true false
 `).split(/\s+/ig));
 
-
 // Create a new modulo instance to be the global default instance
-var modulo = new Modulo();//window.defaultModuloConfig || {});
+var modulo = new Modulo(null, [
+    'cparts', 'dom', 'utils', 'library', 'core', 'engines', 'commands',
+    'templateFilters', 'templateTags', 'directives', 'directiveShortcuts',
+    'loadDirectives', 'loadDirectiveShortcuts', 'confProcessors',
+]);
 
-modulo.register('cpart', class Component extends LegacyCPart {
+modulo.register('cpart', class Component {
     static configureCallback(modulo, conf) {
         // TODO: Need to also do Src
         const { Content, Name } = conf;
@@ -322,7 +302,7 @@ modulo.register('cpart', class Component extends LegacyCPart {
             const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
             //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
             //console.log("RUNNING LIFECYCLE FOR ${ className }");
-            modulo.runLifecycle(cpartClasses, 'factoryHack');
+            modulo.runLifecycle(cpartClasses, 'factory');
             r.HACK = window.facHack;
             delete window.facHack;
             modulo.globals.customElements.define(tagName, ${ className });
@@ -340,13 +320,13 @@ modulo.register('cpart', class Component extends LegacyCPart {
         func(conf.TagName, modulo);
     }
 
-    static factoryCallback(opts, factory, loadObj) {
+    static factoryCallback(modulo, conf) {
         return; // TODO
-        opts.directiveShortcuts = [
+        conf.directiveShortcuts = [
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
         ];
-        opts.uniqueId = ++factory.id;
+        conf.uniqueId = ++factory.id;
     }
 
     headTagLoad({ el }) {
@@ -386,8 +366,14 @@ modulo.register('cpart', class Component extends LegacyCPart {
         }
         */
         this.mode = 'regular';
-        const directiveShortcuts = [];
-        this.newReconciler(directiveShortcuts);
+        const opts = { directiveShortcuts: [], directives: [] };
+        for (const cPart of Object.values(this.element.cparts)) {
+            for (const directiveName of cPart.getDirectives()) {
+                opts.directives[directiveName] = cPart;
+            }
+        }
+        const engineName = 'ModRec';//this.attrs.engine;
+        this.reconciler = new this.modulo.reconcilers[engineName](opts);
     }
 
     getDirectives() {
@@ -399,7 +385,6 @@ modulo.register('cpart', class Component extends LegacyCPart {
             'component.slotLoad',
         ];
         const vanishTags = [ 'link', 'title', 'meta', 'script' ];
-        this.attrs = { mode: 'regular' }; // TODO fix
         if (this.attrs.mode === 'vanish-into-document') {
             dirs.push(...vanishTags);
         }
@@ -411,17 +396,6 @@ modulo.register('cpart', class Component extends LegacyCPart {
             this.slotTagLoad = this.slotLoad.bind(this);
         }
         return dirs;
-    }
-
-    newReconciler(directiveShortcuts) {
-        const opts = { directiveShortcuts, directives: [] };
-        for (const cPart of Object.values(this.element.cparts)) {
-            for (const directiveName of cPart.getDirectives()) {
-                opts.directives[directiveName] = cPart;
-            }
-        }
-        const engineName = 'ModRec';//this.attrs.engine;
-        this.reconciler = new this.modulo.reconcilers[engineName](opts);
     }
 
     prepareCallback() {
@@ -468,10 +442,6 @@ modulo.register('cpart', class Component extends LegacyCPart {
             this.element.replaceWith(...this.element.childNodes); // Replace self
             this.element.remove(); // TODO: rm when fully tested
         }
-
-        // XXX HACK XXX XXX XXX XXX XXX XXX
-        //this.element.innerHTML = innerHTML;
-        // XXX HACK XXX XXX XXX XXX XXX XXX
     }
 
     handleEvent(func, payload, ev) {
@@ -571,6 +541,7 @@ modulo.register('cpart', class Library {
         let { Content, Src, src, Name, name, namespace } = conf;
         // TODO Fix, should default to filename of Src, or component namespace,
         // or something
+        const { hash } = modulo.registry.utils;
         const regName = (Name || name || namespace || 'x').toLowerCase();
         Src = Src || src;
         if (Src) {
@@ -580,23 +551,31 @@ modulo.register('cpart', class Library {
                 conf.Content = text + conf.Content;
             });
         } else if (Content) {
-            // Exposes library at top level:
             delete conf.Content; // Prevent repeat
-            const Mod = modulo.registry.utils.Modulo;
-            const libraryModulo = new Mod(modulo); // "Fork" modulo obj
-            libraryModulo.config.library = conf; // Override library with conf
+            conf.Hash = hash(Content);
+            let libName = regName;
+            if (libName === 'x') { // TODO fix this stuff
+                libName = 'm-' + conf.Hash;
+            }
+            let libraryModulo = modulo.registry.library[libName];
+            if (!libraryModulo) { // No existing library, fork into new one
+                libraryModulo = new modulo.registry.utils.Modulo(modulo);
+                libraryModulo.name = libName; // ".name" is for register()
+                modulo.register('library', libraryModulo);
+            }
+            const oldConf = libraryModulo.config.library || {};
+            libraryModulo.config.library = Object.assign(oldConf, conf);
             libraryModulo.loadString(Content);
-            libraryModulo.name = regName;
-            modulo.register('library', libraryModulo);
             libraryModulo.runLifecycle(libraryModulo.registry.cparts, 'configure');
-            conf.RegName = regName; // Ensure Name is set
+            conf.RegName = regName; // Ensure RegName is set on conf as well
+            conf.LibName = libName; // ditto
         }
     }
     static defineCallback(modulo, conf) {
-        const { RegName } = conf;
-        if (RegName) {
-            delete conf.RegName; // idempotent
-            const library = modulo.registry.library[RegName];
+        const { LibName } = conf;
+        if (LibName) {
+            delete conf.LibName; // idempotent
+            const library = modulo.registry.library[LibName];
             library.runLifecycle(library.registry.cparts, 'define');
         }
     }
@@ -822,13 +801,22 @@ modulo.register('util', class BaseElement extends HTMLElement {
         this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
         // Loop through the parsed array of objects that define the Component
         // Parts for this component, checking for errors.
-        for (const partOptions of this.moduloChildrenData) {
-            const name = partOptions.Type;
+        for (const conf of this.moduloChildrenData) {
+            const name = conf.Type;
             this.modulo.assert(name in hackCParts, `Unknown cPart: ${name}`);
             if (!(name in this.cpartSpares)) {
                 this.cpartSpares[name] = [];
             }
-            const instance = new hackCParts[name](this, partOptions, this.modulo);
+            const instance = new hackCParts[name](this, conf, this.modulo);
+
+            /// HAX
+            const isLower = key => key[0].toLowerCase() === key[0];
+            instance.element = this;
+            instance.modulo = this.modulo;
+            instance.conf = conf;
+            instance.attrs = modulo.registry.utils.keyFilter(conf, isLower);
+            /// HAX
+
             this.cpartSpares[name].push(instance);
             this.cparts[name] = instance;
         }
@@ -1004,7 +992,7 @@ modulo.register('core', class FetchQueue {
         }
 
         // TODO: FIX THIS ---v
-        //src = modulo.registry.utils.resolvePath(this.basePath || '', src);
+        //src = this.modulo.registry.utils.resolvePath(this.basePath || '', src);
         src = (this.basePath || '') + src;
 
         if (src in this.data) {
@@ -1013,7 +1001,7 @@ modulo.register('core', class FetchQueue {
             this.queue[src] = [ callback ];
             // TODO: Think about if we want to keep cache:no-store
             //console.log('FETCH', src);
-            Modulo.globals.fetch(src, { cache: 'no-store' })
+            this.modulo.globals.fetch(src, { cache: 'no-store' })
                 .then(response => response.text())
                 .then(text => this.receiveData(text, label, src))
                 //.catch(err => console.error('Modulo Load ERR', src, err));
@@ -1060,7 +1048,9 @@ modulo.register('core', class FetchQueue {
 });
 
 
-modulo.register('cpart', class Props extends LegacyCPart {
+modulo.register('cpart', class Props {
+    getDirectives() {  console.count('legacy'); return []; }
+
     initializedCallback(renderObj) {
         const props = {};
         const { resolveDataProp } = modulo.registry.utils;
@@ -1073,7 +1063,7 @@ modulo.register('cpart', class Props extends LegacyCPart {
 
     prepareCallback(renderObj) {
         /* TODO: Remove after observedAttributes is implemented, e.g.:
-          static factoryCallback({ attrs }, { componentClass }, renderObj) {
+          static legacy_factoryCallback({ attrs }, { componentClass }, renderObj) {
               //componentClass.observedAttributes = Object.keys(attrs);
           }
         */
@@ -1082,8 +1072,10 @@ modulo.register('cpart', class Props extends LegacyCPart {
 });
 
 
-modulo.register('cpart', class Style extends LegacyCPart {
-    static factoryHackCallback(modulo, conf) {
+modulo.register('cpart', class Style {
+    getDirectives() {  console.count('legacy'); return []; }
+
+    static factoryCallback(modulo, conf) {
         /*
         //if (loadObj.component.attrs.mode === 'shadow') { // TODO finish
         //    return;
@@ -1093,7 +1085,6 @@ modulo.register('cpart', class Style extends LegacyCPart {
         if (!Content) {
             return;
         }
-        console.log(modulo.factories.component, Parent && (Parent in modulo.factories.component));
         if (Parent && (Parent in modulo.factories.component)) {
             const { namespace, mode, Name } = modulo.factories.component[Parent];
             if (mode === 'regular') { // TODO finish
@@ -1117,28 +1108,25 @@ modulo.register('cpart', class Style extends LegacyCPart {
 });
 
 
-modulo.register('cpart', class Template extends LegacyCPart {
-    static factoryCallback(partOptions, factory, renderObj) {
-        const { modulo } = factory; // hack
-        //const engineClass = modulo.templating[partOptions.attrs.engine || 'MTL'];
+modulo.register('cpart', class Template {
+    getDirectives() {  console.count('legacy'); return []; }
+
+    static factoryCallback(modulo, conf) {
         const engineClass = modulo.templating.MTL;
-        const opts = Object.assign({}, partOptions.attrs, {
-            makeFunc: (a, b) => modulo.assets.registerFunction(a, b),
-        });
-        if (!partOptions.Content) {
-            console.error('No Template Content specified.', partOptions);
+        const makeFunc = (a, b) => modulo.assets.registerFunction(a, b)
+        if (!conf.Content) {
+            console.error('No Template Content specified.', conf);
             return; // TODO: Make this never happen
         }
-        partOptions.instance = new engineClass(partOptions.Content, opts);
+        conf.instance = new engineClass(conf.Content, { makeFunc });
     }
 
-    constructor(element, options, modulo) {
-        super(element, options, modulo);
-        if (options) {
-            if (!options.instance) { // TODO: Remove, needed for tests
-                this.modulo.registry.cparts.Template.factoryCallback(options, { modulo: this.modulo });
+    constructor(element, conf, modulo) {
+        if (conf) {
+            if (!conf.instance) { // TODO: Remove, needed for tests
+                modulo.registry.cparts.Template.factoryCallback(modulo, conf);
             }
-            this.instance = options.instance;
+            this.instance = conf.instance;
         }
     }
 
@@ -1160,48 +1148,55 @@ modulo.register('cpart', class Template extends LegacyCPart {
     }
 });
 
-modulo.register('cpart', class StaticData extends LegacyCPart {
-    static factoryCallback(partOptions, factory, renderObj) {
-        const { modulo } = factory; // XXX
-        const code = partOptions.content || ''; // TODO: trim whitespace?
-        const defTransform = s => `return ${s.trim()};`;
+modulo.register('cpart', class StaticData {
+    static factoryCallback(modulo, conf) {
+        if (!conf.Content) {
+            console.error('No StaticData Content specified.', conf);
+            return; // TODO: Make this never happen
+        }
+        //const defTransform = s => `return ${s.trim()};`;
         //(s => `return ${JSON.stringify(JSON.parse(s))}`);
-        const transform = partOptions.attrs.transform || defTransform;
-        return modulo.assets.registerFunction([], transform(code))();
+        //const transform = conf.attrs.transform || defTransform;
+        let code = (conf.Content || '').trim();
+        code = `return ${ code };`;
+        const data = modulo.assets.registerFunction([], code)();
+        Object.assign(conf, data);
+
+        // HACK ----------------------------------
+        if (!window.facHack){ window.facHack = {}; }
+        window.facHack[conf.Type.toLowerCase()] = conf;
     }
+
+    getDirectives() { console.count("getDirectives"); return []; } // XXX
 });
 
-modulo.register('cpart', class Script extends LegacyCPart {
-    static factoryCallback(partOptions, factory, renderObj) {
-        const { modulo } = factory; // XXX
-        factory.loader = { loader: { namespace: 'x'} } ; // XXX
+modulo.register('cpart', class Script {
 
-        const code = partOptions.Content || ''; // TODO: trim whitespace?
-        //const localVars = Object.keys(renderObj);// TODO fix...
+    static factoryCallback(modulo, conf) {
+
+        const code = conf.Content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(modulo.registry.dom);// TODO fix...
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts'); // give access to CParts JS interface
-        const ns = factory.loader.namespace;
-        //const moduleFac = modulo.factoryInstances[`{ns}-{ns}`];
-        //const module = moduleFac ? moduleFac.baseRenderObj : null;
-        const module = null;
 
         // Combine localVars + fixed args into allArgs
-        const args = [ 'modulo', 'factory', 'module', 'require' ];
+        const args = [ 'modulo', 'require' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
         const opts = { exports: 'script' };
         const func = modulo.assets.registerFunction(allArgs, code, opts);
 
         // Now, actually run code in Script tag to do factory method
-        const results = func.call(null, modulo, factory, module, this.require);
-        if (results.factoryCallback) {
-            results.factoryCallback(partOptions, factory, renderObj);
-        }
+        const results = func.call(null, modulo, this.require);
         results.localVars = localVars;
-        return results;
+        modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
+
+        // HACK ----------------------------------
+        if (!window.facHack){ window.facHack = {}; }
+        window.facHack[conf.Type.toLowerCase()] = results;
     }
 
-    getDirectives() { // TODO: refactor / rm, maybe move to component, make for all?
+    getDirectives() {
+        console.count('legacy');
         let { script } = this.element.initRenderObj;
         const isCbRegex = /(Unmount|Mount)$/;
         if (!script) { script = {}; } // TODO XXX
@@ -1221,11 +1216,8 @@ modulo.register('cpart', class Script extends LegacyCPart {
     }
 
     constructor(element, options, modulo) {
-        super(element, options, modulo);
-
         // Attach callbacks from script to this, to hook into lifecycle.
-        let { script } = this.element.initRenderObj;
-        //if (!script) { script = {}; } // TODO XXX
+        let { script } = element.initRenderObj;
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
@@ -1271,8 +1263,8 @@ modulo.register('cpart', class Script extends LegacyCPart {
     }
 });
 
-modulo.register('cpart', class State extends LegacyCPart {
-    getDirectives() {
+modulo.register('cpart', class State {
+    getDirectives() { console.log('legacy');
         return [ 'state.bindMount', 'state.bindUnmount' ];
     }
 
@@ -1388,10 +1380,11 @@ Modulo.reconcilers = modulo.reconcilers;
 Modulo.templating.MTL = class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
-        this.compiledCode = this.compile(text);
-        const unclosed = this.stack.map(({ close }) => close).join(', ');
-        modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`); // TODO: use global!
-
+        if (text) {
+            this.compiledCode = this.compile(text);
+            const unclosed = this.stack.map(({ close }) => close).join(', ');
+            modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`); // TODO: use global!
+        }
         if (!this.renderFunc) {
             this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
         }
@@ -2048,8 +2041,38 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
 // LEGACY ADAPTOR ///////////////////////////////////////////
 if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefineAll) {
-    Modulo.ComponentPart = class ComponentPart extends LegacyCPart {
-      // TODO: Eventually copy all of LegacyCPart down here
+    Modulo.ComponentPart = class ComponentPart {
+        // Legacy CPart interface
+        static getAttrDefaults(node, loader) {
+            return {};
+        }
+
+        static factoryCallback(modulo, conf) {
+            if (!this.legacy_factoryCallback) {
+                return;
+            }
+            if (!window.facHack){
+                window.facHack = {};
+            }
+            class mock {};
+            mock.modulo = modulo;
+            window.facHack[conf.Type.toLowerCase()] = conf;
+            const data = (this.legacy_factoryCallback(conf, mock, window.facHack) || conf);
+            window.facHack[conf.Type.toLowerCase()] = data;
+        }
+
+        getDirectives() {
+            return [];
+        }
+
+        constructor(element, options, modulo) {
+            const isLower = key => key[0].toLowerCase() === key[0];
+            const attrs = modulo.registry.utils.keyFilter(options, isLower);
+            this.element = element;
+            this.content = options.Content;
+            this.attrs = attrs;
+            this.modulo = modulo;
+        }
     }
     Modulo.defineAll = () => {
         console.count('LEGACY: defineAll');

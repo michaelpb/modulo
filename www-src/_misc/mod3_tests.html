@@ -1,91 +1,36 @@
-
-<template modulo-embed>
-    <Component name="ExampleClickingComponent">
-        <Props
-            txt
-        ></Props>
-        <Template>
-            <div>
-                <h1>Props: {{ props.txt }}</h1>
-                <button @click:=script.getClicked>State: {{ state.count }}</button>
-            </div>
-        </Template>
-
-        <State
-            count:=5
-        ></State>
-
-        <Script>
-            function getClicked() {
-                console.log('Note how TestSuites "group" console messages');
-                state.count++;
-            }
-        </Script>
-
-        <Style>
-            button { background-color: blue; color:white; }
-        </Style>
-
-
-        <TestSuite>
-            <Test name="Check props and click event">
-                <props txt="Testing 123"></props>
-
-                <template>
-                    <div>
-                        <h1>Props: Testing 123</h1>
-                        <button @click:=script.getClicked>State: 5</button>
-                    </div>
-                </template>
-
-                <!-- We can use "script" for simulating user actions: -->
-                <script>
-                    event: click button
-                </script>
-
-                <!-- Finally, using another Template assertion, we make sure
-                that the component rerendered in the expected way, as a result
-                of the simulated click: -->
-                <template>
-                    <div>
-                        <h1>Props: Testing 123</h1>
-                        <button @click:=script.getClicked>State: 6</button>
-                    </div>
-                </template>
-            </Test>
-
-            <Test name="Check state reflects in rendering">
-                <props txt="Example props"></props>
-                <state count:=1></state>
-                <template string-count=1>Example props</template>
-                <template string-count=1>State: 1</template>
-                <template string-count=0>State: 6</template>
-                <script name="Check state and prop CParts">
-                    assert: props.txt === 'Example props' && state.count === 1
-                </script>
-            </Test>
-        </TestSuite>
-    </Component>
-
-</template>
-
 <!-- define legacy Modulo -->
 <!--<script src="/js/Modulo.js"></script>-->
 
 <!--<script src="/demos/mdu/cparts/TestSuite.js"></script>-->
-<script>window.doDefineAll = true</script>
-<script src="/_misc/Mod3.js"></script> <!--define new modulo -->
+<!--<script>window.doDefineAll = true</script>-->
+
+<script Modulo
+    src="/_misc/Mod3.js"
+    -src="/_misc/mod3_core_functionality_tests.html"
+    -name="x"
+></script>
+
+<!--<script src="/_misc/Mod3.js"></script>-->
 <script src="/demos/mdu/cparts/TestSuite3.js"></script>
 
+<button onClick="modulo.registry.commands.test(modulo)">Run tests</button>
 
 <script>
-    Modulo.defineAll2();
-    modulo.fetchQueue.wait(() => {
+    /*
+    function runTests () {
         modulo.registry.commands.test(modulo);
-    });
+        //Modulo.defineAll2();
+        modulo.fetchQueue.wait(() => {
+            console.log('this is libraries:', modulo);
+            modulo.registry.commands.test(modulo);
+            //modulo.registry.commands.test(modulo.registry.library.mtltests);
+        });
+    }
+    */
 </script>
 
 
-
+<!--
 <x-ExampleClickingComponent>
 </x-ExampleClickingComponent>
+-->

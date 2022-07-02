@@ -225,8 +225,11 @@ modulo.register('cpart', class TestSuite {
         const testLoaderModulo = new Modulo(modulo); // "Fork" modulo obj
         // By default, does not clone factories, so we manually clone that:
         testLoaderModulo.factories = deepClone(modulo.factories, modulo);
+        if (('x_' + name) in modulo.factories.component) {
+            console.log('HACK: Fixing name', name);
+            name = 'x_' + name;
+        }
         const componentFac = testLoaderModulo.factories.component[name]; // Get forked version
-        //console.log('this is testLoaderModulo', testLoaderModulo);
 
         let total = 0;
         let failure = 0;
@@ -351,13 +354,17 @@ modulo.register('command', function test(modulo) {
     //console.log(modulo);
     const suites = modulo.factories.TestSuite || modulo.factories.testsuite || {};
     for (const [ key, suite ] of Object.entries(suites)) {
-        const componentName = key.split('_')[0]; // TODO, include back reference?
+        let componentName = key.replace(/_[^_]+$/, ''); // strip after last _
         if ('skip' in suite) {
             skippedCount++;
             continue;
         }
         if ('solo' in suite) {
             soloMode = true;
+        }
+        if (('x_' + componentName) in modulo.factories.component) {
+            console.log('HACK: Fixing componentName', componentName);
+            componentName = 'x_' + componentName;
         }
         const componentFac = modulo.factories.component[componentName];
         discovered.push([componentFac, suite]);
@@ -468,7 +475,6 @@ modulo.register('util', function registerTestElement (modulo, componentFac) {
     doc.documentElement.appendChild(head);
     doc.documentElement.appendChild(body);
     modulo.globals._moduloTestNumber = (modulo.globals._moduloTestNumber || 0) + 1;
-    //console.log('this is componentFac', componentFac)
 
     const componentFunc = modulo.assets.functions[componentFac.Hash];
     const namespace = 't' + modulo.globals._moduloTestNumber;
