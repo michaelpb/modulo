@@ -1,7 +1,8 @@
 /*
     NEXT STEPS for Modulo:
 
-    1. Decide on modulo.set or config or something, then refactor into using
+    1. (Start with going as far as we can with "register") - Decide on
+    modulo.set or config or something, then refactor into using
     defaultConfig + register properly, etc, and remove templateDefaults
 
     2. Continue low hanging fruit refactoring of Mod3.js (e.g.  confProcessors
@@ -76,7 +77,6 @@ window.Modulo = class Modulo {
                 const lowerName = cls.name[0].toLowerCase() + cls.name.slice(1);
                 this[lowerName] = new cls(this);
                 this.assets = this.assetManager;
-                this.reconciler = this.modRec;
             }
         }
     }
@@ -123,7 +123,7 @@ window.Modulo = class Modulo {
     loadString(text, parentFactoryName = null, shouldSkip = true) {
         const tmp_Cmp = new modulo.registry.cparts.Component({}, {}, modulo);
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount; // XXX
-        this.reconciler = new modulo.reconcilers.ModRec({
+        this.reconciler = new modulo.registry.engines.Reconciler({
             directives: { 'modulo.dataPropLoad': tmp_Cmp }, // TODO: Change to "this", + resolve to conf stuff
             directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
         });
@@ -372,8 +372,8 @@ modulo.register('cpart', class Component {
                 opts.directives[directiveName] = cPart;
             }
         }
-        const engineName = 'ModRec';//this.attrs.engine;
-        this.reconciler = new this.modulo.reconcilers[engineName](opts);
+        const engineName = 'Reconciler';//this.attrs.engine;
+        this.reconciler = new this.modulo.registry.engines[engineName](opts);
     }
 
     getDirectives() {
@@ -512,7 +512,7 @@ modulo.register('cpart', class Component {
         delete el.dataProps[attrName];
         delete el.dataPropsAttributeNames[rawName];
     }
-}, { mode: 'regular', rerender: 'event', engine: 'ModRec' });
+}, { mode: 'regular', rerender: 'event', engine: 'Reconciler' });
 
 modulo.register('cpart', class Modulo {
     static configureCallback(modulo, conf) {
@@ -1112,7 +1112,8 @@ modulo.register('cpart', class Template {
     getDirectives() {  console.count('legacy'); return []; }
 
     static factoryCallback(modulo, conf) {
-        const engineClass = modulo.templating.MTL;
+        //const engineClass = modulo.templating.MTL;
+        const engineClass = modulo.registry.engines.ModuloTemplateLanguage;
         const makeFunc = (a, b) => modulo.assets.registerFunction(a, b)
         if (!conf.Content) {
             console.error('No Template Content specified.', conf);
@@ -1370,14 +1371,8 @@ modulo.register('cpart', class State {
     }
 });
 
-//////////////////////////////////////////////////////
-// NOT USING register (legacy)
 
-modulo.templating = {};
-modulo.reconcilers = {};
-Modulo.templating = modulo.templating;
-Modulo.reconcilers = modulo.reconcilers;
-Modulo.templating.MTL = class ModuloTemplateLanguage {
+modulo.register('engine', class ModuloTemplateLanguage {
     constructor(text, options) {
         Object.assign(this, Modulo.templating.defaultOptions, options);
         if (text) {
@@ -1471,12 +1466,8 @@ Modulo.templating.MTL = class ModuloTemplateLanguage {
             .replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/'/g, '&#x27;').replace(/"/g, '&quot;');
     }
-}
-Modulo.Template = Modulo.templating.MTL; // Alias
-
-Modulo.templating.defaultOptions = {
+}, {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
-    //opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,and,or',
     opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,gt,lt',
     makeFunc: (argList, text) => new Function(argList.join(','), text),
     opAliases: {
@@ -1485,18 +1476,17 @@ Modulo.templating.defaultOptions = {
         'gt': 'X > Y',
         'lt': 'X < Y',
         'is not': 'X !== Y',
-        //'and': 'X && Y',
-        //'or': 'X || Y',
         'not': '!(Y)',
-        // TODO: Consider patterns like this to avoid excess reapplication of
-        // filters:
-        // (x = X, y = Y).includes ? y.includes(x) : (x in y)
         'in': '(Y).includes ? (Y).includes(X) : (X in Y)',
         'not in': '!((Y).includes ? (Y).includes(X) : (X in Y))',
     },
-};
+});
 
-Modulo.templating.defaultOptions.modes = {
+// TODO: Consider patterns like this to avoid excess reapplication of
+// filters:
+// (x = X, y = Y).includes ? y.includes(x) : (x in y)
+
+modulo.config.modulotemplatelanguage.modes = {
     '{%': (text, tmplt, stack) => {
         const tTag = text.trim().split(' ')[0];
         const tagFunc = tmplt.tags[tTag];
@@ -1516,7 +1506,7 @@ Modulo.templating.defaultOptions.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-Modulo.templating.defaultOptions.filters = (function () {
+modulo.config.modulotemplatelanguage.filters = (function () {
     //const { get } = modulo.registry.utils; // TODO, fix this code duplciation
     function get(obj, key) {
         return obj[key];
@@ -1595,7 +1585,7 @@ Modulo.templating.defaultOptions.filters = (function () {
     return Object.assign(filters, extra);
 })();
 
-Modulo.templating.defaultOptions.tags = {
+modulo.config.modulotemplatelanguage.tags = {
     'if': (text, tmplt) => {
         // Limit to 3 (L/O/R)
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
@@ -1634,11 +1624,10 @@ Modulo.templating.defaultOptions.tags = {
     },
 };
 
-
 // TODO: 
 //  - Then, re-implement [component.key] and [component.ignore] as TagLoad
 //  - Possibly: Use this to then do granular patches (directiveMount etc)
-Modulo.reconcilers.DOMCursor = class DOMCursor {
+modulo.register('engine', class DOMCursor {
     constructor(parentNode, parentRival) {
         this.initialize(parentNode, parentRival);
         this.instanceStack = [];
@@ -1757,10 +1746,9 @@ Modulo.reconcilers.DOMCursor = class DOMCursor {
             return false;
         }
     }
+});
 
-}
-
-Modulo.reconcilers.ModRec = class ModuloReconciler {
+modulo.register('engine', class Reconciler {
     constructor(opts) {
         // TODO: Refactor this, perhaps with some general "opts with defaults"
         // helper functions.
@@ -1881,7 +1869,7 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
 
     reconcileChildren(childParent, rivalParent) {
         // Nonstandard nomenclature: "The rival" is the node we wish to match
-        const cursor = new modulo.reconcilers.DOMCursor(childParent, rivalParent);
+        const cursor = new modulo.registry.engines.DOMCursor(childParent, rivalParent);
 
         //console.log('Reconciling (1):', childParent.outerHTML);
         //console.log('Reconciling (2):', rivalParent.outerHTML);
@@ -2037,7 +2025,23 @@ Modulo.reconcilers.ModRec = class ModuloReconciler {
             }
         }
     }
-}
+});
+
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// NOT USING register (legacy)
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+modulo.templating = {};
+modulo.reconcilers = {};
+Modulo.templating = modulo.templating;
+Modulo.reconcilers = modulo.reconcilers;
+
+//Modulo.Template = Modulo.templating.MTL; // Alias
+
+Modulo.templating.defaultOptions = modulo.config.modulotemplatelanguage;
 
 // LEGACY ADAPTOR ///////////////////////////////////////////
 if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefineAll) {

@@ -70,3 +70,47 @@
 </Component>
 
 
+<Component name="TemplatingTester">
+    <Template>
+        <h1>{{ state.a }}</h1>{# IGNORE #}
+        <h2>{% if state.b gt 1 %}{{ state.c }}{% else %}b is less{% endif %}</h2>
+        <h3>{{ state.d|add:10 }}</h3>{% comment %}ignore me too{% endcomment %}
+        <h4>{{ state.e|divisibleby:3|json }}</h4>
+        {% if state.c == 2 %}
+            {% for item in state.stuff %}
+                <p>{{ item|lower }}</p>
+            {% endfor %}
+        {% endif %}
+    </Template>
+
+    <State a:=1 b:=2 c:=3 d:=4 e:=5 stuff:='["A", "B", "C"]'></State>
+
+    <TestSuite>
+        <Test name="Renders as expected">
+            <template>
+              <h1>1</h1>
+              <h2>3</h2>
+              <h3>14</h3>
+              <h4>false</h4>
+            </template>
+
+            <state b:=1 d:=5></state>
+            <template>
+              <h1>1</h1>
+              <h2>b is less</h2>
+              <h3>15</h3>
+              <h4>false</h4>
+            </template>
+
+            <state e:=6 b:=10 c:=2></state>
+            <template>
+              <h1>1</h1>
+              <h2>2</h2>
+              <h3>15</h3>
+              <h4>true</h4>
+              <p>a</p> <p>b</p> <p>c</p>
+            </template>
+        </Test>
+    </TestSuite>
+</Component>
+
