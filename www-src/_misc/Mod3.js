@@ -1,12 +1,11 @@
 /*
     NEXT STEPS for Modulo:
 
-    1. (Start with going as far as we can with "register") - Decide on
-    modulo.set or config or something, then refactor into using
-    defaultConfig + register properly, etc, and remove templateDefaults
+    1. Next refactoring: Clean up, standardize, remove duplicate code (e.g.
+    Condense instance creation, lifecycle (switch all to patch-based), config usage, etc).
 
-    2. Continue low hanging fruit refactoring of Mod3.js (e.g.  confProcessors
-    like Src + Content)
+    2. Continue low hanging fruit refactoring of Mod3.js (e.g.
+    confProcessors like Src + Content)
 
     3. git commit and tag this as "prealpha2", then make a "prealpha3" fork
 
@@ -37,10 +36,7 @@ window.Modulo = class Modulo {
             this.factories = cloneStub(parentModulo.factories); // keep private
 
             this.assets = parentModulo.assetManager;
-            this.reconcilers = parentModulo.reconcilers;
-            this.templating = parentModulo.templating;
             this.globals = parentModulo.globals;
-
         } else {
             this.config = {};
             this.factories = {};
@@ -52,14 +48,32 @@ window.Modulo = class Modulo {
         return modulo; // Never clone Modulos to prevent reference loops
     }
 
+    createAll(type, confArray) {
+        const obj = {};
+        for (const conf of confArray) {
+            /// ///////////////
+            // TODO Hax, remove and debug
+            conf.Type = conf.Type[0].toUpperCase() + conf.Type.slice(1);
+            if (conf.Type === 'Staticdata') { conf.Type = 'StaticData'; }
+            if (conf.Type === 'Testsuite') { conf.Type = 'TestSuite'; }
+            /// ///////////////
+            obj[conf.RenderObj] = this.create(type, conf.Type, conf);
+        }
+        return obj;
+    }
+
+    create(type, name, conf = null) {
+        type = (`${type}s` in this.registry) ? `${type}s` : type; // plural / singular
+        //if (typeof this.registry[type][name] !== 'function') { debugger; } // XXX
+        const instance = new this.registry[type][name](modulo, conf);
+        conf.Instance = instance;
+        return instance;
+    }
+
     register(type, cls, defaults = undefined) {
         type = (`${type}s` in this.registry) ? `${type}s` : type; // plural / singular
         this.assert(type in this.registry, 'Unknown registration type:', type);
         this.registry[type][cls.name] = cls;
-
-        if (type === 'cparts') { // CParts get loaded from DOM
-            this.registry.dom[cls.name.toLowerCase()] = cls;
-        }
 
         if (type === 'commands') { // Attach globally to 'm' alias
             window.m = window.m || {};
@@ -78,6 +92,10 @@ window.Modulo = class Modulo {
                 this[lowerName] = new cls(this);
                 this.assets = this.assetManager;
             }
+        }
+        if (type === 'cparts') { // CParts get loaded from DOM
+            this.registry.dom[cls.name.toLowerCase()] = cls;
+            this.config[cls.name.toLowerCase()].RenderObj = cls.name.toLowerCase();
         }
     }
 
@@ -123,7 +141,7 @@ window.Modulo = class Modulo {
     loadString(text, parentFactoryName = null, shouldSkip = true) {
         const tmp_Cmp = new modulo.registry.cparts.Component({}, {}, modulo);
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount; // XXX
-        this.reconciler = new modulo.registry.engines.Reconciler({
+        this.reconciler = modulo.create('engine', 'Reconciler', {
             directives: { 'modulo.dataPropLoad': tmp_Cmp }, // TODO: Change to "this", + resolve to conf stuff
             directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
         });
@@ -140,7 +158,7 @@ window.Modulo = class Modulo {
         }
     }
 
-    getLifecyclePatches(lcObj, lifecycleName) {
+    getLifecyclePatches(lcObj, lifecycleName, skipFacs = false) {
         // todo: Make it lifecycleNames (plural)
         const patches = [];
         const methodName = lifecycleName + 'Callback';
@@ -150,6 +168,7 @@ window.Modulo = class Modulo {
             }
             const type = typeUpper.toLowerCase();
             patches.push([ obj, methodName, this.config[type] ]);
+            if (skipFacs) { continue; } // TODO refactor
             const facs = this.factories[type] || {};
             for (const name of Object.keys(facs)) { // Also invoke factories
                 patches.push([ obj, methodName, facs[name] ]);
@@ -158,19 +177,21 @@ window.Modulo = class Modulo {
         return patches;
     }
 
-    applyPatches(patches) {
+    applyPatches(patches, collectObj = null) {
         for (const [ obj, methodName, conf ] of patches) {
             if (!conf.Type) { // TODO remove this
                 console.log('WARNING: Invalid  conf: ', conf);
                 continue;
             }
-            obj[methodName].call(obj, this, conf);
+            const result = obj[methodName].call(obj, collectObj || this, conf);
+            if (collectObj && result && conf.RenderObj) {
+                collectObj[conf.RenderObj] = result;
+            }
         }
     }
 
     runLifecycle(lcObj, lifecycleName) {
-        // TODO: Possibly only squash once?
-        this.squashFactories(); // Ensure factories are squashed with config
+        this.squashFactories(); // Ensure factories are squashed with config // TODO: Possibly only squash once?
         const patches = this.getLifecyclePatches(lcObj, lifecycleName);
         this.applyPatches(patches);
     }
@@ -242,6 +263,17 @@ window.Modulo = class Modulo {
         return config;
     }
 
+    applyPreprocessor(conf, keys) {
+        for (const key of keys) {
+            if (key in conf) {
+                const value = conf[key];
+                delete conf[key];
+                this.registry.confPreprocessors[key.toLowerCase()](this, conf, value);
+                return;
+            }
+        }
+    }
+
     assert(value, ...info) {
         if (!value) {
             console.error(...info);
@@ -262,17 +294,25 @@ Modulo.INVALID_WORDS = new Set((`
 var modulo = new Modulo(null, [
     'cparts', 'dom', 'utils', 'library', 'core', 'engines', 'commands',
     'templateFilters', 'templateTags', 'directives', 'directiveShortcuts',
-    'loadDirectives', 'loadDirectiveShortcuts', 'confProcessors',
+    'loadDirectives', 'loadDirectiveShortcuts', 'confPreprocessors',
 ]);
+
+modulo.register('confPreprocessor', function src (modulo, conf, value) {
+    modulo.fetchQueue.enqueue(value, text => {
+        conf.Content = text + conf.Content;
+    });
+});
+
+modulo.register('confPreprocessor', function content (modulo, conf, value) {
+    const { Name } = conf;
+    const { hash } = modulo.registry.utils;
+    conf.Children = modulo.loadString(value, Name ? Name : null);
+    conf.Hash = hash(value);
+});
 
 modulo.register('cpart', class Component {
     static configureCallback(modulo, conf) {
-        // TODO: Need to also do Src
-        const { Content, Name } = conf;
-        if (Content) {
-            delete conf.Content;
-            conf.Children = modulo.loadString(Content, Name ? Name : null);
-        }
+        modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
     }
 
     static defineCallback(modulo, conf) {
@@ -372,8 +412,7 @@ modulo.register('cpart', class Component {
                 opts.directives[directiveName] = cPart;
             }
         }
-        const engineName = 'Reconciler';//this.attrs.engine;
-        this.reconciler = new this.modulo.registry.engines[engineName](opts);
+        this.reconciler = modulo.create('engine', 'Reconciler', opts);
     }
 
     getDirectives() {
@@ -516,19 +555,7 @@ modulo.register('cpart', class Component {
 
 modulo.register('cpart', class Modulo {
     static configureCallback(modulo, conf) {
-        // Configure callback for Modulo object itself
-        const { Src, Content, Name } = conf;
-        // TODO: Make these configurable, e.g. static/modulo directives
-        if (Src) {
-            delete conf.Src; // prevent double loading
-            modulo.fetchQueue.enqueue(Src, text => {
-                conf.Content = text + conf.Content;
-                //modulo.runLifecycle(modulo.registry.cparts, 'configure');
-            });
-        } else if (Content) {
-            delete conf.Content; // prevent double loading
-            modulo.loadString(Content, Name ? Name : null);
-        }
+        modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
     }
 });
 
@@ -537,24 +564,14 @@ modulo.register('util', Modulo);
 
 modulo.register('cpart', class Library {
     static configureCallback(modulo, conf) {
-        // TODO: Refactor Src / Content patterns
-        let { Content, Src, src, Name, name, namespace } = conf;
-        // TODO Fix, should default to filename of Src, or component namespace,
-        // or something
+        modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
+        let { Content, Src, Hash, src, Name, name, namespace } = conf;
         const { hash } = modulo.registry.utils;
         const regName = (Name || name || namespace || 'x').toLowerCase();
-        Src = Src || src;
-        if (Src) {
-            delete conf.Src; // prevent double loading
-            delete conf.src; // prevent double loading
-            modulo.fetchQueue.enqueue(Src, text => {
-                conf.Content = text + conf.Content;
-            });
-        } else if (Content) {
+        if (Hash) {
             delete conf.Content; // Prevent repeat
-            conf.Hash = hash(Content);
             let libName = regName;
-            if (libName === 'x') { // TODO fix this stuff
+            if (libName === 'x') { // TODO fix this stuff, default to FN?
                 libName = 'm-' + conf.Hash;
             }
             let libraryModulo = modulo.registry.library[libName];
@@ -572,8 +589,7 @@ modulo.register('cpart', class Library {
         }
     }
     static defineCallback(modulo, conf) {
-        const { LibName } = conf;
-        if (LibName) {
+        if (conf.LibName) {
             delete conf.LibName; // idempotent
             const library = modulo.registry.library[LibName];
             library.runLifecycle(library.registry.cparts, 'define');
@@ -792,36 +808,6 @@ modulo.register('util', class BaseElement extends HTMLElement {
         //console.log('this is initRenderObj', this.initRenderObj);
     }
 
-    setupCParts() {
-        // This function does the heavy lifting of actually constructing a
-        // component, and is invoked when the component is mounted to the page.
-        this.cpartSpares = {}; // no need to include, since only 1 element
-        const hackCParts = Object.assign({}, this.modulo.registry.dom, this.modulo.registry.cparts);
-
-        this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
-        // Loop through the parsed array of objects that define the Component
-        // Parts for this component, checking for errors.
-        for (const conf of this.moduloChildrenData) {
-            const name = conf.Type;
-            this.modulo.assert(name in hackCParts, `Unknown cPart: ${name}`);
-            if (!(name in this.cpartSpares)) {
-                this.cpartSpares[name] = [];
-            }
-            const instance = new hackCParts[name](this, conf, this.modulo);
-
-            /// HAX
-            const isLower = key => key[0].toLowerCase() === key[0];
-            instance.element = this;
-            instance.modulo = this.modulo;
-            instance.conf = conf;
-            instance.attrs = modulo.registry.utils.keyFilter(conf, isLower);
-            /// HAX
-
-            this.cpartSpares[name].push(instance);
-            this.cparts[name] = instance;
-        }
-    }
-
     rerender(original = null) {
         /*
         if (original) { // TODO: this logic needs refactor
@@ -838,16 +824,8 @@ modulo.register('util', class BaseElement extends HTMLElement {
     lifecycle(lifecycleNames, rObj={}) {
         this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
         for (const lc of lifecycleNames) {
-            for (let [ cpartName, cPart ] of Object.entries(this.cparts)) {
-                cpartName = cpartName.toLowerCase(); // TODO standardize lower vs upper
-                const method = cPart[lc + 'Callback'];
-                if (method) {
-                    const result = method.call(cPart, this.renderObj);
-                    if (result) {
-                        this.renderObj[cpartName] = result;
-                    }
-                }
-            }
+            const patches = this.modulo.getLifecyclePatches(this.cparts, lc, true);
+            this.modulo.applyPatches(patches, this.renderObj);
         }
         //this.renderObj = null; // ?rendering is over, set to null
     }
@@ -869,7 +847,9 @@ modulo.register('util', class BaseElement extends HTMLElement {
             original = modulo.registry.utils.makeDiv(this.getAttribute('modulo-original-html'));
         }
         */
-        this.setupCParts();
+        this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
+        this.cparts = this.modulo.createAll('cparts', this.moduloChildrenData);
+        this.legacySetupCParts();
         this.lifecycle([ 'initialized' ]);
         this.rerender(original); // render and re-mount it's own childNodes
 
@@ -883,6 +863,21 @@ modulo.register('util', class BaseElement extends HTMLElement {
         }
         */
         this.isMounted = true;
+    }
+
+    legacySetupCParts() {
+        for (const conf of this.moduloChildrenData) {
+            /// TODO HAX
+            const instance = this.cparts[conf.RenderObj];
+            const isLower = key => key[0].toLowerCase() === key[0];
+            instance.element = this;
+            instance.modulo = this.modulo;
+            instance.conf = conf;
+            instance.attrs = modulo.registry.utils.keyFilter(conf, isLower);
+            /// HAX
+        }
+        //this.cpartSpares = {};
+        //const hackCParts = Object.assign({}, this.modulo.registry.dom, this.modulo.registry.cparts);
     }
 });
 
@@ -1073,6 +1068,10 @@ modulo.register('cpart', class Props {
 
 
 modulo.register('cpart', class Style {
+    static configureCallback(modulo, conf) {
+        modulo.applyPreprocessor(conf, [ 'Src' ]);
+    }
+
     getDirectives() {  console.count('legacy'); return []; }
 
     static factoryCallback(modulo, conf) {
@@ -1109,32 +1108,30 @@ modulo.register('cpart', class Style {
 
 
 modulo.register('cpart', class Template {
+    static configureCallback(modulo, conf) {
+        modulo.applyPreprocessor(conf, [ 'Src' ]);
+    }
     getDirectives() {  console.count('legacy'); return []; }
 
     static factoryCallback(modulo, conf) {
-        //const engineClass = modulo.templating.MTL;
-        const engineClass = modulo.registry.engines.ModuloTemplateLanguage;
-        const makeFunc = (a, b) => modulo.assets.registerFunction(a, b)
         if (!conf.Content) {
             console.error('No Template Content specified.', conf);
             return; // TODO: Make this never happen
         }
-        conf.instance = new engineClass(conf.Content, { makeFunc });
+        modulo.create('engine', 'Templater', conf);
     }
 
-    constructor(element, conf, modulo) {
-        if (conf) {
-            if (!conf.instance) { // TODO: Remove, needed for tests
-                modulo.registry.cparts.Template.factoryCallback(modulo, conf);
-            }
-            this.instance = conf.instance;
+    constructor(modulo, conf) {
+        if (conf && !conf.Instance) { // TODO: Remove, needed for tests
+            modulo.create('engine', 'Templater', conf);
         }
+        this.Instance = conf.Instance;
     }
 
     prepareCallback(renderObj) {
         // Exposes templates in render context, so stuff like
         // "|renderas:template.row" works
-        return;// (todo: untested, needs unit testing, iirc?)
+        return;// (todo: remove when render context is stabilized)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
             obj[template.attrs.name || 'regular'] = template;
@@ -1145,11 +1142,14 @@ modulo.register('cpart', class Template {
 
     renderCallback(renderObj) {
         if (!renderObj.component)renderObj.component={};// XXX fix
-        renderObj.component.innerHTML = this.instance.render(renderObj);
+        renderObj.component.innerHTML = this.Instance.render(renderObj);
     }
 });
 
 modulo.register('cpart', class StaticData {
+    static configureCallback(modulo, conf) {
+        modulo.applyPreprocessor(conf, [ 'Src' ]);
+    }
     static factoryCallback(modulo, conf) {
         if (!conf.Content) {
             console.error('No StaticData Content specified.', conf);
@@ -1172,6 +1172,9 @@ modulo.register('cpart', class StaticData {
 });
 
 modulo.register('cpart', class Script {
+    static configureCallback(modulo, conf) {
+        modulo.applyPreprocessor(conf, [ 'Src' ]);
+    }
 
     static factoryCallback(modulo, conf) {
 
@@ -1216,9 +1219,11 @@ modulo.register('cpart', class Script {
         };
     }
 
-    constructor(element, options, modulo) {
+    constructor(modulo, conf) {
+        //let { script } = element.initRenderObj;
+        let script = conf;
+        //console.log('this is script', conf);
         // Attach callbacks from script to this, to hook into lifecycle.
-        let { script } = element.initRenderObj;
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
         cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
@@ -1265,7 +1270,8 @@ modulo.register('cpart', class Script {
 });
 
 modulo.register('cpart', class State {
-    getDirectives() { console.log('legacy');
+    getDirectives() {
+        console.log('legacy');
         return [ 'state.bindMount', 'state.bindUnmount' ];
     }
 
@@ -1372,9 +1378,17 @@ modulo.register('cpart', class State {
 });
 
 
-modulo.register('engine', class ModuloTemplateLanguage {
-    constructor(text, options) {
-        Object.assign(this, Modulo.templating.defaultOptions, options);
+/* Implementation of Modulo Templating Language */
+modulo.register('engine', class Templater {
+    constructor(modulo, conf) {
+        this.makeFunc = (a, b) => modulo.assets.registerFunction(a, b);
+        this.setup(conf.Content, conf); // TODO, refactor
+    }
+
+    setup(text, options) {
+        Object.assign(this, modulo.config.templater, options);
+        this.filters = Object.assign({}, modulo.registry.templateFilters, this.filters);
+        this.tags = Object.assign({}, modulo.registry.templateTags, this.tags);
         if (text) {
             this.compiledCode = this.compile(text);
             const unclosed = this.stack.map(({ close }) => close).join(', ');
@@ -1486,7 +1500,7 @@ modulo.register('engine', class ModuloTemplateLanguage {
 // filters:
 // (x = X, y = Y).includes ? y.includes(x) : (x in y)
 
-modulo.config.modulotemplatelanguage.modes = {
+modulo.config.templater.modes = {
     '{%': (text, tmplt, stack) => {
         const tTag = text.trim().split(' ')[0];
         const tagFunc = tmplt.tags[tTag];
@@ -1506,7 +1520,7 @@ modulo.config.modulotemplatelanguage.modes = {
     text: (text, tmplt) => text && `OUT.push(${JSON.stringify(text)});`,
 };
 
-modulo.config.modulotemplatelanguage.filters = (function () {
+modulo.config.templater.filters = (function () {
     //const { get } = modulo.registry.utils; // TODO, fix this code duplciation
     function get(obj, key) {
         return obj[key];
@@ -1576,7 +1590,7 @@ modulo.config.modulotemplatelanguage.filters = (function () {
         subtract: (s, arg) => s - arg,
         truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
         type: s => s === null ? 'null' : (Array.isArray(s) ? 'array' : typeof s),
-        renderas: (rCtx, template) => safe(template.instance.render(rCtx)),
+        renderas: (rCtx, template) => safe(template.Instance.render(rCtx)),
         reversed: s => Array.from(s).reverse(),
         upper: s => s.toUpperCase(),
     };
@@ -1585,7 +1599,7 @@ modulo.config.modulotemplatelanguage.filters = (function () {
     return Object.assign(filters, extra);
 })();
 
-modulo.config.modulotemplatelanguage.tags = {
+modulo.config.templater.tags = {
     'if': (text, tmplt) => {
         // Limit to 3 (L/O/R)
         const [lHand, op, rHand] = tmplt.parseCondExpr(text);
@@ -1749,9 +1763,10 @@ modulo.register('engine', class DOMCursor {
 });
 
 modulo.register('engine', class Reconciler {
-    constructor(opts) {
-        // TODO: Refactor this, perhaps with some general "opts with defaults"
-        // helper functions.
+    constructor(modulo, conf) {
+        this.constructor_old(conf);
+    }
+    constructor_old(opts) {
         opts = opts || {};
         this.shouldNotDescend = !!opts.doNotDescend;
         this.directives = opts.directives || {};
@@ -2029,46 +2044,21 @@ modulo.register('engine', class Reconciler {
 
 
 //////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-// NOT USING register (legacy)
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-
-modulo.templating = {};
-modulo.reconcilers = {};
-Modulo.templating = modulo.templating;
-Modulo.reconcilers = modulo.reconcilers;
-
-//Modulo.Template = Modulo.templating.MTL; // Alias
-
-Modulo.templating.defaultOptions = modulo.config.modulotemplatelanguage;
-
-// LEGACY ADAPTOR ///////////////////////////////////////////
+// LEGACY ADAPTORS BELOW--- //////////////////////////
 if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefineAll) {
     Modulo.ComponentPart = class ComponentPart {
         // Legacy CPart interface
-        static getAttrDefaults(node, loader) {
-            return {};
-        }
-
+        static getAttrDefaults(node, loader) { return {}; }
         static factoryCallback(modulo, conf) {
-            if (!this.legacy_factoryCallback) {
-                return;
-            }
-            if (!window.facHack){
-                window.facHack = {};
-            }
+            if (!this.legacy_factoryCallback) { return; }
+            if (!window.facHack){ window.facHack = {}; }
             class mock {};
             mock.modulo = modulo;
             window.facHack[conf.Type.toLowerCase()] = conf;
             const data = (this.legacy_factoryCallback(conf, mock, window.facHack) || conf);
             window.facHack[conf.Type.toLowerCase()] = data;
         }
-
-        getDirectives() {
-            return [];
-        }
-
+        getDirectives() { return []; }
         constructor(element, options, modulo) {
             const isLower = key => key[0].toLowerCase() === key[0];
             const attrs = modulo.registry.utils.keyFilter(options, isLower);
