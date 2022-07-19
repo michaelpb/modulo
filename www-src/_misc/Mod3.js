@@ -1,11 +1,7 @@
 /*
     NEXT STEPS for Modulo:
 
-    1. Next refactoring: Clean up, standardize, remove duplicate code (e.g.
-    Condense instance creation, lifecycle (switch all to patch-based), config usage, etc).
-
-    2. Continue low hanging fruit refactoring of Mod3.js (e.g.
-    confProcessors like Src + Content)
+    1 / 2. ..More refactoring... (look through TODOs / legacy / hax)
 
     3. git commit and tag this as "prealpha2", then make a "prealpha3" fork
 
