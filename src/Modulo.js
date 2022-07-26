@@ -1,13 +1,16 @@
 /*
     NEXT STEPS for Modulo:
-
-    4. Use Mod3.js (prealpha3) to replace Modulo.js
-
-    5. Start fixing all standard unit tests / static build of site / etc
-
-    6. Do refactoring of Mod3.js, and then push up!
-
-    7. Finish updating documentation, polish docs, finish misc articles, then
+  
+    0. Fix Library -- current CPart code doesn't work at all
+    1. Keep on iterating on: http://localhost:3334/demos/tests/ until it runs
+    at all
+    2. Incorporate "simple test suite" that was used with Mod3 before, and get
+    running in new environ
+    3. One by one incorporate Libraries of the old unit tests. Will need to
+    punt + totally rewrite some parts (e.g. things that read in their own
+    fetchQ, maybe..?)
+    4. Work on static build of site / etc
+    5. Finish updating documentation, polish docs, finish misc articles, then
     release alpha!
 */
 
@@ -95,6 +98,7 @@ window.Modulo = class Modulo {
         const partialConfs = [];
         for (const node of elem.children) {
             const type = this.getNodeModuloType(node);
+            console.log('this is type', type);
             if (!type) {
                 continue;
             }
@@ -161,6 +165,23 @@ window.Modulo = class Modulo {
             const type = typeUpper.toLowerCase();
             patches.push([ obj, methodName, this.config[type] ]);
             if (skipFacs) { continue; } // TODO refactor
+            const facs = this.factories[type] || {};
+            for (const name of Object.keys(facs)) { // Also invoke factories
+                patches.push([ obj, methodName, facs[name] ]);
+            }
+        }
+        return patches;
+    }
+
+    getFactoryLifecyclePatches(lcObj, lifecycleName) {
+        // todo: refactor with top
+        const patches = [];
+        const methodName = lifecycleName + 'Callback';
+        for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
+            if (!(methodName in obj)) {
+                continue; // Skip if obj has not registered callback
+            }
+            const type = typeUpper.toLowerCase();
             const facs = this.factories[type] || {};
             for (const name of Object.keys(facs)) { // Also invoke factories
                 patches.push([ obj, methodName, facs[name] ]);
@@ -331,8 +352,9 @@ modulo.register('cpart', class Component {
             const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
             const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
             //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
-            //console.log("RUNNING LIFECYCLE FOR ${ className }");
-            modulo.runLifecycle(cpartClasses, 'factory');
+            //console.log("RUNNING LIFECYCLE FOR ${ className }", cpartClasses);
+            //modulo.runLifecycle(cpartClasses, 'factory');
+            modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory'));
             r.HACK = window.facHack;
             delete window.facHack;
             modulo.globals.customElements.define(tagName, ${ className });
@@ -560,6 +582,7 @@ modulo.register('cpart', class Library {
         const regName = (Name || name || namespace || 'x').toLowerCase();
         if (Hash) {
             delete conf.Content; // Prevent repeat
+            delete conf.Hash; // Prevent repeat
             let libName = regName;
             if (libName === 'x') { // TODO fix this stuff, default to FN?
                 libName = 'm-' + conf.Hash;
@@ -581,7 +604,7 @@ modulo.register('cpart', class Library {
     static defineCallback(modulo, conf) {
         if (conf.LibName) {
             delete conf.LibName; // idempotent
-            const library = modulo.registry.library[LibName];
+            const library = modulo.registry.library[conf.LibName];
             library.runLifecycle(library.registry.cparts, 'define');
         }
     }
@@ -1104,6 +1127,7 @@ modulo.register('cpart', class Template {
     getDirectives() {  console.count('legacy'); return []; }
 
     static factoryCallback(modulo, conf) {
+        console.log('conf', conf);
         if (!conf.Content) {
             console.error('No Template Content specified.', conf);
             return; // TODO: Make this never happen
@@ -2033,6 +2057,7 @@ modulo.register('engine', class Reconciler {
 });
 
 
+/*
 //////////////////////////////////////////////////////
 // LEGACY ADAPTORS BELOW--- //////////////////////////
 if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefineAll) {
@@ -2092,7 +2117,10 @@ if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefin
             Modulo.factoryInstances = {};
         });
     };
-} else if (typeof document !== undefined && document.head) { // Browser environ
+} else 
+*/
+
+if (typeof document !== undefined && document.head) { // Browser environ
     Modulo.globals = window; // TODO, remove?
     modulo.globals = window;
     modulo.loadFromDOM(document.head);

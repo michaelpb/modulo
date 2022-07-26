@@ -1,7 +1,12 @@
 <script src="/js/Modulo.js"></script>
 <script src="/demos/mdu/cparts/TestSuite.js"></script>
 
-<template modulo-embed>
+<script Modulo
+    -src="/demos/tests/core_functionality.test.html"
+    -name="x"
+></script>
+
+<template id="TestReporter">
     <Component name="TestReporter">
         <Template>
             {% if state.success != null %}
@@ -19,6 +24,7 @@
             success:=null
         ></State>
         <Script>
+            console.log('test reporter ready');
             function doTests() {
                 if (state.success === null) { // prevent double runs
                     state.success = Modulo.cmd.test();
@@ -27,7 +33,12 @@
         </Script>
     </Component>
 
+    <!--
+    <Library src="/demos/tests/core_functionality.test.html"></Library>
+    -->
+
     <!-- Load tests for core Modulo.js library -->
+    <!--
     <Library src="/demos/tests/reconciler1.test.html"></Library>
     <Library src="/demos/tests/reconciler2.test.html"></Library>
     <Library src="/demos/tests/reconciler3.test.html"></Library>
@@ -41,14 +52,20 @@
     <Library src="/demos/tests/cparts/component.test.html"></Library>
     <Library src="/demos/tests/cparts/config.test.html"></Library>
     <Library src="/demos/tests/cparts/state.test.html"></Library>
+    -->
 
     <!-- Load tests for documentation examples -->
+    <!--
     <Library namespace="eglib" src="/components/examplelib.html"></Library>
     <Library namespace="emblib" src="/components/embeddedexampleslib.html"></Library>
+    -->
 
+    <!-- TODO: Rename & reorg tests to be more clear what tests what -->
 </template>
 
-<script> Modulo.defineAll() </script>
+<script>
+    modulo.loadFromDOM(document.getElementById('TestReporter').content);
+</script>
 
 <x-TestReporter></x-TestReporter>
 
