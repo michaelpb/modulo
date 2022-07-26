@@ -1,25 +1,44 @@
-Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
-    static stateInit(cpart, element, initData) {
+// TODO: Refactor entire file to use new Modulo system, with a pluggable system
+// of Test Step CParts
+
+modulo.register('cpart', class TestSuite {
+    /*
+    static configureCallback(modulo, conf) {
+        // TODO: Need to also do Src
+        const { Content } = conf;
+        if (Content) {
+            delete conf.Content;
+            conf.Children = modulo.loadString(Content, 'test_');
+        }
+    }
+    */
+
+    getDirectives () { return []; } // TODO: RM, when conf is cleaned up
+
+    static stateInit(modulo, element, conf) {
+        const isLower = key => key[0].toLowerCase() === key[0];
+        const attrs = modulo.registry.utils.keyFilter(conf, isLower);
         element.cparts.state.eventCallback();
-        Object.assign(element.cparts.state.data, initData);
+        Object.assign(element.cparts.state.data, attrs);
         element.cparts.state.eventCleanupCallback();
     }
 
-    static propsInit(cpart, element, initData) {
-        //console.log('this is initData', initData);
-        //element.factory().baseRenderObj.props = initData.attrs;
-        element.initRenderObj.props = initData.attrs;
-        element.renderObj.props = initData.attrs;
+    static propsInit(modulo, element, conf) {
+        const isLower = key => key[0].toLowerCase() === key[0];
+        const attrs = modulo.registry.utils.keyFilter(conf, isLower);
+        element.initRenderObj.props = attrs;
+        element.renderObj.props = attrs;
         if (element.eventRenderObj) {
-            element.eventRenderObj.props = initData.attrs;
+            element.eventRenderObj.props = attrs;
         }
         element.cparts.props.prepareCallback = () => {}; // Turn prepare into a dummy, to avoid overriding above
     }
 
-    static templateAssertion(cpart, element, stepConf) {
-        const { makeDiv, normalize } = Modulo.utils;
+    static templateAssertion(modulo, element, stepConf) {
+        const { makeDiv, normalize } = modulo.registry.utils;
+
         const _process = 'testWhitespace' in stepConf ? s => s : normalize;
-        const text1 = _process(cpart.instance.render(stepConf));
+        const text1 = _process(stepConf.Content);
 
         if ('testValues' in stepConf) {
             for (const input of element.querySelectorAll('input')) {
@@ -46,19 +65,22 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         return [result, `${text1}\n${verb}\n${text2}\n`];
     }
 
-    static scriptAssertion(cpart, element, stepConf, data) {
+    static scriptAssertion(modulo, element, stepConf) {
         let errorValues = [];
         function _reportValues(values) {
             errorValues = values;
         }
 
+        const { stripWord } = modulo.registry.utils;
+        if (!stripWord(stepConf.Content)) {
+            return [ false, 'Script tag is empty' ];
+        }
+
         // Apply assert and event macros:
         let assertionText, result;
-        // Idea for assert macro: Take expression and put it in an eval, with
-        // try/catch and variable dumping
         const assertRe = /^\s*assert:\s*(.+)\s*$/m;
-        const isAssertion = assertRe.test(data.content);
-        let content = data.content;
+        let content = stepConf.Content;
+        const isAssertion = assertRe.test(content);
         /*
         // Breaks some tests, not sure if good or not --v
         if (!content.includes('assert:') && !content.includes('event:')) {
@@ -81,7 +103,7 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                     /^[a-zA-Z][\w_\.]*$/g.test(word) ?
                       (`typeof ${word} !== "undefined" ? ${word} : '…'`)
                     : JSON.stringify(word)
-                )).join(','); // TODO: Possibly change it to ellispis everything
+                )).join(','); // TODO: Possibly change it to ellispis everything, or delete functions as well
 
 
             content = content.replace(assertRe,
@@ -92,34 +114,33 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             if (!element.querySelector('$2')) {
                 throw new Error('Event target not found: $2');
             }
-            element.querySelector('$2').dispatchEvent(new Modulo.globals.Event('$1'));
+            element.querySelector('$2').dispatchEvent(new modulo.globals.Event('$1'));
         `);
-        const extra = {
-            _reportValues,
-            element,
-            Modulo,
-            document: element.mockDocument,
-        };
+
+        const extra = { _reportValues, element, Modulo, modulo };
+        extra.document = element.mockDocument;
         const vars = Object.assign(element.getCurrentRenderObj(), extra);
+        const funcArgs = Object.keys(vars);
+        const funcValues = funcArgs.map(key => vars[key]);
         let func;
         try {
-            func = new Function(Object.keys(vars).join(','), content);
+            func = new Function(funcArgs.join(','), content);
         } catch (err) {
             return [false, `Error occured, cannot compile: ${err}`]
         }
 
-        const getParams = String(Modulo.globals.location ?
-                                 Modulo.globals.location.search : '').substr(1);
+        const getParams = String(modulo.globals.location ?
+                                 modulo.globals.location.search : '').substr(1);
 
         if (getParams.includes('stacktrace=y')) {
             // Let exceptions crash process and halt future tests, exposing
             // stack-trace
-            result = func.apply(null, Object.values(vars));
+            result = func.apply(null, funcValues);
         } else {
             try {
                 // Catch exceptions during test and mark as failure, continuing
                 // with future tests
-                result = func.apply(null, Object.values(vars));
+                result = func.apply(null, funcValues);
             } catch (err) {
                 // TODO: Look into any more consistent systems using
                 // console.trace, and then move to conf and have on by default
@@ -137,48 +158,48 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         return [result, resultArr];
     }
 
-    static doTestStep(element, sName, data) {
-        const { testsuite } = Modulo.cparts;
-        const attrs = {content: data.content, attrs: data};
-        const stepConf = data.attrs;
+    static doTestStep(modulo, element, partialConf) {
+        const { TestSuite } = modulo.registry.cparts;
+        const { doTestRerender, keyFilter } = modulo.registry.utils;
+        const isLower = key => key[0].toLowerCase() === key[0];
+        const attrs = keyFilter(partialConf, isLower);
+        const options = { attrs };
+        options.content = partialConf.Content;
 
-        const isInit = (sName + 'Init') in testsuite;
-        const assertionMethod = testsuite[sName + 'Assertion'];
+        const sName = partialConf.Type.toLowerCase();
+        const isInit = (sName + 'Init') in TestSuite;
+        const assertionMethod = TestSuite[sName + 'Assertion'];
 
-        // Instantiate a base CPart that this testing assertion or init will
-        // piggy-back on
-        let cpart = null;
-        if (sName === 'template' || isInit) {
-            cpart = new Modulo.cparts[sName](element, attrs);
-        }
-
-        // If it is an init, then run the base CPart's own initializedCallback,
-        // and finally invoke any custom code
         if (isInit) {
-            const initData = cpart.initializedCallback({[ sName ]: data});
-            testsuite[sName + 'Init'](cpart, element, initData);
+            TestSuite[sName + 'Init'](modulo, element, partialConf);
             return null;
-        } else if (!assertionMethod) {
-            throw new Error('Could not find', sName);
         }
 
         // At this point, it 1) exists, and 2) is not an init, thus must be an
         // "Assertion Step" (e.g. one that can fail or succeed).
 
         // Using skip-rerender or skip-rerender=y to prevent automatic rerender
-        if (!('skipRerender' in stepConf)) {
-            Modulo.utils.doTestRerender(element);
+        let rerenderErr = null;
+        if (!('skipRerender' in attrs)) {
+            rerenderErr = doTestRerender(element);
         }
 
-        // Invoke the assertion itself, getting either a truthy result, or a
-        // result exactly equal to "false", which indicates a failure, at which
-        // point an Array (or string) message should return value should give
-        // indication as to what went wrong.
-        const [ result, message ] = assertionMethod(cpart, element, stepConf, data);
+        let result, message;
+        if (rerenderErr) {
+            result = false;
+            message = `RERENDER ERROR | ${ rerenderErr }`;
+        } else {
+            // Invoke the assertion itself, getting either a truthy result, or
+            // a result exactly equal to "false", which indicates a failure, at
+            // which point an Array (or string) message should return value
+            // should give indication as to what went wrong.
+            ([ result, message ] = assertionMethod(modulo, element, partialConf));
+        }
+
         if (result) {
             return true;
         } else if (result === false) {
-            const msgAttrs = stepConf.name ? ` name="${stepConf.name}"` : '';
+            const msgAttrs = attrs.name ? ` name="${attrs.name}"` : '';
             console.log(`ASSERTION <${sName}${msgAttrs}> FAILED:`)
             if (message.map) {
                 console.log(...message);
@@ -191,29 +212,50 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
         return null; // undefined, null, and 0 get cast as null, meaning no assertion
     }
 
-    static runTests(attrs, factory) {
-        const { content } = attrs;
-        const { testsuite } = Modulo.cparts;
-        testsuite.setupMocks();
+    static runTests(modulo, suite, name) {
+        // TODO: Rewrite this to use new modulo registry system:
+        // 1. Create a blank / fresh Modulo
+        // 2. Register CPart with a ScriptTestStep etc type class
+        // 3. Create a new feature for Modulo that lets non-named things get
+        // ID-based names or something, so it keeps each test step separate and
+        // we can loop through after loading?
+        const { Content } = suite;
+        const { TestSuite } = modulo.registry.cparts;
+        const { makeDiv, deepClone, Modulo, registerTestElement } = modulo.registry.utils;
+        const testLoaderModulo = new Modulo(modulo); // "Fork" modulo obj
+        // By default, does not clone factories, so we manually clone that:
+        testLoaderModulo.factories = deepClone(modulo.factories, modulo);
+        if (('x_' + name) in modulo.factories.component) {
+            console.log('HACK: Fixing name', name);
+            name = 'x_' + name;
+        }
+        const componentFac = testLoaderModulo.factories.component[name]; // Get forked version
 
         let total = 0;
         let failure = 0;
 
-        const getParams = String(Modulo.globals.location ?
-                                 Modulo.globals.location.search : '').substr(1);
+        const getParams = String(modulo.globals.location ?
+                                 modulo.globals.location.search : '').substr(1);
         const useTry = getParams.includes('stacktrace=y');
 
-        const parentNode = factory.loader._stringToDom(content);
+        //const parentNode = componentFac.loader._stringToDom(content);
+        const parentNode = makeDiv(Content);
         for (const testNode of parentNode.children) {
             let element;
             let err;
+            const testModulo = new Modulo(modulo); // "Fork" modulo obj
+            testModulo.factories = deepClone(modulo.factories, modulo);
+            TestSuite.setupMocks(testModulo);
             if (useTry) {
                 try {
-                    element = Modulo.utils.createTestElement(factory);
-                } catch (e) { err = e; }
+                    element = registerTestElement(testModulo, componentFac);
+                } catch (e) {
+                    err = e;
+                }
             } else {
-                element = Modulo.utils.createTestElement(factory);
+                element = registerTestElement(testModulo, componentFac);
             }
+            TestSuite.teardownMocks(testModulo);
 
             if (!element) {
                 failure++;
@@ -225,16 +267,16 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
                 continue;
             }
 
-            // TODO: Switch to new cpart-container system used by "component" and "library"
-            const stepArray = factory.loader.loadFromDOMElement(testNode);
+            // Ensure always a globally unique prefix:
+            modulo.globals._moduloTestNumber = (modulo.globals._moduloTestNumber || 0) + 1;
+            const prefix = 't' + modulo.globals._moduloTestNumber;
+            const stepArray = testLoaderModulo.loadString(testNode.innerHTML, prefix, true);
             const testName = testNode.getAttribute('name') || '<test>';
-
             console.group('[%]', '         ? TEST', testName);
-            Modulo.isTest = testName; // useful in tests, maybe remove, or document
             let testTotal = 0;
             let testFailed = 0;
-            for (let [ sName, data ] of stepArray) {
-                const result = testsuite.doTestStep(element, sName, data);
+            for (const partialConf of stepArray) {
+                const result = TestSuite.doTestStep(testModulo, element, partialConf);
                 if (result !== null) {
                     testTotal++;
                     total++;
@@ -249,14 +291,19 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             console.groupEnd();
             console.log(`[%]  ${isOk} - ${testName} (${successes}/${testTotal})`);
         }
-        testsuite.teardownMocks(); // teardown mocking for saveFileAs
         return [total - failure, failure];
     }
 
-    static setupMocks() {
+    static setupMocks(modulo) {
         // Mock saveFileAs & appendToHead to prevent test leaking
-        Modulo.utils.originalSaveFileAs = Modulo.utils.saveFileAs;
-        Modulo.utils.saveFileAs = function saveFileAsMock(filename, text) {
+        if (!window._moduloUnmockedInstance) {
+            window._moduloUnmockedInstance = window.modulo;
+        }
+        window.modulo = modulo;
+        const { utils } = modulo.registry;
+        const { AssetManager } = modulo.registry.core;
+        utils.originalSaveFileAs = utils.saveFileAs;
+        utils.saveFileAs = function saveFileAsMock(filename, text) {
             if (!window._moduloMockedFileSaves) {
                 window._moduloMockedFileSaves = [];
             }
@@ -271,52 +318,64 @@ Modulo.cparts.testsuite = class TestSuite extends Modulo.ComponentPart {
             return `./${filename}`; // by default, return local path
         }
 
-        Modulo.utils.originalAppendToHead = Modulo.AssetManager.prototype.appendToHead;
-        Modulo.AssetManager.prototype.appendToHead = function appendToHeadMocked(tagName, codeStr) {
+        /*
+        utils.originalAppendToHead = AssetManager.prototype.appendToHead;
+        AssetManager.prototype.appendToHead = function appendToHeadMocked(tagName, codeStr) {
             if (!window._moduloMockedHeadAppends) {
                 window._moduloMockedHeadAppends = [];
             }
             window._moduloMockedHeadAppends.push([ tagName, codeStr ]);
             if (tagName === 'script') { // TODO rm
-                codeStr = codeStr.replace('Modulo.assets.', 'this.'); // replace 1st
+                codeStr = codeStr.replace('modulo.assets.', 'this.'); // replace 1st
+                console.log('this is codeStr', codeStr);
                 eval(codeStr, this); // TODO Fix this, limitation of JSDOM
             }
         }
+        */
 
     }
 
     static teardownMocks() {
-        Modulo.utils.saveFileAs = Modulo.utils.originalSaveFileAs;
-        Modulo.AssetManager.prototype.appendToHead = Modulo.utils.originalAppendToHead;
+        //const { utils } = modulo.registry;
+        //const { AssetManager } = modulo.registry.core;
+        //utils.saveFileAs = utils.originalSaveFileAs;
+        //AssetManager.prototype.appendToHead = utils.originalAppendToHead;
+        window.modulo = window._moduloUnmockedInstance;
+        delete window._moduloUnmockedInstance;
     }
-}
+});
 
-Modulo.CommandMenu.prototype.test = function test() {
+
+modulo.register('command', function test(modulo) {
     let discovered = [];
     let soloMode = false;
     let skippedCount = 0;
     console.log('%c%', 'font-size: 50px; line-height: 0.7; padding: 5px; border: 3px solid black;');
-    for (const factory of Object.values(Modulo.factoryInstances)) {
-        const { testsuite } = factory.baseRenderObj;
-        if (!testsuite) {
-            continue;
-        }
-        if ('skip' in testsuite.attrs) {
+    //console.log(modulo);
+    const suites = modulo.factories.TestSuite || modulo.factories.testsuite || {};
+    for (const [ key, suite ] of Object.entries(suites)) {
+        let componentName = key.replace(/_[^_]+$/, ''); // strip after last _
+        if ('skip' in suite) {
             skippedCount++;
             continue;
         }
-        if ('solo' in testsuite.attrs) {
+        if ('solo' in suite) {
             soloMode = true;
         }
-        discovered.push([factory, testsuite]);
+        if (('x_' + componentName) in modulo.factories.component) {
+            console.log('HACK: Fixing componentName', componentName);
+            componentName = 'x_' + componentName;
+        }
+        const componentFac = modulo.factories.component[componentName];
+        discovered.push([componentFac, suite]);
     }
     if (soloMode) {
-        discovered = discovered.filter(([fac, {attrs}]) => 'solo' in attrs);
+        discovered = discovered.filter(([ fac, conf ]) => 'solo' in conf);
     }
 
-    console.log('%c[%] ' + discovered.length + ' test suites found',
-        'border: 3px solid #B90183; padding: 10px;');
-    const { runTests } = Modulo.cparts.testsuite;
+    const msg = '%c[%] ' + discovered.length + ' test suites found';
+    console.log(msg, 'border: 3px solid #B90183; padding: 10px;');
+    const { runTests } = modulo.registry.cparts.TestSuite;
     let success = 0;
     let failure = 0;
     let omission = 0;
@@ -326,13 +385,14 @@ Modulo.CommandMenu.prototype.test = function test() {
         console.warn('OMISSION: No test suites discovered')
         omission++;
     }
-    for (const [ factory, testsuite ] of discovered) {
-        const info = ' ' + (testsuite.name || '');
-        console.groupCollapsed('%cTestSuite: ' + factory.fullName + info,
-          'border-top: 3px dotted #aaa; margin-top: 5px;');
-        const [ successes, failures ] = runTests(testsuite, factory)
+    for (const [ componentFac, suite ] of discovered) {
+        const info = ' ' + (suite.name || '');
+        const label = '%cTestSuite: ' + componentFac.Name + info
+        //console.groupCollapsed(label, 'border-top: 3px dotted #aaa; margin-top: 5px;');
+        console.group(label, 'border-top: 3px dotted #aaa; margin-top: 5px;');
+        const [ successes, failures ] = runTests(modulo, suite, componentFac.Name)
         if (failures) {
-            failedComponents.push(factory.fullName);
+            failedComponents.push(componentFac);
         }
         success += successes;
         failure += failures;
@@ -345,8 +405,8 @@ Modulo.CommandMenu.prototype.test = function test() {
         const isOk = failures || !successes ? '!      ' : 'OK     ';
         console.log(`[%]  ${isOk} -             [${successes}/${total}]`);
         if (failures) {
-            console.log(`%c[%]  FAILURE -             ${failures} assertion(s) failed`,
-              'border-top: 2px red dashed;');
+            const msg = `%c[%]  FAILURE -             ${failures} assertion(s) failed`;
+            console.log(msg, 'border-top: 2px red dashed;');
         }
     }
 
@@ -404,29 +464,23 @@ Modulo.CommandMenu.prototype.test = function test() {
         console.log(`${failure} assertions failed. Failing components:`, failedComponents);
         return false;
     }
-}
+});
 
 
 // TODO attach somewhere else?
-Modulo.utils.createTestElement = function createTestElement (factory) {
-    const { fullName, componentClass } = factory;
-    // Double check, prevents "Illegal constructor" https://stackoverflow.com/questions/61881027/custom-element-illegal-constructor
-    //Modulo.globals.customElements.define(fullName.toLowerCase(), componentClass);
-    /* try { } catch { }*/
-
-    // Create a simple test DOM of a document fragment and div
-    //const doc = new Modulo.globals.DocumentFragment();
-    let doc;
-    if (Modulo.utils.createTestDocument) {
-        doc = Modulo.utils.createTestDocument(factory);
-    } else {
-        doc = Modulo.globals.document.implementation.createHTMLDocument('testworld');
-    }
+modulo.register('util', function registerTestElement (modulo, componentFac) {
+    const doc = modulo.globals.document.implementation.createHTMLDocument('testworld');
     const head = doc.createElement('head'); // Mock head
     const body = doc.createElement('body'); // Mock body
     doc.documentElement.appendChild(head);
     doc.documentElement.appendChild(body);
+    modulo.globals._moduloTestNumber = (modulo.globals._moduloTestNumber || 0) + 1;
 
+    const componentFunc = modulo.assets.functions[componentFac.Hash];
+    const namespace = 't' + modulo.globals._moduloTestNumber;
+    componentFac.TagName = `${ namespace }-${ componentFac.Name }`.toLowerCase();
+
+    const componentClass = componentFunc(componentFac.TagName, modulo);
     const element = new componentClass();
     if (element._moduloTagName) { // virtualdom-based class
         element.tagName = fullName.toUpperCase(); // (todo: rm after cpartdef refactor)
@@ -437,16 +491,19 @@ Modulo.utils.createTestElement = function createTestElement (factory) {
 
     window._moduloMockDocument = element.mockDocument = doc;
 
-    //const div = Modulo.globals.document.createElement('div');
-    //div.appendChild(element);
-
     doc.body.appendChild(element);
     element.parsedCallback(); // Ensure parsedCallback called synchronously
+    //element.parsedCallback = () => {}; // Prevent double calling
     return element;
-}
+});
 
-Modulo.utils.doTestRerender = function doTestRerender(elem, testInfo) {
-    elem.rerender();
+modulo.register('util', function doTestRerender (elem, testInfo) {
+    try {
+        elem.rerender();
+    } catch (e) {
+        console.error('TestSuite rerender failed:', e);
+        return String(e);
+    }
 
     // Trigger all children's parsedCallbacks
     const descendants = Array.from(elem.querySelectorAll('*'));
@@ -457,6 +514,6 @@ Modulo.utils.doTestRerender = function doTestRerender(elem, testInfo) {
             webComponent.parsedCallback = () => {}; // Prevent double calling
         }
     }
-}
+});
 
 

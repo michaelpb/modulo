@@ -3,8 +3,7 @@
     "testLog": true,
     "isCopyOnly": "^(components|libraries|demos)$",
     "domEngine": "jsdom",
-    "testPathOld": "www-src/demos/tests/index.html",
-    "testPath": "www-src/_misc/mod3_tests.html",
+    "testPath": "www-src/demos/tests/index.html",
     "testLogPath": "modulo.testlog.json",
     "output": "docs",
     "input": "www-src"
