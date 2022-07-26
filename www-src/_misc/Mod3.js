@@ -1,10 +1,6 @@
 /*
     NEXT STEPS for Modulo:
 
-    1 / 2. ..More refactoring... (look through TODOs / legacy / hax)
-
-    3. git commit and tag this as "prealpha2", then make a "prealpha3" fork
-
     4. Use Mod3.js (prealpha3) to replace Modulo.js
 
     5. Start fixing all standard unit tests / static build of site / etc
@@ -295,15 +291,13 @@ var modulo = new Modulo(null, [
 
 modulo.register('confPreprocessor', function src (modulo, conf, value) {
     modulo.fetchQueue.enqueue(value, text => {
-        conf.Content = text + conf.Content;
+        conf.Content = text + (conf.Content || '');
     });
 });
 
 modulo.register('confPreprocessor', function content (modulo, conf, value) {
-    const { Name } = conf;
-    const { hash } = modulo.registry.utils;
-    conf.Children = modulo.loadString(value, Name ? Name : null);
-    conf.Hash = hash(value);
+    conf.Children = modulo.loadString(value, conf.Name ? conf.Name : null);
+    conf.Hash = modulo.registry.utils.hash(value);
 });
 
 modulo.register('cpart', class Component {
