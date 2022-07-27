@@ -29,7 +29,7 @@
             console.log('Running factory for Script for test reporter');
             function doTests() {
                 if (state.success === null) { // prevent double runs
-                    state.success = Modulo.cmd.test();
+                    state.success = modulo.registry.commands.test(modulo);
                 }
             }
         </Script>

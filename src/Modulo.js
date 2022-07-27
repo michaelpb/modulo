@@ -127,7 +127,6 @@ window.Modulo = class Modulo {
             }
             partialConfs.push(partialConf);
         }
-        console.log('JSON this is partialConfs', JSON.stringify(partialConfs));
 
         // Then, run configure callback
         if (!skipConf) { // TODO: move this somewhere else, eg "loadAndDefine"
@@ -153,6 +152,10 @@ window.Modulo = class Modulo {
     }
 
     squashFactories() {
+        return; // XXX ??? For some reason, this overwrites the default
+        // configurations on top of the factory configs (instead of the other
+        // way around). Currently disabling, until its clear if it was
+        // necessary.
         for (const [ type, facs ] of Object.entries(this.factories)) {
             for (const [ name, conf ] of Object.entries(facs)) {
                 facs[name] = Object.assign(conf, this.config[type], conf);
@@ -318,7 +321,7 @@ var modulo = new Modulo(null, [
 
 modulo.register('confPreprocessor', function src (modulo, conf, value) {
     modulo.fetchQueue.enqueue(value, text => {
-        conf.Content = text + (conf.Content || '');
+        conf.Content = (text || '') + (conf.Content || '');
     });
 });
 
@@ -339,6 +342,7 @@ modulo.register('cpart', class Component {
         if (!Children) {
             return;
         }
+        ///* XXX */ console.log('Is it already broken?', JSON.stringify(conf.Children[2]));
         delete conf.Children;
         const cpartTypes = Children.map(({ Type }) => Type);
         const className = stripWord(Name);
@@ -358,7 +362,6 @@ modulo.register('cpart', class Component {
             const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
             const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
             //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
-            //console.log("RUNNING LIFECYCLE FOR ${ className }", cpartClasses);
             //modulo.runLifecycle(cpartClasses, 'factory');
             modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory'));
             r.HACK = window.facHack;
@@ -1133,7 +1136,6 @@ modulo.register('cpart', class Template {
     getDirectives() {  console.count('legacy'); return []; }
 
     static factoryCallback(modulo, conf) {
-        console.log('thsi is Template factoryCallback')
         if (!conf.Content) {
             console.error('No Template Content specified.', conf);
             return; // TODO: Make this never happen
@@ -1197,8 +1199,6 @@ modulo.register('cpart', class Script {
     }
 
     static factoryCallback(modulo, conf) {
-        console.log('thsi is Script factoryCallback', conf)
-
         const code = conf.Content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(modulo.registry.dom);// TODO fix...
         localVars.push('element'); // add in element as a local var
