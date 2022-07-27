@@ -98,7 +98,6 @@ window.Modulo = class Modulo {
         const partialConfs = [];
         for (const node of elem.children) {
             const type = this.getNodeModuloType(node);
-            console.log('this is type', type);
             if (!type) {
                 continue;
             }
@@ -108,6 +107,7 @@ window.Modulo = class Modulo {
             if (!partialConf.Name && 'name' in partialConf) { // TODO: Remove in final refac
                 partialConf.Name = partialConf.name;
             }
+
             let name = partialConf.Name;
             if (parentFactoryName) {
                 name = parentFactoryName + '_' + (name || 'default');
@@ -115,20 +115,26 @@ window.Modulo = class Modulo {
             }
             if (name) {
                 const facs = this.factories[type];
-                facs[name] = Object.assign(facs[name] || {}, partialConf);
                 partialConf.Name = name; // ensure Name field is updated
+                if (!(name in facs)) {
+                    facs[name] = partialConf;
+                } else {
+                    console.error('WARNING:', type, 'already has a', name);
+                    facs[name] = Object.assign(facs[name], partialConf);
+                }
             } else {
                 this.config[type] = partialConf;
             }
             partialConfs.push(partialConf);
         }
+        console.log('JSON this is partialConfs', JSON.stringify(partialConfs));
 
         // Then, run configure callback
         if (!skipConf) { // TODO: move this somewhere else, eg "loadAndDefine"
             this.repeatLifecycle(this.registry.cparts, 'configure', () => {
-                //console.log('CONFIGURE FINISHED');
+                console.log('CONFIGURE FINISHED', elem);
                 modulo.runLifecycle(modulo.registry.cparts, 'define');
-                //console.log('DEFINE FINISHED');
+                console.log('DEFINE FINISHED', elem);
             });
         }
         return partialConfs;
@@ -290,7 +296,7 @@ window.Modulo = class Modulo {
     assert(value, ...info) {
         if (!value) {
             console.error(...info);
-            throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`)
+            throw new Error(`Modulo Error: "${Array.from(info).join(' ')}"`);
         }
     }
 }
@@ -1127,7 +1133,7 @@ modulo.register('cpart', class Template {
     getDirectives() {  console.count('legacy'); return []; }
 
     static factoryCallback(modulo, conf) {
-        console.log('conf', conf);
+        console.log('thsi is Template factoryCallback')
         if (!conf.Content) {
             console.error('No Template Content specified.', conf);
             return; // TODO: Make this never happen
@@ -1191,6 +1197,7 @@ modulo.register('cpart', class Script {
     }
 
     static factoryCallback(modulo, conf) {
+        console.log('thsi is Script factoryCallback', conf)
 
         const code = conf.Content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(modulo.registry.dom);// TODO fix...
