@@ -276,7 +276,7 @@ modulo.register('cpart', class TestSuite {
             let testTotal = 0;
             let testFailed = 0;
 
-
+            /*
             /// XXX
             window.LEG.push('TestSuite hack');
             const templates = stepArray.filter(({ Type }) => Type === 'template')
@@ -285,6 +285,7 @@ modulo.register('cpart', class TestSuite {
                 throw new Error('Duplicate template');
             }
             ////////////////////
+            */
 
             for (const partialConf of stepArray) {
                 const result = TestSuite.doTestStep(testModulo, element, partialConf);

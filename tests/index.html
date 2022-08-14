@@ -1,12 +1,14 @@
 <script Modulo
     src="/js/Modulo.js"
-    -src="/demos/tests/core_functionality.test.html"
-    -name="x"
 ></script>
+    <!-- 
+    -src="/demos/tests/core_functionality.test.html" 
+    -name="x"
+    -->
 
 <script src="/demos/mdu/cparts/TestSuite.js"></script>
 
-<template id="TestReporter">
+<template id="modulo">
     <Component name="TestReporter">
         <Template>
             {% if state.success != null %}
@@ -33,13 +35,12 @@
         </Script>
     </Component>
 
-    <!--
-    <Library src="/demos/tests/core_functionality.test.html"></Library>
-    -->
+    <Library -src="/demos/tests/core_functionality.test.html"></Library>
+    <Library -src="/demos/tests/mtl.test.html"></Library>
 
     <!-- Load tests for core Modulo.js library -->
     <!--
-    <Library src="/demos/tests/reconciler1.test.html"></Library>
+    <Library -src="/demos/tests/reconciler1.test.html"></Library>
     <Library src="/demos/tests/reconciler2.test.html"></Library>
     <Library src="/demos/tests/reconciler3.test.html"></Library>
     <Library src="/demos/tests/reconciler-directives.test.html"></Library>
@@ -63,9 +64,14 @@
     <!-- TODO: Rename & reorg tests to be more clear what tests what -->
 </template>
 
+<button onClick="this.textContent = 'Success: ' + modulo.registry.commands.test(modulo)">
+   Run tests
+</button>
 <script>
-    modulo.loadFromDOM(document.getElementById('TestReporter').content);
+    modulo.loadFromDOM(document.getElementById('modulo').content);
 </script>
 
+<!--
 <x-TestReporter></x-TestReporter>
+-->
 

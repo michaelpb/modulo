@@ -1,18 +1,7 @@
 /*
     NEXT STEPS for Modulo:
-
     // BUG is visible on http://localhost:3334/_misc/mod3_tests.html
-    // TestSuite.js http://localhost:3334/_misc/mod3_tests.html
-            /// ISSUE IS HERE: Duplicating Template contents if not commented
-            //out, due to inflexible CPart Tag partialConf loading 
-
-            const templates = stepArray.filter(({ Type }) => Type === 'template')
-            console.log('this is stepArray', JSON.stringify(templates));
-            if (templates[0] && templates[1] && templates[0].Content === templates[1].Content) {
-                throw new Error('Duplicate template');
-            }
-            ////////////////////
-
+    (maybe solution: Object.assign({}, partialConf) to dupe partialConf before adding to stepArray)
 
 
 
@@ -631,8 +620,9 @@ modulo.register('util', Modulo);
 modulo.register('cpart', class Library {
     static configureCallback(modulo, conf) {
         modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
+        /*
         let { Content, Src, Hash, src, Name, name, namespace } = conf;
-        const { hash } = modulo.registry.utils;
+        //const { hash } = modulo.registry.utils;
         const regName = (Name || name || namespace || 'x').toLowerCase();
         if (Hash) {
             delete conf.Content; // Prevent repeat
@@ -654,6 +644,7 @@ modulo.register('cpart', class Library {
             conf.RegName = regName; // Ensure RegName is set on conf as well
             conf.LibName = libName; // ditto
         }
+        */
     }
     static defineCallback(modulo, conf) {
         if (conf.LibName) {
@@ -1238,7 +1229,7 @@ modulo.register('cpart', class StaticData {
         window.facHack[conf.Type.toLowerCase()] = conf;
     }
 
-    getDirectives() { console.count("getDirectives"); return []; } // XXX
+    getDirectives() { LEGACY.push("staticdata.getDirectives"); return []; } // XXX
 });
 
 modulo.register('cpart', class Script {
