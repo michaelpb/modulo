@@ -1,11 +1,15 @@
 /*
     NEXT STEPS for Modulo:
+
+    // CURRENT BUG: 
+    // The initRenderObj = r.HACK is broken, getting the last set one.
+    // Should just rewrite / fix this hack.
   
-    0. Fix Library -- current CPart code doesn't work at all
-    1. Keep on iterating on: http://localhost:3334/demos/tests/ until it runs
-    at all
-    2. Incorporate "simple test suite" that was used with Mod3 before, and get
+    0. (DONE) Keep on iterating on: http://localhost:3334/demos/tests/ until it
+    runs at all
+    1. Incorporate "simple test suite" that was used with Mod3 before, and get
     running in new environ
+    2. Fix Library -- current CPart code doesn't work at all
     3. One by one incorporate Libraries of the old unit tests. Will need to
     punt + totally rewrite some parts (e.g. things that read in their own
     fetchQ, maybe..?)
@@ -14,6 +18,22 @@
     release alpha!
 */
 
+/*
+  Misc lifecycle refactor idea:
+  Modulo lifecycles:
+  - configure - outputs data structure
+  - asset - sets up asset manager
+          - component - definition functions['..'] & script tag in head
+          - script, staticdata - factory functions['..'] & script tag in head
+          - style - styles['..'] & stylesheet tag in head
+          - props, state - none
+  - define
+      - invokes component definition function
+  Component lifecycles:
+  - factory
+      - invokes script definition function
+
+*/
 
 // Avoid overwriting other Modulo versions / instances
 window.ModuloPrevious = window.Modulo;
@@ -131,9 +151,9 @@ window.Modulo = class Modulo {
         // Then, run configure callback
         if (!skipConf) { // TODO: move this somewhere else, eg "loadAndDefine"
             this.repeatLifecycle(this.registry.cparts, 'configure', () => {
-                console.log('CONFIGURE FINISHED', elem);
+                //console.log('CONFIGURE FINISHED', elem);
                 modulo.runLifecycle(modulo.registry.cparts, 'define');
-                console.log('DEFINE FINISHED', elem);
+                //console.log('DEFINE FINISHED', elem);
             });
         }
         return partialConfs;
@@ -336,7 +356,6 @@ modulo.register('cpart', class Component {
     }
 
     static defineCallback(modulo, conf) {
-        // (Possibly rename as defineCallback or something?)
         const { Content, Name, Children } = conf;
         const { stripWord } = modulo.registry.utils;
         if (!Children) {
@@ -350,22 +369,26 @@ modulo.register('cpart', class Component {
             const r = {};
             class ${ className } extends modulo.registry.utils.BaseElement {
                 constructor() {
-                    super();
-                    this.moduloComponentConf = ${ JSON.stringify(conf) };
-                    this.moduloChildrenData = ${ JSON.stringify(Children) };
-                    this.modulo = modulo;
-                    this.initRenderObj = r.HACK;
+super();
+const { deepClone } = modulo.registry.utils;
+this.moduloComponentConf = ${ JSON.stringify(conf, null, 1) };
+this.moduloChildrenData = ${ JSON.stringify(Children, null, 1) };
+this.modulo = modulo;
+
+// NOTE: Currently run factory MULTIPLE TIMES
+// TODO: Refactor //
+const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
+const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
+//modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
+//modulo.runLifecycle(cpartClasses, 'factory');
+modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory'));
+this.initRenderObj = window.facHack;
+delete window.facHack;
+
                 }
             }
 
-            // TODO: Refactor //
-            const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
-            const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
-            //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
-            //modulo.runLifecycle(cpartClasses, 'factory');
-            modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory'));
-            r.HACK = window.facHack;
-            delete window.facHack;
+
             modulo.globals.customElements.define(tagName, ${ className });
             console.log("Registered: ${ className } as", tagName);
             return ${ className };
@@ -563,9 +586,12 @@ modulo.register('cpart', class Component {
         }
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
-        const val = isVar ? get(renderObj, value) : JSON.parse(value);
+        let val = isVar ? get(renderObj, value) : JSON.parse(value);
+        /* XXX */ if (attrName === 'click' && !val) { val = ()=> console.log('ERROR: (DEBUGGING Wrong Script Tag) click is undefined'); }
+        //modulo.assert(val !== undefined, 'Error: Cannot assign value "undefined" to dataProp')
         set(el.dataProps, attrName, val); // set according to path given
         el.dataPropsAttributeNames[rawName] = attrName;
+        /* XXX */ if (attrName === 'click') { console.log('click', el, value, val); }
     }
 
     dataPropUnmount({ el, attrName, rawName }) {
@@ -1147,6 +1173,7 @@ modulo.register('cpart', class Template {
         if (conf && !conf.Instance) { // TODO: Remove, needed for tests
             modulo.create('engine', 'Templater', conf);
         }
+        /* XXX */ if (conf.Instance && conf.Instance.Instance) { console.error('Peculiar: conf.Instance.Instance', conf.Instance); conf.Instance = conf.Instance.Instance }
         this.Instance = conf.Instance;
     }
 
@@ -1164,7 +1191,9 @@ modulo.register('cpart', class Template {
 
     renderCallback(renderObj) {
         if (!renderObj.component)renderObj.component={};// XXX fix
+        /* XXX */ if (!this.Instance || !this.Instance.render) { console.error('!this.Instance', this.Instance); this.modulo.create('engine', 'Templater', this.Instance); } else {
         renderObj.component.innerHTML = this.Instance.render(renderObj);
+        /* XXX */ }
     }
 });
 
@@ -1208,6 +1237,7 @@ modulo.register('cpart', class Script {
         const args = [ 'modulo', 'require' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
         const opts = { exports: 'script' };
+        //console.log('SCRIPT TAG factoryCallback - REGSITERING', code);
         const func = modulo.assets.registerFunction(allArgs, code, opts);
 
         // Now, actually run code in Script tag to do factory method
@@ -2131,6 +2161,15 @@ if (typeof document !== undefined && document.head) { // Browser environ
     Modulo.globals = window; // TODO, remove?
     modulo.globals = window;
     modulo.loadFromDOM(document.head);
+    console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
+        get test() { return modulo.registry.commands.test(modulo) }
+        get build() { return modulo.registry.commands.build(modulo) }
+        get bundle() { return modulo.registry.commands.bundle(modulo) }
+    })));
+    //})).__proto__); // TODO: .__proto__ is better in firefox, saves one click, without is better in chrome
+    //Misc command idea:
+    // - Allow adding something like: ?modulo-runcommand=test
+
 } else if (typeof exports !== undefined) { // Node.js / silo'ed script
     exports = { Modulo, modulo };
 }

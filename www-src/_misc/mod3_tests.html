@@ -1,36 +1,10 @@
-<!-- define legacy Modulo -->
-<!--<script src="/js/Modulo.js"></script>-->
-
-<!--<script src="/demos/mdu/cparts/TestSuite.js"></script>-->
-<!--<script>window.doDefineAll = true</script>-->
-
 <script Modulo
-    src="/_misc/Mod3.js"
-    -src="/_misc/mod3_core_functionality_tests.html"
+    src="/js/Modulo.js"
+    -src="/demos/tests/core_functionality.test.html"
     -name="x"
 ></script>
 
-<!--<script src="/_misc/Mod3.js"></script>-->
-<script src="/demos/mdu/cparts/TestSuite3.js"></script>
+<script src="/demos/mdu/cparts/TestSuite.js"></script>
 
 <button onClick="modulo.registry.commands.test(modulo)">Run tests</button>
 
-<script>
-    /*
-    function runTests () {
-        modulo.registry.commands.test(modulo);
-        //Modulo.defineAll2();
-        modulo.fetchQueue.wait(() => {
-            console.log('this is libraries:', modulo);
-            modulo.registry.commands.test(modulo);
-            //modulo.registry.commands.test(modulo.registry.library.mtltests);
-        });
-    }
-    */
-</script>
-
-
-<!--
-<x-ExampleClickingComponent>
-</x-ExampleClickingComponent>
--->

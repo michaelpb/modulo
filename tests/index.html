@@ -1,12 +1,10 @@
-<script src="/js/Modulo.js"></script>
-<script src="/demos/mdu/cparts/TestSuite.js"></script>
-
-<!--
 <script Modulo
+    src="/js/Modulo.js"
     -src="/demos/tests/core_functionality.test.html"
     -name="x"
 ></script>
--->
+
+<script src="/demos/mdu/cparts/TestSuite.js"></script>
 
 <template id="TestReporter">
     <Component name="TestReporter">
@@ -25,7 +23,7 @@
         <State
             success:=null
         ></State>
-        <Script -name="lol">
+        <Script>
             console.log('Running factory for Script for test reporter');
             function doTests() {
                 if (state.success === null) { // prevent double runs

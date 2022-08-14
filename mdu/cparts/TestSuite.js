@@ -1,5 +1,5 @@
-// TODO: Refactor entire file to use new Modulo system, with a pluggable system
-// of Test Step CParts
+// TODO: Refactor entire file to use new Modulo register system, with a
+// registered system of "testStep" functions or classes
 
 modulo.register('cpart', class TestSuite {
     /*
