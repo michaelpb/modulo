@@ -1,15 +1,18 @@
 <component name="MTLTester"><testsuite>
 
-<test name="ensure MTL is defined">
+<test name="ensure modulo.engines.Templater is defined">
     <script>
-        const { MTL } = Modulo.templating;
+        //const { MTL } = Modulo.templating;
         // Attach simple helper function used below
         Modulo._r = (tText, context) => {
-            const tmpl = new MTL(tText);
+            const conf = {
+                Content: tText,
+            };
+            const tmpl = new modulo.registry.engines.Templater(modulo, conf);
             //console.log('tmpl', tmpl.output);
             return tmpl.render(context);
         }
-        assert: MTL
+        assert: modulo.registry.engines.Templater && Modulo._r
     </script>
 </test>
 
@@ -66,7 +69,8 @@
     <script name="Filter arguments test 3">
         const context = {
             obj: {a: 'b', c: 'd'},
-            testing: { instance: { render: arg => arg.c } },
+            //testing: { instance: { render: arg => arg.c } },
+            testing: { Instance: { render: arg => arg.c } },
         };
         const template = '{{ obj|renderas:testing }}';
         const expected = 'd';
@@ -470,27 +474,29 @@
 
 <test name="Custom template tags and filters">
     <script name="For loop with filter">
-        const { MTL } = Modulo.templating;
         const text = '{% for num in test|first %}{{ num }},{% endfor %}';
         const first = arr => arr[0];
-        const template = new MTL(text, {filters: {first}});
+        const conf = { Content: text, filters: { first } };
+        const template = new modulo.registry.engines.Templater(modulo, conf);
         const result = template.render({test: ['ab', 1, 2]});
 
         assert: result === 'a,b,'
     </script>
 
     <script name="Filter and template tag ordering">
-        const { MTL } = Modulo.templating;
         const text = 'This is a {{ test|a|b:2|caps }} {% lol "ThIs iS a TEst!"|caps %}';
-        const template = new MTL(text, {
+        const conf = {
+            Content: text,
             filters: {
                 'a': function (s) { return ['a', 'b', 'correct', 'c']; },
                 'b': function (s, a) { return s[a]; },
                 'caps': function (s) { return s.toUpperCase(); },
-            }, tags: {
+            },
+            tags: {
                 'lol': function (n, G) { return "OUT.push(" + G.parseExpr(n) + ".indexOf('S'));"; },
-            }
-        });
+            },
+        };
+        const template = new modulo.registry.engines.Templater(modulo, conf);
         const result = template.render({'test': 'tester'});
 
         assert: result === 'This is a CORRECT 3'
@@ -500,13 +506,13 @@
 
 <test name="Nested data">
     <script name="For-loops iterating over nested data">
-        const { MTL } = Modulo.templating;
         const text =
             'A\n A\n A{% for row in state.data %}' +
                 '<tr>{% for col in row %}<td>{{ col }}</td>{% endfor %}</tr>' +
             '{% endfor %}Z\n Z\n Z\n ';
-        const first = arr => arr[0];
-        const template = new MTL(text);
+
+        const conf = { Content: text, };
+        const template = new modulo.registry.engines.Templater(modulo, conf);
         const result = template.render({state: { data: [ [10, 30] ]} });
 
         assert: result === 'A\n A\n A<tr><td>10</td><td>30</td></tr>Z\n Z\n Z\n '
