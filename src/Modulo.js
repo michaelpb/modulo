@@ -1,7 +1,22 @@
 /*
     NEXT STEPS for Modulo:
 
-    // CURRENT BUG: 
+    // BUG is visible on http://localhost:3334/_misc/mod3_tests.html
+    // TestSuite.js http://localhost:3334/_misc/mod3_tests.html
+            /// ISSUE IS HERE: Duplicating Template contents if not commented
+            //out, due to inflexible CPart Tag partialConf loading 
+
+            const templates = stepArray.filter(({ Type }) => Type === 'template')
+            console.log('this is stepArray', JSON.stringify(templates));
+            if (templates[0] && templates[1] && templates[0].Content === templates[1].Content) {
+                throw new Error('Duplicate template');
+            }
+            ////////////////////
+
+
+
+
+    // (PREVIOUS BUG NOTE - Might still be relevant, or taken care of by above)
     // The initRenderObj = r.HACK is broken, getting the last set one.
     // Should just rewrite / fix this hack.
   
@@ -34,6 +49,9 @@
       - invokes script definition function
 
 */
+
+const LEGACY = []; // XXX
+window.LEG = LEGACY;
 
 // Avoid overwriting other Modulo versions / instances
 window.ModuloPrevious = window.Modulo;
@@ -145,7 +163,9 @@ window.Modulo = class Modulo {
             } else {
                 this.config[type] = partialConf;
             }
-            partialConfs.push(partialConf);
+            // XXX Fixes stuff!? -v
+            // partialConfs.push(Object.assign({}, partialConf));
+            partialConfs.push(Object.assign({}, partialConf));//
         }
 
         // Then, run configure callback
@@ -388,9 +408,8 @@ delete window.facHack;
                 }
             }
 
-
             modulo.globals.customElements.define(tagName, ${ className });
-            console.log("Registered: ${ className } as", tagName);
+            LEGACY.push("Registered: ${ className } as " + tagName);
             return ${ className };
             ////////////////////
         `;
@@ -587,11 +606,11 @@ delete window.facHack;
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         let val = isVar ? get(renderObj, value) : JSON.parse(value);
-        /* XXX */ if (attrName === 'click' && !val) { val = ()=> console.log('ERROR: (DEBUGGING Wrong Script Tag) click is undefined'); }
+        /* XXX */ if (attrName === 'click' && !val) { val = ()=> console.log('XXX ERROR: (DEBUGGING Wrong Script Tag) click is undefined'); }
         //modulo.assert(val !== undefined, 'Error: Cannot assign value "undefined" to dataProp')
         set(el.dataProps, attrName, val); // set according to path given
         el.dataPropsAttributeNames[rawName] = attrName;
-        /* XXX */ if (attrName === 'click') { console.log('click', el, value, val); }
+        ///* XXX */ if (attrName === 'click') { console.log('XXX click', el, value, val); }
     }
 
     dataPropUnmount({ el, attrName, rawName }) {
@@ -1092,7 +1111,7 @@ modulo.register('core', class FetchQueue {
 
 
 modulo.register('cpart', class Props {
-    getDirectives() {  console.count('legacy'); return []; }
+    getDirectives() {  LEGACY.push('props.getDirectives'); return []; }
 
     initializedCallback(renderObj) {
         const props = {};
@@ -1120,7 +1139,7 @@ modulo.register('cpart', class Style {
         modulo.applyPreprocessor(conf, [ 'Src' ]);
     }
 
-    getDirectives() {  console.count('legacy'); return []; }
+    getDirectives() {  LEGACY.push('style.getDirectives'); return []; }
 
     static factoryCallback(modulo, conf) {
         /*
@@ -1159,7 +1178,7 @@ modulo.register('cpart', class Template {
     static configureCallback(modulo, conf) {
         modulo.applyPreprocessor(conf, [ 'Src' ]);
     }
-    getDirectives() {  console.count('legacy'); return []; }
+    getDirectives() {  LEGACY.push('template.getDirectives'); return []; }
 
     static factoryCallback(modulo, conf) {
         if (!conf.Content) {
@@ -1251,7 +1270,7 @@ modulo.register('cpart', class Script {
     }
 
     getDirectives() {
-        console.count('legacy');
+        LEGACY.push('script.getDirectives');
         let { script } = this.element.initRenderObj;
         const isCbRegex = /(Unmount|Mount)$/;
         if (!script) { script = {}; } // TODO XXX
@@ -1322,7 +1341,7 @@ modulo.register('cpart', class Script {
 
 modulo.register('cpart', class State {
     getDirectives() {
-        console.log('legacy');
+        LEGACY.push('state.getDirectives');
         return [ 'state.bindMount', 'state.bindUnmount' ];
     }
 

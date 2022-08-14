@@ -275,6 +275,17 @@ modulo.register('cpart', class TestSuite {
             console.group('[%]', '         ? TEST', testName);
             let testTotal = 0;
             let testFailed = 0;
+
+
+            /// XXX
+            window.LEG.push('TestSuite hack');
+            const templates = stepArray.filter(({ Type }) => Type === 'template')
+            console.log('this is stepArray', JSON.stringify(templates));
+            if (templates[0] && templates[1] && templates[0].Content === templates[1].Content) {
+                throw new Error('Duplicate template');
+            }
+            ////////////////////
+
             for (const partialConf of stepArray) {
                 const result = TestSuite.doTestStep(testModulo, element, partialConf);
                 if (result !== null) {
