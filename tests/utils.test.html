@@ -2,19 +2,21 @@
 
 <test name="utils.parseDirectives">
     <script name="Ensure defined">
-        const dShorts = [[/^@/, 'component.event'],
-                         [/:$/, 'component.dataProp']];
+        // TODO: Move from utils to a new Reconciler unit test
+        const directiveShortcuts = [ [ /^@/, 'component.event' ],
+                                     [ /:$/, 'component.dataProp' ] ];
+        const rec = modulo.create('engine', 'Reconciler', { directiveShortcuts });
         // helper utility function:
-        Modulo.utils.parseDir = function parseDir (rawName) {
-            return JSON.stringify(parseDirectives(rawName, dShorts), null, 2);
+        element.parseDir = function parseDir (rawName, value) {
+            // TODO: not sure why value gets passed in here
+            return JSON.stringify(rec.parseDirectives(rawName, directiveShortcuts), null, 2);
         }
 
-        const { parseDirectives } = Modulo.utils;
-        assert: parseDirectives 
+        assert: rec && rec.parseDirectives
     </script>
 
     <script name="Can parse shortcuts">
-        const { parseDir } = Modulo.utils;
+        const { parseDir } = element;
         // <a b="valb" c:="valc" @d="vald"></a>
         const result = parseDir('c:', 'valc');
         const expected = JSON.stringify([{
@@ -27,7 +29,7 @@
     </script>
 
     <script name="Can parse multiple shortcuts">
-        const { parseDir } = Modulo.utils;
+        const { parseDir } = element;
         const result = parseDir('@abc:', 'def');
         const expected = JSON.stringify([
                 {
@@ -47,7 +49,7 @@
     </script>
 
     <script name="Can parse multiple directives">
-        const { parseDir } = Modulo.utils;
+        const { parseDir } = element;
         // <a b="valb" c:="valc" @d="vald"></a>
         const result = parseDir('[a][b][c][d]e', 'vale');
         const expected = JSON.stringify([
@@ -64,7 +66,7 @@
     </script>
 
     <script name="Can parse bare directives">
-        const { parseDir } = Modulo.utils;
+        const { parseDir } = element;
         // <a b="valb" c:="valc" @d="vald"></a>
         const result = parseDir('[testing]', '');
         const expected = JSON.stringify([
@@ -75,17 +77,17 @@
     </script>
 
     <script name="Can detect when no directives">
-        const { parseDirectives } = Modulo.utils;
-        const result = parseDirectives('just-a-normal-attribute-folks', []);
-        const expected = null;
+        const { parseDir } = element;
+        const result = parseDir('just-a-normal-attribute-folks', []);
+        const expected = 'null';
         assert: result === expected
     </script>
 
 
     <script name="Can detect when no directives or shortcuts">
-        const { parseDirectives } = Modulo.utils;
-        const result = parseDirectives('just-a$no.b.c:a---i??te-folks', []);
-        const expected = null;
+        const { parseDir } = element;
+        const result = parseDir('just-a$no.b.c:a---i??te-folks', []);
+        const expected = 'null';
         assert: result === expected
     </script>
 
@@ -95,7 +97,7 @@
 
 
     <script name="Can resolve relativep paths">
-        const { resolvePath } = Modulo.utils;
+        const { resolvePath } = modulo.registry.utils;
         /*
         basesDir /home/michaelb/projects/modulo/tests/
         relDir 
@@ -113,19 +115,19 @@
 
 <test name="utils.get and utils.set">
     <script name="Ensure defined">
-        const { set, get } = Modulo.utils;
+        const { set, get } = modulo.registry.utils;
         assert: set && get
     </script>
 
     <script name="Ensure get works">
-        const { get } = Modulo.utils;
+        const { get } = modulo.registry.utils;
         const expected = 'hij';
         const result = get({ abc: { def: "hij" }}, 'abc.def');
         assert: result === expected
     </script>
 
     <script name="Ensure set works for plain assignment">
-        const { set } = Modulo.utils;
+        const { set } = modulo.registry.utils;
         const obj = { abc: { def: "hij" }};
         set(obj, 'klm', 'nop');
         const expected = JSON.stringify({ abc: { def: "hij" }, klm: 'nop' })
@@ -134,7 +136,7 @@
     </script>
 
     <script name="Ensure set works for path">
-        const { set } = Modulo.utils;
+        const { set } = modulo.registry.utils;
         const obj = { abc: { def: "hij" }};
         set(obj, 'abc.def', 'nop');
         const expected = JSON.stringify({ abc: { def: "nop" } })
@@ -144,15 +146,16 @@
 
 </test>
 
-
+<!-- Right now, transformTag is removed -->
+<!--
 <test name="utils.transformTag">
     <script name="Ensure defined">
-        const { transformTag } = Modulo.utils;
+        const { transformTag } = modulo.registry.utils;
         assert: transformTag
     </script>
 
     <script name="Can transform simple tag">
-        const { transformTag } = Modulo.utils;
+        const { transformTag } = modulo.registry.utils;
         const doc = Modulo.globals.document;
         element.innerHTML = '<p>Abc</p>';
         transformTag(element.querySelector('p'), 'span');
@@ -160,7 +163,7 @@
     </script>
 
     <script name="Can transform complicated tag">
-        const { transformTag } = Modulo.utils;
+        const { transformTag } = modulo.registry.utils;
         const doc = Modulo.globals.document;
         element.innerHTML = `<div><span></span>
             <p id="para" class="Test" [b][c]d="DEFhij"></p>
@@ -176,7 +179,7 @@
 
 
     <script name="Can transform complicated tag with chilren">
-        const { transformTag } = Modulo.utils;
+        const { transformTag } = modulo.registry.utils;
         const doc = Modulo.globals.document;
 
         const children = `<span>item
@@ -198,5 +201,6 @@
     </script>
 
 </test>
+-->
 
 </testsuite></component>

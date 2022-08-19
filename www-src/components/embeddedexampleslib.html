@@ -34,7 +34,7 @@
 
 
 
-<component name="Templating_1">
+<Component name="Templating_1">
 <Template>
 <p>There are <em>{{ state.count }}
   {{ state.count|pluralize:"articles,article" }}</em>
@@ -64,11 +64,11 @@
     script.exports.title = "ModuloNews";
 </Script>
 
-<testsuite
-    src="./examplelib-tests/Templating_1-tests.html"
-></testsuite>
+<TestSuite
+    -src="./examplelib-tests/Templating_1-tests.html"
+></TestSuite>
 
-</component>
+</Component>
 
 
 <component name="Templating_PrepareCallback">
@@ -350,7 +350,7 @@ to {{ state.count }} {{ state.noun }}s.
 ></State>
 
 <testsuite
-    src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
+    -src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
 ></testsuite>
 
 </component>

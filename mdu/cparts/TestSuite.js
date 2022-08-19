@@ -374,6 +374,13 @@ modulo.register('command', function test(modulo) {
         if ('solo' in suite) {
             soloMode = true;
         }
+
+        if ('Src' in suite) {
+            modulo.fetchQueue.enqueue(suite.Src, text => {
+                suite.Content = (text || '') + (suite.Content || '');
+            });
+        }
+
         if (('x_' + componentName) in modulo.factories.component) {
             console.log('HACK: Fixing componentName', componentName);
             componentName = 'x_' + componentName;
@@ -384,6 +391,18 @@ modulo.register('command', function test(modulo) {
     if (soloMode) {
         discovered = discovered.filter(([ fac, conf ]) => 'solo' in conf);
     }
+
+    // TODO: Fix this to load Src during configure step, ahead of time!
+    // Either run synchronously, or run after Src catches up
+    const func = () => modulo.registry.utils.runTest(modulo, discovered, skippedCount);
+    if (Object.keys(modulo.fetchQueue.queue).length === 0) {
+        return func();
+    }
+    modulo.fetchQueue.wait(func);
+    return null;
+});
+
+modulo.register('util', function runTest(modulo, discovered, skippedCount) {
 
     const msg = '%c[%] ' + discovered.length + ' test suites found';
     console.log(msg, 'border: 3px solid #B90183; padding: 10px;');
@@ -462,6 +481,11 @@ modulo.register('command', function test(modulo) {
         }
     }
 
+    if (window.LEG && window.LEG.length > 0) {
+        omission++;
+        console.log('LEGACY ERRORS:', window.LEG);
+    }
+
     if (!failure && !omission && success) {
         console.log('%c     OK    ', 'background-color: green');
         console.log(`${success} assertions passed`);
@@ -473,7 +497,8 @@ modulo.register('command', function test(modulo) {
                         'expected assertions');
         }
         console.log('%c FAILURE ', 'background-color: red');
-        console.log(`${failure} assertions failed. Failing components:`, failedComponents);
+        const compNames = failedComponents.map(({ Name }) => Name);
+        console.log(`${failure} assertions failed. Failing components:`, compNames);
         return false;
     }
 });

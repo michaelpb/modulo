@@ -41,7 +41,7 @@
     });*/
 -->
 
-<component name="Hello">
+<Component name="Hello">
 
 <Template>
     <button @click:=script.countUp>Hello {{ state.num }}</button>
@@ -59,12 +59,12 @@
     src="./examplelib-tests/Hello-tests.html"
 ></testsuite>
 
-</component>
+</Component>
 
 
 
 
-<component name="Simple">
+<Component name="Simple">
 
 <Template>
     Components can use any number of <strong>CParts</strong>.
@@ -85,12 +85,12 @@
     </test>
 </testsuite>
 
-</component>
+</Component>
 
 
 
 
-<component name="ToDo">
+<Component name="ToDo">
 <Template>
 <ol>
     {% for item in state.list %}
@@ -119,12 +119,12 @@
     src="./examplelib-tests/ToDo-tests.html"
 ></testsuite>
 
-</component>
+</Component>
 
 <!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
 
 
-<component name="JSON">
+<Component name="JSON">
 <!-- Use StaticData CPart to include JSON from an API or file -->
 <Template>
     <strong>Name:</strong> {{ staticdata.name }} <br />
@@ -134,12 +134,12 @@
 <StaticData
     src="https://api.github.com/repos/michaelpb/modulo"
 ></StaticData>
-</component>
+</Component>
 
 
 
 
-<component name="JSONArray">
+<Component name="JSONArray">
 <!-- Use StaticData CPart to include JSON from an API or file.
 You can use it for arrays as well. Note that it is "bundled"
 as static data in with JS, so it does not refresh. -->
@@ -152,9 +152,9 @@ as static data in with JS, so it does not refresh. -->
 <StaticData
   src="https://jsonplaceholder.typicode.com/todos"
 ></StaticData>
-</component>
+</Component>
 
-<component name="API">
+<Component name="API">
 <Template>
 <p>{{ state.name }} | {{ state.location }}</p>
 <p>{{ state.bio }}</p>
@@ -191,10 +191,10 @@ as static data in with JS, so it does not refresh. -->
     src="./examplelib-tests/API-tests.html"
 ></testsuite>
 
-</component>
+</Component>
 
 
-<component name="ColorSelector">
+<Component name="ColorSelector">
 <Template>
     <div style="float: right">
         <p><label>Hue:<br />
@@ -217,14 +217,14 @@ as static data in with JS, so it does not refresh. -->
     sat:=50
     lum:=50
 ></State>
-</component>
+</Component>
 
 
 
 
 
 
-<component name="SearchBox">
+<Component name="SearchBox">
 <!-- A "type as you go" search box implementation,
 an example of more complicated HTML and JS behavior -->
 <Template>
@@ -343,11 +343,11 @@ an example of more complicated HTML and JS behavior -->
     src="./examplelib-tests/SearchBox-tests.html"
 ></testsuite>
 
-</component>
+</Component>
 
 
 
-<component name="DateNumberPicker">
+<Component name="DateNumberPicker">
 <Template>
     <p>ISO: <tt>{{ state.year }}-{{ state.month }}-{{ state.day }}</tt></p>
     {% for part in state.ordering %}
@@ -406,10 +406,10 @@ an example of more complicated HTML and JS behavior -->
         width: 100%;
     }
 </Style>
-</component>
+</Component>
 
 
-<component name="FlexibleForm">
+<Component name="FlexibleForm">
 <!-- Here, we have a form that's easy to update. If this gets used more
 than a couple times, it could be turned into a reusable component where
 the "ordering" and initial values get set via Props. -->
@@ -439,13 +439,13 @@ the "ordering" and initial values get set via Props. -->
     comment="So, like, Romans claim to be all about virtue, but do you know what I think? I think they stink."
     fields:='["name", "topic", "comment", "private", "subscribe"]'
 ></State>
-</component>
+</Component>
 
 
 
 
 
-<component name="FlexibleFormWithAPI">
+<Component name="FlexibleFormWithAPI">
 <!-- Combining the code from the previous exercise, we can interact with
 APIs. Here we use a Typicode's placeholder API to make posts -->
 <Template>
@@ -520,12 +520,12 @@ APIs. Here we use a Typicode's placeholder API to make posts -->
     }
 </Script>
 
-</component>
+</Component>
 
 
 
 
-<component name="Components">
+<Component name="Components">
 <!-- Once defined, Modulo web components can be used like HTML.
 DemoModal and DemoChart are already defined. Try using below! -->
 <Template>
@@ -546,11 +546,11 @@ DemoModal and DemoChart are already defined. Try using below! -->
 
 </Template>
 
-</component>
+</Component>
 
 
 
-<component name="OscillatingGraph">
+<Component name="OscillatingGraph">
 <Template>
 
     <!-- Note that even with custom components, core properties like "style"
@@ -636,7 +636,7 @@ DemoModal and DemoChart are already defined. Try using below! -->
         width: 50px;
     }
 </Style>
-</component>
+</Component>
 
 
 
@@ -652,7 +652,7 @@ DemoModal and DemoChart are already defined. Try using below! -->
     {% endcomment %}
 -->
 
-<component name="PrimeSieve">
+<Component name="PrimeSieve">
 <!-- Demos mouseover, template filters, template control flow,
      and static script exports -->
 <Template>
@@ -721,13 +721,13 @@ div.whole ~ div.number::after { opacity: 0; }
     src="./examplelib-tests/PrimeSieve-tests.html"
 ></testsuite>
 
-</component>
+</Component>
 
 
 
 
 
-<component name="MemoryGame">
+<Component name="MemoryGame">
 <!-- A much more complicated example application -->
 <Template>
 {% if not state.cards.length %}
@@ -891,12 +891,12 @@ h3 {
     src="./examplelib-tests/MemoryGame-tests.html"
 ></testsuite>
 
-</component>
+</Component>
 
 
 
 
-<component name="ConwayGameOfLife">
+<Component name="ConwayGameOfLife">
 <Template>
   <div class="grid">
     {% for i in script.exports.range %}
@@ -1023,5 +1023,5 @@ h3 {
     }
 </Style>
 
-</component>
+</Component>
 

@@ -1,22 +1,12 @@
 /*
-    NEXT STEPS for Modulo:
-    // BUG is visible on http://localhost:3334/_misc/mod3_tests.html
-    (maybe solution: Object.assign({}, partialConf) to dupe partialConf before adding to stepArray)
-
-
-
-    // (PREVIOUS BUG NOTE - Might still be relevant, or taken care of by above)
-    // The initRenderObj = r.HACK is broken, getting the last set one.
-    // Should just rewrite / fix this hack.
-  
     0. (DONE) Keep on iterating on: http://localhost:3334/demos/tests/ until it
     runs at all
-    1. Incorporate "simple test suite" that was used with Mod3 before, and get
+    1. (DONE) Incorporate "simple test suite" that was used with Mod3 before, and get
     running in new environ
-    2. Fix Library -- current CPart code doesn't work at all
-    3. One by one incorporate Libraries of the old unit tests. Will need to
-    punt + totally rewrite some parts (e.g. things that read in their own
-    fetchQ, maybe..?)
+    2. (DONE-ish) Fix Library -- current CPart code doesn't work at all
+    3. (IN PROGRESS) One by one incorporate Libraries of the old unit tests.
+    Will need to punt + totally rewrite some parts (e.g. things that read in
+    their own fetchQ, maybe..?)
     4. Work on static build of site / etc
     5. Finish updating documentation, polish docs, finish misc articles, then
     release alpha!
@@ -36,7 +26,6 @@
   Component lifecycles:
   - factory
       - invokes script definition function
-
 */
 
 const LEGACY = []; // XXX
@@ -211,8 +200,7 @@ window.Modulo = class Modulo {
         return patches;
     }
 
-    getFactoryLifecyclePatches(lcObj, lifecycleName) {
-        // todo: refactor with top
+    getFactoryLifecyclePatches(lcObj, lifecycleName, searchName) {
         const patches = [];
         const methodName = lifecycleName + 'Callback';
         for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
@@ -221,7 +209,17 @@ window.Modulo = class Modulo {
             }
             const type = typeUpper.toLowerCase();
             const facs = this.factories[type] || {};
-            for (const name of Object.keys(facs)) { // Also invoke factories
+            for (const name of Object.keys(facs)) {
+                /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                // HAX XXX this just guesses, need to refactor this with top
+                // and not do guesses
+                const split = searchName.split('_');
+                const nameSubstring = split[split.length - 1]; // get last item
+                if (name.includes(nameSubstring)) { //console.log('MATCH!', name, nameSubstring);
+                } else { //console.log('no match', name, nameSubstring);
+                    continue;
+                }
+                /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                 patches.push([ obj, methodName, facs[name] ]);
             }
         }
@@ -390,7 +388,7 @@ const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts
 const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
 //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
 //modulo.runLifecycle(cpartClasses, 'factory');
-modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory'));
+modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory', '${ className }'));
 this.initRenderObj = window.facHack;
 delete window.facHack;
 
@@ -595,7 +593,7 @@ delete window.facHack;
         const isVar = /^[a-z]/i.test(value) && !Modulo.INVALID_WORDS.has(value);
         const renderObj = isVar ? this.element.getCurrentRenderObj() : {};
         let val = isVar ? get(renderObj, value) : JSON.parse(value);
-        /* XXX */ if (attrName === 'click' && !val) { val = ()=> console.log('XXX ERROR: (DEBUGGING Wrong Script Tag) click is undefined'); }
+        /* XXX */ if (attrName === 'click' && !val) { val = ()=> console.log('XXX ERROR: (DEBUGGING Wrong Script Tag) click is undefined', renderObj); }
         //modulo.assert(val !== undefined, 'Error: Cannot assign value "undefined" to dataProp')
         set(el.dataProps, attrName, val); // set according to path given
         el.dataPropsAttributeNames[rawName] = attrName;
@@ -1183,7 +1181,14 @@ modulo.register('cpart', class Template {
         if (conf && !conf.Instance) { // TODO: Remove, needed for tests
             modulo.create('engine', 'Templater', conf);
         }
-        /* XXX */ if (conf.Instance && conf.Instance.Instance) { console.error('Peculiar: conf.Instance.Instance', conf.Instance); conf.Instance = conf.Instance.Instance }
+
+        /////////////////////////////
+        /* XXX */
+        if (conf.Instance && conf.Instance.Instance) { 
+            LEGACY.push('Peculiar: conf.Instance.Instance')
+            conf.Instance = conf.Instance.Instance;
+        }
+        /////////////////////////////
         this.Instance = conf.Instance;
     }
 
@@ -1247,7 +1252,6 @@ modulo.register('cpart', class Script {
         const args = [ 'modulo', 'require' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
         const opts = { exports: 'script' };
-        //console.log('SCRIPT TAG factoryCallback - REGSITERING', code);
         const func = modulo.assets.registerFunction(allArgs, code, opts);
 
         // Now, actually run code in Script tag to do factory method
@@ -1256,6 +1260,9 @@ modulo.register('cpart', class Script {
         modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
 
         // HACK ----------------------------------
+        if (code.includes('getClicked()')) {
+            console.log('SCRIPT TAG factoryCallback - REGISTERING', code, results);
+        }
         if (!window.facHack){ window.facHack = {}; }
         window.facHack[conf.Type.toLowerCase()] = results;
     }
@@ -1834,7 +1841,7 @@ modulo.register('engine', class Reconciler {
         this.tagTransforms = opts.tagTransforms;
         this.directiveShortcuts = opts.directiveShortcuts || [];
         if (this.directiveShortcuts.length === 0) { // XXX horrible HACK
-            console.error('this.directiveShortcuts.length === 0');
+            LEGACY.push('this.directiveShortcuts.length === 0')
             this.directiveShortcuts = [
                 [ /^@/, 'component.event' ],
                 [ /:$/, 'component.dataProp' ],
