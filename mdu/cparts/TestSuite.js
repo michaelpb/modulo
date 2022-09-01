@@ -88,7 +88,7 @@ modulo.register('cpart', class TestSuite {
         }
         */
         if (!content.includes('assert:') && !content.includes('event:')) {
-            console.log('WARNING: Invalid script tag:', data);
+            console.log('WARNING: Invalid script tag:', stepConf);
         }
 
         if (isAssertion) {
@@ -482,7 +482,7 @@ modulo.register('util', function runTest(modulo, discovered, skippedCount) {
     }
 
     if (window.LEG && window.LEG.length > 0) {
-        omission++;
+        //omission++;
         console.log('LEGACY ERRORS:', window.LEG);
     }
 

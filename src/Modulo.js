@@ -1,15 +1,13 @@
 /*
-    0. (DONE) Keep on iterating on: http://localhost:3334/demos/tests/ until it
-    runs at all
-    1. (DONE) Incorporate "simple test suite" that was used with Mod3 before, and get
-    running in new environ
-    2. (DONE-ish) Fix Library -- current CPart code doesn't work at all
-    3. (IN PROGRESS) One by one incorporate Libraries of the old unit tests.
-    Will need to punt + totally rewrite some parts (e.g. things that read in
-    their own fetchQ, maybe..?)
-    4. Work on static build of site / etc
+    1. (INP) Next step: Work on necessitating LIVE version of site (not built),
+    using new boilerplate (it's okay to use hacks to get through)
+    2. Work on static build of site / etc (**)
+    3. One by one incorporate Libraries of the old unit tests.  Will need to
+    punt + totally rewrite some parts (e.g. things that read in their own
+    fetchQ, maybe..?)
     5. Finish updating documentation, polish docs, finish misc articles, then
     release alpha!
+    * (DONE-ish) Fix Library -- current CPart code doesn't work at all
 */
 
 /*
@@ -26,6 +24,7 @@
   Component lifecycles:
   - factory
       - invokes script definition function
+  - (render etc)
 */
 
 const LEGACY = []; // XXX
@@ -252,6 +251,8 @@ window.Modulo = class Modulo {
         this.assert(this._repeatTries++ < 10, `Max repeat: ${lcName}`);
         this.runLifecycle(lcObj, lcName);
         this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
+        this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
+        this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
         //this.runLifecycle(lcObj, lcName);
         this.fetchQueue.enqueueAll(() => this.repeatLifecycle(lcObj, lcName, cb));
         if (Object.keys(this.fetchQueue.queue).length === 0) {
@@ -405,7 +406,14 @@ delete window.facHack;
         const { library } = modulo.config;
         const namespace = conf.namespace || library.Name || library.name || 'x';
         conf.Hash = func.hash;
-        conf.TagName = (conf.TagName || (namespace + '-' + Name)).toLowerCase();
+        // XXX HAX ------------
+        let hackName = Name;
+        if (hackName.includes('_')) {
+            const split = hackName.split('_');
+            hackName = split[split.length - 1]; // get last item
+        }
+        // XXX HAX ------------
+        conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
         conf.namespace = namespace; // ensure updated (todo remove when defaults)
         func(conf.TagName, modulo);
     }

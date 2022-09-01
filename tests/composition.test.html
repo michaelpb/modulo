@@ -52,10 +52,14 @@
     }
 </Script>
 
-<TestSuite>
-    <!-- NOTE: There used to be a bug with the test runner or testing framework
+<!--
+<TestSuite> -->
+    <!-- 
+    OLD NOTE: There used to be a bug with the test runner or testing framework
     such that including this test will cause other tests to fail, but running
-    it separately it succeeds. However, it seems to work now... -->
+    it separately it succeeds. However, it seems to work now...
+    -->
+    <!--
     <Test name="Misc sub-components correctly render, using spares">
         <script name="Make sure the cpartSpares interface still works">
             element.cparts.template =
@@ -88,6 +92,7 @@
                 element.cpartSpares.template
                     .find(({attrs}) => attrs.name === 'comptest2')
         </script>
+    -->
 
         <!--
         <template name="Renders">
@@ -98,10 +103,12 @@
         </template>
         -->
 
+    <!--
         <script>
             event: click button
             assert: state.a === 1337
         </script>
+    -->
 
         <!--
         <template name="Renders after click">
@@ -116,9 +123,11 @@
         </template>
 
         -->
+        <!--
     </Test>
 
 </TestSuite>
+-->
 
 </component>
 
@@ -408,8 +417,8 @@
     }
 </Script>
 
-
-<TestSuite skip> <!-- TODO Composable directives broken -->
+ <!-- TODO Composable directives broken
+<TestSuite skip>
 
     <Test>
         <template name="Renders with passthrough attached event">
@@ -425,8 +434,8 @@
         </template>
 
     </Test>
-
 </TestSuite>
+-->
 
 </Component>
 

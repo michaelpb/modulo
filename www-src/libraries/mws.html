@@ -1,0 +1,55 @@
+<!--
+    mws Library:
+    Components for Modulo WebSite
+-->
+
+<Component namespace="mws" name="Page" mode="vanish-into-document">
+    <Props
+        navbar
+        docbarselected 
+        pagetitle
+    ></Props>
+    <!-- TODO: <Style -src="/libraries/mws/Page.css"></Style> -->
+    <Template -src="/libraries/mws/Page.html"></Template>
+</Component>
+
+<Component name="DevLogNav" mode="vanish">
+    <Props
+        fn
+    ></Props>
+
+    <Template>
+        <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
+            <strong>DEV LOG:</strong>
+            {% for pair in state.data %}
+                {% if pair|get:0 == props.fn %}
+                    <span style="text-decoration: overline underline;">
+                        {{ pair|get:0 }} ({{ pair|get:1 }})
+                    </span>
+                {% else %}
+                    <a href="/devlog/{{ pair|get:0 }}.html">
+                        {{ pair|get:0 }} ({{ pair|get:1 }})
+                    </a>
+                {% endif %}
+                {% if pair|get:1 != "FAQ" %}
+                    |
+                {% endif %}
+            {% endfor %}
+            {% for pair in state.data %}
+                {% if pair|get:0 == props.fn %}
+                    <h1>{{ pair|get:1 }}</h1>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </Template>
+
+    <State
+        data:='[
+            ["2022-03", "Next steps for alpha"],
+            ["2021-09", "Thoughts on design"],
+            ["2021-01", "FAQ"]
+        ]'
+    ></State>
+
+</Component>
+
