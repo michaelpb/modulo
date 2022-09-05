@@ -1,7 +1,10 @@
 <!--
     mws Library:
-    Components for Modulo WebSite
+    - Components for Modulo WebSite
+    - Note how most of actual HTML, CSS, and JS is in separate files in the
+      mws/ subdirectory.
 -->
+
 
 <Component namespace="mws" name="Page" mode="vanish-into-document">
     <Props
@@ -9,40 +12,19 @@
         docbarselected 
         pagetitle
     ></Props>
-    <!-- TODO: <Style -src="/libraries/mws/Page.css"></Style> -->
+    <Style -src="/libraries/mws/Page.css"></Style>
     <Template -src="/libraries/mws/Page.html"></Template>
+    <Script>
+        console.log('mws-Page/Script is running', modulo);
+    </Script>
 </Component>
 
-<Component name="DevLogNav" mode="vanish">
+
+<Component namespace="mws" name="DevLogNav" mode="vanish">
     <Props
         fn
     ></Props>
-
-    <Template>
-        <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
-            <strong>DEV LOG:</strong>
-            {% for pair in state.data %}
-                {% if pair|get:0 == props.fn %}
-                    <span style="text-decoration: overline underline;">
-                        {{ pair|get:0 }} ({{ pair|get:1 }})
-                    </span>
-                {% else %}
-                    <a href="/devlog/{{ pair|get:0 }}.html">
-                        {{ pair|get:0 }} ({{ pair|get:1 }})
-                    </a>
-                {% endif %}
-                {% if pair|get:1 != "FAQ" %}
-                    |
-                {% endif %}
-            {% endfor %}
-            {% for pair in state.data %}
-                {% if pair|get:0 == props.fn %}
-                    <h1>{{ pair|get:1 }}</h1>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </Template>
-
+    <Template -src="/libraries/mws/DevLogNav.html"></Template>
     <State
         data:='[
             ["2022-03", "Next steps for alpha"],
@@ -50,6 +32,20 @@
             ["2021-01", "FAQ"]
         ]'
     ></State>
-
 </Component>
+
+
+<Component namespace="mws" name="DocSidebar">
+  <Props
+      path
+      showall
+  ></Props>
+  <Template -src="/libraries/mws/DocSidebar.html"></Template>
+  <State
+      menu:=[]
+  ></State>
+  <Script -src="/libraries/mws/DocSidebar.js"></Script>
+  <Style -src="/libraries/mws/DocSidebar.css"></Style>
+</Component>
+
 

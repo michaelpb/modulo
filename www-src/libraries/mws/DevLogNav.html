@@ -1,0 +1,22 @@
+<div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
+    <strong>DEV LOG:</strong>
+    {% for pair in state.data %}
+        {% if pair|get:0 == props.fn %}
+            <span style="text-decoration: overline underline;">
+                {{ pair|get:0 }} ({{ pair|get:1 }})
+            </span>
+        {% else %}
+            <a href="/devlog/{{ pair|get:0 }}.html">
+                {{ pair|get:0 }} ({{ pair|get:1 }})
+            </a>
+        {% endif %}
+        {% if pair|get:1 != "FAQ" %}
+            |
+        {% endif %}
+    {% endfor %}
+    {% for pair in state.data %}
+        {% if pair|get:0 == props.fn %}
+            <h1>{{ pair|get:1 }}</h1>
+        {% endif %}
+    {% endfor %}
+</div>

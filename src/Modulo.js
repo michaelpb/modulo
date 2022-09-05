@@ -1,4 +1,12 @@
 /*
+    Current bug:
+      http://localhost:3334/
+      - The 'Src' doesn't work for factory-stage Template
+      - Queues up and only rerenders too late
+      - Should hardcode or fix somehow
+      - Note that the line here that dupes is part of what breaks it:
+            - partialConfs.push(Object.assign({}, partialConf));
+
     1. (INP) Next step: Work on necessitating LIVE version of site (not built),
     using new boilerplate (it's okay to use hacks to get through)
     2. Work on static build of site / etc (**)
@@ -58,7 +66,7 @@ window.Modulo = class Modulo {
         return modulo; // Never clone Modulos to prevent reference loops
     }
 
-    createAll(type, confArray) {
+    createAll(type, confArray, element = null) {
         const obj = {};
         for (const conf of confArray) {
             /// ///////////////
@@ -66,6 +74,9 @@ window.Modulo = class Modulo {
             conf.Type = conf.Type[0].toUpperCase() + conf.Type.slice(1);
             if (conf.Type === 'Staticdata') { conf.Type = 'StaticData'; }
             if (conf.Type === 'Testsuite') { conf.Type = 'TestSuite'; }
+            if (element !== null) {
+                conf.TmpElement = element;
+            }
             /// ///////////////
             obj[conf.RenderObj] = this.create(type, conf.Type, conf);
         }
@@ -140,9 +151,10 @@ window.Modulo = class Modulo {
             } else {
                 this.config[type] = partialConf;
             }
-            // XXX Fixes stuff!? -v
+            // XXX This duplication gets tests running, but causes
+            // configure loading bugs
             // partialConfs.push(Object.assign({}, partialConf));
-            partialConfs.push(Object.assign({}, partialConf));//
+            partialConfs.push(partialConf);
         }
 
         // Then, run configure callback
@@ -873,7 +885,6 @@ modulo.register('util', class BaseElement extends HTMLElement {
     }
 
     rerender(original = null) {
-        /*
         if (original) { // TODO: this logic needs refactor
             if (this.originalHTML === null) {
                 this.originalHTML = original.innerHTML;
@@ -881,7 +892,6 @@ modulo.register('util', class BaseElement extends HTMLElement {
             this.originalChildren = Array.from(original.hasChildNodes() ?
                                                original.childNodes : []);
         }
-        */
         this.lifecycle([ 'prepare', 'render', 'reconcile', 'update' ]);
     }
 
@@ -912,7 +922,7 @@ modulo.register('util', class BaseElement extends HTMLElement {
         }
         */
         this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
-        this.cparts = this.modulo.createAll('cparts', this.moduloChildrenData);
+        this.cparts = this.modulo.createAll('cparts', this.moduloChildrenData, this);
         this.legacySetupCParts();
         this.lifecycle([ 'initialized' ]);
         this.rerender(original); // render and re-mount it's own childNodes
@@ -1296,9 +1306,8 @@ modulo.register('cpart', class Script {
     }
 
     constructor(modulo, conf) {
-        //let { script } = element.initRenderObj;
-        let script = conf;
-        //console.log('this is script', conf);
+        let { script } = conf.TmpElement.initRenderObj;
+        //let script = conf;
         // Attach callbacks from script to this, to hook into lifecycle.
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
@@ -1457,6 +1466,9 @@ modulo.register('cpart', class State {
 /* Implementation of Modulo Templating Language */
 modulo.register('engine', class Templater {
     constructor(modulo, conf) {
+        if (!conf.Content) {
+            console.log('ERROR: Invalid Templater constructor', conf);
+        }
         this.makeFunc = (a, b) => modulo.assets.registerFunction(a, b);
         this.setup(conf.Content, conf); // TODO, refactor
     }

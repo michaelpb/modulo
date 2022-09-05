@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf8" />
     <title>{{ props.pagetitle }} - modulojs.org</title>
-    <link rel="stylesheet" href="/css/style.css" />
     <link rel="icon" type="image/png" href="/img/mono_logo.png" />
     <!-- Moving this to individual pages for faster / blocking load, at least for now: -->
     <!--<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>-->
@@ -11,8 +10,7 @@
 </head>
 <body>
 
-<div [component.slot]="above-navbar">
-</div>
+<slot name="above-navbar"></slot>
 
 <nav class="Navbar">
     <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo" /></a>
@@ -52,11 +50,13 @@
                 <mws-DocSidebar path="{{ props.docbarselected }}"></mws-DocSidebar>
             </nav>
         </aside>
-        <aside style="border: none" [component.slot]>
+        <aside style="border:none">
+            <slot></slot>
         </aside>
     </main>
 {% else %}
-    <main class="Main" [component.slot]>
+    <main class="Main">
+        <slot></slot>
     </main>
 {% endif %}
 
