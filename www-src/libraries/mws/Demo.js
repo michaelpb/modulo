@@ -1,28 +1,11 @@
 let componentTexts = null;
-let componentTexts2 = null;
 let exCounter = 0; // global variable
 
 function _setupGlobalVariables() {
-    // TODO: Refactor this
-    try {
-        componentTexts = Modulo.factoryInstances['eg-eg']
-                .baseRenderObj.script.exports.componentTexts;
-    } catch (err) {
-        console.log('couldnt get componentTexts:', err);
-        componentTexts = null;
-    }
-
-    try {
-        componentTexts2 = Modulo.factoryInstances['docseg-docseg']
-                .baseRenderObj.script.exports.componentTexts;
-    } catch (err) {
-        console.log('couldnt get componentTexts2:', err);
-        componentTexts2 = null;
-    }
-
-    if (componentTexts) {
-        componentTexts = Object.assign({}, componentTexts, componentTexts2);
-    }
+    const { getComponentDefs } = modulo.registry.utils;
+    const docseg = getComponentDefs('/libraries/docseg.html');
+    const eg = getComponentDefs('/libraries/eg.html');
+    componentTexts = Object.assign({}, docseg, eg);
 }
 
 function tmpGetDirectives() {
@@ -61,7 +44,6 @@ function _setupCodemirrorSync(el, demoType, myElement, myState) {
       }
 
       if (!myElement.codeMirrorEditor) {
-          console.log('gettin CodeMirror2');
           const { CodeMirror } = modulo.registry.utils;
           if (typeof CodeMirror === 'undefined' || !CodeMirror) {
               throw new Error('Have not loaded CodeMirror yet');
@@ -159,7 +141,8 @@ function initializedCallback() {
     if (props.fromlibrary) {
         if (!componentTexts) {
             componentTexts = false;
-            throw new Error('Couldnt load:' + props.fromlibrary)
+            console.error('Couldnt load:', props.fromlibrary)
+            return;
         }
 
         const componentNames = props.fromlibrary.split(',');
@@ -219,22 +202,54 @@ function initializedCallback() {
     }
 }
 
+function _newModulo() {
+    const mod = new Modulo(window.hackCoreModulo);
+    // Refresh queue & asset manager
+    mod.register('core', modulo.registry.core.FetchQueue);
+    mod.register('core', modulo.registry.core.AssetManager);
+    return mod;
+}
+
+function runModuloText(componentDef) {
+    const defDiv = document.createElement('div');
+    defDiv.innerHTML = componentDef;
+    const mod = _newModulo();
+    mod.loadFromDOM(defDiv);
+}
+
 function doRun() {
     exCounter++;
     //console.log('There are ', exCounter, ' examples on this page. Gee!')
     const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
     state.nscounter++;
-    const attrs = { src: '', namespace };
-    const tagName = 'Example';
+    const tagName = 'DemoComponent';
 
     if (element.codeMirrorEditor) {
         state.text = element.codeMirrorEditor.getValue(); // make sure most up-to-date
     }
+    runModuloText(`<Component namespace="${namespace}" name="${tagName}">` +
+                  `\n${state.text}\n</Component>`);
+
+    // Create a new modulo instance 
+    const fullname = `${namespace}-${tagName}`;
+    state.preview = `<${fullname}></${fullname}>`;
+    // state.preview = '<x-ColorSelector></x-ColorSelector>';
+    setTimeout(() => {
+        const div = element.querySelector('.editor-minipreview > div');
+        if (div) {
+            div.innerHTML = state.preview;
+            console.log('assigned to', div.innerHTML);
+        } else {
+            console.log('warning, cant update minipreview', div);
+        }
+    }, 0);
+
+
+    // Use a new asset manager when loading, to prevent it from getting into the main bundle
+    /*
     let componentDef = state.text;
     componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
     const loader = new Modulo.Loader(null, { attrs } );
-
-    // Use a new asset manager when loading, to prevent it from getting into the main bundle
     const oldAssetMgr = Modulo.assets;
     Modulo.assets = new Modulo.AssetManager();
     loader.loadString(componentDef);
@@ -256,6 +271,7 @@ function doRun() {
             }
         }, 0);
     }
+    */
 }
 
 function countUp() {

@@ -1,37 +1,42 @@
-<module>
-    <script>
-        // Splits up own source-code to get source for each example
-        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
-        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
-        //console.log('this si myText', myText);
-        const componentTexts = {};
-        if (!myText) {
-            console.error('ERROR: Could not load own text :(');
-            myText = '';
-        }
-        let name = '';
-        let currentComponent = '';
-        let inTestSuite = false;
-        for (const line of myText.split('\n')) {
-            const lower = line.toLowerCase();
-            if (lower.startsWith('</component>')) {
-                componentTexts[name] = currentComponent;
-                currentComponent = '';
-                name = null;
-            } else if (lower.startsWith('<component')) {
-                name = line.split(' name="')[1].split('"')[0];
-            } else if (lower.startsWith('<testsuite')) {
-                inTestSuite = true;
-            } else if (lower.includes('</testsuite>')) {
-                inTestSuite = false;
-            } else if (name && !inTestSuite) {
-                currentComponent += line + '\n';
-            }
-        }
-        script.exports.componentTexts = componentTexts;
-    </script>
-</module>
+<!-- DEAD CODE -->
+<!-- DEAD CODE -->
+<!-- DEAD CODE -->
+<!-- DEAD CODE -->
+<!-- DEAD CODE -->
+<!-- DEAD CODE -->
 
+<Script>
+    console.log('Embed examples.html');
+    // Splits up own source-code to get source for each example
+    let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
+    //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
+    //console.log('this si myText', myText);
+    const componentTexts = {};
+    if (!myText) {
+        console.error('ERROR: Could not load own text :(');
+        myText = '';
+    }
+    let name = '';
+    let currentComponent = '';
+    let inTestSuite = false;
+    for (const line of myText.split('\n')) {
+        const lower = line.toLowerCase();
+        if (lower.startsWith('</component>')) {
+            componentTexts[name] = currentComponent;
+            currentComponent = '';
+            name = null;
+        } else if (lower.startsWith('<component')) {
+            name = line.split(' name="')[1].split('"')[0];
+        } else if (lower.startsWith('<testsuite')) {
+            inTestSuite = true;
+        } else if (lower.includes('</testsuite>')) {
+            inTestSuite = false;
+        } else if (name && !inTestSuite) {
+            currentComponent += line + '\n';
+        }
+    }
+    script.exports.componentTexts = componentTexts;
+</Script>
 
 
 <Component name="Templating_1">
@@ -94,7 +99,7 @@
     input { display: inline; width: 25px }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test name="renders with computed value as expected">
         <template test-values name="initial render">
           <input name="perc" value="50" [state.bind] />% of
@@ -112,7 +117,7 @@
           is: 16.5
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
@@ -128,14 +133,14 @@
     <p>Below the greeting...</p>
 </Template>
 
-<TestSuite>
+<testsuite>
     <test name="Hides comments">
         <template>
             <h1>hello </h1>
             <p>Below the greeting...</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
@@ -165,7 +170,7 @@
     }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test name="Escapes HTML, safe works">
         <template>
             <p>User "<em>Little &lt;Bobby&gt; &lt;Drop&gt;
@@ -175,7 +180,7 @@
             the risk of trusting <b>user inputted data</b></div>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
@@ -202,14 +207,14 @@ strong {
 }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template>
             Hello <strong>Modulo</strong> World!
             <p class="neat">Any HTML can be here!</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 
 </component>
@@ -230,7 +235,7 @@ strong {
     ></x-ExampleBtn>
 </Template>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template string-count=1>
             <p>Trying out the button...</p>
@@ -249,7 +254,7 @@ strong {
         </template>
         -->
     </test>
-</TestSuite>
+</testsuite>
 </component>
 
 
@@ -268,13 +273,13 @@ strong {
     ></x-ExampleBtn>
 </Template>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template string-count=1>
             <p>Trying out the button...</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 
 </component>
@@ -308,7 +313,7 @@ to {{ state.count }} {{ state.noun }}s.
     }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test>
         <template>
             <p>Nonsense poem:</p>
@@ -316,7 +321,7 @@ to {{ state.count }} {{ state.noun }}s.
             of Kazoo, to two kazoos. </pre>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 

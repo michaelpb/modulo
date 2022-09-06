@@ -1,40 +1,4 @@
-<module>
-    <script>
-        // Splits up own source-code to get source for each example
-        let myText = Modulo.fetchQ.data['/components/embeddedexampleslib.html'];
-        //console.log('this si keys', Object.keys(Modulo.fetchQ.data));
-        //console.log('this si myText', myText);
-        const componentTexts = {};
-        if (!myText) {
-            console.error('ERROR: Could not load own text :(');
-            myText = '';
-        }
-        let name = '';
-        let currentComponent = '';
-        let inTestSuite = false;
-        for (const line of myText.split('\n')) {
-            const lower = line.toLowerCase();
-            if (lower.startsWith('</component>')) {
-                componentTexts[name] = currentComponent;
-                currentComponent = '';
-                name = null;
-            } else if (lower.startsWith('<component')) {
-                name = line.split(' name="')[1].split('"')[0];
-            } else if (lower.startsWith('<testsuite')) {
-                inTestSuite = true;
-            } else if (lower.includes('</testsuite>')) {
-                inTestSuite = false;
-            } else if (name && !inTestSuite) {
-                currentComponent += line + '\n';
-            }
-        }
-        script.exports.componentTexts = componentTexts;
-    </script>
-</module>
-
-
-
-<Component name="Templating_1">
+<Component namespace="docseg" name="Templating_1">
 <Template>
 <p>There are <em>{{ state.count }}
   {{ state.count|pluralize:"articles,article" }}</em>
@@ -71,7 +35,7 @@
 </Component>
 
 
-<component name="Templating_PrepareCallback">
+<Component namespace="docseg" name="Templating_PrepareCallback">
 <Template>
     <input name="perc" [state.bind] />% of
     <input name="total" [state.bind] />
@@ -114,11 +78,11 @@
     </test>
 </TestSuite>
 
-</component>
+</Component>
 
 
 
-<component name="Templating_Comments">
+<Component namespace="docseg" name="Templating_Comments">
 <Template>
     <h1>hello {# greeting #}</h1>
     {% comment %}
@@ -137,11 +101,11 @@
     </test>
 </TestSuite>
 
-</component>
+</Component>
 
 
 
-<component name="Templating_Escaping">
+<Component namespace="docseg" name="Templating_Escaping">
 <Template>
 <p>User "<em>{{ state.username }}</em>" sent a message:</p>
 <div class="msgcontent">
@@ -177,11 +141,11 @@
     </test>
 </TestSuite>
 
-</component>
+</Component>
 
 
 
-<component name="Tutorial_P1">
+<Component namespace="docseg" name="Tutorial_P1">
 <Template>
 Hello <strong>Modulo</strong> World!
 <p class="neat">Any HTML can be here!</p>
@@ -202,20 +166,20 @@ strong {
 }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test name="renders as expected">
         <template>
             Hello <strong>Modulo</strong> World!
             <p class="neat">Any HTML can be here!</p>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 
 </component>
 
 
-<component name="Tutorial_P2">
+<Component namespace="docseg" name="Tutorial_P2">
 <Template>
     <p>Trying out the button...</p>
     <x-ExampleBtn
@@ -250,10 +214,10 @@ strong {
         -->
     </test>
 </TestSuite>
-</component>
+</Component>
 
 
-<component name="Tutorial_P2_filters_demo">
+<Component namespace="docseg" name="Tutorial_P2_filters_demo">
 <Template>
     <p>Trying out the button...</p>
     <x-ExampleBtn
@@ -277,7 +241,7 @@ strong {
 </TestSuite>
 
 
-</component>
+</Component>
 
 
 
@@ -285,7 +249,7 @@ strong {
 <!-- . Tutorial - Part 3 ............ -->
 <!-- ................................ -->
 
-<component name="Tutorial_P3_state_demo">
+<Component namespace="docseg" name="Tutorial_P3_state_demo">
 <Template>
 <p>Nonsense poem:</p> <pre>
 Professor {{ state.verb|capfirst }} who
@@ -308,7 +272,7 @@ to {{ state.count }} {{ state.noun }}s.
     }
 </Style>
 
-<TestSuite>
+<testsuite>
     <test>
         <template>
             <p>Nonsense poem:</p>
@@ -316,12 +280,12 @@ to {{ state.count }} {{ state.noun }}s.
             of Kazoo, to two kazoos. </pre>
         </template>
     </test>
-</TestSuite>
+</testsuite>
 
 </component>
 
 
-<component name="Tutorial_P3_state_bind">
+<Component namespace="docseg" name="Tutorial_P3_state_bind">
 <Template>
 
 <div>
@@ -353,7 +317,7 @@ to {{ state.count }} {{ state.noun }}s.
     -src="./examplelib-tests/Tutorial_P3_state_bind-tests.html"
 ></TestSuite>
 
-</component>
+</Component>
 
 
 

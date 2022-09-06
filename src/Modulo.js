@@ -44,6 +44,7 @@ window.moduloPrevious = window.modulo;
 
 window.Modulo = class Modulo {
     constructor(parentModulo = null, registryKeys = null) {
+        // Note: parentModulo arg is being used by mws/Demo.js
         window._moduloID = this.id = (window._moduloID || 0) + 1; // Global ID
         if (parentModulo) {
             this.parentModulo = parentModulo;
@@ -108,7 +109,8 @@ window.Modulo = class Modulo {
 
             // Global / core utility class getting registered
             if (type === 'core') {
-                // TODO: Implement differently, like { fetchQ: utils.FetchQueue } or something
+                // TODO: Implement differently, like { fetchQ: utils.FetchQueue
+                // } or something, since right now it doesn't even get cloned.
                 const lowerName = cls.name[0].toLowerCase() + cls.name.slice(1);
                 this[lowerName] = new cls(this);
                 this.assets = this.assetManager;
@@ -161,7 +163,7 @@ window.Modulo = class Modulo {
         if (!skipConf) { // TODO: move this somewhere else, eg "loadAndDefine"
             this.repeatLifecycle(this.registry.cparts, 'configure', () => {
                 //console.log('CONFIGURE FINISHED', elem);
-                modulo.runLifecycle(modulo.registry.cparts, 'define');
+                this.runLifecycle(this.registry.cparts, 'define');
                 //console.log('DEFINE FINISHED', elem);
             });
         }
@@ -306,6 +308,7 @@ window.Modulo = class Modulo {
             }
         }
         if (!(cPartName in this.registry.dom)) {
+            if (cPartName === 'testsuite') { /* XXX HACK */ return null;}
             console.error('Unknown Modulo def:', cPartName);
             return null;
         }
@@ -409,7 +412,7 @@ delete window.facHack;
             }
 
             modulo.globals.customElements.define(tagName, ${ className });
-            LEGACY.push("Registered: ${ className } as " + tagName);
+            //LEGACY.push("Registered: ${ className } as " + tagName);
             return ${ className };
             ////////////////////
         `;
@@ -420,9 +423,13 @@ delete window.facHack;
         conf.Hash = func.hash;
         // XXX HAX ------------
         let hackName = Name;
-        if (hackName.includes('_')) {
+        if (hackName.startsWith(namespace + '_')) {
+            hackName = hackName.replace(namespace + '_', '');
+            conf.Name = hackName;
+        } else if (hackName.includes('_')) {
             const split = hackName.split('_');
             hackName = split[split.length - 1]; // get last item
+
         }
         // XXX HAX ------------
         conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
@@ -977,8 +984,11 @@ modulo.register('core', class AssetManager {
         if (!(hash in this.functions)) {
             const funcText = this.wrapFunctionText(params, text, opts, hash);
             this.rawAssets.js[hash] = funcText; // "use strict" only in tag
+            window.currentModulo = this.modulo; // Ensure stays silo'ed in current
             this.appendToHead('script', '"use strict";\n' + funcText);
+            this.modulo.assert(hash in this.functions, `Func ${hash} did not register`);
             this.functions[hash].hash = hash;
+            delete window.currentModulo;
         }
         return this.functions[hash];
     }
@@ -1004,7 +1014,8 @@ modulo.register('core', class AssetManager {
 
     wrapFunctionText(params, text, opts = {}, hash = null) {
         // TODO: e.g. change public API to this, make opts & hash required
-        let prefix = `modulo.assets.functions["${hash || this.getHash(params, text)}"]`;
+        //let prefix = `modulo.assets.functions["${hash || this.getHash(params, text)}"]`;
+        let prefix = `currentModulo.assets.functions["${hash || this.getHash(params, text)}"]`;
         prefix += `= function ${ opts.funcName || ''}(${ params.join(', ') }){`;
         let suffix = '};'
         if (opts.exports) {
@@ -2203,6 +2214,7 @@ if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefin
 if (typeof document !== undefined && document.head) { // Browser environ
     Modulo.globals = window; // TODO, remove?
     modulo.globals = window;
+    window.hackCoreModulo = new Modulo(modulo);
     modulo.loadFromDOM(document.head);
     console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
         get test() { return modulo.registry.commands.test(modulo) }
