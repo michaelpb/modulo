@@ -1,58 +1,9 @@
-<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<script Modulo
+    src="/js/Modulo.js"
+    -src="/libraries/all.html" 
+></script>
 
-<script src="/js/Modulo.js"></script>
-<template modulo-embed>
-    <load namespace="x" src="/components/layouts.html"></load>
-    <!--<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>-->
-
-    <!--
-    <Component name="HelloWorldFinal">
-        <Props
-            goal
-        ></Props>
-
-        <Template>
-            Hello <strong>Modulo</strong> World!
-            <p>Goal: {{ props.goal }}</p>
-            <p>Amount: {{ state.amount }}</p>
-            <button @click:=script.countUp>
-                Click to count to the goal!
-            </button>
-            {% if props.goal gt state.amount %}
-                <p>Amount is lower than goal</p>
-            {% else %}
-                <p>Amount is higher than goal</p>
-            {% endif %}
-        </Template>
-
-        <State
-            amount:=0
-        ></State>
-
-        <Script>
-            function countUp() {
-                console.log('button got clicked!');
-                state.amount++;
-            }
-        </Script>
-
-        <Style>
-            :host {
-                background: gray;
-                width: 100px;
-                height: 100px;
-                border: 1px dotted black;
-            }
-        </Style>
-    </Component>
-    -->
-</template>
-<script> Modulo.defineAll() </script>
-
-
-<x-Page
+<mws-Page
     docbarselected="tutorial_part1.html"
     pagetitle="Part 1 - Tutorial"
     navbar="docs">
@@ -609,4 +560,47 @@ forms and interactive, changing components with the State CPart.</p>
     Part 2: Props, Templating, and Building &#187;
 </a></p>
 
-</x-Page>
+</mws-Page>
+
+
+<!--
+<Component name="HelloWorldFinal">
+    <Props
+        goal
+    ></Props>
+
+    <Template>
+        Hello <strong>Modulo</strong> World!
+        <p>Goal: {{ props.goal }}</p>
+        <p>Amount: {{ state.amount }}</p>
+        <button @click:=script.countUp>
+            Click to count to the goal!
+        </button>
+        {% if props.goal gt state.amount %}
+            <p>Amount is lower than goal</p>
+        {% else %}
+            <p>Amount is higher than goal</p>
+        {% endif %}
+    </Template>
+
+    <State
+        amount:=0
+    ></State>
+
+    <Script>
+        function countUp() {
+            console.log('button got clicked!');
+            state.amount++;
+        }
+    </Script>
+
+    <Style>
+        :host {
+            background: gray;
+            width: 100px;
+            height: 100px;
+            border: 1px dotted black;
+        }
+    </Style>
+</Component>
+-->

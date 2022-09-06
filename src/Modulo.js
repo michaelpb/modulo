@@ -1159,7 +1159,13 @@ modulo.register('cpart', class Style {
             return;
         }
         if (Parent && (Parent in modulo.factories.component)) {
-            const { namespace, mode, Name } = modulo.factories.component[Parent];
+            let { namespace, mode, Name } = modulo.factories.component[Parent];
+            // XXX HAX, namespace is getting duped ----
+            if (Name.startsWith(namespace)) {
+                Name = Name.replace(namespace + '_', '');
+                conf.Name = Name;
+            }
+            // XXX unHAX, namespace is getting duped ----
             if (mode === 'regular') { // TODO finish
                 const { prefixAllSelectors } = modulo.registry.utils;
                 Content = prefixAllSelectors(namespace, Name, Content);

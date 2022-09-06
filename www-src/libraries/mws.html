@@ -5,7 +5,6 @@
       mws/ subdirectory.
 -->
 
-
 <Component namespace="mws" name="Page" mode="vanish-into-document">
     <Props
         navbar
@@ -46,6 +45,67 @@
   ></State>
   <Script -src="/libraries/mws/DocSidebar.js"></Script>
   <Style -src="/libraries/mws/DocSidebar.css"></Style>
+</Component>
+
+<Component namespace="mws" name="Demo">
+    <!-- TODO: Refactor the following to avoid hacky props-->
+    <Props
+        text
+        text2
+        text3
+        ttitle
+        ttitle2
+        ttitle3
+        demotype
+        fromlibrary
+    ></Props>
+    <Template -src="/libraries/mws/Demo.html"></Template>
+    <State
+        tabs:=[]
+        selected:=null
+        preview=""
+        text=""
+        nscounter:=1
+        showpreview:=false
+        showclipboard:=false
+        fullscreen:=false
+    ></State>
+    <Script -src="/libraries/mws/Demo.js"></Script>
+    <Style -src="/libraries/mws/Demo.css"></Style>
+</Component>
+
+
+<Component namespace="mws" name="Section">
+    <Props
+        name
+    ></Props>
+    <Template>
+        <a class="secanchor"
+            title="Click to focus on this section."
+            id="{{ props.name }}"
+            name="{{ props.name }}"
+            href="#{{ props.name }}">#</a>
+        <h2>{{ component.originalHTML|safe }}</h2>
+    </Template>
+    <Style>
+        :host {
+            position: relative;
+        }
+        h2 {
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-bottom: 0;
+        }
+        a.secanchor {
+            padding-top: 100px;
+            color: var(--highlight-color);
+            opacity: 0.3;
+            display: block;
+        }
+        :host:hover .Section-helper {
+            opacity: 1.0;
+        }
+    </Style>
 </Component>
 
 

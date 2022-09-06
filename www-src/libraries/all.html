@@ -1,3 +1,8 @@
+<!-- Load some global JS deps -->
+<Script -src="/js/codemirror_5.63.0/codemirror_bundled.js">
+    modulo.register('util', CodeMirror); // Expose as a global utility
+</Script>
+
 <!-- Load the MWS library, with elements for the Modulo website -->
 <Library -name="mws" -src="/libraries/mws.html"></Library>
 
