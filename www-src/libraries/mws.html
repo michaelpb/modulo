@@ -74,6 +74,15 @@
     <Style -src="/libraries/mws/Demo.css"></Style>
 </Component>
 
+<Component namespace="mws" name="AllExamples">
+    <Template -src="/libraries/mws/AllExamples.html"></Template>
+    <State
+        selected=""
+        examples:=[]
+    ></State>
+    <Script -src="/libraries/mws/AllExamples.js"> </Script>
+    <Style -src="/libraries/mws/AllExamples.css"></Style>
+</Component>
 
 <Component namespace="mws" name="Section">
     <Props
@@ -104,137 +113,6 @@
         }
         :host:hover .Section-helper {
             opacity: 1.0;
-        }
-    </Style>
-</Component>
-
-
-<Component namespace="mws" name="AllExamples">
-    <Template>
-        {% for example in state.examples %}
-            {% if example.name == state.selected %}
-                <div class="Example expanded">
-                    <button class="tool-button" alt="Edit" title="Hide source code & editor"
-                        @click:=script.toggleExample payload="{{ example.name }}">
-                        {{ example.name }}
-                        &times;
-                    </button>
-                    <mws-Demo
-                        demotype="minipreview"
-                        fromlibrary='{{ example.name }}'
-                    ></mws-Demo>
-                </div>
-            {% else %}
-                <div class="Example">
-                    <button class="tool-button" alt="Edit" title="See source code & edit example"
-                        @click:=script.toggleExample payload="{{ example.name }}">
-                        {{ example.name }}
-                        ✎
-                       <!--Source-->
-                    </button>
-                    <div class="Example-wrapper">
-                        <eg-{{ example.name }}></eg-{{ example.name }}>
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
-    </Template>
-
-    <!--
-    <mws-Section name="{{ example.name|lower }}">
-        {{ example.name }}
-    </mws-Section>
-    <mws-Demo
-        demotype="minipreview"
-        fromlibrary='{{ example.name }}'
-    ></mws-Demo>
-    -->
-    <State
-        selected=""
-        examples:=[]
-    ></State>
-
-    <Script>
-        function toggleExample(payload) {
-            if (state.selected === payload) {
-                state.selected = '';
-            } else {
-                state.selected = payload;
-            }
-        }
-
-        function initializedCallback() {
-            const eg = getComponentDefs('/libraries/eg.html');
-            state.examples = [];
-            for (const [ name, content ] of Object.entries(eg)) {
-                state.examples.push({ name, content });
-            }
-            element.rerender();
-        }
-    </Script>
-
-    <Style>
-        :host {
-            --colcount: 5;
-            display: grid;
-            grid-template-columns: repeat(var(--colcount), 1fr);
-        }
-        :host > .Example {
-            border: 1px solid black;
-            border-radius: 2px;
-            padding: 10px;
-            margin: 10px;
-            min-height: 200px;
-            background: #ddd;
-            position: relative;
-            margin-top: 50px;
-        }
-        .Example-wrapper {
-            height: 200px;
-            overflow-y: auto;
-        }
-
-        :host > .Example.expanded {
-            background: transparent;
-            grid-column: 1 / span var(--colcount);
-        }
-
-        :host > .Example .tool-button {
-            position: absolute;
-            top: -30px;
-            height: 30px;
-            right: 0px;
-            min-width: 80px;
-            border-radius: 10px 10px 0 0;
-            /*border-bottom: none;*/
-            background: #ddd;
-        }
-        :host > .Example .tool-button:hover {
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        @media (max-width: 1550px) {
-            :host {
-                --colcount: 4;
-            }
-        }
-        @media (max-width: 1250px) {
-            :host {
-                --colcount: 3;
-            }
-        }
-
-        @media (max-width: 1160px) {
-            :host {
-                --colcount: 2;
-            }
-        }
-
-        @media (max-width: 768px) {
-            :host {
-                --colcount: 1;
-            }
         }
     </Style>
 </Component>
