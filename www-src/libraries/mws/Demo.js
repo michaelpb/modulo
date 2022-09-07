@@ -1,5 +1,5 @@
 let componentTexts = null;
-let exCounter = 0; // global variable
+let exCounter = 0; // global variable to prevent conflicts
 
 function _setupGlobalVariables() {
     const { getComponentDefs } = modulo.registry.utils;
@@ -13,11 +13,13 @@ function tmpGetDirectives() {
 }
 
 function codemirrorMount({ el }) {
-    //console.log('codeMirrorMount', { el });
     el.innerHTML = ''; // clear inner HTML before mounting
     const demoType = props.demotype || 'snippet';
-    //_setupCodemirror(el, demoType, element, state);
     _setupCodemirrorSync(el, demoType, element, state);
+    const myElement = element;
+    setTimeout(() => {
+        myElement.codeMirrorEditor.refresh()
+    }, 0); // Ensure refreshes after the first reflow
 }
 
 function _setupCodemirrorSync(el, demoType, myElement, myState) {
@@ -51,56 +53,6 @@ function _setupCodemirrorSync(el, demoType, myElement, myState) {
           myElement.codeMirrorEditor = CodeMirror(el, conf);
       }
       myElement.codeMirrorEditor.refresh()
-}
-
-function _setupCodemirror(el, demoType, myElement, myState) {
-    //console.log('_setupCodemirror DISABLED'); return; ///////////////////
-    let expBackoff = 10;
-    //console.log('this is codemirror', Modulo.globals.CodeMirror);
-    const mountCM = () => {
-        // TODO: hack, allow JS deps or figure out loader or something
-        if (!Modulo.globals.CodeMirror) {
-            expBackoff *= 2;
-            setTimeout(mountCM, expBackoff); // poll again
-            return;
-        }
-
-        let readOnly = false;
-        let lineNumbers = true;
-        if (demoType === 'snippet') {
-            readOnly = true;
-            lineNumbers = false;
-        }
-
-        const conf = {
-            value: myState.text,
-            mode: 'django',
-            theme: 'eclipse',
-            indentUnit: 4,
-            readOnly,
-            lineNumbers,
-        };
-
-        if (demoType === 'snippet') {
-            myState.showclipboard = true;
-        } else if (demoType === 'minipreview') {
-            myState.showpreview = true;
-        }
-
-        if (!myElement.codeMirrorEditor) {
-            console.log('dead code?');
-            myElement.codeMirrorEditor = Modulo.globals.CodeMirror(el, conf);
-        }
-        myElement.codeMirrorEditor.refresh()
-        //myElement.rerender();
-    };
-    mountCM();
-    return;
-    const {isBackend} = Modulo;
-    if (!isBackend) {
-        // TODO: Ugly hack, need better tools for working with legacy
-        setTimeout(mountCM, expBackoff);
-    }
 }
 
 function selectTab(newTitle) {
@@ -238,40 +190,12 @@ function doRun() {
         const div = element.querySelector('.editor-minipreview > div');
         if (div) {
             div.innerHTML = state.preview;
-            console.log('assigned to', div.innerHTML);
+            //console.log('assigned to', div.innerHTML);
         } else {
             console.log('warning, cant update minipreview', div);
         }
     }, 0);
 
-
-    // Use a new asset manager when loading, to prevent it from getting into the main bundle
-    /*
-    let componentDef = state.text;
-    componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
-    const loader = new Modulo.Loader(null, { attrs } );
-    const oldAssetMgr = Modulo.assets;
-    Modulo.assets = new Modulo.AssetManager();
-    loader.loadString(componentDef);
-    Modulo.assets = oldAssetMgr;
-
-    const fullname = `${namespace}-${tagName}`;
-    const factory = Modulo.factoryInstances[fullname];
-    state.preview = `<${fullname}></${fullname}>`;
-
-    // Hacky way to mount, required due to buggy dom resolver
-    const {isBackend} = Modulo;
-    if (!isBackend) {
-        setTimeout(() => {
-            const div = element.querySelector('.editor-minipreview > div');
-            if (div) {
-                div.innerHTML = state.preview;
-            } else {
-                console.log('warning, cant update minipreview', div);
-            }
-        }, 0);
-    }
-    */
 }
 
 function countUp() {
@@ -340,3 +264,85 @@ element.previewSpot.innerHTML = '';
 element.previewSpot.appendChild(component);
 */
 
+
+/*
+// Use a new asset manager when loading, to prevent it from getting into the main bundle
+let componentDef = state.text;
+componentDef = `<component name="${tagName}">\n${componentDef}\n</component>`;
+const loader = new Modulo.Loader(null, { attrs } );
+const oldAssetMgr = Modulo.assets;
+Modulo.assets = new Modulo.AssetManager();
+loader.loadString(componentDef);
+Modulo.assets = oldAssetMgr;
+
+const fullname = `${namespace}-${tagName}`;
+const factory = Modulo.factoryInstances[fullname];
+state.preview = `<${fullname}></${fullname}>`;
+
+// Hacky way to mount, required due to buggy dom resolver
+const {isBackend} = Modulo;
+if (!isBackend) {
+    setTimeout(() => {
+        const div = element.querySelector('.editor-minipreview > div');
+        if (div) {
+            div.innerHTML = state.preview;
+        } else {
+            console.log('warning, cant update minipreview', div);
+        }
+    }, 0);
+}
+*/
+
+
+/*
+function _setupCodemirror(el, demoType, myElement, myState) {
+    console.log('_setupCodemirror DISABLED'); return; ///////////////////
+    let expBackoff = 10;
+    //console.log('this is codemirror', Modulo.globals.CodeMirror);
+    const mountCM = () => {
+        // TODO: hack, allow JS deps or figure out loader or something
+        if (!Modulo.globals.CodeMirror) {
+            expBackoff *= 2;
+            setTimeout(mountCM, expBackoff); // poll again
+            return;
+        }
+
+        let readOnly = false;
+        let lineNumbers = true;
+        if (demoType === 'snippet') {
+            readOnly = true;
+            lineNumbers = false;
+        }
+
+        const conf = {
+            value: myState.text,
+            mode: 'django',
+            theme: 'eclipse',
+            indentUnit: 4,
+            readOnly,
+            lineNumbers,
+        };
+
+        if (demoType === 'snippet') {
+            myState.showclipboard = true;
+        } else if (demoType === 'minipreview') {
+            myState.showpreview = true;
+        }
+
+        if (!myElement.codeMirrorEditor) {
+            console.log('dead code?');
+            myElement.codeMirrorEditor = Modulo.globals.CodeMirror(el, conf);
+        }
+        myElement.codeMirrorEditor.refresh()
+        //myElement.rerender();
+    };
+    mountCM();
+    return;
+    const {isBackend} = Modulo;
+    if (!isBackend) {
+        // TODO: Ugly hack, need better tools for working with legacy
+        setTimeout(mountCM, expBackoff);
+    }
+}
+
+*/

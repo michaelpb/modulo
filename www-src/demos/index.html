@@ -1,20 +1,12 @@
-<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="https://modulojs.org/js/codemirror_5.63.0/codemirror_bundled.css" />
-<script src="https://modulojs.org/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-<!-- ... -->
-<!--<script src="https://modulojs.org/js/Modulo.js"></script>-->
-<script src="/js/Modulo.js"></script>
-<Modulo>
-    <Library namespace="x" src="/components/layouts.html"> </Library>
-</Modulo>
+<script Modulo
+    src="/js/Modulo.js"
+    -src="/libraries/all.html" 
+></script>
 
-<script> Modulo.defineAll() </script>
-
-<x-Page
+<mws-Page
     docbarselected="/demos/"
     pagetitle="Examples"
     navbar="docs">
-
 
 
 <h1>Examples</h1>
@@ -219,5 +211,4 @@ isn't running successfully. If you think your browser should be supported,
 consider <a href="https://github.com/michaelpb/modulo/issues">filing a ticket
 for your browser version</a>, if one doesn't already exist.</p>
 
-</x-Page>
-
+</mws-Page>

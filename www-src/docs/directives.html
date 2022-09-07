@@ -1,14 +1,9 @@
-<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-<!-- ... -->
-<script src="/js/Modulo.js"></script>
-<modulo>
-    <load namespace="x" src="/components/layouts.html"> </load>
-</modulo>
-<script>Modulo.defineAll()</script>
+<script Modulo
+    src="/js/Modulo.js"
+    -src="/libraries/all.html" 
+></script>
 
-<x-Page
+<mws-Page
     docbarselected="directives.html"
     pagetitle="Directives"
     navbar="docs">
@@ -324,4 +319,4 @@ component, but in general shortcuts are only intended for CPart directives, not
 custom script tag directives.</p>
 
 
-</x-Page>
+</mws-Page>

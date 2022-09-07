@@ -1,14 +1,9 @@
-<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
-<!-- ... -->
-<script src="/js/Modulo.js"></script>
-<template modulo-embed>
-    <load namespace="x" src="/components/layouts.html"></load>
-</template>
-<script> Modulo.defineAll() </script>
+<script Modulo
+    src="/js/Modulo.js"
+    -src="/libraries/all.html" 
+></script>
 
-<x-Page
+<mws-Page
     docbarselected="/templating.html"
     pagetitle="Templating"
     navbar="docs">
@@ -440,4 +435,4 @@ Examine the code below for a concrete example of how this escaping behaves:</p>
     fromlibrary="Templating_Escaping"
 ></mws-Demo>
 
-</x-Page>
+</mws-Page>

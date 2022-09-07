@@ -1,15 +1,10 @@
-<!-- Embedding here for now. Need to refactor to avoid having to do this: -->
-<link rel="stylesheet" href="/js/codemirror_5.63.0/codemirror_bundled.css" />
-<script src="/js/codemirror_5.63.0/codemirror_bundled.js"></script>
+<script Modulo
+    src="/js/Modulo.js"
+    -src="/libraries/all.html" 
+></script>
 
-<script src="/js/Modulo.js"></script>
-<template modulo-embed>
-    <load namespace="x" src="/components/layouts.html"></load>
-    <!--<load src="/components/embeddedexampleslib.html" namespace="docseg"></load>-->
-</template>
-<script> Modulo.defineAll() </script>
-
-<x-Page
+<!-- Note: _part1.html is intententional, to un-collapse the top thing -->
+<mws-Page
     docbarselected="tutorial_part1.html"
     pagetitle="Part 3 - Tutorial"
     navbar="docs">
@@ -568,4 +563,4 @@ it's likely the tutorial will expand in the future to cover more aspects of
 Modulo development.</p>
 
 
-</x-Page>
+</mws-Page>
