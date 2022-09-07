@@ -4,7 +4,7 @@
 
     // Expose a global utility, which creates an object containing the contents
     // of components specified by the path (sans TestSuites and <Component> def
-    // itself). Used by <mws-Demo> code snippets in site.
+    // itself). Used by <mws-Demo> and <mws-AllExamples> code snippets in site.
     function getComponentDefs(path) {
         if (!(path in modulo.fetchQueue.data)) {
             console.error('ERROR: Have not loaded:', path);
