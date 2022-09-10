@@ -16,8 +16,8 @@
 
         <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
 
-        <p>Modulo is brand new in general, so chances are its brand new to you
-        as well!  The Modulo tutorial walks through the basics of setting up
+        <p>Modulo is brand new in general, so it's probably brand new to you as
+        well!  The Modulo tutorial walks through the basics of setting up
         Modulo in a project and creating components.<br />
         <em>Prerequisites: HTML, CSS (for part 1 and 2), and
         JavaScript (for part 3)</em></p>
@@ -29,15 +29,45 @@
 
 <br />
 <div class="Docs-squareInfo">
-    <h2>Starting snippet (with CDN)</h2>
+    <h2>Starting snippet</h2>
     <p>Want to get started as quickly as possible? Copy &amp; paste
-    the following starting code:</p>
+    the following starting code into your HTML document:</p>
 
 
 
 <mws-Demo
 text='
-<!-- Example custom component, using some CParts -->
+<!-- Include JS source, and define an embedded Component -->
+<script Modulo src="https://modulojs.org/js/Modulo.js">
+    <Component name="ButtonExample">
+        <Props
+            txt
+        ></Props>
+        <Template>
+            <button><em>{{ props.txt }}</em></button>
+        </Template>
+        <Style>
+            button { background-color: tomato }
+        </Style>
+    </Component>
+</script>
+
+<!-- Use it anywhere: -->
+<p><x-ButtonExample txt="Click me"></x-ButtonExample></p>
+
+<!-- TODO - Move Component definitions to a library file:
+<script Modulo
+    src="https://modulojs.org/js/Modulo.js"
+    -src="./libraries/my_components.html"
+></script> -->
+'></mws-Demo> 
+
+<p>Note: The TODO is there as a reminder that it's best to keep your components
+defined in a separate file.  Otherwise, you won't be able to reuse them across
+pages, or normally use &lt;Script&gt; CParts.</p>
+
+<!--
+Example custom component, using some CParts
 <template modulo-embed>
   <Component name="HelloWorld">
     <Props txt></Props>
@@ -48,22 +78,20 @@ text='
   </Component>
 </template>
 
-<!-- Use it anywhere: -->
+Use it anywhere:
 <x-HelloWorld txt="Click to count:"></x-HelloWorld>
 
-<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
+Finally, include a Modulo CDN link & activate (at the bottom)
 <script src="https://modulojs.org/js/Modulo.js"></script>
 <script>Modulo.defineAll();</script>
-'></mws-Demo>
 
 
-<!--
--- Use the latest version, served by GitHub pages --
+Use the latest version, served by GitHub pages
 <script src="https://modulojs.org/js/Modulo.js"></script>
 
 
-COMING SOON: Use a proper CDN, such as Skypack --
-Add ?min to the URL to get minified version. --
+COMING SOON: Use a proper CDN, such as Skypack
+Add ?min to the URL to get minified version.
 <script src="https://cdn.skypack.dev/modulo"></script>
 
 Once included, use defineAll() to activate

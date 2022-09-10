@@ -20,18 +20,13 @@ function _child(label, hash, keywords=[], filepath=null) {
     }
     return {label, hash, keywords, filepath};
 }
-let componentTexts = {};
 
-/*
+let componentTexts = {};
 try {
-    //console.log('this is', Object.keys(Modulo.factoryInstances));
-    //console.log('this is', Modulo.factoryInstances);
-    componentTexts = Modulo.factoryInstances['eg-eg'].baseRenderObj.script.exports.componentTexts;
+    componentTexts  = modulo.registry.utils.getComponentDefs('/libraries/eg.html');
 } catch {
     console.log('couldnt get componentTexts');
-    componentTexts = {};
 }
-*/
 
 script.exports.menu = [
     {
@@ -171,7 +166,7 @@ script.exports.menu = [
                 'page layouts', 'using vanish' ]),
             _child('Example Library', 'library', Object.keys(componentTexts)),
             _child('Experiments', 'experiments', [
-                'TestSuite', 'unit testing', 
+                'TestSuite', 'unit testing',
                 'custom cparts', 'Tone.js', 'audio synthesis', 'MIDI',
                 'FetchState cpart', 'jsx templating', 'babel.js',
                 'transpiling', 'cparts for apis',

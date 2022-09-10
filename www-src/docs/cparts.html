@@ -651,6 +651,55 @@ component.</p>
 below the <em>State</em> or <em>Template</em> tag. <em>Script</em> has no
 expected attributes, but instead only has a text-content.</p>
 
+<h4>Typical use</h4>
+
+<p>The most common use of a <em>Script</em> CPart is to specify custom JS code
+that is either run once after fulling loading all dependencies, or once each
+time the component renders. See below for a simple example:</p>
+
+<mws-Demo
+text='
+<Component name="ButtonExample">
+    <Template>...</Template>
+    <State>...</State>
+    <Script>
+        console.log("Will execute once after loading dependencies");
+        function initializedCallback() {
+            console.log("Executes every time an instance of ButtonExample is created");
+        }
+        function updateCallback() {
+            console.log("Executes after every rerender of the component");
+        }
+    </Script>
+</Component>
+'></mws-Demo>
+
+<h4>Using within embedded component definitions</h4>
+
+<p>Problems arise when attempting to include a <em>Script</em> CPart within an
+embedded Component definition, e.g. one that is being defined within the script
+tag of the same HTML file that it is being used on. This is because the
+<code>&lt;/Script&gt;</code> tag will end up closing off the outer
+<code>script</code> tag early, due to HTML syntax. The ideal solution is to
+simply move the component to a separate library file, included with
+<code>-src=</code> syntax, since that is preferred in general, and solves other
+issues as well (e.g. templating instructions in HTML tags). However, if you
+simply must include a <em>Script</em> tag in an embedded component definition
+you can write <code>&lt;cpart Script&gt;</code> as the opening tag, and
+<code>&lt;/cpart&gt;</code> as the closing tag.  See the following:</p>
+
+<mws-Demo
+text='
+<script Modulo src="https://modulojs.org/js/Modulo.js">
+    <Component name="ButtonExample">
+        <cpart Script>
+            console.log("Hello, world!");
+        </cpart>
+    </Component>
+</script>
+'></mws-Demo>
+
+
 
 <h3>Defining event callbacks</h3>
 
@@ -816,6 +865,8 @@ text='
 a custom CPart, that is then used in the script tag in a declarative,
 synchronous manner. The CPart API gives you low-level access, and makes no
 assumptions about using a synchronous or asynchronous coding style.</p>
+
+
 
 
 <h3>renderObj</h3>

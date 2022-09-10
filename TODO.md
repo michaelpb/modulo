@@ -1,8 +1,117 @@
-# High priority
+# Inp-Mod3 notes
+
+- Goal: Refactor current chaotic, confusing configure/define/factory steps
+
+Steps:
+
+
+1. Load a string (e.g. script[Modulo])
+2. Loop through DOM nodes
+3. Build ROUND1 config
+4. Then, run config preprocessors
+5. Did any preprocessor trigger? If so, repeat from
+Step 3 for ROUND2 config
+6. ROUNDX: Okay, finally no preprocessors
+triggered, so we can now stop the phase
+
+
+----
+
+Rules:
+1. Every CPart has a Name and Namespace
+2. Both default to "x"
+3. If a child CPart specifies a Namespace, it's an error
+4. The Namespace of a child CPart is set by the parent when it's reading it,
+and by default is the  Name and Namespace of it's parent CPart, e.g.
+`"x_HelloWorld"`
+4. Config looks like:
+
+
+    modulo.namespaces['x'] = [
+        {
+            Type: 'Component',
+            Name: 'HelloWorld',
+            Namespace: 'x',
+            mode: 'vanish-into-document',
+        },
+        {
+            Type: 'Component',
+            Name: 'Button',
+            Namespace: 'x',
+        },
+    ];
+
+    modulo.namespaces['x_HelloWorld'] = [
+        {
+            Type: 'Template',
+            Content: '\n{% for i in ... ',
+        },
+    ];
+
+    // not sure if useful -v
+    // Config will directly mirror namespaces, except be squashed by type?
+    modulo.config['x_HelloWorld'] = {
+        Template: { ... }
+        Script: { ... }
+    }
+
+
+-----------------------------
+
+Build:
+
+    modulo.config['x-y'] = [
+    ]; // Etc
+
+
+    modulo.assets.runInline(`
+        customElements.define('x-y', class x_y extends HTMLElement {
+            connectedCallback() {
+                if (!this.isMounted) {
+                    setTimeout(() => this.parsedCallback(), 0);
+                }
+            }
+            parsedCallback() {
+                modulo.registry.cparts.Component.setupElement(this, 'x-y');
+                this.isMounted = true;
+            }
+        });
+    `);
+
+
+----
+
+# Misc cool ideas:
+
+- For a Python port, port to https://micropython.org/ (and/or C++, and/or C99)
+- Then, there can be MicroModulo - run it on Arduino, Pi Pico, etc
+- Could have CParts for turning on LEDs, e.g. setting pins etc
+- Eventually, with a display, could literally
+  create a "Template" like thing for building nice
+  Arduino UIs
+- Could use VirtualDOM with a subset of CSS implemented?
+- Given how simple the code is, a port shouldn't be
+  too hard, could even use same test cases
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------
+
+# Pre-Mod3 notes
 
 - Loading relative component libraries is broken, e.g. ./scratchlib4.html
-
-# Medium priority
 
 - Decide on Loader / Module simplification
     - Possibly: Rename + condense Loader / Module to only be "Library"
@@ -18,8 +127,6 @@
 - Template variable syntax change:
     - Allow '-' in identifier names, and then just do "camelcase" be default
       identifier filter
-
-# Low priority
 
 - Simple API for component rerender: mark isDirty on any lifecycle, and will
   always rerender

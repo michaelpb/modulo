@@ -66,18 +66,18 @@
 
     <State showsecond:=true ></State>
 
-    <Script>
+    <Script name="Ensure HTML gets updated">
         const { innerHTML } = element.querySelector('button');
         assert: innerHTML === 'B2' // ensure html gets updated on the 2nd button
     </Script>
-    <Script>
+    <Script name="Ensure click button">
         event: click button
     </Script>
 
     <Template string-count=1
-        name="Ensure first is still 0">FIRST:0</Template>
+        name="c Ensure first is still 0">FIRST:0</Template>
     <Template skip-rerender string-count=1
-        name="Ensure second is now 1">SECOND:1</Template>
+        name="c Ensure second is now 1">SECOND:1</Template>
 </Test>
 
 

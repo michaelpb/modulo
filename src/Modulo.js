@@ -1,15 +1,8 @@
 /*
-    Current bug:
-      http://localhost:3334/
-      - The 'Src' doesn't work for factory-stage Template
-      - Queues up and only rerenders too late
-      - Should hardcode or fix somehow
-      - Note that the line here that dupes is part of what breaks it:
-            - partialConfs.push(Object.assign({}, partialConf));
-
-    1. (INP) Next step: Work on necessitating LIVE version of site (not built),
-    using new boilerplate (it's okay to use hacks to get through)
-    2. Work on static build of site / etc (**)
+    1. (DONE-ish) Next step: Work on necessitating LIVE version of site (not
+    built), using new boilerplate (it's okay to use hacks to get through)
+    * (INP) Work on refactoring configure / define steps
+    2. (INP) Work on static build of site / etc (**)
     3. One by one incorporate Libraries of the old unit tests.  Will need to
     punt + totally rewrite some parts (e.g. things that read in their own
     fetchQ, maybe..?)
@@ -19,6 +12,21 @@
 */
 
 /*
+  Bug note:
+    - Still have not restored the <Template> -> <script Template> rewriter
+      (breaking Conway example)
+  Bug note:
+    - Due to "current bug" where partialConfs get shared, with 
+      tests break unless you do <template name="before"> etc
+
+  Current bug:
+    http://localhost:3334/
+    - The 'Src' doesn't work for factory-stage Template
+    - Queues up and only rerenders too late
+    - Should hardcode or fix somehow
+    - Note that the line here that dupes is part of what breaks it:
+          - partialConfs.push(Object.assign({}, partialConf));
+
   Misc lifecycle refactor idea:
   Modulo lifecycles:
   - configure - outputs data structure
@@ -1684,7 +1692,7 @@ modulo.config.templater.filters = (function () {
         dividedinto: (s, arg) => Math.ceil((s * 1) / (arg * 1)),
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),
         first: s => s[0],
-        join: (s, arg) => s.join(arg === undefined ? ", " : arg),
+        join: (s, arg) => (s || []).join(arg === undefined ? ", " : arg),
         json: (s, arg) => JSON.stringify(s, null, arg || undefined),
         last: s => s[s.length - 1],
         length: s => s.length !== undefined ? s.length : Object.keys(s).length,
@@ -1693,7 +1701,7 @@ modulo.config.templater.filters = (function () {
         number: (s) => Number(s),
         pluralize: (s, arg) => (arg.split(',')[(s === 1) * 1]) || '',
         subtract: (s, arg) => s - arg,
-        truncate: (s, arg) => ((s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
+        truncate: (s, arg) => ((s && s.length > arg*1) ? (s.substr(0, arg-1) + '…') : s),
         type: s => s === null ? 'null' : (Array.isArray(s) ? 'array' : typeof s),
         renderas: (rCtx, template) => safe(template.Instance.render(rCtx)),
         reversed: s => Array.from(s).reverse(),
@@ -2147,69 +2155,6 @@ modulo.register('engine', class Reconciler {
     }
 });
 
-
-/*
-//////////////////////////////////////////////////////
-// LEGACY ADAPTORS BELOW--- //////////////////////////
-if ((window.ModuloPrevious && window.ModuloPrevious.defineAll) || window.doDefineAll) {
-    Modulo.ComponentPart = class ComponentPart {
-        // Legacy CPart interface
-        static getAttrDefaults(node, loader) { return {}; }
-        static factoryCallback(modulo, conf) {
-            if (!this.legacy_factoryCallback) { return; }
-            if (!window.facHack){ window.facHack = {}; }
-            class mock {};
-            mock.modulo = modulo;
-            window.facHack[conf.Type.toLowerCase()] = conf;
-            const data = (this.legacy_factoryCallback(conf, mock, window.facHack) || conf);
-            window.facHack[conf.Type.toLowerCase()] = data;
-        }
-        getDirectives() { return []; }
-        constructor(element, options, modulo) {
-            const isLower = key => key[0].toLowerCase() === key[0];
-            const attrs = modulo.registry.utils.keyFilter(options, isLower);
-            this.element = element;
-            this.content = options.Content;
-            this.attrs = attrs;
-            this.modulo = modulo;
-        }
-    }
-    Modulo.defineAll = () => {
-        console.count('LEGACY: defineAll');
-        // OVERRIDE Modulo class to point to legacy modulo
-        window.Modulo = window.ModuloPrevious;
-
-        // Copy over legacy cpart definition system
-        for (const type of [ 'cparts', 'utils' ]) {
-            const reg = window.Modulo[type];
-            for (const key of Object.keys(reg)) {
-                if (!(key in modulo.registry[type]) &&
-                      !(key in modulo.registry.dom)) {
-                    console.log('LEGACY: Patching', type, key)
-                    const cls = reg[key];
-                    if (!cls.name) {
-                        cls.name = key;
-                    }
-                    modulo.register(type, cls);
-                    //delete reg[key];
-                }
-            }
-        }
-        Modulo.defineAll2();
-    }
-    Modulo.defineAll2 = () => {
-        modulo.globals = window;
-
-        const query = 'template[modulo-embed],modulo';
-        for (const elem of document.querySelectorAll(query)) {
-            modulo.loadString(elem.innerHTML, null, false);
-        }
-        modulo.fetchQueue.wait(() => {
-            Modulo.factoryInstances = {};
-        });
-    };
-} else 
-*/
 
 if (typeof document !== undefined && document.head) { // Browser environ
     Modulo.globals = window; // TODO, remove?

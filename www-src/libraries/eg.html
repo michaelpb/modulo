@@ -1,4 +1,4 @@
-<Component name="Hello">
+<Component namespace="eg" name="Hello">
 
 <Template>
     <button @click:=script.countUp>Hello {{ state.num }}</button>
@@ -21,7 +21,7 @@
 
 
 
-<Component name="Simple">
+<Component namespace="eg" name="Simple">
 
 <Template>
     Components can use any number of <strong>CParts</strong>.
@@ -47,7 +47,7 @@
 
 
 
-<Component name="ToDo">
+<Component namespace="eg" name="ToDo">
 <Template>
 <ol>
     {% for item in state.list %}
@@ -81,7 +81,7 @@
 <!--list:=&#39;["Milk", "Bread", "Candy"]&#39;-->
 
 
-<Component name="JSON">
+<Component namespace="eg" name="JSON">
 <!-- Use StaticData CPart to include JSON from an API or file -->
 <Template>
     <strong>Name:</strong> {{ staticdata.name }} <br />
@@ -89,14 +89,14 @@
     <strong>Tags:</strong> {{ staticdata.topics|join }}
 </Template>
 <StaticData
-    src="https://api.github.com/repos/michaelpb/modulo"
+    -src="https://api.github.com/repos/michaelpb/modulo"
 ></StaticData>
 </Component>
 
 
 
 
-<Component name="JSONArray">
+<Component namespace="eg" name="JSONArray">
 <!-- Use StaticData CPart to include JSON from an API or file.
 You can use it for arrays as well. Note that it is "bundled"
 as static data in with JS, so it does not refresh. -->
@@ -107,11 +107,11 @@ as static data in with JS, so it does not refresh. -->
   {% endfor %}
 </Template>
 <StaticData
-  src="https://jsonplaceholder.typicode.com/todos"
+    -src="https://jsonplaceholder.typicode.com/todos"
 ></StaticData>
 </Component>
 
-<Component name="API">
+<Component namespace="eg" name="API">
 <Template>
 <p>{{ state.name }} | {{ state.location }}</p>
 <p>{{ state.bio }}</p>
@@ -151,7 +151,7 @@ as static data in with JS, so it does not refresh. -->
 </Component>
 
 
-<Component name="ColorSelector">
+<Component namespace="eg" name="ColorSelector">
 <Template>
     <div style="float: right">
         <p><label>Hue:<br />
@@ -181,7 +181,7 @@ as static data in with JS, so it does not refresh. -->
 
 
 
-<Component name="SearchBox">
+<Component namespace="eg" name="SearchBox">
 <!-- A "type as you go" search box implementation,
 an example of more complicated HTML and JS behavior -->
 <Template>
@@ -304,7 +304,7 @@ an example of more complicated HTML and JS behavior -->
 
 
 
-<Component name="DateNumberPicker">
+<Component namespace="eg" name="DateNumberPicker">
 <Template>
     <p>ISO: <tt>{{ state.year }}-{{ state.month }}-{{ state.day }}</tt></p>
     {% for part in state.ordering %}
@@ -366,7 +366,7 @@ an example of more complicated HTML and JS behavior -->
 </Component>
 
 
-<Component name="FlexibleForm">
+<Component namespace="eg" name="FlexibleForm">
 <!-- Here, we have a form that's easy to update. If this gets used more
 than a couple times, it could be turned into a reusable component where
 the "ordering" and initial values get set via Props. -->
@@ -379,7 +379,7 @@ the "ordering" and initial values get set via Props. -->
                 </label>
                 <input
                     [state.bind]
-                    type='{% if state|get:field|type == "string" %}text{% else %}checkbox{% endif %}'
+                    type="{% if state|get:field|type == 'string' %}text{% else %}checkbox{% endif %}"
                     name="{{ field }}"
                     id="{{ field }}_{{ component.uniqueId }}"
                 />
@@ -402,7 +402,7 @@ the "ordering" and initial values get set via Props. -->
 
 
 
-<Component name="FlexibleFormWithAPI">
+<Component namespace="eg" name="FlexibleFormWithAPI">
 <!-- Combining the code from the previous exercise, we can interact with
 APIs. Here we use a Typicode's placeholder API to make posts -->
 <Template>
@@ -443,14 +443,17 @@ APIs. Here we use a Typicode's placeholder API to make posts -->
 
 <Script>
     const URL = 'https://jsonplaceholder.typicode.com/posts';
-    const fakedPosts = []; // Since Typicode API doesn't save it's POST
-                           // data, we'll have to fake it here
+    const fakedPosts = [];
+    const headers = [];
+
     function initializedCallback() {
-        refresh();
+        refresh(); // Refresh on first load
     }
 
-    function refresh(lastdata) {
+    function refresh() {
         fetch(URL).then(r => r.json()).then(data => {
+            // Since Typicode API doesn't save it's POST
+            // data, we'll have manually fake it here
             state.posts = data.concat(fakedPosts);
             element.rerender();
         });
@@ -465,9 +468,9 @@ APIs. Here we use a Typicode's placeholder API to make posts -->
         };
         state.topic = ''; // clear the comment & topic text
         state.comment = '';
-        fakedPosts.push(postData); // Add to faked list
+        fakedPosts.push(postData); // Required for refresh()
 
-        // Set up  the POST fetch, and then refresh after
+        // Send the POST request with fetch, then refresh after
         const opts = {
             method: 'POST',
             body: JSON.stringify(postData),
@@ -482,7 +485,7 @@ APIs. Here we use a Typicode's placeholder API to make posts -->
 
 
 
-<Component name="Components">
+<Component namespace="eg" name="Components">
 <!-- Once defined, Modulo web components can be used like HTML.
 DemoModal and DemoChart are already defined. Try using below! -->
 <Template>
@@ -507,7 +510,7 @@ DemoModal and DemoChart are already defined. Try using below! -->
 
 
 
-<Component name="OscillatingGraph">
+<Component namespace="eg" name="OscillatingGraph">
 <Template>
 
     <!-- Note that even with custom components, core properties like "style"
@@ -609,7 +612,7 @@ DemoModal and DemoChart are already defined. Try using below! -->
     {% endcomment %}
 -->
 
-<Component name="PrimeSieve">
+<Component namespace="eg" name="PrimeSieve">
 <!-- Demos mouseover, template filters, template control flow,
      and static script exports -->
 <Template>
@@ -684,7 +687,7 @@ div.whole ~ div.number::after { opacity: 0; }
 
 
 
-<Component name="MemoryGame">
+<Component namespace="eg" name="MemoryGame">
 <!-- A much more complicated example application -->
 <Template>
 {% if not state.cards.length %}
@@ -853,7 +856,7 @@ h3 {
 
 
 
-<Component name="ConwayGameOfLife">
+<Component namespace="eg" name="ConwayGameOfLife">
 <Template>
   <div class="grid">
     {% for i in script.exports.range %}
@@ -861,11 +864,11 @@ h3 {
           <div
             @click:=script.toggle
             payload:='[ {{ i }}, {{ j }} ]'
-            {% if state.cells|get:i %}
+            style="{% if state.cells|get:i %}
                 {% if state.cells|get:i|get:j %}
-                    style="background: #B90183;"
+                    background: #B90183;
                 {% endif %}
-            {% endif %}
+            {% endif %}"
            ></div>
         {% endfor %}
     {% endfor %}
@@ -934,7 +937,7 @@ h3 {
     }
 
     // Helper function for getting a cell from data
-    const get = (i, j) => Boolean(state.cells[i] && state.cells[i][j]);
+    const get = (i, j) => !!(state.cells[i] && state.cells[i][j]);
     function updateNextFrame() {
         const nextData = {};
         for (const i of script.exports.range) {

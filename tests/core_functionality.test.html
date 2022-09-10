@@ -97,7 +97,7 @@ can have newlines"
         <Test name="Check props and click event">
             <props txt="Testing 123"></props>
 
-            <template>
+            <template name="before">
                 <div>
                     <h1>Props: Testing 123</h1>
                     <h2>Data: testing data 123</h2>
@@ -109,7 +109,7 @@ can have newlines"
                 event: click button
             </script>
 
-            <template>
+            <template name="after">
                 <div>
                     <h1>Props: Testing 123</h1>
                     <h2>Data: testing data 123</h2>
@@ -149,13 +149,15 @@ can have newlines"
 
     <TestSuite>
         <Test name="Renders as expected">
-            <template>
+            <template name="Initial rendering">
               <h1>1</h1>
               <h2>3</h2>
               <h3>14</h3>
               <h4>false</h4>
             </template>
+        </Test>
 
+        <Test name="Filters and if statement works">
             <state b:=1 d:=5></state>
             <template>
               <h1>1</h1>
@@ -163,9 +165,11 @@ can have newlines"
               <h3>15</h3>
               <h4>false</h4>
             </template>
+        </Test>
 
-            <state e:=6 b:=10 c:=2></state>
-            <template>
+        <Test name="Handles state change to loop">
+            <state d:=5 e:=6 b:=10 c:=2></state>
+            <template name="After another change with loop">
               <h1>1</h1>
               <h2>2</h2>
               <h3>15</h3>

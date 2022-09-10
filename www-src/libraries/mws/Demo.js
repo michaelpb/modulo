@@ -1,5 +1,5 @@
 let componentTexts = null;
-let exCounter = 0; // global variable to prevent conflicts
+let exCounter = window._modExCounter || 0; // global variable to prevent conflicts
 
 function _setupGlobalVariables() {
     const { getComponentDefs } = modulo.registry.utils;
@@ -141,17 +141,6 @@ function initializedCallback() {
     if (demoType === 'minipreview') {
         doRun();
     }
-
-    const myElem = element;
-    const myState = state;
-    const {isBackend} = Modulo;
-    return;
-    if (!isBackend) {
-        setTimeout(() => {
-            const div = myElem.querySelector('.editor-wrapper > div');
-            _setupCodemirror(div, demoType, myElem, myState);
-        }, 0); // put on queue
-    }
 }
 
 function _newModulo() {
@@ -170,7 +159,7 @@ function runModuloText(componentDef) {
 }
 
 function doRun() {
-    exCounter++;
+    window._modExCounter = ++exCounter;
     //console.log('There are ', exCounter, ' examples on this page. Gee!')
     const namespace = `e${exCounter}g${state.nscounter}`; // TODO: later do hot reloading using same loader
     state.nscounter++;
@@ -185,7 +174,6 @@ function doRun() {
     // Create a new modulo instance 
     const fullname = `${namespace}-${tagName}`;
     state.preview = `<${fullname}></${fullname}>`;
-    // state.preview = '<x-ColorSelector></x-ColorSelector>';
     setTimeout(() => {
         const div = element.querySelector('.editor-minipreview > div');
         if (div) {
@@ -343,6 +331,18 @@ function _setupCodemirror(el, demoType, myElement, myState) {
         // TODO: Ugly hack, need better tools for working with legacy
         setTimeout(mountCM, expBackoff);
     }
+
+    const myElem = element;
+    const myState = state;
+    const {isBackend} = Modulo;
+    return;
+    if (!isBackend) {
+        setTimeout(() => {
+            const div = myElem.querySelector('.editor-wrapper > div');
+            _setupCodemirror(div, demoType, myElem, myState);
+        }, 0); // put on queue
+    }
+
 }
 
 */
