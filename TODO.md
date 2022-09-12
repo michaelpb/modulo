@@ -1,3 +1,18 @@
+New next steps:
+
+- Lots of good progress has been made on refactoring the define/asset/factory
+  lifecycle
+- Next steps are just going 1 by 1 and fixing Template, Script, and StaticData
+- Then is combing through component and making sure that's in place
+- Finally, rewriting build cmd, and working on restoring the modulocli build command
+
+
+
+
+
+----
+
+
 # Inp-Mod3 notes
 
 - Goal: Refactor current chaotic, confusing configure/define/factory steps
@@ -78,6 +93,53 @@ Build:
         });
     `);
 
+
+----
+
+
+/*
+    1. (DONE-ish) Next step: Work on necessitating LIVE version of site (not
+    built), using new boilerplate (it's okay to use hacks to get through)
+    * (INP) Work on refactoring configure / define steps
+    2. (INP) Work on static build of site / etc (**)
+    3. One by one incorporate Libraries of the old unit tests.  Will need to
+    punt + totally rewrite some parts (e.g. things that read in their own
+    fetchQ, maybe..?)
+    5. Finish updating documentation, polish docs, finish misc articles, then
+    release alpha!
+    * (DONE-ish) Fix Library -- current CPart code doesn't work at all
+*/
+
+/*
+  Bug note:
+    - Still have not restored the <Template> -> <script Template> rewriter
+  Bug note:
+    - Due to "current bug" where partialConfs get shared, with 
+      tests break unless you do <template name="before"> etc
+
+  Current bug:
+    http://localhost:3334/
+    - The 'Src' doesn't work for factory-stage Template
+    - Queues up and only rerenders too late
+    - Should hardcode or fix somehow
+    - Note that the line here that dupes is part of what breaks it:
+          - partialConfs.push(Object.assign({}, partialConf));
+
+  Misc lifecycle refactor idea:
+  Modulo lifecycles:
+  - configure - outputs data structure
+  - asset - sets up asset manager
+          - component - definition functions['..'] & script tag in head
+          - script, staticdata - factory functions['..'] & script tag in head
+          - style - styles['..'] & stylesheet tag in head
+          - props, state - none
+  - define
+      - invokes component definition function
+  Component lifecycles:
+  - factory
+      - invokes script definition function
+  - (render etc)
+*/
 
 ----
 

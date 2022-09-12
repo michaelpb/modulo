@@ -1,47 +1,3 @@
-/*
-    1. (DONE-ish) Next step: Work on necessitating LIVE version of site (not
-    built), using new boilerplate (it's okay to use hacks to get through)
-    * (INP) Work on refactoring configure / define steps
-    2. (INP) Work on static build of site / etc (**)
-    3. One by one incorporate Libraries of the old unit tests.  Will need to
-    punt + totally rewrite some parts (e.g. things that read in their own
-    fetchQ, maybe..?)
-    5. Finish updating documentation, polish docs, finish misc articles, then
-    release alpha!
-    * (DONE-ish) Fix Library -- current CPart code doesn't work at all
-*/
-
-/*
-  Bug note:
-    - Still have not restored the <Template> -> <script Template> rewriter
-  Bug note:
-    - Due to "current bug" where partialConfs get shared, with 
-      tests break unless you do <template name="before"> etc
-
-  Current bug:
-    http://localhost:3334/
-    - The 'Src' doesn't work for factory-stage Template
-    - Queues up and only rerenders too late
-    - Should hardcode or fix somehow
-    - Note that the line here that dupes is part of what breaks it:
-          - partialConfs.push(Object.assign({}, partialConf));
-
-  Misc lifecycle refactor idea:
-  Modulo lifecycles:
-  - configure - outputs data structure
-  - asset - sets up asset manager
-          - component - definition functions['..'] & script tag in head
-          - script, staticdata - factory functions['..'] & script tag in head
-          - style - styles['..'] & stylesheet tag in head
-          - props, state - none
-  - define
-      - invokes component definition function
-  Component lifecycles:
-  - factory
-      - invokes script definition function
-  - (render etc)
-*/
-
 const LEGACY = []; // XXX
 window.LEG = LEGACY;
 
@@ -96,7 +52,6 @@ window.Modulo = class Modulo {
 
     create(type, name, conf = null) {
         type = (`${type}s` in this.registry) ? `${type}s` : type; // plural / singular
-        //if (typeof this.registry[type][name] !== 'function') { debugger; } // XXX
         const instance = new this.registry[type][name](modulo, conf);
         conf.Instance = instance;
         return instance;
@@ -183,10 +138,22 @@ window.Modulo = class Modulo {
             // TODO: Possibly, refactor assets/define into embedded function()
             // {} in the Preprocessors array
             //console.log('CONFIGURE FINISHED', elem);
-            const patches = this.getLifecyclePatches(this.registry.cparts, 'assets');
-            this.applyPatches(patches);
-            const patches2 = this.getLifecyclePatches(this.registry.cparts, 'define');
-            this.applyPatches(patches2);
+
+            // Now, loop through namespaces
+            for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+                for (const conf of confArray) {
+                    const preprocessors = conf.ConfPreprocessors || [ 'Src' ];
+                }
+            }
+
+            // XXX TODO: remove nu nonsense
+            const nupatches = this.getNuLifecyclePatches(this.registry.cparts, 'prebuild');
+            this.applyPatches(nupatches);
+
+            //const patches = this.getLifecyclePatches(this.registry.cparts, 'define');
+            //this.applyPatches(patches);
+            const nupatches2 = this.getNuLifecyclePatches(this.registry.cparts, 'define');
+            this.applyPatches(nupatches2);
             //console.log('DEFINE FINISHED', elem);
         });
     }
@@ -201,6 +168,20 @@ window.Modulo = class Modulo {
         const div = this.reconciler.loadString(text, {});
         const result = this.loadFromDOM(div, parentFactoryName);
         return result
+    }
+
+    getNuLifecyclePatches(lcObj, lifecycleName) {
+        // todo: Make it lifecycleNames (plural)
+        const patches = [];
+        const methodName = lifecycleName + 'Callback';
+        for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+            for (const conf of confArray) {
+                if (conf.NuType in lcObj && methodName in lcObj[conf.NuType]) {
+                    patches.push([ lcObj[conf.NuType], methodName, conf ]);
+                }
+            }
+        }
+        return patches;
     }
 
     getLifecyclePatches(lcObj, lifecycleName, skipFacs = false) {
@@ -285,6 +266,38 @@ window.Modulo = class Modulo {
               () => this.repeatConfigurePreprocessors(cb));
         }
     }
+
+    getNodeModuloNuType(node) {
+        const { tagName, nodeType, textContent } = node;
+
+        // node.nodeType equals 1 if the node is a DOM element (as opposed to
+        // text, or comment). Ignore comments, tolerate empty text nodes, but
+        // warn on others (since those are typically syntax mistakes).
+        if (nodeType !== 1) {
+            // Text nodes, comment nodes, etc
+            if (nodeType === 3 && textContent && textContent.trim()) {
+                console.error('Modulo: Unexpected text:', textContent);
+            }
+            return null;
+        }
+
+        let cPartName = tagName.toLowerCase();
+        for (const attrUnknownCase of node.getAttributeNames()) {
+            const attr = attrUnknownCase.toLowerCase();
+            if (attr in this.registry.dom && !node.getAttribute(attr)) {
+                cPartName = attr;
+                break;
+            }
+            // break; // should always be first?
+        }
+        if (!(cPartName in this.registry.dom)) {
+            if (cPartName === 'testsuite') { /* XXX HACK */ return null;}
+            console.error('Unknown Modulo def:', cPartName);
+            return null;
+        }
+        return cPartName;
+    }
+
     getNodeModuloType(node) {
         const { tagName, nodeType, textContent } = node;
 
@@ -328,9 +341,13 @@ window.Modulo = class Modulo {
     loadPartialConfigFromNode(node) {
         const { mergeAttrs } = this.registry.utils;
         const partType = this.getNodeModuloType(node);
+        const nupartType = this.getNodeModuloNuType(node);
         const config = mergeAttrs(node, this.config[partType]);
         const content = node.tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
         config.Content = (config.Content || '') + content; // concatenate
+        if (!config.NuType) { // XXX NuType nonsense is set here, rm when Type replaces
+            config.NuType = config.Type;
+        }
         config.Type = partType; // Ensure Type is set as well
         if (config.Type in config && !config[config.Type]) {
             delete config[config.Type]; // Remove attribute name used as type
@@ -386,6 +403,7 @@ modulo.register('confPreprocessor', function content (modulo, conf, value) {
 
 modulo.register('cpart', class Component {
     static defineCallback(modulo, conf) {
+        // TODO refactor this with prebuild + define
         const { Content, Name, Children } = conf;
         const { stripWord } = modulo.registry.utils;
         if (!Children) {
@@ -1174,7 +1192,9 @@ modulo.register('cpart', class Props {
 modulo.register('cpart', class Style {
     getDirectives() {  LEGACY.push('style.getDirectives'); return []; }
 
-    static factoryCallback(modulo, conf) {
+    //static factoryCallback(modulo, conf) {
+    static prebuildCallback(modulo, conf) {
+
         /*
         //if (loadObj.component.attrs.mode === 'shadow') { // TODO finish
         //    return;
@@ -1186,12 +1206,18 @@ modulo.register('cpart', class Style {
         }
         if (Parent && (Parent in modulo.factories.component)) {
             let { namespace, mode, Name } = modulo.factories.component[Parent];
-            // XXX HAX, namespace is getting duped ----
+            // XXX HAX, conf is a big tangled mess
+            if (Name.startsWith('x_')) {
+                Name = Name.replace('x_', '');
+                if (!namespace) {
+                    namespace = 'x';
+                }
+            }
             if (Name.startsWith(namespace)) {
                 Name = Name.replace(namespace + '_', '');
                 conf.Name = Name;
             }
-            // XXX unHAX, namespace is getting duped ----
+            // XXX unHAX, conf is a big tangled mess
             if (mode === 'regular') { // TODO finish
                 const { prefixAllSelectors } = modulo.registry.utils;
                 Content = prefixAllSelectors(namespace, Name, Content);
@@ -1217,12 +1243,25 @@ modulo.register('cpart', class Template {
     getDirectives() {  LEGACY.push('template.getDirectives'); return []; }
 
     static factoryCallback(modulo, conf) {
+        // TODO: Switch to prebuild / define structure
         if (!conf.Content) {
             console.error('No Template Content specified.', conf);
             return; // TODO: Make this never happen
         }
-        modulo.create('engine', 'Templater', conf);
+        const instance = new modulo.registry.engines.Templater(modulo, conf);
+        conf.Instance = instance;
     }
+
+    /*
+    static prebuildCallback(modulo, conf) {
+        if (!conf.Content) {
+            console.error('No Template Content specified.', conf);
+            return; // TODO: Make this never happen
+        }
+        const instance = new modulo.registry.engines.Templater(modulo, conf);
+        conf.Instance = instance;
+    }
+    */
 
     constructor(modulo, conf) {
         if (conf && !conf.Instance) { // TODO: Remove, needed for tests
@@ -1261,6 +1300,7 @@ modulo.register('cpart', class Template {
 
 modulo.register('cpart', class StaticData {
     static factoryCallback(modulo, conf) {
+        // TODO: Switch to prebuild / define structure
         if (!conf.Content) {
             console.error('No StaticData Content specified.', conf);
             return; // TODO: Make this never happen
@@ -1283,6 +1323,7 @@ modulo.register('cpart', class StaticData {
 
 modulo.register('cpart', class Script {
     static factoryCallback(modulo, conf) {
+        // TODO: Switch to prebuild / define structure
         const code = conf.Content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(modulo.registry.dom);// TODO fix...
         localVars.push('element'); // add in element as a local var
