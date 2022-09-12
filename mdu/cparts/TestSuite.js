@@ -221,7 +221,8 @@ modulo.register('cpart', class TestSuite {
         // we can loop through after loading?
         const { Content } = suite;
         const { TestSuite } = modulo.registry.cparts;
-        const { makeDiv, deepClone, Modulo, registerTestElement } = modulo.registry.utils;
+        const { makeDiv, deepClone, registerTestElement } = modulo.registry.utils;
+        const Modulo = window.Modulo;
         const testLoaderModulo = new Modulo(modulo); // "Fork" modulo obj
         // By default, does not clone factories, so we manually clone that:
         testLoaderModulo.factories = deepClone(modulo.factories, modulo);

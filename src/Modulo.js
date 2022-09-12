@@ -14,7 +14,6 @@
 /*
   Bug note:
     - Still have not restored the <Template> -> <script Template> rewriter
-      (breaking Conway example)
   Bug note:
     - Due to "current bug" where partialConfs get shared, with 
       tests break unless you do <template name="before"> etc
@@ -54,6 +53,9 @@ window.Modulo = class Modulo {
     constructor(parentModulo = null, registryKeys = null) {
         // Note: parentModulo arg is being used by mws/Demo.js
         window._moduloID = this.id = (window._moduloID || 0) + 1; // Global ID
+
+        this.namespaces = {};
+
         if (parentModulo) {
             this.parentModulo = parentModulo;
 
@@ -127,10 +129,11 @@ window.Modulo = class Modulo {
         if (type === 'cparts') { // CParts get loaded from DOM
             this.registry.dom[cls.name.toLowerCase()] = cls;
             this.config[cls.name.toLowerCase()].RenderObj = cls.name.toLowerCase();
+            this.config[cls.name.toLowerCase()].RenderObj = cls.name.toLowerCase();
         }
     }
 
-    loadFromDOM(elem, parentFactoryName = '', skipConf = false) {
+    loadFromDOM(elem, parentFactoryName = '') {
         const partialConfs = [];
         for (const node of elem.children) {
             const type = this.getNodeModuloType(node);
@@ -161,24 +164,34 @@ window.Modulo = class Modulo {
             } else {
                 this.config[type] = partialConf;
             }
-            // XXX This duplication gets tests running, but causes
-            // configure loading bugs
-            // partialConfs.push(Object.assign({}, partialConf));
-            partialConfs.push(partialConf);
-        }
 
-        // Then, run configure callback
-        if (!skipConf) { // TODO: move this somewhere else, eg "loadAndDefine"
-            this.repeatLifecycle(this.registry.cparts, 'configure', () => {
-                //console.log('CONFIGURE FINISHED', elem);
-                this.runLifecycle(this.registry.cparts, 'define');
-                //console.log('DEFINE FINISHED', elem);
-            });
+            /* XXX ---- : */
+            const NuNamespace = partialConf.Parent || 'x';
+            if (!(NuNamespace in this.namespaces)) {
+                this.namespaces[NuNamespace] = [];
+            }
+            this.namespaces[NuNamespace].push(partialConf);
+
+            /* XXX OLD: */
+            partialConfs.push(partialConf);
         }
         return partialConfs;
     }
 
-    loadString(text, parentFactoryName = null, shouldSkip = true) {
+    preprocessAndDefine() {
+        this.repeatConfigurePreprocessors(() => {
+            // TODO: Possibly, refactor assets/define into embedded function()
+            // {} in the Preprocessors array
+            //console.log('CONFIGURE FINISHED', elem);
+            const patches = this.getLifecyclePatches(this.registry.cparts, 'assets');
+            this.applyPatches(patches);
+            const patches2 = this.getLifecyclePatches(this.registry.cparts, 'define');
+            this.applyPatches(patches2);
+            //console.log('DEFINE FINISHED', elem);
+        });
+    }
+
+    loadString(text, parentFactoryName = null) {
         const tmp_Cmp = new modulo.registry.cparts.Component({}, {}, modulo);
         tmp_Cmp.dataPropLoad = tmp_Cmp.dataPropMount; // XXX
         this.reconciler = modulo.create('engine', 'Reconciler', {
@@ -186,20 +199,8 @@ window.Modulo = class Modulo {
             directiveShortcuts: [ [ /:$/, 'modulo.dataProp' ] ],
         });
         const div = this.reconciler.loadString(text, {});
-        const result = this.loadFromDOM(div, parentFactoryName, shouldSkip);
+        const result = this.loadFromDOM(div, parentFactoryName);
         return result
-    }
-
-    squashFactories() {
-        return; // XXX ??? For some reason, this overwrites the default
-        // configurations on top of the factory configs (instead of the other
-        // way around). Currently disabling, until its clear if it was
-        // necessary.
-        for (const [ type, facs ] of Object.entries(this.factories)) {
-            for (const [ name, conf ] of Object.entries(facs)) {
-                facs[name] = Object.assign(conf, this.config[type], conf);
-            }
-        }
     }
 
     getLifecyclePatches(lcObj, lifecycleName, skipFacs = false) {
@@ -260,29 +261,30 @@ window.Modulo = class Modulo {
         }
     }
 
-    runLifecycle(lcObj, lifecycleName) {
-        this.squashFactories(); // Ensure factories are squashed with config // TODO: Possibly only squash once?
-        const patches = this.getLifecyclePatches(lcObj, lifecycleName);
-        this.applyPatches(patches);
-    }
-
-    repeatLifecycle(lcObj, lcName, cb) {
+    repeatConfigurePreprocessors(cb) {
         if (!this._repeatTries) {
             this._repeatTries = 0;
         }
-        this.assert(this._repeatTries++ < 10, `Max repeat: ${lcName}`);
-        this.runLifecycle(lcObj, lcName);
-        this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
-        this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
-        this.runLifecycle(lcObj, lcName); // TODO: Need to fix this, after Src etc is standardized
-        //this.runLifecycle(lcObj, lcName);
-        this.fetchQueue.enqueueAll(() => this.repeatLifecycle(lcObj, lcName, cb));
+        //this.assert(this._repeatTries++ < 50, `Max repeat: ${lcName}`);
+        let changed = true; // Run at least once
+        while (changed) {
+            changed = false;
+            for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+                for (const conf of confArray) {
+                    const preprocessors = conf.ConfPreprocessors || [ 'Src' ];
+                    changed = changed || this.applyPreprocessor(conf, preprocessors);
+                }
+            }
+        }
+
         if (Object.keys(this.fetchQueue.queue).length === 0) {
             delete this._repeatTries;
             cb();
+        } else {
+            this.fetchQueue.enqueueAll(
+              () => this.repeatConfigurePreprocessors(cb));
         }
     }
-
     getNodeModuloType(node) {
         const { tagName, nodeType, textContent } = node;
 
@@ -336,15 +338,16 @@ window.Modulo = class Modulo {
         return config;
     }
 
-    applyPreprocessor(conf, keys) {
-        for (const key of keys) {
-            if (key in conf) {
-                const value = conf[key];
-                delete conf[key];
-                this.registry.confPreprocessors[key.toLowerCase()](this, conf, value);
-                return;
+    applyPreprocessor(conf, preprocessorNames) {
+        for (const name of preprocessorNames) {
+            if (name in conf) {
+                const value = conf[name];
+                delete conf[name];
+                this.registry.confPreprocessors[name.toLowerCase()](this, conf, value);
+                return true;
             }
         }
+        return false;
     }
 
     assert(value, ...info) {
@@ -382,10 +385,6 @@ modulo.register('confPreprocessor', function content (modulo, conf, value) {
 });
 
 modulo.register('cpart', class Component {
-    static configureCallback(modulo, conf) {
-        modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
-    }
-
     static defineCallback(modulo, conf) {
         const { Content, Name, Children } = conf;
         const { stripWord } = modulo.registry.utils;
@@ -411,7 +410,6 @@ this.modulo = modulo;
 const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
 const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
 //modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
-//modulo.runLifecycle(cpartClasses, 'factory');
 modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory', '${ className }'));
 this.initRenderObj = window.facHack;
 delete window.facHack;
@@ -639,21 +637,18 @@ delete window.facHack;
         delete el.dataProps[attrName];
         delete el.dataPropsAttributeNames[rawName];
     }
-}, { mode: 'regular', rerender: 'event', engine: 'Reconciler' });
+}, { mode: 'regular', rerender: 'event', engine: 'Reconciler', ConfPreprocessors: [ 'Src', 'Content' ] });
 
 modulo.register('cpart', class Modulo {
-    static configureCallback(modulo, conf) {
-        modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
-    }
-});
+}, { ConfPreprocessors: [ 'Src', 'Content' ] });
 
 //                v- Later put somewhere more appropriate
-modulo.register('util', Modulo);
+//modulo.register('util', Modulo);
 
 modulo.register('cpart', class Library {
+    /*
     static configureCallback(modulo, conf) {
         modulo.applyPreprocessor(conf, [ 'Src', 'Content' ]);
-        /*
         let { Content, Src, Hash, src, Name, name, namespace } = conf;
         //const { hash } = modulo.registry.utils;
         const regName = (Name || name || namespace || 'x').toLowerCase();
@@ -677,16 +672,17 @@ modulo.register('cpart', class Library {
             conf.RegName = regName; // Ensure RegName is set on conf as well
             conf.LibName = libName; // ditto
         }
-        */
     }
     static defineCallback(modulo, conf) {
         if (conf.LibName) {
+            console.log('Does this even work??')
             delete conf.LibName; // idempotent
             const library = modulo.registry.library[conf.LibName];
             library.runLifecycle(library.registry.cparts, 'define');
         }
     }
-});
+    */
+}, { ConfPreprocessors: [ 'Src', 'Content' ] });
 
 modulo.register('util', function keyFilter (obj, func) {
     const keys = func.call ? Object.keys(obj).filter(func) : func;
@@ -976,6 +972,8 @@ modulo.register('core', class AssetManager {
         this.functions = {};
         this.stylesheets = {};
         this.rawAssets = { js: {}, css: {} };
+        // TODO: Probably just use Array
+        this.rawAssetsArray = { js: [], css: [] };
     }
 
     getAssets(type, extra = null) {
@@ -991,12 +989,15 @@ modulo.register('core', class AssetManager {
         const hash = text in this.functions ? text : this.getHash(params, text);
         if (!(hash in this.functions)) {
             const funcText = this.wrapFunctionText(params, text, opts, hash);
+            this.runInline(funcText);
+            /*
             this.rawAssets.js[hash] = funcText; // "use strict" only in tag
             window.currentModulo = this.modulo; // Ensure stays silo'ed in current
             this.appendToHead('script', '"use strict";\n' + funcText);
+            delete window.currentModulo;
+            */
             this.modulo.assert(hash in this.functions, `Func ${hash} did not register`);
             this.functions[hash].hash = hash;
-            delete window.currentModulo;
         }
         return this.functions[hash];
     }
@@ -1006,8 +1007,18 @@ modulo.register('core', class AssetManager {
         if (!(hash in this.stylesheets)) {
             this.stylesheets[hash] = true;
             this.rawAssets.css[hash] = text;
+            this.rawAssetsArray.css.push(text);
             this.appendToHead('style', text);
         }
+    }
+
+    runInline(funcText) {
+        const hash = this.modulo.registry.utils.hash(funcText);
+        this.rawAssets.js[hash] = funcText; // "use strict" only in tag
+        this.rawAssetsArray.js.push(funcText);
+        window.currentModulo = this.modulo; // Ensure stays silo'ed in current
+        this.appendToHead('script', '"use strict";\n' + funcText);
+        delete window.currentModulo;
     }
 
     getSymbolsAsObjectAssignment(contents) {
@@ -1161,10 +1172,6 @@ modulo.register('cpart', class Props {
 
 
 modulo.register('cpart', class Style {
-    static configureCallback(modulo, conf) {
-        modulo.applyPreprocessor(conf, [ 'Src' ]);
-    }
-
     getDirectives() {  LEGACY.push('style.getDirectives'); return []; }
 
     static factoryCallback(modulo, conf) {
@@ -1207,9 +1214,6 @@ modulo.register('cpart', class Style {
 
 
 modulo.register('cpart', class Template {
-    static configureCallback(modulo, conf) {
-        modulo.applyPreprocessor(conf, [ 'Src' ]);
-    }
     getDirectives() {  LEGACY.push('template.getDirectives'); return []; }
 
     static factoryCallback(modulo, conf) {
@@ -1256,9 +1260,6 @@ modulo.register('cpart', class Template {
 });
 
 modulo.register('cpart', class StaticData {
-    static configureCallback(modulo, conf) {
-        modulo.applyPreprocessor(conf, [ 'Src' ]);
-    }
     static factoryCallback(modulo, conf) {
         if (!conf.Content) {
             console.error('No StaticData Content specified.', conf);
@@ -1281,10 +1282,6 @@ modulo.register('cpart', class StaticData {
 });
 
 modulo.register('cpart', class Script {
-    static configureCallback(modulo, conf) {
-        modulo.applyPreprocessor(conf, [ 'Src' ]);
-    }
-
     static factoryCallback(modulo, conf) {
         const code = conf.Content || ''; // TODO: trim whitespace?
         const localVars = Object.keys(modulo.registry.dom);// TODO fix...
@@ -2161,6 +2158,7 @@ if (typeof document !== undefined && document.head) { // Browser environ
     modulo.globals = window;
     window.hackCoreModulo = new Modulo(modulo);
     modulo.loadFromDOM(document.head);
+    modulo.preprocessAndDefine();
     console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
         get test() { return modulo.registry.commands.test(modulo) }
         get build() { return modulo.registry.commands.build(modulo) }

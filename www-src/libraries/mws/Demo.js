@@ -156,6 +156,7 @@ function runModuloText(componentDef) {
     defDiv.innerHTML = componentDef;
     const mod = _newModulo();
     mod.loadFromDOM(defDiv);
+    mod.preprocessAndDefine();
 }
 
 function doRun() {
