@@ -170,11 +170,15 @@ window.Modulo = class Modulo {
         return result
     }
 
-    getNuLifecyclePatches(lcObj, lifecycleName) {
+    getNuLifecyclePatches(lcObj, lifecycleName, searchNamespace = null) {
         // todo: Make it lifecycleNames (plural)
         const patches = [];
         const methodName = lifecycleName + 'Callback';
         for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+            // TODO refactor searchNamespace
+            if (searchNamespace && searchNamespace !== namespace) {
+                continue;
+            }
             for (const conf of confArray) {
                 if (conf.NuType in lcObj && methodName in lcObj[conf.NuType]) {
                     patches.push([ lcObj[conf.NuType], methodName, conf ]);
@@ -402,13 +406,62 @@ modulo.register('confPreprocessor', function content (modulo, conf, value) {
 });
 
 modulo.register('cpart', class Component {
+    static prebuildCallback(modulo, conf) {
+        const { Content, Name, Children, Parent } = conf;
+        const { stripWord } = modulo.registry.utils;
+        if (!Children || Children.length === 0) {
+            console.warn('Empty component specified:', Name);
+            return;
+        }
+        const parentNS = Parent || 'x'; // TODO: Make defaulted already
+        const className = stripWord(Name);
+        const cpartTypes = Children.map(({ Type }) => Type);
+        const code = `
+            class ${ className } extends modulo.registry.utils.BaseElement {
+                constructor() {
+                    this.modulo = modulo;
+                    this.moduloComponentConf = ${ JSON.stringify(conf, null, 1) };
+                    this.moduloChildrenData = ${ JSON.stringify(Children, null, 1) };
+                }
+            }
+            // XXX --refactor-------- //
+            const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
+            const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
+            const nupatches = modulo.getNuLifecyclePatches(modulo.registry.cparts, 'nuFac', '${ parentNS }');
+            ${ className }.initRenderData = {};
+            modulo.applyPatches(nupatches, ${ className }.initRenderData);
+            console.log('this is new initRenderData', initRenderData);
+            // XXX ------------------ //
+
+            modulo.globals.customElements.define(tagName, ${ className });
+            console.log("Registered: ${ className } as " + tagName);
+            return ${ className };
+        `;
+        conf.Hash = modulo.assets.getHash([ 'tagName', 'modulo' ], code);
+        modulo.assets.registerFunction([ 'tagName', 'modulo' ], code);
+    }
+
     static defineCallback(modulo, conf) {
         // TODO refactor this with prebuild + define
-        const { Content, Name, Children } = conf;
+        const { Content, Name, Children, Hash } = conf;
         const { stripWord } = modulo.registry.utils;
         if (!Children) {
             return;
         }
+        if (Hash) {
+            console.log('this.Hash', Hash);
+            //modulo.assets.functions[Hash]('x-LOL', modulo);
+        }
+        /*
+        else {
+            this.compiledCode = this.compile(text);
+            const unclosed = this.stack.map(({ close }) => close).join(', ');
+            this.modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`);
+            this.Hash = modulo.assets.getHash([ 'CTX', 'G' ], this.compiledCode);
+            this.renderFunc = modulo.assets.registerFunction([ 'CTX', 'G' ], this.compiledCode);
+        }
+        */
+
         ///* XXX */ console.log('Is it already broken?', JSON.stringify(conf.Children[2]));
         delete conf.Children;
         const cpartTypes = Children.map(({ Type }) => Type);
@@ -1242,46 +1295,25 @@ modulo.register('cpart', class Style {
 modulo.register('cpart', class Template {
     getDirectives() {  LEGACY.push('template.getDirectives'); return []; }
 
-    static factoryCallback(modulo, conf) {
-        // TODO: Switch to prebuild / define structure
-        if (!conf.Content) {
-            console.error('No Template Content specified.', conf);
-            return; // TODO: Make this never happen
-        }
+    static prebuildCallback(modulo, conf) {
+        // TODO:  Possibly could refactor the hashing / engine system into
+        // Preprocessors, shared by Template (Templater), Component
+        // (Reconciler), and maybe even Script (something that wraps and
+        // exposes, e.g.  ScriptContainer) and StaticData (DataProcessor)
+        modulo.assert(conf.Content, 'No Template Content specified.');
         const instance = new modulo.registry.engines.Templater(modulo, conf);
-        conf.Instance = instance;
+        conf.Hash = instance.Hash;
+        delete conf.Content;
+    }
+
+    constructor(modulo, conf) {
+        this.templater = new modulo.registry.engines.Templater(modulo, conf);
     }
 
     /*
-    static prebuildCallback(modulo, conf) {
-        if (!conf.Content) {
-            console.error('No Template Content specified.', conf);
-            return; // TODO: Make this never happen
-        }
-        const instance = new modulo.registry.engines.Templater(modulo, conf);
-        conf.Instance = instance;
-    }
-    */
-
-    constructor(modulo, conf) {
-        if (conf && !conf.Instance) { // TODO: Remove, needed for tests
-            modulo.create('engine', 'Templater', conf);
-        }
-
-        /////////////////////////////
-        /* XXX */
-        if (conf.Instance && conf.Instance.Instance) { 
-            LEGACY.push('Peculiar: conf.Instance.Instance')
-            conf.Instance = conf.Instance.Instance;
-        }
-        /////////////////////////////
-        this.Instance = conf.Instance;
-    }
-
     prepareCallback(renderObj) {
         // Exposes templates in render context, so stuff like
         // "|renderas:template.row" works
-        return;// (todo: remove when render context is stabilized)
         const obj = {};
         for (const template of this.element.cpartSpares.template) {
             obj[template.attrs.name || 'regular'] = template;
@@ -1289,12 +1321,11 @@ modulo.register('cpart', class Template {
         }
         return obj;
     }
+    */
 
     renderCallback(renderObj) {
         if (!renderObj.component)renderObj.component={};// XXX fix
-        /* XXX */ if (!this.Instance || !this.Instance.render) { console.error('!this.Instance', this.Instance); this.modulo.create('engine', 'Templater', this.Instance); } else {
-        renderObj.component.innerHTML = this.Instance.render(renderObj);
-        /* XXX */ }
+        renderObj.component.innerHTML = this.templater.render(renderObj);
     }
 });
 
@@ -1529,10 +1560,7 @@ modulo.register('cpart', class State {
 /* Implementation of Modulo Templating Language */
 modulo.register('engine', class Templater {
     constructor(modulo, conf) {
-        if (!conf.Content) {
-            console.log('ERROR: Invalid Templater constructor', conf);
-        }
-        this.makeFunc = (a, b) => modulo.assets.registerFunction(a, b);
+        this.modulo = modulo;
         this.setup(conf.Content, conf); // TODO, refactor
     }
 
@@ -1540,13 +1568,14 @@ modulo.register('engine', class Templater {
         Object.assign(this, modulo.config.templater, options);
         this.filters = Object.assign({}, modulo.registry.templateFilters, this.filters);
         this.tags = Object.assign({}, modulo.registry.templateTags, this.tags);
-        if (text) {
+        if (this.Hash) {
+            this.renderFunc = modulo.assets.functions[this.Hash];
+        } else {
             this.compiledCode = this.compile(text);
             const unclosed = this.stack.map(({ close }) => close).join(', ');
-            modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`); // TODO: use global!
-        }
-        if (!this.renderFunc) {
-            this.renderFunc = this.makeFunc([ 'CTX', 'G' ], this.compiledCode);
+            this.modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`);
+            this.Hash = modulo.assets.getHash([ 'CTX', 'G' ], this.compiledCode);
+            this.renderFunc = modulo.assets.registerFunction([ 'CTX', 'G' ], this.compiledCode);
         }
     }
 
@@ -1563,8 +1592,8 @@ modulo.register('engine', class Templater {
     }
 
     compile(text) {
-        // const { truncate, trim, escapejs } = this.defaultFilters;
         // const prepComment = token => truncate(escapejs(trim(token)), 80);
+        const { normalize } = modulo.registry.utils;
         this.stack = []; // Template tag stack
         this.output = 'var OUT=[];\n'; // Variable used to accumulate code
         let mode = 'text'; // Start in text mode
@@ -1572,8 +1601,8 @@ modulo.register('engine', class Templater {
             if (mode) { // if in a "mode" (text or token), then call mode func
                 const result = this.modes[mode](token, this, this.stack);
                 if (result) { // Mode generated text output, add to code
-                    const comment = JSON.stringify(token.trim());
-                    this.output += `${result} // ${ comment }\n`;
+                    const comment = JSON.stringify(normalize(token).trim()); // TODO: maybe collapse all ws?
+                    this.output += `  ${result} // ${ comment }\n`;
                 }
             }
             // FSM for mode: ('text' -> null) (null -> token) (* -> 'text')
@@ -1590,9 +1619,10 @@ modulo.register('engine', class Templater {
     parseExpr(text) {
         // TODO: Store a list of variables / paths, so there can be warnings or
         // errors when variables are unspecified
+        // TODO: Support this-style-variable being turned to thisStyleVariable
         const filters = text.split('|');
         let results = this.parseVal(filters.shift()); // Get left-most val
-        for (const [fName, arg] of filters.map(s => s.trim().split(':'))) {
+        for (const [ fName, arg ] of filters.map(s => s.trim().split(':'))) {
             const argList = arg ? ',' + this.parseVal(arg) : '';
             results = `G.filters["${fName}"](${results}${argList})`;
         }
@@ -1634,7 +1664,6 @@ modulo.register('engine', class Templater {
 }, {
     modeTokens: ['{% %}', '{{ }}', '{# #}'],
     opTokens: '==,>,<,>=,<=,!=,not in,is not,is,in,not,gt,lt',
-    makeFunc: (argList, text) => new Function(argList.join(','), text),
     opAliases: {
         '==': 'X === Y',
         'is': 'X === Y',
