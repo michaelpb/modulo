@@ -174,17 +174,24 @@ window.Modulo = class Modulo {
         // todo: Make it lifecycleNames (plural)
         const patches = [];
         const methodName = lifecycleName + 'Callback';
+        const foundNS = [];
         for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
             // TODO refactor searchNamespace & hackSNS away somehow
-            if (searchNamespace && (searchNamespace !== namespace && hackSNS !== namespace)) {
-                console.log('searchNamespace !== namespace', namespace, 'is not one of', searchNamespace, hackSNS);
-                continue;
+            if (searchNamespace) {
+                if (searchNamespace !== namespace && hackSNS !== namespace) {
+                    continue;
+                } else {
+                    foundNS.push(namespace);
+                }
             }
             for (const conf of confArray) {
                 if (conf.NuType in lcObj && methodName in lcObj[conf.NuType]) {
                     patches.push([ lcObj[conf.NuType], methodName, conf ]);
                 }
             }
+        }
+        if (searchNamespace && !foundNS.length) {
+            console.log('NS HACK SEARCH ERROR:', this.namespaces, searchNamespace, hackSNS, JSON.stringify(foundNS));
         }
         return patches;
     }
@@ -241,9 +248,6 @@ window.Modulo = class Modulo {
                 continue;
             }
             const result = obj[methodName].call(obj, collectObj || this, conf, this);
-            if (methodName === 'nuFacCallback') {
-                console.log('thsi is result', methodName, result);
-            }
             if (collectObj && result && conf.RenderObj) {
                 collectObj[conf.RenderObj] = result;
             }
@@ -453,22 +457,44 @@ modulo.register('cpart', class Component {
 
     static defineCallback(modulo, conf) {
         // TODO refactor this with prebuild + define
-        const { Content, Name, Children, Hash } = conf;
-        const { stripWord } = modulo.registry.utils;
-        if (!Hash) {
-            console.log('ERROR: No hash specified');
-        } else {
-            //modulo.assets.functions[Hash]('x-lol', modulo);
-        }
+        modulo.registry.cparts.Component.defineCallbackNew(modulo, conf);
+        //modulo.registry.cparts.Component.defineCallbackOld(modulo, conf);
         /*
-        else {
-            this.compiledCode = this.compile(text);
-            const unclosed = this.stack.map(({ close }) => close).join(', ');
-            this.modulo.assert(!unclosed, `Unclosed tags: ${ unclosed }`);
-            this.Hash = modulo.assets.getHash([ 'CTX', 'G' ], this.compiledCode);
-            this.renderFunc = modulo.assets.registerFunction([ 'CTX', 'G' ], this.compiledCode);
+        const { Hash } = conf;
+        if (Hash) {
+            modulo.registry.cparts.Component.defineCallbackNew(modulo, conf);
+        } else {
+            modulo.registry.cparts.Component.defineCallbackOld(modulo, conf);
         }
         */
+    }
+
+    static defineCallbackNew(modulo, conf) {
+        const { Content, Name, Children, Hash } = conf;
+        const { stripWord } = modulo.registry.utils;
+        const { library } = modulo.config;
+        const namespace = conf.namespace || library.Name || library.name || 'x';
+        // XXX HAX ------------
+        let hackName = Name;
+        if (hackName.startsWith(namespace + '_')) {
+            hackName = hackName.replace(namespace + '_', '');
+            conf.Name = hackName;
+        } else if (hackName.includes('_')) {
+            const split = hackName.split('_');
+            hackName = split[split.length - 1]; // get last item
+
+        }
+        // XXX HAX ------------
+        conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
+        conf.namespace = namespace; // ensure updated (todo remove when defaults)
+        //delete conf.Children;
+        console.log('!!!! nuFac Registering via Hash mode!');
+        modulo.assets.functions[Hash](conf.TagName, modulo);
+    }
+
+    static defineCallbackOld(modulo, conf) {
+        const { Content, Name, Children, Hash } = conf;
+        const { stripWord } = modulo.registry.utils;
 
         ///* XXX */ console.log('Is it already broken?', JSON.stringify(conf.Children[2]));
         delete conf.Children;
