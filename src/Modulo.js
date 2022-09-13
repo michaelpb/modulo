@@ -443,12 +443,12 @@ modulo.register('cpart', class Component {
             // XXX --refactor-------- //
             const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
             const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
-            const nupatches = modulo.getNuLifecyclePatches(modulo.registry.cparts, 'nuFac', '${ myNameSpace }', '${ Name }');
+            const nupatches = modulo.getNuLifecyclePatches(modulo.registry.cparts, 'factory', '${ myNameSpace }', '${ Name }');
             modulo.applyPatches(nupatches, initRenderObj);
             // XXX ------------------ //
 
             modulo.globals.customElements.define(tagName, ${ className });
-            console.log("Registered: ${ className } as " + tagName);
+            //console.log("Registered: ${ className } as " + tagName);
             return ${ className };
         `;
         conf.Hash = modulo.assets.getHash([ 'tagName', 'modulo' ], code);
@@ -456,20 +456,6 @@ modulo.register('cpart', class Component {
     }
 
     static defineCallback(modulo, conf) {
-        // TODO refactor this with prebuild + define
-        modulo.registry.cparts.Component.defineCallbackNew(modulo, conf);
-        //modulo.registry.cparts.Component.defineCallbackOld(modulo, conf);
-        /*
-        const { Hash } = conf;
-        if (Hash) {
-            modulo.registry.cparts.Component.defineCallbackNew(modulo, conf);
-        } else {
-            modulo.registry.cparts.Component.defineCallbackOld(modulo, conf);
-        }
-        */
-    }
-
-    static defineCallbackNew(modulo, conf) {
         const { Content, Name, Children, Hash } = conf;
         const { stripWord } = modulo.registry.utils;
         const { library } = modulo.config;
@@ -482,80 +468,23 @@ modulo.register('cpart', class Component {
         } else if (hackName.includes('_')) {
             const split = hackName.split('_');
             hackName = split[split.length - 1]; // get last item
-
         }
         // XXX HAX ------------
         conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
         conf.namespace = namespace; // ensure updated (todo remove when defaults)
         //delete conf.Children;
-        console.log('!!!! nuFac Registering via Hash mode!');
         modulo.assets.functions[Hash](conf.TagName, modulo);
     }
 
-    static defineCallbackOld(modulo, conf) {
-        const { Content, Name, Children, Hash } = conf;
-        const { stripWord } = modulo.registry.utils;
-
-        ///* XXX */ console.log('Is it already broken?', JSON.stringify(conf.Children[2]));
-        delete conf.Children;
-        const cpartTypes = Children.map(({ Type }) => Type);
-        const className = stripWord(Name);
-        const code = `
-            const r = {};
-            class ${ className } extends modulo.registry.utils.BaseElement {
-                constructor() {
-super();
-const { deepClone } = modulo.registry.utils;
-this.moduloComponentConf = ${ JSON.stringify(conf, null, 1) };
-this.moduloChildrenData = ${ JSON.stringify(Children, null, 1) };
-this.modulo = modulo;
-
-// NOTE: Currently run factory MULTIPLE TIMES
-// TODO: Refactor //
-const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
-const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
-//modulo.repeatLifecycle(cpartClasses, 'factoryLoad', () => {});
-modulo.applyPatches(modulo.getFactoryLifecyclePatches(cpartClasses, 'factory', '${ className }'));
-this.initRenderObj = window.facHack;
-delete window.facHack;
-
-                }
-            }
-
-            modulo.globals.customElements.define(tagName, ${ className });
-            //LEGACY.push("Registered: ${ className } as " + tagName);
-            return ${ className };
-            ////////////////////
-        `;
-        const args = [ 'tagName', 'modulo' ];
-        const func = modulo.assets.registerFunction(args, code);
-        const { library } = modulo.config;
-        const namespace = conf.namespace || library.Name || library.name || 'x';
-        conf.Hash = func.hash;
-        // XXX HAX ------------
-        let hackName = Name;
-        if (hackName.startsWith(namespace + '_')) {
-            hackName = hackName.replace(namespace + '_', '');
-            conf.Name = hackName;
-        } else if (hackName.includes('_')) {
-            const split = hackName.split('_');
-            hackName = split[split.length - 1]; // get last item
-
-        }
-        // XXX HAX ------------
-        conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
-        conf.namespace = namespace; // ensure updated (todo remove when defaults)
-        func(conf.TagName, modulo);
-    }
-
+    /*
     static factoryCallback(modulo, conf) {
-        return; // TODO
         conf.directiveShortcuts = [
             [ /^@/, 'component.event' ],
             [ /:$/, 'component.dataProp' ],
         ];
         conf.uniqueId = ++factory.id;
     }
+    */
 
     headTagLoad({ el }) {
         //el.remove();
@@ -1267,7 +1196,7 @@ modulo.register('cpart', class Props {
 
     prepareCallback(renderObj) {
         /* TODO: Remove after observedAttributes is implemented, e.g.:
-          static legacy_factoryCallback({ attrs }, { componentClass }, renderObj) {
+          static factoryCallback({ attrs }, { componentClass }, renderObj) {
               //componentClass.observedAttributes = Object.keys(attrs);
           }
         */
@@ -1279,7 +1208,6 @@ modulo.register('cpart', class Props {
 modulo.register('cpart', class Style {
     getDirectives() {  LEGACY.push('style.getDirectives'); return []; }
 
-    //static factoryCallback(modulo, conf) {
     static prebuildCallback(modulo, conf) {
 
         /*
@@ -1374,28 +1302,9 @@ modulo.register('cpart', class StaticData {
         modulo.assets.registerFunction([], code);
     }
 
-    static nuFacCallback(renderObj, conf, modulo) {
+    static factoryCallback(renderObj, conf, modulo) {
         // Now, actually run code in Script tag to do factory method
         return modulo.assets.functions[conf.Hash]();
-    }
-
-    static factoryCallback(modulo, conf) {
-        // TODO: Switch to prebuild / define structure
-        if (!conf.Content) {
-            console.error('No StaticData Content specified.', conf);
-            return; // TODO: Make this never happen
-        }
-        //const defTransform = s => `return ${s.trim()};`;
-        //(s => `return ${JSON.stringify(JSON.parse(s))}`);
-        //const transform = conf.attrs.transform || defTransform;
-        let code = (conf.Content || '').trim();
-        code = `return ${ code };`;
-        const data = modulo.assets.registerFunction([], code)();
-        Object.assign(conf, data);
-
-        // HACK ----------------------------------
-        if (!window.facHack){ window.facHack = {}; }
-        window.facHack[conf.Type.toLowerCase()] = conf;
     }
 
     getDirectives() { LEGACY.push("staticdata.getDirectives"); return []; } // XXX
@@ -1418,7 +1327,7 @@ modulo.register('cpart', class Script {
         conf.localVars = localVars;
     }
 
-    static nuFacCallback(renderObj, conf, modulo) {
+    static factoryCallback(renderObj, conf, modulo) {
         const { Content, Hash, localVars } = conf;
         const func = modulo.assets.functions[Hash];
         // Now, actually run code in Script tag to do factory method
@@ -1426,32 +1335,6 @@ modulo.register('cpart', class Script {
         results.localVars = localVars;
         modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
         return results;
-    }
-
-    static factoryCallback(modulo, conf) {
-        // TODO: Switch to prebuild / define structure
-        const code = conf.Content || ''; // TODO: trim whitespace?
-        const localVars = Object.keys(modulo.registry.dom);// TODO fix...
-        localVars.push('element'); // add in element as a local var
-        localVars.push('cparts'); // give access to CParts JS interface
-
-        // Combine localVars + fixed args into allArgs
-        const args = [ 'modulo', 'require' ];
-        const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
-        const opts = { exports: 'script' };
-        const func = modulo.assets.registerFunction(allArgs, code, opts);
-
-        // Now, actually run code in Script tag to do factory method
-        const results = func.call(null, modulo, this.require);
-        results.localVars = localVars;
-        modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
-
-        // HACK ----------------------------------
-        if (code.includes('getClicked()')) {
-            console.log('SCRIPT TAG factoryCallback - REGISTERING', code, results);
-        }
-        if (!window.facHack){ window.facHack = {}; }
-        window.facHack[conf.Type.toLowerCase()] = results;
     }
 
     getDirectives() {
@@ -1502,7 +1385,7 @@ modulo.register('cpart', class Script {
         */
     }
 
-    // ## AssetManager: prepLocalVars
+    // ## prepLocalVars
     // To allow for local variables access to APIs provided by other CParts,
     // sets local variables equal to the data returned by their callbacks.
     // This is important: It's what enables us to avoid using the "this"
