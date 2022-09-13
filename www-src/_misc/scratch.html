@@ -1,61 +1,47 @@
-
-<script src="/js/Modulo.js"></script>
-<script> Modulo.defineAll() </script>
-
-<!--
-<script src="/misc/modulo-build-6beniv.js"></script>
-<link rel="stylesheet" href="/misc/modulo-build-s1lh2f.css" />
--->
-
-
-<template modulo-embed>
-    <load namespace="x" src="/components/layouts.html"></load>
-
-    <component name="MahBtn">
-        <props
+<script Modulo src="/js/Modulo.js">
+    <Component namespace="x" name="MahBtn">
+        <Props
             txt
-        ></props>
+        ></Props>
 
-        <template>
+        <Template>
             <p>count: {{ state.count }}</p>
             <button @click:=script.clickies>{{ props.txt|reversed }}</button>
             {% if state.count gt 6 %}
               <p>bigger! {{ props.txt }}</p>
             {% endif %}
-        </template>
+        </Template>
 
-        <state
+        <State
             count:=5
-        ></state>
+        ></State>
 
-        <script>
+        <cpart Script>
             // Okay this is line 1
             function clickies() {
                 console.log('hi it is clickies');
                 state.count++;
-                //const a = 123;
-                //a();
             }
-        </script>
+        </cpart>
 
-        <style>
+        <Style>
+            :host {
+                border: 5px solid blue;
+                display: block;
+            }
             button {
                 border: 3px solid orange;
                 color: orange;
                 background: black;
             }
-        </style>
-    </component>
+        </Style>
+    </Component>
+</script>
 
-</template>
-
-<script> Modulo.defineAll() </script>
-
-
+<x-lol txt="Hello"></x-lol>
 <button>Before button</button>
 <x-MahBtn txt="Hello"></x-MahBtn>
 <x-MahBtn txt="Hello"></x-MahBtn>
 <x-MahBtn txt="Hello"></x-MahBtn>
 <button>After button</button>
 
-<mws-ErrorCauser></mws-ErrorCauser>

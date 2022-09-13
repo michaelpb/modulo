@@ -170,13 +170,14 @@ window.Modulo = class Modulo {
         return result
     }
 
-    getNuLifecyclePatches(lcObj, lifecycleName, searchNamespace = null) {
+    getNuLifecyclePatches(lcObj, lifecycleName, searchNamespace = null, hackSNS = null) {
         // todo: Make it lifecycleNames (plural)
         const patches = [];
         const methodName = lifecycleName + 'Callback';
         for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
-            // TODO refactor searchNamespace
-            if (searchNamespace && searchNamespace !== namespace) {
+            // TODO refactor searchNamespace & hackSNS away somehow
+            if (searchNamespace && (searchNamespace !== namespace && hackSNS !== namespace)) {
+                console.log('searchNamespace !== namespace', namespace, 'is not one of', searchNamespace, hackSNS);
                 continue;
             }
             for (const conf of confArray) {
@@ -239,7 +240,10 @@ window.Modulo = class Modulo {
                 console.log('WARNING: Invalid  conf: ', conf);
                 continue;
             }
-            const result = obj[methodName].call(obj, collectObj || this, conf);
+            const result = obj[methodName].call(obj, collectObj || this, conf, this);
+            if (methodName === 'nuFacCallback') {
+                console.log('thsi is result', methodName, result);
+            }
             if (collectObj && result && conf.RenderObj) {
                 collectObj[conf.RenderObj] = result;
             }
@@ -413,13 +417,21 @@ modulo.register('cpart', class Component {
             console.warn('Empty component specified:', Name);
             return;
         }
+
+        //////
         const parentNS = Parent || 'x'; // TODO: Make defaulted already
+        const myNameSpace = parentNS + '_' + Name;
+        //////
+
         const className = stripWord(Name);
         const cpartTypes = Children.map(({ Type }) => Type);
         const code = `
+            const initRenderObj = {};
             class ${ className } extends modulo.registry.utils.BaseElement {
                 constructor() {
+                    super();
                     this.modulo = modulo;
+                    this.initRenderObj = initRenderObj;
                     this.moduloComponentConf = ${ JSON.stringify(conf, null, 1) };
                     this.moduloChildrenData = ${ JSON.stringify(Children, null, 1) };
                 }
@@ -427,10 +439,8 @@ modulo.register('cpart', class Component {
             // XXX --refactor-------- //
             const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
             const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
-            const nupatches = modulo.getNuLifecyclePatches(modulo.registry.cparts, 'nuFac', '${ parentNS }');
-            ${ className }.initRenderData = {};
-            modulo.applyPatches(nupatches, ${ className }.initRenderData);
-            console.log('this is new initRenderData', initRenderData);
+            const nupatches = modulo.getNuLifecyclePatches(modulo.registry.cparts, 'nuFac', '${ myNameSpace }', '${ Name }');
+            modulo.applyPatches(nupatches, initRenderObj);
             // XXX ------------------ //
 
             modulo.globals.customElements.define(tagName, ${ className });
@@ -445,12 +455,10 @@ modulo.register('cpart', class Component {
         // TODO refactor this with prebuild + define
         const { Content, Name, Children, Hash } = conf;
         const { stripWord } = modulo.registry.utils;
-        if (!Children) {
-            return;
-        }
-        if (Hash) {
-            console.log('this.Hash', Hash);
-            //modulo.assets.functions[Hash]('x-LOL', modulo);
+        if (!Hash) {
+            console.log('ERROR: No hash specified');
+        } else {
+            //modulo.assets.functions[Hash]('x-lol', modulo);
         }
         /*
         else {
@@ -1330,6 +1338,21 @@ modulo.register('cpart', class Template {
 });
 
 modulo.register('cpart', class StaticData {
+    static prebuildCallback(modulo, conf) {
+        //const defTransform = s => `return ${s.trim()};`;
+        //(s => `return ${JSON.stringify(JSON.parse(s))}`);
+        //const transform = conf.attrs.transform || defTransform;
+        let code = (conf.Content || '').trim();
+        code = `return ${ code };`;
+        conf.Hash = modulo.assets.getHash([], code);
+        modulo.assets.registerFunction([], code);
+    }
+
+    static nuFacCallback(renderObj, conf, modulo) {
+        // Now, actually run code in Script tag to do factory method
+        return modulo.assets.functions[conf.Hash]();
+    }
+
     static factoryCallback(modulo, conf) {
         // TODO: Switch to prebuild / define structure
         if (!conf.Content) {
@@ -1353,6 +1376,32 @@ modulo.register('cpart', class StaticData {
 });
 
 modulo.register('cpart', class Script {
+    static prebuildCallback(modulo, conf) {
+        // TODO: Switch to prebuild / define structure
+        const code = conf.Content || ''; // TODO: trim whitespace?
+        const localVars = Object.keys(modulo.registry.dom);// TODO fix...
+        localVars.push('element'); // add in element as a local var
+        localVars.push('cparts'); // give access to CParts JS interface
+
+        // Combine localVars + fixed args into allArgs
+        const args = [ 'modulo', 'require' ];
+        const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
+        const opts = { exports: 'script' };
+        const func = modulo.assets.registerFunction(allArgs, code, opts);
+        conf.Hash = modulo.assets.getHash(allArgs, code);
+        conf.localVars = localVars;
+    }
+
+    static nuFacCallback(renderObj, conf, modulo) {
+        const { Content, Hash, localVars } = conf;
+        const func = modulo.assets.functions[Hash];
+        // Now, actually run code in Script tag to do factory method
+        const results = func.call(null, modulo, this.require || null);
+        results.localVars = localVars;
+        modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
+        return results;
+    }
+
     static factoryCallback(modulo, conf) {
         // TODO: Switch to prebuild / define structure
         const code = conf.Content || ''; // TODO: trim whitespace?
