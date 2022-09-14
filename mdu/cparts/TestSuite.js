@@ -227,15 +227,16 @@ modulo.register('cpart', class TestSuite {
         let componentFac;
 
         // REFACTOR this garbagee
-        testLoaderModulo.namespaces = deepClone(modulo.namespaces, modulo);
-        if (('x_' + name) in testLoaderModulo.namespaces) {
+        testLoaderModulo.defs = deepClone(modulo.defs, modulo);
+        testLoaderModulo.setupParents();
+        if (('x_' + name) in testLoaderModulo.defs) {
             console.log('HACK: Fixing name', name);
             name = 'x_' + name;
         }
         const components = {};
-        for (const [ namespace, confArray ] of Object.entries(testLoaderModulo.namespaces)) {
+        for (const [ namespace, confArray ] of Object.entries(testLoaderModulo.defs)) {
             for (const conf of confArray) {
-                if (conf.NuType === 'Component') {
+                if (conf.Type === 'Component') {
                     components[conf.Name] = conf;
                 }
             }
@@ -255,7 +256,8 @@ modulo.register('cpart', class TestSuite {
             let element;
             let err;
             const testModulo = new Modulo(modulo); // "Fork" modulo obj
-            testModulo.namespaces = deepClone(modulo.namespaces, modulo);
+            testModulo.defs = deepClone(modulo.defs, modulo);
+            testModulo.setupParents();
             TestSuite.setupMocks(testModulo);
             if (useTry) {
                 try {
@@ -378,12 +380,12 @@ modulo.register('command', function test(modulo) {
     // TODO: needs refactor
     const suites = [];
     const components = {};
-    for (const [ namespace, confArray ] of Object.entries(modulo.namespaces)) {
+    for (const [ namespace, confArray ] of Object.entries(modulo.defs)) {
         for (const conf of confArray) {
-            if (conf.NuType === 'TestSuite') {
+            if (conf.Type === 'TestSuite') {
                 //console.log('this is namespace', namespace, conf);
                 suites.push([ namespace, conf ]);
-            } else if (conf.NuType === 'Component') {
+            } else if (conf.Type === 'Component') {
                 //console.log('this is Name', conf.Name);
                 components[conf.Name] = conf;
             }
@@ -409,7 +411,7 @@ modulo.register('command', function test(modulo) {
             });
         }
 
-        if (('x_' + componentName) in modulo.namespaces) {
+        if (('x_' + componentName) in modulo.defs) {
             console.log('HACK: Fixing componentName', componentName);
             componentName = 'x_' + componentName;
         }

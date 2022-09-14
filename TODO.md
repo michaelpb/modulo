@@ -3,6 +3,8 @@ New new next steps:
 Remaining issues with building:
 - Still doesn't run, since confArray is not getting created correctly
 
+- Maybe finally clean up Name and Namespace nonsense? General CPart hack
+  refactor so we can approach this final conf issue cleanly
 
 ----
 

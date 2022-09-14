@@ -10,7 +10,8 @@ window.Modulo = class Modulo {
         // Note: parentModulo arg is being used by mws/Demo.js
         window._moduloID = this.id = (window._moduloID || 0) + 1; // Global ID
 
-        this.namespaces = {};
+        this.defs = {};
+        this.parents = {};
 
         if (parentModulo) {
             this.parentModulo = parentModulo;
@@ -18,36 +19,17 @@ window.Modulo = class Modulo {
             const { deepClone, cloneStub } = modulo.registry.utils;
             this.config = deepClone(parentModulo.config, parentModulo);
             this.registry = deepClone(parentModulo.registry, parentModulo);
-            this.factories = cloneStub(parentModulo.factories); // keep private
 
             this.assets = parentModulo.assetManager;
             this.globals = parentModulo.globals;
         } else {
             this.config = {};
-            this.factories = {};
             this.registry = Object.fromEntries(registryKeys.map(cat => [ cat, {} ] ));
         }
     }
 
     static moduloClone(modulo, other) {
         return modulo; // Never clone Modulos to prevent reference loops
-    }
-
-    createAll(type, confArray, element = null) {
-        const obj = {};
-        for (const conf of confArray) {
-            /// ///////////////
-            // TODO Hax, remove and debug
-            conf.Type = conf.Type[0].toUpperCase() + conf.Type.slice(1);
-            if (conf.Type === 'Staticdata') { conf.Type = 'StaticData'; }
-            if (conf.Type === 'Testsuite') { conf.Type = 'TestSuite'; }
-            if (element !== null) {
-                conf.TmpElement = element;
-            }
-            /// ///////////////
-            obj[conf.RenderObj] = this.create(type, conf.Type, conf);
-        }
-        return obj;
     }
 
     create(type, name, conf = null) {
@@ -57,17 +39,18 @@ window.Modulo = class Modulo {
         return instance;
     }
 
-    getParent(searchConf) {
+    getParent(parentName) {
         // TODO: Refactor this to be simpler logic, then maybe refactor away
         const components = {};
-        for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
             for (const conf of confArray) {
-                if (conf.NuType === 'Component') {
-                    components[conf.Name] = conf;
+                if (conf.Type === 'Component' && conf.Name == parentName) {
+                    // TODO: first, got to change to check FUllName!!
+                    return conf;
                 }
             }
         }
-        return components[searchConf.Parent];
+        return null;
     }
 
     register(type, cls, defaults = undefined) {
@@ -83,7 +66,6 @@ window.Modulo = class Modulo {
         if (cls.name[0].toUpperCase() === cls.name[0]) { // is CapFirst
             const conf = Object.assign({ Type: cls.name }, cls.defaults, defaults);
             this.config[cls.name.toLowerCase()] = conf;
-            this.factories[cls.name.toLowerCase()] = {};
 
             // Global / core utility class getting registered
             if (type === 'core') {
@@ -97,79 +79,47 @@ window.Modulo = class Modulo {
         if (type === 'cparts') { // CParts get loaded from DOM
             this.registry.dom[cls.name.toLowerCase()] = cls;
             this.config[cls.name.toLowerCase()].RenderObj = cls.name.toLowerCase();
-            this.config[cls.name.toLowerCase()].RenderObj = cls.name.toLowerCase();
         }
     }
 
-    loadFromDOM(elem, parentFactoryName = '') {
+    loadFromDOM(elem, parentName = null) {
         const partialConfs = [];
-        for (const node of elem.children) {
-            const type = this.getNodeModuloType(node);
-            if (!type) {
-                continue;
-            }
-
-            // TODO: Low hanging fruit to refactor type / name logic here
-            let partialConf = this.loadPartialConfigFromNode(node);
-            if (!partialConf.Name && 'name' in partialConf) { // TODO: Remove in final refac
-                partialConf.Name = partialConf.name;
-            }
-
-            let name = partialConf.Name;
-            if (parentFactoryName) {
-                name = parentFactoryName + '_' + (name || 'default');
-                partialConf.Parent = parentFactoryName;
-            }
-            /*
-            if (name) {
-                const facs = this.factories[type];
-                partialConf.Name = name; // ensure Name field is updated
-                if (!(name in facs)) {
-                    facs[name] = partialConf;
-                } else {
-                    console.error('WARNING:', type, 'already has a', name);
-                    facs[name] = Object.assign(facs[name], partialConf);
-                }
-            } else {
-            }
-            */
-            partialConf = Object.assign({}, partialConf);
-            //this.config[type] = partialConf;
-
-            /* XXX ---- : */
-            const NuNamespace = partialConf.Parent || 'x';
-            if (!(NuNamespace in this.namespaces)) {
-                this.namespaces[NuNamespace] = [];
-            }
-            this.namespaces[NuNamespace].push(partialConf);
-            if (partialConf.Content && partialConf.Content.length > 300000) {
-                console.log('UH OH, really long paritalConf', partialConf.Type, partialConf.Name);
-                console.log('partialConf.Content', partialConf.Content.length);
-                //this.namespaces[NuNamespace].push(Object.assign({}, partialConf));
-            }
-
-            /* XXX OLD: */
-            partialConfs.push(partialConf);
+        const X = 'x';
+        const isModulo = this.getNodeModuloType.bind(this);
+        for (const node of Array.from(elem.children).filter(isModulo)) {
+            const conf = this.loadPartialConfigFromNode(node);
+            conf.Parent = conf.Parent || parentName;
+            conf.DefName = conf.Name || null; // -name only, null otherwise
+            conf.Name = conf.Name || conf.name || X; // name or -name or 'x'
+            const parentNS = conf.Parent || X; // Cast falsy to 'x'
+            this.defs[parentNS] = this.defs[parentNS] || []; // Prep empty arr
+            this.defs[parentNS].push(conf); // Push to Namespace
+            partialConfs.push(conf);
+            conf.FullName = parentNS + '_' + conf.Name;
         }
         return partialConfs;
     }
 
+    setupParents() {
+        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
+            for (const conf of confArray) {
+                this.parents[conf.FullName] = conf;
+            }
+        }
+    }
+
+    /*
+    if (conf.Content && conf.Content.length > 300000) {
+        console.log('UH OH, really long paritalConf', conf.Type, conf.Name);
+        console.log('conf.Content', conf.Content.length);
+        //this.defs[conf.Parent].push(Object.assign({}, conf));
+    }
+    */
+
     preprocessAndDefine() {
         this.repeatConfigurePreprocessors(() => {
-            // TODO: Possibly, refactor assets/define into embedded function()
-            // {} in the Preprocessors array
-            //console.log('CONFIGURE FINISHED', elem);
-
-            // Now, loop through namespaces
-            /*
-            for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
-                for (const conf of confArray) {
-                    const preprocessors = conf.ConfPreprocessors || [ 'Src' ];
-                }
-            }
-            */
-
             // XXX TODO: remove nu nonsense
+            this.setupParents(); // Ensure sync'ed up
             const nupatches = this.getNuLifecyclePatches(this.registry.cparts, 'prebuild');
             this.applyPatches(nupatches);
             const nupatches2 = this.getNuLifecyclePatches(this.registry.cparts, 'define');
@@ -194,7 +144,7 @@ window.Modulo = class Modulo {
         const patches = [];
         const methodName = lifecycleName + 'Callback';
         const foundNS = [];
-        for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
             // TODO refactor searchNamespace & hackSNS away somehow
             if (searchNamespace) {
                 if (searchNamespace !== namespace && hackSNS !== namespace) {
@@ -204,13 +154,13 @@ window.Modulo = class Modulo {
                 }
             }
             for (const conf of confArray) {
-                if (conf.NuType in lcObj && methodName in lcObj[conf.NuType]) {
-                    patches.push([ lcObj[conf.NuType], methodName, conf ]);
+                if (conf.Type in lcObj && methodName in lcObj[conf.Type]) {
+                    patches.push([ lcObj[conf.Type], methodName, conf ]);
                 }
             }
         }
         if (searchNamespace && !foundNS.length) {
-            console.log('NS HACK SEARCH ERROR:', this.namespaces, searchNamespace, hackSNS, JSON.stringify(foundNS));
+            console.log('NS HACK SEARCH ERROR:', this.defs, searchNamespace, hackSNS, JSON.stringify(foundNS));
         }
         return patches;
     }
@@ -220,8 +170,8 @@ window.Modulo = class Modulo {
         const patches = [];
         const methodName = lifecycleName + 'Callback';
         for (const conf of confArray) {
-            if (conf.NuType in lcObj && methodName in lcObj[conf.NuType]) {
-                patches.push([ lcObj[conf.NuType], methodName, conf ]);
+            if (conf.Type in lcObj && methodName in lcObj[conf.Type]) {
+                patches.push([ lcObj[conf.Type], methodName, conf ]);
             }
         }
         return patches;
@@ -229,7 +179,7 @@ window.Modulo = class Modulo {
 
     getConfArray(searchNamespace, hackSNS) {
         const found = [];
-        for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
             // TODO ugghhh searchNamespace & hackSNS away somehow
             if (searchNamespace === namespace || hackSNS === namespace) {
                 found.push(...confArray);
@@ -248,23 +198,12 @@ window.Modulo = class Modulo {
             }
             const type = typeUpper.toLowerCase();
             patches.push([ obj, methodName, this.config[type] ]);
-            /*
-            if (skipFacs) { continue; } // TODO refactor
-            const facs = this.factories[type] || {};
-            for (const name of Object.keys(facs)) { // Also invoke factories
-                patches.push([ obj, methodName, facs[name] ]);
-            }
-            */
         }
         return patches;
     }
 
     applyPatches(patches, collectObj = null) {
         for (const [ obj, methodName, conf ] of patches) {
-            if (!conf.Type) { // TODO remove this
-                console.log('WARNING: Invalid  conf: ', conf);
-                continue;
-            }
             const result = obj[methodName].call(obj, collectObj || this, conf, this);
             if (collectObj && result && conf.RenderObj) {
                 collectObj[conf.RenderObj] = result;
@@ -280,7 +219,7 @@ window.Modulo = class Modulo {
         let changed = true; // Run at least once
         while (changed) {
             changed = false;
-            for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+            for (const [ namespace, confArray ] of Object.entries(this.defs)) {
                 for (const conf of confArray) {
                     const preprocessors = conf.ConfPreprocessors || [ 'Src' ];
                     changed = changed || this.applyPreprocessor(conf, preprocessors);
@@ -290,42 +229,11 @@ window.Modulo = class Modulo {
 
         if (Object.keys(this.fetchQueue.queue).length === 0) {
             delete this._repeatTries;
-            cb();
+            cb(); // Synchronous path
         } else {
             this.fetchQueue.enqueueAll(
               () => this.repeatConfigurePreprocessors(cb));
         }
-    }
-
-    getNodeModuloNuType(node) {
-        const { tagName, nodeType, textContent } = node;
-
-        // node.nodeType equals 1 if the node is a DOM element (as opposed to
-        // text, or comment). Ignore comments, tolerate empty text nodes, but
-        // warn on others (since those are typically syntax mistakes).
-        if (nodeType !== 1) {
-            // Text nodes, comment nodes, etc
-            if (nodeType === 3 && textContent && textContent.trim()) {
-                console.error('Modulo: Unexpected text:', textContent);
-            }
-            return null;
-        }
-
-        let cPartName = tagName.toLowerCase();
-        for (const attrUnknownCase of node.getAttributeNames()) {
-            const attr = attrUnknownCase.toLowerCase();
-            if (attr in this.registry.dom && !node.getAttribute(attr)) {
-                cPartName = attr;
-                break;
-            }
-            // break; // should always be first?
-        }
-        if (!(cPartName in this.registry.dom)) {
-            if (cPartName === 'testsuite') { /* XXX HACK */ return null;}
-            console.error('Unknown Modulo def:', cPartName);
-            return null;
-        }
-        return cPartName;
     }
 
     getNodeModuloType(node) {
@@ -342,22 +250,15 @@ window.Modulo = class Modulo {
             return null;
         }
 
-        // LEGACY --------------------------------------
-        // Determine the name: The tag name, or the type attribute in the case
-        // of the alt script-tag syntax (eg `<script type="modulo/Template">`)
         let cPartName = tagName.toLowerCase();
-        const splitType = (node.getAttribute('type') || '').split('/');
-        if (splitType[0] && splitType[0].toLowerCase() === 'modulo') {
-            cPartName = splitType[1];
-            cPartName = cPartName.toLowerCase();
-        }
-        // /LEGACY --------------------------------------
-
-        for (const attrUnknownCase of node.getAttributeNames()) {
-            const attr = attrUnknownCase.toLowerCase()
-            if (attr in this.registry.dom && !node.getAttribute(attr)) {
-                cPartName = attr;
-                break;
+        if (cPartName in { cpart: 1, script: 1, template: 1 }) {
+            for (const attrUnknownCase of node.getAttributeNames()) {
+                const attr = attrUnknownCase.toLowerCase();
+                if (attr in this.registry.dom && !node.getAttribute(attr)) {
+                    cPartName = attr;
+                    //break;
+                }
+                break; // should always be first?
             }
         }
         if (!(cPartName in this.registry.dom)) {
@@ -370,17 +271,11 @@ window.Modulo = class Modulo {
 
     loadPartialConfigFromNode(node) {
         const { mergeAttrs } = this.registry.utils;
-        const partType = this.getNodeModuloType(node);
-        const nupartType = this.getNodeModuloNuType(node);
-        const config = mergeAttrs(node, this.config[partType]);
-        const content = node.tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
-        config.Content = (config.Content || '') + content; // concatenate
-        if (!config.NuType) { // XXX NuType nonsense is set here, rm when Type replaces
-            config.NuType = config.Type;
-        }
-        config.Type = partType; // Ensure Type is set as well
-        if (config.Type in config && !config[config.Type]) {
-            delete config[config.Type]; // Remove attribute name used as type
+        const partTypeLC = this.getNodeModuloType(node); // Lowercase
+        const config = mergeAttrs(node, this.config[partTypeLC]);
+        config.Content = node.tagName === 'SCRIPT' ? node.textContent : node.innerHTML;
+        if (partTypeLC in config && !config[partTypeLC]) {
+            delete config[partTypeLC]; // Remove attribute name used as type
         }
         return config;
     }
@@ -427,13 +322,15 @@ modulo.register('confPreprocessor', function src (modulo, conf, value) {
 });
 
 modulo.register('confPreprocessor', function content (modulo, conf, value) {
-    conf.Children = modulo.loadString(value, conf.Name ? conf.Name : null);
+    console.log('This is conf.Name', conf.Name);
+    console.log('This is conf.FullName', conf.FullName);
+    conf.Children = modulo.loadString(value, conf.Name);
     conf.Hash = modulo.registry.utils.hash(value);
 });
 
 modulo.register('cpart', class Component {
     static prebuildCallback(modulo, conf) {
-        const { Content, Name, Children, Parent } = conf;
+        const { Name, Children, Parent } = conf;
         const { stripWord } = modulo.registry.utils;
         if (!Children || Children.length === 0) {
             console.warn('Empty component specified:', Name);
@@ -990,12 +887,9 @@ modulo.register('util', class BaseElement extends HTMLElement {
             original = modulo.registry.utils.makeDiv(this.getAttribute('modulo-original-html'));
         }
         */
-        this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
-        this.cparts = this.modulo.createAll('cparts', this.moduloChildrenData, this);
         this.legacySetupCParts();
         this.lifecycle([ 'initialized' ]);
         this.rerender(original); // render and re-mount it's own childNodes
-
         /*
         // (todo) Needs refactor, should do this somewhere else:
         if (this.hasAttribute('modulo-original-html')) {
@@ -1009,18 +903,20 @@ modulo.register('util', class BaseElement extends HTMLElement {
     }
 
     legacySetupCParts() {
+        this.cparts = {};
+        this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
+        const { cparts } = this.modulo.registry;
+        const isLower = key => key[0].toLowerCase() === key[0];
         for (const conf of this.moduloChildrenData) {
-            /// TODO HAX
-            const instance = this.cparts[conf.RenderObj];
-            const isLower = key => key[0].toLowerCase() === key[0];
+            const partObj = this.initRenderObj[conf.RenderObj];
+            const instance = new cparts[conf.Type](this.modulo, conf, this);
+            // TODO: Decide on this interface, and maybe restore "modulo.create" as part of this
             instance.element = this;
             instance.modulo = this.modulo;
             instance.conf = conf;
-            instance.attrs = modulo.registry.utils.keyFilter(conf, isLower);
-            /// HAX
+            instance.attrs = this.modulo.registry.utils.keyFilter(conf, isLower);
+            this.cparts[conf.RenderObj] = instance;
         }
-        //this.cpartSpares = {};
-        //const hackCParts = Object.assign({}, this.modulo.registry.dom, this.modulo.registry.cparts);
     }
 });
 
@@ -1254,7 +1150,11 @@ modulo.register('cpart', class Style {
             return;
         }
         if (Parent) {
-            let { namespace, mode, Name } = modulo.getParent(conf);
+            let { namespace, mode, Name } = modulo.getParent(Parent);
+            if (!(Parent in modulo.parents)) {
+                console.log('Parent not found:', Parent, Object.keys(modulo.parents), conf);
+            }
+            //let { namespace, mode, Name } = modulo.parents[Parent];
             // XXX HAX, conf is a big tangled mess
             if (Name.startsWith('x_')) {
                 Name = Name.replace('x_', '');
@@ -1421,8 +1321,8 @@ modulo.register('cpart', class Script {
         };
     }
 
-    constructor(modulo, conf) {
-        let { script } = conf.TmpElement.initRenderObj;
+    constructor(modulo, conf, element) {
+        let { script } = element.initRenderObj;
         //let script = conf;
         // Attach callbacks from script to this, to hook into lifecycle.
         const isCbRegex = /(Unmount|Mount|Callback)$/;
