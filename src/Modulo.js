@@ -57,6 +57,19 @@ window.Modulo = class Modulo {
         return instance;
     }
 
+    getParent(searchConf) {
+        // TODO: Refactor this to be simpler logic, then maybe refactor away
+        const components = {};
+        for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
+            for (const conf of confArray) {
+                if (conf.NuType === 'Component') {
+                    components[conf.Name] = conf;
+                }
+            }
+        }
+        return components[searchConf.Parent];
+    }
+
     register(type, cls, defaults = undefined) {
         type = (`${type}s` in this.registry) ? `${type}s` : type; // plural / singular
         this.assert(type in this.registry, 'Unknown registration type:', type);
@@ -64,7 +77,7 @@ window.Modulo = class Modulo {
 
         if (type === 'commands') { // Attach globally to 'm' alias
             window.m = window.m || {};
-            window.m[name] = () => cls(this);
+            window.m[cls.name] = () => cls(this);
         }
 
         if (cls.name[0].toUpperCase() === cls.name[0]) { // is CapFirst
@@ -97,7 +110,7 @@ window.Modulo = class Modulo {
             }
 
             // TODO: Low hanging fruit to refactor type / name logic here
-            const partialConf = this.loadPartialConfigFromNode(node);
+            let partialConf = this.loadPartialConfigFromNode(node);
             if (!partialConf.Name && 'name' in partialConf) { // TODO: Remove in final refac
                 partialConf.Name = partialConf.name;
             }
@@ -107,6 +120,7 @@ window.Modulo = class Modulo {
                 name = parentFactoryName + '_' + (name || 'default');
                 partialConf.Parent = parentFactoryName;
             }
+            /*
             if (name) {
                 const facs = this.factories[type];
                 partialConf.Name = name; // ensure Name field is updated
@@ -117,8 +131,10 @@ window.Modulo = class Modulo {
                     facs[name] = Object.assign(facs[name], partialConf);
                 }
             } else {
-                this.config[type] = partialConf;
             }
+            */
+            partialConf = Object.assign({}, partialConf);
+            //this.config[type] = partialConf;
 
             /* XXX ---- : */
             const NuNamespace = partialConf.Parent || 'x';
@@ -126,6 +142,11 @@ window.Modulo = class Modulo {
                 this.namespaces[NuNamespace] = [];
             }
             this.namespaces[NuNamespace].push(partialConf);
+            if (partialConf.Content && partialConf.Content.length > 300000) {
+                console.log('UH OH, really long paritalConf', partialConf.Type, partialConf.Name);
+                console.log('partialConf.Content', partialConf.Content.length);
+                //this.namespaces[NuNamespace].push(Object.assign({}, partialConf));
+            }
 
             /* XXX OLD: */
             partialConfs.push(partialConf);
@@ -140,21 +161,19 @@ window.Modulo = class Modulo {
             //console.log('CONFIGURE FINISHED', elem);
 
             // Now, loop through namespaces
+            /*
             for (const [ namespace, confArray ] of Object.entries(this.namespaces)) {
                 for (const conf of confArray) {
                     const preprocessors = conf.ConfPreprocessors || [ 'Src' ];
                 }
             }
+            */
 
             // XXX TODO: remove nu nonsense
             const nupatches = this.getNuLifecyclePatches(this.registry.cparts, 'prebuild');
             this.applyPatches(nupatches);
-
-            //const patches = this.getLifecyclePatches(this.registry.cparts, 'define');
-            //this.applyPatches(patches);
             const nupatches2 = this.getNuLifecyclePatches(this.registry.cparts, 'define');
             this.applyPatches(nupatches2);
-            //console.log('DEFINE FINISHED', elem);
         });
     }
 
@@ -206,37 +225,13 @@ window.Modulo = class Modulo {
             }
             const type = typeUpper.toLowerCase();
             patches.push([ obj, methodName, this.config[type] ]);
+            /*
             if (skipFacs) { continue; } // TODO refactor
             const facs = this.factories[type] || {};
             for (const name of Object.keys(facs)) { // Also invoke factories
                 patches.push([ obj, methodName, facs[name] ]);
             }
-        }
-        return patches;
-    }
-
-    getFactoryLifecyclePatches(lcObj, lifecycleName, searchName) {
-        const patches = [];
-        const methodName = lifecycleName + 'Callback';
-        for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
-            if (!(methodName in obj)) {
-                continue; // Skip if obj has not registered callback
-            }
-            const type = typeUpper.toLowerCase();
-            const facs = this.factories[type] || {};
-            for (const name of Object.keys(facs)) {
-                /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                // HAX XXX this just guesses, need to refactor this with top
-                // and not do guesses
-                const split = searchName.split('_');
-                const nameSubstring = split[split.length - 1]; // get last item
-                if (name.includes(nameSubstring)) { //console.log('MATCH!', name, nameSubstring);
-                } else { //console.log('no match', name, nameSubstring);
-                    continue;
-                }
-                /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                patches.push([ obj, methodName, facs[name] ]);
-            }
+            */
         }
         return patches;
     }
@@ -423,6 +418,7 @@ modulo.register('cpart', class Component {
         }
 
         //////
+        delete conf.Children;
         const parentNS = Parent || 'x'; // TODO: Make defaulted already
         const myNameSpace = parentNS + '_' + Name;
         //////
@@ -472,8 +468,9 @@ modulo.register('cpart', class Component {
         // XXX HAX ------------
         conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
         conf.namespace = namespace; // ensure updated (todo remove when defaults)
-        //delete conf.Children;
-        modulo.assets.functions[Hash](conf.TagName, modulo);
+        //modulo.assets.functions[Hash](conf.TagName, modulo);
+        const exCode = `currentModulo.assets.functions['${ Hash }']`
+        modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
     }
 
     /*
@@ -1010,6 +1007,12 @@ modulo.register('core', class AssetManager {
         this.rawAssetsArray = { js: [], css: [] };
     }
 
+    build(ext, opts, prefix = '') {
+        const { saveFileAs, hash } = this.modulo.registry.utils;
+        const text = prefix + modulo.assets.rawAssetsArray[ext].join('');
+        return saveFileAs(`modulo-${ opts.type }-${ hash(text) }.${ ext }`, text);
+    }
+
     getAssets(type, extra = null) {
         // Get an array of assets of the given type, in a stable ordering
         // TODO: This is incorrect: It needs to be ordered like it was in the
@@ -1048,8 +1051,10 @@ modulo.register('core', class AssetManager {
 
     runInline(funcText) {
         const hash = this.modulo.registry.utils.hash(funcText);
-        this.rawAssets.js[hash] = funcText; // "use strict" only in tag
-        this.rawAssetsArray.js.push(funcText);
+        if (!(hash in this.rawAssets.js)) {
+            this.rawAssets.js[hash] = funcText; // "use strict" only in tag
+            this.rawAssetsArray.js.push(funcText);
+        }
         window.currentModulo = this.modulo; // Ensure stays silo'ed in current
         this.appendToHead('script', '"use strict";\n' + funcText);
         delete window.currentModulo;
@@ -1219,8 +1224,8 @@ modulo.register('cpart', class Style {
         if (!Content) {
             return;
         }
-        if (Parent && (Parent in modulo.factories.component)) {
-            let { namespace, mode, Name } = modulo.factories.component[Parent];
+        if (Parent) {
+            let { namespace, mode, Name } = modulo.getParent(conf);
             // XXX HAX, conf is a big tangled mess
             if (Name.startsWith('x_')) {
                 Name = Name.replace('x_', '');
@@ -1297,6 +1302,7 @@ modulo.register('cpart', class StaticData {
         //(s => `return ${JSON.stringify(JSON.parse(s))}`);
         //const transform = conf.attrs.transform || defTransform;
         let code = (conf.Content || '').trim();
+        delete conf.Content;
         code = `return ${ code };`;
         conf.Hash = modulo.assets.getHash([], code);
         modulo.assets.registerFunction([], code);
@@ -1314,6 +1320,7 @@ modulo.register('cpart', class Script {
     static prebuildCallback(modulo, conf) {
         // TODO: Switch to prebuild / define structure
         const code = conf.Content || ''; // TODO: trim whitespace?
+        delete conf.Content;
         const localVars = Object.keys(modulo.registry.dom);// TODO fix...
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts'); // give access to CParts JS interface
@@ -1321,10 +1328,22 @@ modulo.register('cpart', class Script {
         // Combine localVars + fixed args into allArgs
         const args = [ 'modulo', 'require' ];
         const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
+
         const opts = { exports: 'script' };
+        /*
+        if (code.includes('CodeMirror, copyright (c)')) { // CodeMirror Source
+            delete opts.exports;
+            // TODO If it's a loose Script CTag, we SHOULDN'T attempt to export
+            console.log('WARNING: Hardcoded CodeMirror, need solution for exports.');
+        }
+        */
         const func = modulo.assets.registerFunction(allArgs, code, opts);
         conf.Hash = modulo.assets.getHash(allArgs, code);
         conf.localVars = localVars;
+        if (code.includes('CodeMirror, copyright (c)')) { // CodeMirror Source
+            console.count('CodeMirror source encountered '+ conf.Hash);
+            console.log('code.length', code.length);
+        }
     }
 
     static factoryCallback(renderObj, conf, modulo) {
@@ -1332,9 +1351,13 @@ modulo.register('cpart', class Script {
         const func = modulo.assets.functions[Hash];
         // Now, actually run code in Script tag to do factory method
         const results = func.call(null, modulo, this.require || null);
-        results.localVars = localVars;
-        modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
-        return results;
+        if (results) {
+            results.localVars = localVars;
+            modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
+            return results;
+        } else {
+            return {};
+        }
     }
 
     getDirectives() {
@@ -1396,11 +1419,13 @@ modulo.register('cpart', class Script {
             return false;
         }
         const { setLocalVariable, localVars } = renderObj.script;
-        setLocalVariable('element', this.element);
-        setLocalVariable('cparts', this.element.cparts);
-        for (const localVar of localVars) {
-            if (localVar in renderObj) {
-                setLocalVariable(localVar, renderObj[localVar]);
+        if (setLocalVariable) { // (For autoexport:=false, there is no setLocalVar)
+            setLocalVariable('element', this.element);
+            setLocalVariable('cparts', this.element.cparts);
+            for (const localVar of localVars) {
+                if (localVar in renderObj) {
+                    setLocalVariable(localVar, renderObj[localVar]);
+                }
             }
         }
     }
@@ -1522,8 +1547,8 @@ modulo.register('engine', class Templater {
         this.setup(conf.Content, conf); // TODO, refactor
     }
 
-    setup(text, options) {
-        Object.assign(this, modulo.config.templater, options);
+    setup(text, conf) {
+        Object.assign(this, modulo.config.templater, conf);
         this.filters = Object.assign({}, modulo.registry.templateFilters, this.filters);
         this.tags = Object.assign({}, modulo.registry.templateTags, this.tags);
         if (this.Hash) {
@@ -2179,6 +2204,28 @@ modulo.register('engine', class Reconciler {
         }
     }
 });
+
+modulo.register('command', function build(modulo, opts = {}) {
+    //const { buildcss, buildjs, buildhtml } = this.registry.utils;
+    opts.type = opts.type || 'build';
+    opts.cssFilePath = modulo.assets.build('css', opts, '');
+    // XXX remove 'currentModulo'
+    opts.jsFilePath = modulo.assets.build('js', opts, 'var currentModulo = modulo;\n');
+    const fp = buildhtml(modulo, opts);
+    document.body.innerHTML = `<h1>${ opts.type } : ${ fp }</h1>`;
+});
+
+/*
+modulo.register('command', function bundle(modulo, opts) {
+    modulo.utils.fetchBundleData(opts => build(modulo, opts));
+});
+*/
+
+modulo.register('util', function buildhtml(modulo, opts = {}) {
+    const { saveFileAs, getBuiltHTML } = modulo.registry.utils;
+    const filename = window.location.pathname.split('/').pop();
+    return saveFileAs(filename, getBuiltHTML(opts));
+})
 
 
 if (typeof document !== undefined && document.head) { // Browser environ

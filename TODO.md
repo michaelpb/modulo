@@ -1,3 +1,26 @@
+New new next steps:
+
+
+
+
+
+- New factoryCallback flow is mostly done!
+- Now getting to work on m.build()
+
+- KNOWN BUG: 31MB JS builds: Due to CodeMirror code getting repeated in every
+  script tag, some bug with conf.Content getting the first script tag encountered's content
+
+    - BUG INSITE:
+        - Delete all ".factories" references
+        - NEXT step for bug, is to DELETE all old school config references,
+          make config WRITE ONLY for now
+
+
+
+
+----
+
+
 New next steps:
 
 - Lots of good progress has been made on refactoring the define/asset/factory

@@ -227,30 +227,20 @@ modulo.register('cpart', class TestSuite {
         let componentFac;
 
         // REFACTOR this garbagee
-        if (window.__HAX_OLD) {
-            // By default, does not clone factories, so we manually clone that:
-            testLoaderModulo.factories = deepClone(modulo.factories, modulo);
-            if (('x_' + name) in modulo.factories.component) {
-                console.log('HACK: Fixing name', name);
-                name = 'x_' + name;
-            }
-            componentFac = testLoaderModulo.factories.component[name]; // Get forked version
-        } else {
-            testLoaderModulo.namespaces = deepClone(modulo.namespaces, modulo);
-            if (('x_' + name) in testLoaderModulo.namespaces) {
-                console.log('HACK: Fixing name', name);
-                name = 'x_' + name;
-            }
-            const components = {};
-            for (const [ namespace, confArray ] of Object.entries(testLoaderModulo.namespaces)) {
-                for (const conf of confArray) {
-                    if (conf.NuType === 'Component') {
-                        components[conf.Name] = conf;
-                    }
+        testLoaderModulo.namespaces = deepClone(modulo.namespaces, modulo);
+        if (('x_' + name) in testLoaderModulo.namespaces) {
+            console.log('HACK: Fixing name', name);
+            name = 'x_' + name;
+        }
+        const components = {};
+        for (const [ namespace, confArray ] of Object.entries(testLoaderModulo.namespaces)) {
+            for (const conf of confArray) {
+                if (conf.NuType === 'Component') {
+                    components[conf.Name] = conf;
                 }
             }
-            componentFac = components[name];
         }
+        componentFac = components[name];
 
         let total = 0;
         let failure = 0;
@@ -265,7 +255,6 @@ modulo.register('cpart', class TestSuite {
             let element;
             let err;
             const testModulo = new Modulo(modulo); // "Fork" modulo obj
-            testModulo.factories = deepClone(modulo.factories, modulo);
             testModulo.namespaces = deepClone(modulo.namespaces, modulo);
             TestSuite.setupMocks(testModulo);
             if (useTry) {
@@ -431,50 +420,6 @@ modulo.register('command', function test(modulo) {
             throw new Error('ERROR: could not find parent Component fac', componentConf);
         }
         discovered.push([componentConf, suite]);
-    }
-    if (soloMode) {
-        discovered = discovered.filter(([ fac, conf ]) => 'solo' in conf);
-    }
-
-    // TODO: Fix this to load Src during configure step, ahead of time!
-    // Either run synchronously, or run after Src catches up
-    const func = () => modulo.registry.utils.runTest(modulo, discovered, skippedCount);
-    if (Object.keys(modulo.fetchQueue.queue).length === 0) {
-        return func();
-    }
-    modulo.fetchQueue.wait(func);
-    return null;
-});
-
-modulo.register('command', function OLD_test(modulo) {
-    let discovered = [];
-    let soloMode = false;
-    let skippedCount = 0;
-    console.log('%c%', 'font-size: 50px; line-height: 0.7; padding: 5px; border: 3px solid black;');
-    //console.log(modulo);
-    const suites = modulo.factories.TestSuite || modulo.factories.testsuite || {};
-    for (const [ key, suite ] of Object.entries(suites)) {
-        let componentName = key.replace(/_[^_]+$/, ''); // strip after last _
-        if ('skip' in suite) {
-            skippedCount++;
-            continue;
-        }
-        if ('solo' in suite) {
-            soloMode = true;
-        }
-
-        if ('Src' in suite) {
-            modulo.fetchQueue.enqueue(suite.Src, text => {
-                suite.Content = (text || '') + (suite.Content || '');
-            });
-        }
-
-        if (('x_' + componentName) in modulo.factories.component) {
-            console.log('HACK: Fixing componentName', componentName);
-            componentName = 'x_' + componentName;
-        }
-        const componentFac = modulo.factories.component[componentName];
-        discovered.push([componentFac, suite]);
     }
     if (soloMode) {
         discovered = discovered.filter(([ fac, conf ]) => 'solo' in conf);
