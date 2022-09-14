@@ -1321,28 +1321,39 @@ modulo.register('cpart', class Script {
         // TODO: Switch to prebuild / define structure
         const code = conf.Content || ''; // TODO: trim whitespace?
         delete conf.Content;
-        const localVars = Object.keys(modulo.registry.dom);// TODO fix...
+        let localVars = Object.keys(modulo.registry.dom);// TODO fix...
         localVars.push('element'); // add in element as a local var
         localVars.push('cparts'); // give access to CParts JS interface
 
         // Combine localVars + fixed args into allArgs
         const args = [ 'modulo', 'require' ];
-        const allArgs = args.concat(localVars.filter(n => !args.includes(n)));
+        let allArgs = args.concat(localVars.filter(n => !args.includes(n)));
 
         const opts = { exports: 'script' };
-        /*
-        if (code.includes('CodeMirror, copyright (c)')) { // CodeMirror Source
+        if (!conf.Parent) {
+            // TODO Confirm this works
+            if (!code.includes('CodeMirror, copyright (c)')) { // CodeMirror Source
+                console.log('WARNING: Hardcoded PARENTLESS code.'); // XXX
+            }
+            console.log('Parent-less CPart, probably loose in Modulo?', code.length);
+            localVars = [];
+            allArgs = [ 'modulo' ];
             delete opts.exports;
-            // TODO If it's a loose Script CTag, we SHOULDN'T attempt to export
-            console.log('WARNING: Hardcoded CodeMirror, need solution for exports.');
         }
-        */
+
         const func = modulo.assets.registerFunction(allArgs, code, opts);
         conf.Hash = modulo.assets.getHash(allArgs, code);
+        conf.codeLength = code.length;
         conf.localVars = localVars;
-        if (code.includes('CodeMirror, copyright (c)')) { // CodeMirror Source
-            console.count('CodeMirror source encountered '+ conf.Hash);
-            console.log('code.length', code.length);
+    }
+
+    static defineCallback(modulo, conf) {
+        if (!conf.Parent) {
+            console.log('codeLength', conf.codeLength);
+            const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
+            // TODO: Refactor:
+            modulo.assets.runInline(`${ exCode }(currentModulo, currentModulo.registry.cparts.Script.require);\n`);
+            delete conf.Hash; // prevent getting run again
         }
     }
 

@@ -1,16 +1,18 @@
 New new next steps:
 
 
+- Known bug: Content is still getting included. It seems the delete
+  conf.Content doesn't actually take effect. Probably has to do with conf duplication
 
+
+----
 
 
 - New factoryCallback flow is mostly done!
 - Now getting to work on m.build()
 
-- KNOWN BUG: 31MB JS builds: Due to CodeMirror code getting repeated in every
+- FIXED!  BUG: 31MB JS builds: Due to CodeMirror code getting repeated in every
   script tag, some bug with conf.Content getting the first script tag encountered's content
-
-    - BUG INSITE:
         - Delete all ".factories" references
         - NEXT step for bug, is to DELETE all old school config references,
           make config WRITE ONLY for now

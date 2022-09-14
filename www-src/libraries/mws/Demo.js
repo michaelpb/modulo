@@ -3,6 +3,9 @@ let exCounter = window._modExCounter || 0; // global variable to prevent conflic
 
 function _setupGlobalVariables() {
     const { getComponentDefs } = modulo.registry.utils;
+    if (!getComponentDefs) {
+          throw new Error('Uh oh, getComponentDefs isnt getting defined!');
+    }
     const docseg = getComponentDefs('/libraries/docseg.html');
     const eg = getComponentDefs('/libraries/eg.html');
     componentTexts = Object.assign({}, docseg, eg);
