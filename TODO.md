@@ -1,9 +1,21 @@
 New new next steps:
 
+Remaining issues with building:
+- Still doesn't run, since confArray is not getting created correctly
+
+
+----
+
+
+
+- Known bug: Built JS has "use strict"; over and over
 
 - Known bug: Content is still getting included. It seems the delete
   conf.Content doesn't actually take effect. Probably has to do with conf duplication
 
+- Known bug: The x-DemoChart is getting buggy again, wrong formatting (due to :host bug with CSS)
+    -  THE REASON: probably related to other bug, is that conf.mode isn't
+       "sticking" - its not vanishing etc
 
 ----
 

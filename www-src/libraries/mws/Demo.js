@@ -12,6 +12,7 @@ function _setupGlobalVariables() {
 }
 
 function tmpGetDirectives() {
+    console.count('DEPRECATED: Demo.js - tmpGetDirectives');
     return [ 'script.codemirror' ];
 }
 
@@ -22,6 +23,9 @@ function codemirrorMount({ el }) {
     const myElement = element;
     setTimeout(() => {
         myElement.codeMirrorEditor.refresh()
+        setTimeout(() => {
+            myElement.codeMirrorEditor.refresh()
+        }, 0); // Ensure refreshes after the first reflow
     }, 0); // Ensure refreshes after the first reflow
 }
 
