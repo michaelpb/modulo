@@ -94,6 +94,7 @@ function initializedCallback() {
     if (componentTexts === null) {
         _setupGlobalVariables();
     }
+    //console.log('these are componentTexts', componentTexts);
 
     let text;
     state.tabs = [];

@@ -1256,7 +1256,9 @@ modulo.register('cpart', class Script {
     }
 
     static defineCallback(modulo, conf) {
-        if (!conf.Parent) {
+        console.log('defineCallback!', conf.Name, conf.Parent);
+        // XXX -- HAX
+        if (!conf.Parent || conf.Parent === 'x_x') {
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
             // TODO: Refactor:
             // NOTE: Uses "window" as "this." context for better compat
@@ -1308,8 +1310,12 @@ modulo.register('cpart', class Script {
         // Attach callbacks from script to this, to hook into lifecycle.
         const isCbRegex = /(Unmount|Mount|Callback)$/;
         const cbs = Object.keys(script).filter(key => key.match(isCbRegex));
-        cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
+        //cbs.push('initializedCallback', 'eventCallback'); // always CBs for these
+        cbs.push('eventCallback'); // always CBs for these
         for (const cbName of cbs) {
+            if (cbName === 'initializedCallback') { // XXX refactor
+                continue;
+            }
             this[cbName] = (arg) => {
                 // NOTE: renderObj is passed in for Callback, but not Mount
                 const renderObj = this.element.getCurrentRenderObj();
@@ -1319,6 +1325,11 @@ modulo.register('cpart', class Script {
                 }
             };
         }
+        if (script.initializedCallback) {
+            this.prepLocalVars(renderObj); // always prep (for event CB)
+            Object.assign(script.exports, script.initializedCallback(renderObj));
+        }
+
         /*
         const originalScript = Object.assign({}, script);
         this[cbName] = script[cbName] = (renderObj => {
