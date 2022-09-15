@@ -233,15 +233,12 @@ modulo.register('cpart', class TestSuite {
             console.log('HACK: Fixing name', name);
             name = 'x_' + name;
         }
-        const components = {};
-        for (const [ namespace, confArray ] of Object.entries(testLoaderModulo.defs)) {
-            for (const conf of confArray) {
-                if (conf.Type === 'Component') {
-                    components[conf.Name] = conf;
-                }
-            }
+        componentFac = testLoaderModulo.parentDefs[name];
+        if (!componentFac) {
+            console.log('THE NAME IS', name, testLoaderModulo);
+            throw new Error('ERROR: could not find parent Component fac');
         }
-        componentFac = components[name];
+
 
         let total = 0;
         let failure = 0;
@@ -379,16 +376,16 @@ modulo.register('command', function test(modulo) {
 
     // TODO: needs refactor
     const suites = [];
-    const components = {};
+    //const components = {};
     for (const [ namespace, confArray ] of Object.entries(modulo.defs)) {
         for (const conf of confArray) {
             if (conf.Type === 'TestSuite') {
                 //console.log('this is namespace', namespace, conf);
                 suites.push([ namespace, conf ]);
-            } else if (conf.Type === 'Component') {
+            } /*else if (conf.Type === 'Component') {
                 //console.log('this is Name', conf.Name);
                 components[conf.Name] = conf;
-            }
+            }*/
         }
     }
 
@@ -416,7 +413,8 @@ modulo.register('command', function test(modulo) {
             componentName = 'x_' + componentName;
         }
 
-        const componentConf = components[componentName];
+        //const componentConf = components[componentName];
+        const componentConf = modulo.parentDefs[componentName];
         if (!componentConf) {
             console.log(componentConf, componentName);
             throw new Error('ERROR: could not find parent Component fac', componentConf);
@@ -456,7 +454,7 @@ modulo.register('util', function runTest(modulo, discovered, skippedCount) {
         const label = '%cTestSuite: ' + componentFac.Name + info
         //console.groupCollapsed(label, 'border-top: 3px dotted #aaa; margin-top: 5px;');
         console.group(label, 'border-top: 3px dotted #aaa; margin-top: 5px;');
-        const [ successes, failures ] = runTests(modulo, suite, componentFac.Name)
+        const [ successes, failures ] = runTests(modulo, suite, componentFac.FullName)
         if (failures) {
             failedComponents.push(componentFac);
         }
@@ -548,7 +546,7 @@ modulo.register('util', function registerTestElement (modulo, componentFac) {
     doc.documentElement.appendChild(body);
     modulo.globals._moduloTestNumber = (modulo.globals._moduloTestNumber || 0) + 1;
 
-    const componentFunc = modulo.assets.functions[componentFac.Hash];
+    const componentFunc = modulo.assets.functions[componentFac.FuncDefHash];
     const namespace = 't' + modulo.globals._moduloTestNumber;
     componentFac.TagName = `${ namespace }-${ componentFac.Name }`.toLowerCase();
 

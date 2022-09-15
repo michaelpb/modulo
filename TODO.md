@@ -1,4 +1,16 @@
+New new new next steps:
+
+- Clean up constructor() args
+- Finish new, leaner, Component def
+
+
+
+----
+
+
 New new next steps:
+
+
 
 Remaining issues with building:
 - Still doesn't run, since confArray is not getting created correctly

@@ -11,7 +11,7 @@ window.Modulo = class Modulo {
         window._moduloID = this.id = (window._moduloID || 0) + 1; // Global ID
 
         this.defs = {};
-        this.parents = {};
+        this.parentDefs = {};
 
         if (parentModulo) {
             this.parentModulo = parentModulo;
@@ -37,20 +37,6 @@ window.Modulo = class Modulo {
         const instance = new this.registry[type][name](modulo, conf);
         conf.Instance = instance;
         return instance;
-    }
-
-    getParent(parentName) {
-        // TODO: Refactor this to be simpler logic, then maybe refactor away
-        const components = {};
-        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
-            for (const conf of confArray) {
-                if (conf.Type === 'Component' && conf.Name == parentName) {
-                    // TODO: first, got to change to check FUllName!!
-                    return conf;
-                }
-            }
-        }
-        return null;
     }
 
     register(type, cls, defaults = undefined) {
@@ -103,18 +89,10 @@ window.Modulo = class Modulo {
     setupParents() {
         for (const [ namespace, confArray ] of Object.entries(this.defs)) {
             for (const conf of confArray) {
-                this.parents[conf.FullName] = conf;
+                this.parentDefs[conf.FullName] = conf;
             }
         }
     }
-
-    /*
-    if (conf.Content && conf.Content.length > 300000) {
-        console.log('UH OH, really long paritalConf', conf.Type, conf.Name);
-        console.log('conf.Content', conf.Content.length);
-        //this.defs[conf.Parent].push(Object.assign({}, conf));
-    }
-    */
 
     preprocessAndDefine() {
         this.repeatConfigurePreprocessors(() => {
@@ -292,6 +270,17 @@ window.Modulo = class Modulo {
         return false;
     }
 
+    setupCParts(element, confArray) {
+        // TODO: Maybe move to initialized callback!?
+        for (const conf of confArray) {
+            const instance = element.cparts[conf.RenderObj];
+            instance.element = element;
+            instance.modulo = element.modulo;
+            instance.conf = conf;
+            instance.attrs = element.modulo.registry.utils.keyFilter(conf, isLower);
+        }
+    }
+
     assert(value, ...info) {
         if (!value) {
             console.error(...info);
@@ -322,61 +311,65 @@ modulo.register('confPreprocessor', function src (modulo, conf, value) {
 });
 
 modulo.register('confPreprocessor', function content (modulo, conf, value) {
-    console.log('This is conf.Name', conf.Name);
-    console.log('This is conf.FullName', conf.FullName);
-    conf.Children = modulo.loadString(value, conf.Name);
+    modulo.loadString(value, conf.FullName);
     conf.Hash = modulo.registry.utils.hash(value);
 });
 
 modulo.register('cpart', class Component {
     static prebuildCallback(modulo, conf) {
-        const { Name, Children, Parent } = conf;
+        const { FullName, Hash, Name, Parent } = conf;
         const { stripWord } = modulo.registry.utils;
+        const Children = modulo.defs[FullName];
         if (!Children || Children.length === 0) {
-            console.warn('Empty component specified:', Name);
+            console.warn('Empty component specified:', FullName);
             return;
         }
-
-        //////
-        delete conf.Children;
-        const parentNS = Parent || 'x'; // TODO: Make defaulted already
-        const myNameSpace = parentNS + '_' + Name;
-        //////
-
-        const className = stripWord(Name);
+        const cpartNameString = Children.map(({ Type }) => Type).join(', ');
+        let unrolledFactoryMethods = 'const initRenderObj = {};';
+        let unrolledCPartSetup = 'this.cparts = {};';
+        for (const i in Children) {
+            const conf = Children[i];
+            const { Type } = conf;
+            unrolledCPartSetup += `\nthis.cparts.${ conf.RenderObj } = new ${ conf.Type }();`
+            if (!('factoryCallback' in modulo.registry.cparts[conf.Type])) {
+                continue;
+            }
+            const fn = `initRenderObj.${ conf.RenderObj } = ${ conf.Type }.factoryCallback`;
+            const expr = `${ fn }(initRenderObj, confArray[${ i }], modulo)`;
+            unrolledFactoryMethods += '\n    ' + expr + ';';
+        }
+        // TODO: When refactoring, reincoroprate the new unrolled style,
+        // probably into constructor() instead of parsedCallback
         /*
-        const cpartTypes = Children.map(({ Type }) => Type);
-        const hackCParts = Object.assign({}, modulo.registry.dom, modulo.registry.cparts);
-        const cpartClasses = modulo.registry.utils.keyFilter(hackCParts, ${ JSON.stringify(cpartTypes) });
+                new__parsedCallback() {
+                    ${ unrolledCPartSetup }
+                    modulo.setupCParts(this, confArray);
+                }
         */
-        const code = `
-            const initRenderObj = {};
-            // XXX --refactor-------- //
-            const confArray = modulo.getConfArray('${ myNameSpace }', '${ Name }');
-            //const patches = modulo.getNuLifecyclePatches(modulo.registry.cparts, 'factory', '${ myNameSpace }', '${ Name }');
-            const patches = modulo.patchesFromConfArray(modulo.registry.cparts, 'factory', confArray);
-            modulo.applyPatches(patches, initRenderObj);
-            // XXX ------------------ //
-
-            class ${ className } extends modulo.registry.utils.BaseElement {
+        const code = (`
+            const { ${ cpartNameString } } = modulo.registry.cparts;
+            const confArray = modulo.defs['${ FullName }'];
+            ${ unrolledFactoryMethods }
+            class ${ Name } extends modulo.registry.utils.BaseElement {
                 constructor() {
                     super();
                     this.modulo = modulo;
+                    this.defHash = '${ Hash }';
                     this.initRenderObj = initRenderObj;
-                    this.moduloComponentConf = ${ JSON.stringify(conf, null, 1) };
                     this.moduloChildrenData = confArray;
+                    this.moduloComponentConf = modulo.parentDefs['${ FullName }'];
                 }
             }
-            modulo.globals.customElements.define(tagName, ${ className });
-            //console.log("Registered: ${ className } as " + tagName);
-            return ${ className };
-        `;
-        conf.Hash = modulo.assets.getHash([ 'tagName', 'modulo' ], code);
+            modulo.globals.customElements.define(tagName, ${ Name });
+            //console.log("Registered: ${ Name } as " + tagName);
+            return ${ Name };
+        `).replace(/\n {8}/g, "\n");
+        conf.FuncDefHash = modulo.assets.getHash([ 'tagName', 'modulo' ], code);
         modulo.assets.registerFunction([ 'tagName', 'modulo' ], code);
     }
 
     static defineCallback(modulo, conf) {
-        const { Content, Name, Children, Hash } = conf;
+        const { Content, Name, Children, FuncDefHash } = conf;
         const { stripWord } = modulo.registry.utils;
         const { library } = modulo.config;
         const namespace = conf.namespace || library.Name || library.name || 'x';
@@ -392,8 +385,8 @@ modulo.register('cpart', class Component {
         // XXX HAX ------------
         conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
         conf.namespace = namespace; // ensure updated (todo remove when defaults)
-        //modulo.assets.functions[Hash](conf.TagName, modulo);
-        const exCode = `currentModulo.assets.functions['${ Hash }']`
+        //modulo.assets.functions[FuncDefHash](conf.TagName, modulo);
+        const exCode = `currentModulo.assets.functions['${ FuncDefHash }']`;
         modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
     }
 
@@ -1150,11 +1143,7 @@ modulo.register('cpart', class Style {
             return;
         }
         if (Parent) {
-            let { namespace, mode, Name } = modulo.getParent(Parent);
-            if (!(Parent in modulo.parents)) {
-                console.log('Parent not found:', Parent, Object.keys(modulo.parents), conf);
-            }
-            //let { namespace, mode, Name } = modulo.parents[Parent];
+            let { namespace, mode, Name } = modulo.parentDefs[Parent];
             // XXX HAX, conf is a big tangled mess
             if (Name.startsWith('x_')) {
                 Name = Name.replace('x_', '');
@@ -1202,8 +1191,9 @@ modulo.register('cpart', class Template {
         delete conf.Content;
     }
 
-    constructor(modulo, conf) {
-        this.templater = new modulo.registry.engines.Templater(modulo, conf);
+    initializedCallback(modulo, conf) {
+        const { Templater } = this.modulo.registry.engines;
+        this.templater = new Templater(this.modulo, this.conf);
     }
 
     /*
@@ -1296,7 +1286,7 @@ modulo.register('cpart', class Script {
             modulo.assert(!('factoryCallback' in results), 'factoryCallback LEGACY');
             return results;
         } else {
-            modulo.assert(!conf.Parent, 'Shouldnt have parent');
+            modulo.assert(!conf.Parent, 'Falsy return for parented Script');
             return {};
         }
     }
@@ -1321,8 +1311,8 @@ modulo.register('cpart', class Script {
         };
     }
 
-    constructor(modulo, conf, element) {
-        let { script } = element.initRenderObj;
+    initializedCallback(renderObj) {
+        let { script } = renderObj;
         //let script = conf;
         // Attach callbacks from script to this, to hook into lifecycle.
         const isCbRegex = /(Unmount|Mount|Callback)$/;
