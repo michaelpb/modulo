@@ -330,16 +330,19 @@ modulo.register('cpart', class Component {
         const cpartNameString = Children.map(({ Type }) => Type).join(', ');
         let unrolledFactoryMethods = 'const initRenderObj = {};';
         let unrolledCPartSetup = 'this.cparts = {};';
-        for (const i in Children) {
+        let i = 0;
+        while (i < Children.length) {
             const conf = Children[i];
             const { Type } = conf;
             unrolledCPartSetup += `\nthis.cparts.${ conf.RenderObj } = new ${ conf.Type }();`
             if (!('factoryCallback' in modulo.registry.cparts[conf.Type])) {
+                i++;
                 continue;
             }
             const fn = `initRenderObj.${ conf.RenderObj } = ${ conf.Type }.factoryCallback`;
             const expr = `${ fn }(initRenderObj, confArray[${ i }], modulo)`;
             unrolledFactoryMethods += '\n    ' + expr + ';';
+            i++;
         }
         // TODO: When refactoring, reincoroprate the new unrolled style,
         // probably into constructor() instead of parsedCallback
@@ -888,10 +891,11 @@ modulo.register('util', class BaseElement extends HTMLElement {
 
     legacySetupCParts() {
         this.cparts = {};
-        this.moduloChildrenData.unshift(this.moduloComponentConf); // Add in the Component def itself
+        const fullData = Array.from(this.moduloChildrenData);
+        fullData.unshift(this.moduloComponentConf); // Add in the Component def itself
         const { cparts } = this.modulo.registry;
         const isLower = key => key[0].toLowerCase() === key[0];
-        for (const conf of this.moduloChildrenData) {
+        for (const conf of fullData) {
             const partObj = this.initRenderObj[conf.RenderObj];
             const instance = new cparts[conf.Type](this.modulo, conf, this);
             // TODO: Decide on this interface, and maybe restore "modulo.create" as part of this
@@ -914,20 +918,10 @@ modulo.register('core', class AssetManager {
         this.rawAssetsArray = { js: [], css: [] };
     }
 
-    /*
     build(ext, opts, prefix = '') {
         const { saveFileAs, hash } = this.modulo.registry.utils;
-        const text = prefix + modulo.assets.rawAssetsArray[ext].join('');
+        const text = prefix + modulo.assets.rawAssetsArray[ext].join('\n');
         return saveFileAs(`modulo-${ opts.type }-${ hash(text) }.${ ext }`, text);
-    }
-    */
-
-    getAssets(type, extra = null) {
-        // Get an array of assets of the given type, in a stable ordering
-        // TODO: This is incorrect: It needs to be ordered like it was in the
-        // original document. Sorting will cause JS / CSS files to be loaded in
-        // wrong order:
-        return (extra || []).concat(Object.values(this.rawAssets[type]).sort());
     }
 
     registerFunction(params, text, opts = {}) {
@@ -965,6 +959,8 @@ modulo.register('core', class AssetManager {
             this.rawAssetsArray.js.push(funcText);
         }
         window.currentModulo = this.modulo; // Ensure stays silo'ed in current
+        // TODO: Make functions named, e.g. function x_Button_Template () etc,
+        // so stack traces / debugger looks better
         this.appendToHead('script', '"use strict";\n' + funcText);
         delete window.currentModulo;
     }
@@ -1080,6 +1076,9 @@ modulo.register('core', class FetchQueue {
     }
 
     wait(callback) {
+        // NOTE: There is a bug with this vs enqueueAll, specifically if we are
+        // already in a wait callback, it can end up triggering the next one
+        // immediately
         //console.log({ wait: Object.keys(this.queue).length === 0 }, Object.keys(this.queue));
         this.waitCallbacks.push(callback); // add to end of queue
         this.checkWait(); // attempt to consume wait queue
@@ -1228,7 +1227,6 @@ modulo.register('cpart', class StaticData {
 
 modulo.register('cpart', class Script {
     static prebuildCallback(modulo, conf) {
-        // TODO: Switch to prebuild / define structure
         const code = conf.Content || ''; // TODO: trim whitespace?
         delete conf.Content;
         let localVars = Object.keys(modulo.registry.dom);// TODO fix...
@@ -1261,7 +1259,7 @@ modulo.register('cpart', class Script {
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
             // TODO: Refactor:
             // NOTE: Uses "window" as "this." context for better compat
-            modulo.assets.runInline(`${ exCode }.call(window, currentModulo)`);
+            modulo.assets.runInline(`${ exCode }.call(window, currentModulo);\n`);
             // currentModulo.registry.cparts.Script.require);\n`);
             delete conf.Hash; // prevent getting run again
         }
@@ -2138,94 +2136,63 @@ modulo.register('engine', class Reconciler {
 });
 
 
-modulo.register('command', function build(modulo, opts = {}) {
-    const doc = modulo.globals.document;
-    const { saveFileAs, hash } = this.modulo.registry.utils;
-    opts.type = opts.type || 'build';
-
-    const scriptPrefix = `
-        window.modulo = new Modulo(window.modulo);
-        window.currentModulo = window.modulo;
-        window.modulo.defs = ${ JSON.stringify(this.modulo.defs, null, 1) };
-        window.modulo.parentDefs = ${ JSON.stringify(this.modulo.parentDefs, null, 1) };
-    `;
-    const scriptSources = [ scriptPrefix ];
-    //const scriptSources = ['"use strict";\nvar currentModulo = modulo;\n'];
-
-    // Loop through all elements, collecting assets, and attaching HTML source
-    const cssSources = [];
-    // TODO: Refactor, this is wayyy too complex, and also ensure values in
-    // correct order
-    const bundles = { script: { count: 0 }, style: { count: 0 }, };
-    bundles.link = bundles.style;
-    for (const elem of doc.querySelectorAll('*')) {
-        const tN = elem.tagName.toLowerCase();
-        if (tN === 'script' || tN === 'link' || tN === 'style') {
-            if (elem.hasAttribute('modulo-asset')) {
-                const arr = tN === 'script' ? scriptSources : cssSources;
-                let text = elem.textContent;
-                if (text.startsWith('"use strict";')) {
-                    text = text.replace('"use strict";', '');
-                }
-                arr.push(text);
-                elem.remove();
-            } else if (opts.includeBundle) {
-                const bundleInfo = bundles[tN];
-                const sourceNumber = bundleInfo.count; // Copy current spot
-                const src = elem.src || elem.href;
-                modulo.fetchQueue.enqueue(src, data => {
-                    delete modulo.fetchQueue.data[src]; // clear cached data
-                    bundleInfo[sourceNumber] = data;
-                });
-                bundleInfo[sourceNumber] = false; // Placeholder...
-                bundleInfo.count++;
-                elem.remove();
-            }
-        } else if (elem.isModulo && elem.originalHTML !== elem.innerHTML) {
-            elem.setAttribute('modulo-original-html', elem.originalHTML);
-        }
+modulo.register('util', function fetchBundleData(modulo, callback) {
+    const query = 'script[src],link[rel=stylesheet]';
+    const data = [];
+    const elems = Array.from(modulo.globals.document.querySelectorAll(query));
+    for (const elem of elems) {
+        const dataItem = {
+            src: elem.src || elem.href,
+            type: elem.tagName === 'SCRIPT' ? 'js' : 'css',
+            content: null,
+        };
+        // TODO: Add support for inline script tags..?
+        data.push(dataItem);
+        modulo.fetchQueue.enqueue(dataItem.src, text => {
+            delete modulo.fetchQueue.data[dataItem.src]; // clear cached data
+            dataItem.content = text;
+        });
+        elem.remove();
     }
+    modulo.fetchQueue.enqueueAll(() => callback(data));
+});
 
-    modulo.fetchQueue.wait(() => {
-        delete bundles.script.count;
-        delete bundles.style.count;
-        const jsText = Object.values(bundles.script).concat(scriptSources).join('');
-        const cssText = Object.values(bundles.style).concat(cssSources).join('');
-        const jsFilePath = saveFileAs(`modulo-b-${ hash(jsText) }.js`, jsText);
-        const cssFilePath = saveFileAs(`modulo-b-${ hash(cssText) }.css`, cssText);
 
-        // Now, add in <link> and <script> tags for the built bundles
-        const linkProps = { rel: 'stylesheet', href: cssFilePath };
-        doc.head.append(Object.assign(doc.createElement('link'), linkProps));
-        const scriptProps = { src: jsFilePath };
-        doc.body.append(Object.assign(doc.createElement('script'), scriptProps));
-        const text = '<!DOCTYPE HTML><html>' + doc.documentElement.innerHTML + '</html>';
-        const filename = window.location.pathname.split('/').pop();
-        const fp = saveFileAs(filename, text);
-        setTimeout(() => {
-            document.body.innerHTML = `<h1>${ opts.type } : ${ fp }</h1>`;
-        }, 5000);
-    });
+modulo.register('command', function build(modulo, opts = {}) {
+    const { build } = modulo.registry.commands;
+    const { buildHTML } = modulo.registry.utils;
+    opts.type = opts.bundle ? 'bundle' : 'build';
+    const pre = { js: [], css: [] }; // Prefixed content
+    for (const bundle of (opts.bundle || [])) { // Loop through bundle data
+        pre[bundle.type].push(bundle.content);
+    }
+    pre.js.push('var currentModulo = new Modulo(modulo);'); // Fork modulo
+    pre.js.push('currentModulo.defs = ' + JSON.stringify(modulo.defs, null, 1) + ';');
+    pre.js.push('currentModulo.parentDefs = ' + JSON.stringify(modulo.parentDefs, null, 1) + ';');
+    opts.jsFilePath = modulo.assets.build('js', opts, pre.js.join('\n'));
+    opts.cssFilePath = modulo.assets.build('css', opts, pre.css.join('\n'));
+    opts.htmlFilePath = buildHTML(modulo, opts);
+    document.body.innerHTML = `<h1>${ opts.type }: ${ opts.htmlFilePath }</h1>`;
 });
 
 modulo.register('command', function bundle(modulo, opts = {}) {
-    const { build } = this.modulo.registry.commands;
-    build(modulo, Object.assign({ includeBundle: true }, opts))
+    const { build } = modulo.registry.commands;
+    const { fetchBundleData } = modulo.registry.utils;
+    fetchBundleData(modulo, bundle => build(modulo, Object.assign({ bundle }, opts)));
 });
-
-/*
-modulo.register('command', function bundle(modulo, opts) {
-    modulo.utils.fetchBundleData(opts => build(modulo, opts));
-});
-*/
 
 modulo.register('util', function getBuiltHTML(modulo, opts = {}) {
     // Scan document for modulo elements, attaching modulo-original-html=""
-    // as needed, or clearing
-    // TODO: Copy original innerHTML to detatched doc, then make modifications
+    // as needed, and clearing link / script tags that have been bundled
+    const doc = modulo.globals.document;
+    const bundledTags = { script: 1, link: 1, style: 1 }; // TODO: Move to conf?
     for (const elem of doc.querySelectorAll('*')) {
-        if (elem.hasAttribute('modulo-asset')) {
-            elem.remove();
+        // TODO: As we are bundling together, create a src/href/etc collection
+        // to the compare against instead?
+        if (elem.tagName.toLowerCase() in bundledTags) {
+            if (elem.hasAttribute('modulo-asset') || opts.bundle) {
+                elem.remove(); // TODO: Maybe remove bundle logic here, since we remove when bundling?
+            }
         } else if (elem.isModulo && elem.originalHTML !== elem.innerHTML) {
             elem.setAttribute('modulo-original-html', elem.originalHTML);
         }
@@ -2237,7 +2204,7 @@ modulo.register('util', function getBuiltHTML(modulo, opts = {}) {
     return '<!DOCTYPE HTML><html>' + doc.documentElement.innerHTML + '</html>';
 });
 
-modulo.register('util', function buildhtml(modulo, opts = {}) {
+modulo.register('util', function buildHTML(modulo, opts = {}) {
     const { saveFileAs, getBuiltHTML } = modulo.registry.utils;
     const filename = window.location.pathname.split('/').pop();
     return saveFileAs(filename, getBuiltHTML(modulo, opts));
@@ -2246,14 +2213,26 @@ modulo.register('util', function buildhtml(modulo, opts = {}) {
 if (typeof document !== undefined && document.head) { // Browser environ
     Modulo.globals = window; // TODO, remove?
     modulo.globals = window;
-    window.hackCoreModulo = new Modulo(modulo);
+    window.hackCoreModulo = new Modulo(modulo); // XXX
+    // TODO - Not sure advantages of running preprocess blocking vs not
     modulo.loadFromDOM(document.head);
     modulo.preprocessAndDefine();
-    console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
-        get test() { return modulo.registry.commands.test(modulo) }
-        get build() { return modulo.registry.commands.build(modulo) }
-        get bundle() { return modulo.registry.commands.bundle(modulo) }
-    })));
+    document.addEventListener('DOMContentLoaded', () => modulo.fetchQueue.wait(() => {
+        const cmd = new URLSearchParams(window.location.search).get('mod-cmd');
+        // TODO: disable commands for built version somehow, as a safety
+        // precaution -- maybe another if statement down here, so this is
+        // "dev-mode", and there's "node-mode" and finally "build-mode"?
+        if (cmd) {
+            modulo.registry.commands[cmd](modulo);
+        } else {
+            // TODO: make "gets" refresh with cmd
+            console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
+                get test() { return modulo.registry.commands.test(modulo) }
+                get build() { return modulo.registry.commands.build(modulo) }
+                get bundle() { return modulo.registry.commands.bundle(modulo) }
+            })));
+        }
+    }));
     //})).__proto__); // TODO: .__proto__ is better in firefox, saves one click, without is better in chrome
     //Misc command idea:
     // - Allow adding something like: ?modulo-runcommand=test
