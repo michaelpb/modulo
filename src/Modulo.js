@@ -324,6 +324,9 @@ modulo.register('cpart', class Component {
             console.warn('Empty component specified:', FullName);
             return;
         }
+        conf.namespace = conf.namespace || conf.Parent || 'x'; // TODO Make this more logical once Library etc is done
+        conf.TagName = (conf.TagName || `${ conf.namespace }-${ Name }`).toLowerCase();
+
         const cpartNameString = Children.map(({ Type }) => Type).join(', ');
         let unrolledFactoryMethods = 'const initRenderObj = {};';
         let unrolledCPartSetup = 'this.cparts = {};';
@@ -369,23 +372,11 @@ modulo.register('cpart', class Component {
     }
 
     static defineCallback(modulo, conf) {
-        const { Content, Name, Children, FuncDefHash } = conf;
+        const { FullName, FuncDefHash } = conf;
         const { stripWord } = modulo.registry.utils;
         const { library } = modulo.config;
-        const namespace = conf.namespace || library.Name || library.name || 'x';
-        // XXX HAX ------------
-        let hackName = Name;
-        if (hackName.startsWith(namespace + '_')) {
-            hackName = hackName.replace(namespace + '_', '');
-            conf.Name = hackName;
-        } else if (hackName.includes('_')) {
-            const split = hackName.split('_');
-            hackName = split[split.length - 1]; // get last item
-        }
-        // XXX HAX ------------
-        conf.TagName = (conf.TagName || (namespace + '-' + hackName)).toLowerCase();
-        conf.namespace = namespace; // ensure updated (todo remove when defaults)
-        //modulo.assets.functions[FuncDefHash](conf.TagName, modulo);
+        //const defsCode = `currentModulo.defs['${ FullName }'] = ` + JSON.stringify(conf, null, 1);
+        //const defsCode = `currentModulo.parentDefs['${ FullName }'] = ` + JSON.stringify(conf, null, 1);
         const exCode = `currentModulo.assets.functions['${ FuncDefHash }']`;
         modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
     }
@@ -2142,8 +2133,16 @@ modulo.register('command', function build(modulo, opts = {}) {
     const { saveFileAs, hash } = this.modulo.registry.utils;
     opts.type = opts.type || 'build';
 
+    const scriptPrefix = `
+        window.modulo = new Modulo(null, window.modulo);
+        window.currentModulo = window.modulo;
+        window.modulo.defs = ${ JSON.stringify(this.modulo.defs, null, 1) };
+        window.modulo.parentDefs = ${ JSON.stringify(this.modulo.parentDefs, null, 1) };
+    `;
+    const scriptSources = [ scriptPrefix ];
+    //const scriptSources = ['"use strict";\nvar currentModulo = modulo;\n'];
+
     // Loop through all elements, collecting assets, and attaching HTML source
-    const scriptSources = ['"use strict";\nvar currentModulo = modulo;\n'];
     const cssSources = [];
     // TODO: Refactor, this is wayyy too complex, and also ensure values in
     // correct order

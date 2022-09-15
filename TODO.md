@@ -1,7 +1,7 @@
 New new new next steps:
 
 - Clean up constructor() args
-- Finish new, leaner, Component def
+- Finish new, leaner, Component def 
 
 
 
