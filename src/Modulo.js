@@ -1256,7 +1256,6 @@ modulo.register('cpart', class Script {
     }
 
     static defineCallback(modulo, conf) {
-        console.log('defineCallback!', conf.Name, conf.Parent);
         // XXX -- HAX
         if (!conf.Parent || conf.Parent === 'x_x') {
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
@@ -2145,7 +2144,7 @@ modulo.register('command', function build(modulo, opts = {}) {
     opts.type = opts.type || 'build';
 
     const scriptPrefix = `
-        window.modulo = new Modulo(null, window.modulo);
+        window.modulo = new Modulo(window.modulo);
         window.currentModulo = window.modulo;
         window.modulo.defs = ${ JSON.stringify(this.modulo.defs, null, 1) };
         window.modulo.parentDefs = ${ JSON.stringify(this.modulo.parentDefs, null, 1) };
