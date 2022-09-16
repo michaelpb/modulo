@@ -1,16 +1,11 @@
-New new new next steps:
 
-- Clean up constructor() args
-- Finish new, leaner, Component def 
-
-
+- NEXT BUG:
+    - Got to fix Demo.js to support getting component text
 
 ----
 
 
 New new next steps:
-
-
 
 Remaining issues with building:
 - Still doesn't run, since confArray is not getting created correctly
@@ -23,9 +18,6 @@ Remaining issues with building:
 
 
 - Known bug: Built JS has "use strict"; over and over
-
-- Known bug: Content is still getting included. It seems the delete
-  conf.Content doesn't actually take effect. Probably has to do with conf duplication
 
 - Known bug: The x-DemoChart is getting buggy again, wrong formatting (due to :host bug with CSS)
     -  THE REASON: probably related to other bug, is that conf.mode isn't

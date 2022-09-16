@@ -166,7 +166,7 @@ window.Modulo = class Modulo {
         return found;
     }
 
-    getLifecyclePatches(lcObj, lifecycleName, skipFacs = false) {
+    getLifecyclePatches(lcObj, lifecycleName) {
         // todo: Make it lifecycleNames (plural)
         const patches = [];
         const methodName = lifecycleName + 'Callback';
@@ -469,6 +469,7 @@ modulo.register('cpart', class Component {
 
     reconcileCallback(renderObj) {
         let { innerHTML, patches, root } = renderObj.component;
+        this.mode =this.attrs.mode || 'regular';
         if (innerHTML !== null) {
 
             // XXX ----------------
@@ -869,11 +870,9 @@ modulo.register('util', class BaseElement extends HTMLElement {
 
     parsedCallback() {
         let original = this;
-        /*
         if (this.hasAttribute('modulo-original-html')) {
             original = modulo.registry.utils.makeDiv(this.getAttribute('modulo-original-html'));
         }
-        */
         this.legacySetupCParts();
         this.lifecycle([ 'initialized' ]);
         this.rerender(original); // render and re-mount it's own childNodes
@@ -1457,7 +1456,9 @@ modulo.register('cpart', class State {
     }
 
     eventCleanupCallback() {
-        // TODO: Instead, should JUST do _oldData with each key from boundElements, and thus more efficiently loop through
+        // TODO: Instead, should JUST do _lastPropagated (isntead of _oldData)
+        // with each key from boundElements, and thus more efficiently loop
+        // through
         for (const name of Object.keys(this.data)) {
             this.modulo.assert(name in this._oldData, `There is no "state.${name}"`);
             const val = this.data[name];
@@ -2225,7 +2226,9 @@ if (typeof document !== undefined && document.head) { // Browser environ
         if (cmd) {
             modulo.registry.commands[cmd](modulo);
         } else {
-            // TODO: make "gets" refresh with cmd
+            // TODO: Make these possibly pop up window with ?mod-cmd=... in it,
+            // and maybe a-tag / button to "force-refresh" after every command
+            // (e.g. [ build ] ./start.html)
             console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
                 get test() { return modulo.registry.commands.test(modulo) }
                 get build() { return modulo.registry.commands.build(modulo) }
