@@ -1,0 +1,393 @@
+<load src="./examplelib.html" namespace="eg"></load>
+<load src="./embeddedexampleslib.html" namespace="docseg"></load>
+
+<!-- NOTE: Need to put modulowebsite.html last due to peer dependencies with
+     above  (hack, should be gracefully handled) -->
+<load src="./modulowebsite.html" namespace="mws"></load>
+
+
+<!--<script src="/components/layouts/globalUtils.js"></script>-->
+<module>
+    <script>
+        let txt;
+
+        function sloccount() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            return Modulo.require('sloc')(txt, 'js').source;
+        }
+
+        function checksum() {
+            if (!txt) {
+                txt = Modulo.require('fs').readFileSync('./src/Modulo.js', 'utf8');
+            }
+            const CryptoJS = Modulo.require("crypto-js");
+            const hash = CryptoJS['SHA384'](txt);
+            return hash.toString(CryptoJS.enc.Base64);
+            //const shaObj = new jsSHA("SHA-384", "TEXT", { encoding: "UTF8" });
+
+            //shaObj.update(txt);
+            //const hash = shaObj.getHash("B64");
+            //return hash;
+        }
+
+        function getGlobalInfo() {
+            // Only do once to speed up SSG
+            //console.log('this is Modulo', Object.keys(Modulo));
+            if (!Modulo.isBackend) {
+                return;
+            }
+            if (!Modulo.ssgStore.versionInfo) {
+                const bytes = Modulo.require('fs').readFileSync('./package.json');
+                const data = JSON.parse(bytes);
+                Modulo.ssgStore.versionInfo = {
+                    version: data.version,
+                    sloc: sloccount(),
+                    checksum: checksum(),
+                };
+            }
+            return Modulo.ssgStore.versionInfo;
+        }
+
+        // https://stackoverflow.com/questions/400212/
+        const {document, navigator} = Modulo.globals;
+        function fallbackCopyTextToClipboard(text) {
+            console.count('fallbackCopyTextToClipboard');
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                //console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                //console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                //console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    </script>
+
+</module>
+
+<component name="Page" mode="vanish-into-document">
+    <props
+        navbar
+        docbarselected 
+        pagetitle
+    ></props>
+
+    <template src="./layouts/base.html"></template>
+
+    <script>
+        function initializedCallback() {
+            //console.log('this is module', module);
+            if (Modulo.isBackend && module) {
+                //Modulo.ssgStore.navbar = module.script.getGlobalInfo();
+                //Object.assign(script.exports, Modulo.ssgStore.navbar);
+                const info = module.script.getGlobalInfo();
+                Object.assign(script.exports, info);
+                // Store results in DOM for FE JS
+                element.setAttribute('script-exports', JSON.stringify(script.exports));
+            } else if (element.getAttribute('script-exports')) {
+                // FE JS, retrieve from DOM
+                const dataStr = element.getAttribute('script-exports');
+                Object.assign(script.exports, JSON.parse(dataStr));
+            } else {
+                //console.log('Warning: Couldnt get global info');
+            }
+        }
+    </script>
+</component>
+
+<component name="DevLogNav" mode="vanish">
+    <props
+        fn
+    ></props>
+
+    <Template>
+
+        <div id="news" style="height: 100px; padding-top: 25px; clear: both; display: block; text-align: center">
+            <strong>DEV LOG:</strong>
+            {% for pair in state.data %}
+                {% if pair|get:0 == props.fn %}
+                    <span style="text-decoration: overline underline;">
+                        {{ pair|get:0 }} ({{ pair|get:1 }})
+                    </span>
+                {% else %}
+                    <a href="/devlog/{{ pair|get:0 }}.html">
+                        {{ pair|get:0 }} ({{ pair|get:1 }})
+                    </a>
+                {% endif %}
+                {% if pair|get:1 != "FAQ" %}
+                    |
+                {% endif %}
+            {% endfor %}
+            {% for pair in state.data %}
+                {% if pair|get:0 == props.fn %}
+                    <h1>{{ pair|get:1 }}</h1>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </Template>
+
+            <!--["2022-06", "HTML first"],-->
+    <State
+        data:='[
+            ["2022-03", "Next steps for alpha"],
+            ["2021-09", "Thoughts on design"],
+            ["2021-01", "FAQ"]
+        ]'
+    ></State>
+
+</component>
+
+<!-- Used by demos! -->
+<component name="DemoChart">
+    <Props
+        data
+        animated
+    ></Props>
+    <Template>
+        <div class="chart-container
+        {% if props.animated %}animated{% endif %}">
+            {% for percent in script.percent %}
+                <div style="height: {{ percent }}px; width: {{ script.width }}px">
+                </div>
+            {% endfor %}
+        </div>
+        {% if not props.animated %}
+            {% for value in props.data %}
+                <label style="width: {{ script.width }}px">{{ value }}</label>
+            {% endfor %}
+        {% endif %}
+    </Template>
+
+    <Script>
+        function prepareCallback() {
+            const { data } = props;
+            const max = Math.max(...data);
+            const min = 0;// Math.min(...props.data),
+            return {
+                percent: data.map(item => ((item - min) / max) * 100),
+                width: Math.floor(100 / data.length),
+            }
+        }
+    </Script>
+
+    <Style>
+        .chart-container {
+            border: 1px solid black;
+            height: 100px;
+            width: 100px;
+            display: flex;
+            align-items: flex-end;
+        }
+        .chart-container > div {
+            box-sizing: border-box;
+            background-color: #b90183;
+            background-color: white;
+            border: 1px solid grey;
+            width: 30px;
+            border-radius: 1px 5px 1px 5px;
+            box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
+            margin-top: -5px;
+        }
+
+        .chart-container.animated > div {
+            transition: height calc(var(--speed, 10) * 0.1s) var(--easing, linear);
+        }
+        .chart-container > div:first-of-type {
+            margin-left: -4px;
+        }
+        .chart-container > div:hover {
+            background-color: #b90183;
+        }
+        label {
+            display: inline-block;
+        }
+    </Style>
+</Component>
+
+
+
+<!-- Used by demos! -->
+<component name="DemoModal">
+    <Props
+        button
+        title
+    ></Props>
+
+    <Template>
+        <button @click:=script.show>{{ props.button }} ⬇☐&nbsp;</button>
+        <div class="modal-backdrop"
+            @click:=script.hide
+            style="display: {% if state.visible %}block{% else %}none{% endif %}">
+        </div>
+        <div class="modal-body" style="
+        {% if state.visible %} top: 100px; {% else %} top: -400px; {% endif %}">
+            <h2>{{ props.title }} <button @click:=script.hide>&times;</button></h2>
+            <slot></slot>
+        </div>
+    </Template>
+
+    <State
+        visible:=false
+    ></State>
+
+
+    <Script>
+        function show() {
+            state.visible = true;
+        }
+        function hide() {
+            state.visible = false;
+        }
+    </Script>
+
+    <Style>
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 11;
+        }
+        .modal-body {
+            --w: 400px;
+            width: var(--w);
+            position: fixed;
+            z-index: 12;
+            left: calc(50vw - (var(--w) / 2));
+            display: block;
+            background: white;
+            border: 7px solid black;
+            border-radius: 7px;
+            padding: 50px;
+            transition: top 1s;
+        }
+        .modal-body > h2 {
+            border-bottom: 3px solid black;
+            color: #b90183;
+            padding: 10px;
+            border-top: 0;
+            margin: -50px;
+            margin-bottom: 50px;
+        }
+        .modal-body > h2 button {
+            font-size: 25px;
+            float: right;
+            width: 50px;
+        }
+
+        button {
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 1px 10px 1px 10px;
+            background:  #b90183;
+            color: black;
+            border: 1px solid grey;
+            box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
+            cursor: default;
+            margin-top: 0px;
+            padding: 5px;
+            background-color: white;
+            margin-bottom: 4px;
+        }
+        button:active {
+            box-shadow: inset 5px 5px 1px 1px hsla(0,0%,39.2%,.3);
+            margin-top: 5px;
+        }
+    </Style>
+</Component>
+
+
+<!-- Used by demos! -->
+<component name="DemoSelector">
+    <Props
+        onchange
+        options
+        name
+    ></Props>
+
+    <Template>
+        {% for option in props.options %}
+            <input
+                type="radio" 
+                id="{{ props.name }}_{{ option }}"
+                name="{{ props.name }}"
+                payload="{{ option }}"
+                @change:=script.setValue
+            /><label for="{{ props.name }}_{{ option }}">{{ option }}</label>
+        {% endfor %}
+    </Template>
+
+    <State
+        value=""
+    ></State>
+
+    <Script>
+        function prepareCallback() {
+            state.value = element.value;
+        }
+
+        function setValue(val) {
+            state.value = val;
+            element.value = val;
+            element.dispatchEvent(new Event('change'));
+        }
+    </Script>
+
+
+    <Style>
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 1px 5px 1px 5px;
+            background:  #b90183;
+            color: black;
+            border: 1px solid grey;
+            box-shadow: inset -5px -5px 1px 1px hsla(0,0%,39.2%,.3);
+            cursor: default;
+            margin-top: 0px;
+            padding: 5px;
+            background-color: white;
+            margin-bottom: 4px;
+            margin-left: 3px;
+        }
+        input:checked + label {
+            box-shadow: inset 5px 5px 1px 1px hsla(0,0%,39.2%,.3);
+            margin-top: 5px;
+        }
+    </Style>
+</Component>
+
+
+

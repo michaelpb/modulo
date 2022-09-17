@@ -5,7 +5,6 @@
     "domEngine": "jsdom",
     "testPath": "www-src/demos/tests/index.html",
     "testLogPath": "modulo.testlog.json",
-    "outputOld": "docs",
-    "output": "www-new-built",
+    "output": "docs",
     "input": "www-src"
 }
