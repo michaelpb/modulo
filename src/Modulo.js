@@ -68,10 +68,10 @@ window.Modulo = class Modulo {
         }
     }
 
-    loadFromDOM(elem, parentName = null) {
+    loadFromDOM(elem, parentName = null, quietErrors = false) {
         const partialConfs = [];
         const X = 'x';
-        const isModulo = this.getNodeModuloType.bind(this);
+        const isModulo = node => this.getNodeModuloType(node, quietErrors);
         for (const node of Array.from(elem.children).filter(isModulo)) {
             const conf = this.loadPartialConfigFromNode(node);
             conf.Parent = conf.Parent || parentName;
@@ -114,7 +114,7 @@ window.Modulo = class Modulo {
         });
         const div = this.reconciler.loadString(text, {});
         const result = this.loadFromDOM(div, parentFactoryName);
-        return result
+        return result;
     }
 
     getNuLifecyclePatches(lcObj, lifecycleName, searchNamespace = null, hackSNS = null) {
@@ -214,8 +214,9 @@ window.Modulo = class Modulo {
         }
     }
 
-    getNodeModuloType(node) {
+    getNodeModuloType(node, quietErrors = false) {
         const { tagName, nodeType, textContent } = node;
+        const err = msg => quietErrors || console.error('Modulo Load:', msg);
 
         // node.nodeType equals 1 if the node is a DOM element (as opposed to
         // text, or comment). Ignore comments, tolerate empty text nodes, but
@@ -223,13 +224,13 @@ window.Modulo = class Modulo {
         if (nodeType !== 1) {
             // Text nodes, comment nodes, etc
             if (nodeType === 3 && textContent && textContent.trim()) {
-                console.error('Modulo: Unexpected text:', textContent);
+                err(`Unexpected text found near definitions: ${textContent}`);
             }
             return null;
         }
 
         let cPartName = tagName.toLowerCase();
-        if (cPartName in { cpart: 1, script: 1, template: 1 }) {
+        if (cPartName in { cpart: 1, script: 1, template: 1, style: 1 }) {
             for (const attrUnknownCase of node.getAttributeNames()) {
                 const attr = attrUnknownCase.toLowerCase();
                 if (attr in this.registry.dom && !node.getAttribute(attr)) {
@@ -241,7 +242,7 @@ window.Modulo = class Modulo {
         }
         if (!(cPartName in this.registry.dom)) {
             if (cPartName === 'testsuite') { /* XXX HACK */ return null;}
-            console.error('Unknown Modulo def:', cPartName);
+            err(`${ cPartName }. CParts: ${ Object.keys(this.registry.dom) }`);
             return null;
         }
         return cPartName;
@@ -933,7 +934,6 @@ modulo.register('core', class AssetManager {
             this.rawAssets.js[hash] = funcText; // "use strict" only in tag
             window.currentModulo = this.modulo; // Ensure stays silo'ed in current
             this.appendToHead('script', '"use strict";\n' + funcText);
-            delete window.currentModulo;
             */
             this.modulo.assert(hash in this.functions, `Func ${hash} did not register`);
             this.functions[hash].hash = hash;
@@ -961,7 +961,6 @@ modulo.register('core', class AssetManager {
         // TODO: Make functions named, e.g. function x_Button_Template () etc,
         // so stack traces / debugger looks better
         this.appendToHead('script', '"use strict";\n' + funcText);
-        delete window.currentModulo;
     }
 
     getSymbolsAsObjectAssignment(contents) {
@@ -1206,14 +1205,20 @@ modulo.register('cpart', class Template {
 
 modulo.register('cpart', class StaticData {
     static prebuildCallback(modulo, conf) {
-        //const defTransform = s => `return ${s.trim()};`;
-        //(s => `return ${JSON.stringify(JSON.parse(s))}`);
-        //const transform = conf.attrs.transform || defTransform;
-        let code = (conf.Content || '').trim();
+        // TODO put into conf, make default to JSON, and make CSV actually
+        // correct + instantly useful (e.g. separate headers, parse quotes)
+        const transforms = {
+            csv: s => JSON.stringify(s.split('\n').map(line => line.split(','))),
+            js: s => s,
+            json: s => JSON.stringify(JSON.parse(s)),
+            txt: s => JSON.stringify(s),
+        };
+        const transform = transforms[conf.type || 'js'];
+        const code = 'return ' + transform((conf.Content || '').trim()) + ';';
         delete conf.Content;
-        code = `return ${ code };`;
         conf.Hash = modulo.assets.getHash([], code);
         modulo.assets.registerFunction([], code);
+        // TODO: Maybe evaluate and attach directly to conf here?
     }
 
     static factoryCallback(renderObj, conf, modulo) {
@@ -1351,6 +1356,7 @@ modulo.register('cpart', class Script {
         if (setLocalVariable) { // (For autoexport:=false, there is no setLocalVar)
             setLocalVariable('element', this.element);
             setLocalVariable('cparts', this.element.cparts);
+            // TODO: Remove 'localVars' from configure script, clutters up build
             for (const localVar of localVars) {
                 if (localVar in renderObj) {
                     setLocalVariable(localVar, renderObj[localVar]);
@@ -2159,9 +2165,8 @@ modulo.register('util', function fetchBundleData(modulo, callback) {
 });
 
 
-modulo.register('command', function build(modulo, opts = {}) {
-    const { build } = modulo.registry.commands;
-    const { buildHTML } = modulo.registry.utils;
+modulo.register('command', function build (modulo, opts = {}) {
+    const { buildhtml } = modulo.registry.commands;
     opts.type = opts.bundle ? 'bundle' : 'build';
     const pre = { js: [], css: [] }; // Prefixed content
     for (const bundle of (opts.bundle || [])) { // Loop through bundle data
@@ -2172,11 +2177,15 @@ modulo.register('command', function build(modulo, opts = {}) {
     pre.js.push('currentModulo.parentDefs = ' + JSON.stringify(modulo.parentDefs, null, 1) + ';');
     opts.jsFilePath = modulo.assets.build('js', opts, pre.js.join('\n'));
     opts.cssFilePath = modulo.assets.build('css', opts, pre.css.join('\n'));
-    opts.htmlFilePath = buildHTML(modulo, opts);
-    document.body.innerHTML = `<h1>${ opts.type }: ${ opts.htmlFilePath }</h1>`;
+    opts.htmlFilePath = buildhtml(modulo, opts);
+    document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
+        ${ opts.type }</a>: ${ opts.htmlFilePath }</h1>`;
+    if (opts.callback) {
+        callback();
+    }
 });
 
-modulo.register('command', function bundle(modulo, opts = {}) {
+modulo.register('command', function bundle (modulo, opts = {}) {
     const { build } = modulo.registry.commands;
     const { fetchBundleData } = modulo.registry.utils;
     fetchBundleData(modulo, bundle => build(modulo, Object.assign({ bundle }, opts)));
@@ -2205,7 +2214,7 @@ modulo.register('util', function getBuiltHTML(modulo, opts = {}) {
     return '<!DOCTYPE HTML><html>' + doc.documentElement.innerHTML + '</html>';
 });
 
-modulo.register('util', function buildHTML(modulo, opts = {}) {
+modulo.register('command', function buildhtml(modulo, opts = {}) {
     const { saveFileAs, getBuiltHTML } = modulo.registry.utils;
     const filename = window.location.pathname.split('/').pop();
     return saveFileAs(filename, getBuiltHTML(modulo, opts));
@@ -2216,7 +2225,7 @@ if (typeof document !== undefined && document.head) { // Browser environ
     modulo.globals = window;
     window.hackCoreModulo = new Modulo(modulo); // XXX
     // TODO - Not sure advantages of running preprocess blocking vs not
-    modulo.loadFromDOM(document.head);
+    modulo.loadFromDOM(document.head, null, true);
     modulo.preprocessAndDefine();
     document.addEventListener('DOMContentLoaded', () => modulo.fetchQueue.wait(() => {
         const cmd = new URLSearchParams(window.location.search).get('mod-cmd');

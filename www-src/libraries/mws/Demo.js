@@ -120,17 +120,17 @@ function initializedCallback() {
     } else if (props.text) {
         let title = props.ttitle || 'Example';
         text = props.text.trim();
-        state.tabs.push({title, text});
-        // hack -v
+        state.tabs.push({ title, text });
+        // XXX Hack, refactor -v
         if (props.text2) {
             title = props.ttitle2 || 'Example';
             text = props.text2.trim();
-            state.tabs.push({title, text});
+            state.tabs.push({ title, text });
         }
         if (props.text3) {
             title = props.ttitle3 || 'Example';
             text = props.text3.trim();
-            state.tabs.push({title, text});
+            state.tabs.push({ title, text });
         }
         //console.log('this is props', props);
     }

@@ -11,47 +11,6 @@ const {
     mirrorMTimesAsync,
 } = require('../lib/cliUtils');
 
-
-// ///////////////////////////////////
-function hackPostprocess(html, buildArtifacts) {
-    // XXX DEAD CODE
-    if (!/^<!doctype html>/i.test(html)) {
-        // Ensure all documents start with doctype
-        html = '<!DOCTYPE HTML>\n' + html;
-    }
-
-    // Inject hacky script after loading Modulo.js
-    html = html.replace('<script src="/js/Modulo.js"></script>', `
-        <meta charset="utf8" />
-        <script src="/js/Modulo.js"></script>
-        <script>
-        if (!Modulo.fetchQ) {
-            Modulo.fetchQ = new Modulo.FetchQueue();
-            Modulo.assets = new Modulo.AssetManager();
-        }
-        window.onload = () => {
-            Modulo.fetchQ.wait(() => {
-                Modulo.defineAll();
-            });
-        };
-        </script>
-    `);
-
-    for (const { absUriPath, filename } of buildArtifacts) {
-        if (filename.toLowerCase().endsWith('.js')) {
-            // JS File, insert at end of body
-            html = html.replace('</body>', `<script src="${absUriPath}"></script>\n</body>`);
-        } else if (filename.toLowerCase().endsWith('.css')) {
-            // JS File, insert at end of body
-            html = html.replace('</head>', `<link rel="stylesheet" href="${absUriPath}">\n</head>`);
-        } else {
-            console.log('ERROR: Unknown build artifact type: ', filename);
-        }
-    }
-    return html;
-}
-
-
 async function doGenerate(moduloWrapper, config) {
     const { inputFile, output, outputFile, verbose, force, buildPath } = config;
     const log = msg => verbose ? console.log(`|%| - - ${msg}`) : null;
@@ -83,8 +42,8 @@ async function doGenerate(moduloWrapper, config) {
 
         log('GENERATE ' + inputRelPath + ' -> ' + outputRelPath);
         // TODO: Why was it build here, and not bundle?
-        //let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'build');
-        let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'bundle');
+        let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'build');
+        //let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'bundle');
 
         // First, write buildArtifacts (result of build / bundle cmd)
         for (let artifactInfo of buildArtifacts) {

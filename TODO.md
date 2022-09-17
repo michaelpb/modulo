@@ -1,6 +1,11 @@
 
 - NEXT BUG:
     - Got to fix Demo.js to support getting component text
+    - Another bug:
+        - running bundle() doesn't work for CLI
+        - It results in empty .html files
+        - The reason is because it writes it before it's ready
+        - Backend needs to wait longer
 
 ----
 
