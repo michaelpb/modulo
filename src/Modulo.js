@@ -877,15 +877,13 @@ modulo.register('util', class BaseElement extends HTMLElement {
         this.legacySetupCParts();
         this.lifecycle([ 'initialized' ]);
         this.rerender(original); // render and re-mount it's own childNodes
-        /*
-        // (todo) Needs refactor, should do this somewhere else:
+        // TODO - Needs refactor, should do this somewhere else:
         if (this.hasAttribute('modulo-original-html')) {
             const { reconciler } = this.cparts.component;
             reconciler.patch = reconciler.applyPatch; // Apply patches immediately
             reconciler.patchAndDescendants(this, 'Mount');
             reconciler.patch = reconciler.pushPatch;
         }
-        */
         this.isMounted = true;
     }
 
@@ -2161,6 +2159,7 @@ modulo.register('util', function fetchBundleData(modulo, callback) {
         });
         elem.remove();
     }
+    console.log('this is dataItems', data);
     modulo.fetchQueue.enqueueAll(() => callback(data));
 });
 
@@ -2181,7 +2180,7 @@ modulo.register('command', function build (modulo, opts = {}) {
     document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
         ${ opts.type }</a>: ${ opts.htmlFilePath }</h1>`;
     if (opts.callback) {
-        callback();
+        opts.callback();
     }
 });
 
@@ -2220,14 +2219,15 @@ modulo.register('command', function buildhtml(modulo, opts = {}) {
     return saveFileAs(filename, getBuiltHTML(modulo, opts));
 });
 
-if (typeof document !== undefined && document.head) { // Browser environ
-    Modulo.globals = window; // TODO, remove?
-    modulo.globals = window;
-    window.hackCoreModulo = new Modulo(modulo); // XXX
-    // TODO - Not sure advantages of running preprocess blocking vs not
-    modulo.loadFromDOM(document.head, null, true);
-    modulo.preprocessAndDefine();
+
+if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => modulo.fetchQueue.wait(() => {
+        // TODO: Better way to know if in built-version browser environ
+        const isProduction = document.querySelector(
+            'script[src*="modulo-build"],script[src*="modulo-bundle"]');
+        if (isProduction) {
+            return;
+        }
         const cmd = new URLSearchParams(window.location.search).get('mod-cmd');
         // TODO: disable commands for built version somehow, as a safety
         // precaution -- maybe another if statement down here, so this is
@@ -2235,20 +2235,35 @@ if (typeof document !== undefined && document.head) { // Browser environ
         if (cmd) {
             modulo.registry.commands[cmd](modulo);
         } else {
-            // TODO: Make these possibly pop up window with ?mod-cmd=... in it,
+            // TODO: Make these link to ?mod-cmd=...
             // and maybe a-tag / button to "force-refresh" after every command
             // (e.g. [ build ] ./start.html)
-            console.log('%c%', 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;', (new (class COMMANDS________________ {
-                get test() { return modulo.registry.commands.test(modulo) }
-                get build() { return modulo.registry.commands.build(modulo) }
-                get bundle() { return modulo.registry.commands.bundle(modulo) }
+            const font = 'font-size: 30px; line-height: 0.7; padding: 5px; border: 3px solid black;';
+            console.log('%c%', font, (new (class COMMANDS {
+                get test() { window.location.href += '?mod-cmd=test' }
+                get build() { window.location.href += '?mod-cmd=build' }
+                get bundle() { window.location.href += '?mod-cmd=bundle' }
             })));
+            //})).__proto__); // TODO: .__proto__ is better in firefox, saves one click, without is better in chrome
+            /*
+            const cmds = Object.keys(modulo.registry.commands);
+            new Function(`console.log('%c%', '${ font }, (new (class COMMANDS {
+                ${ cmds.map(cmd => `get ${ cmd } () {
+                    return modulo.registry.commands.test(modulo)
+                }
+            `)
+            */
         }
     }));
-    //})).__proto__); // TODO: .__proto__ is better in firefox, saves one click, without is better in chrome
-    //Misc command idea:
-    // - Allow adding something like: ?modulo-runcommand=test
+}
 
-} else if (typeof exports !== undefined) { // Node.js / silo'ed script
+if (typeof document !== 'undefined' && document.head) { // Browser environ
+    Modulo.globals = window; // TODO, remove?
+    modulo.globals = window;
+    window.hackCoreModulo = new Modulo(modulo); // XXX
+    // TODO - Not sure advantages of running preprocess blocking vs not
+    modulo.loadFromDOM(document.head, null, true);
+    modulo.preprocessAndDefine();
+} else if (typeof exports !== 'undefined') { // Node.js / silo'ed script
     exports = { Modulo, modulo };
 }

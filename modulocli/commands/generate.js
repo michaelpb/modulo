@@ -42,8 +42,8 @@ async function doGenerate(moduloWrapper, config) {
 
         log('GENERATE ' + inputRelPath + ' -> ' + outputRelPath);
         // TODO: Why was it build here, and not bundle?
-        let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'build');
-        //let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'bundle');
+        //let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'build');
+        let [ html, buildArtifacts ] = await moduloWrapper.runAsync(inputFile, 'bundle');
 
         // First, write buildArtifacts (result of build / bundle cmd)
         for (let artifactInfo of buildArtifacts) {

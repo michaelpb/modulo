@@ -90,7 +90,7 @@ function doCopy() {
 }
 
 function initializedCallback() {
-    // console.log('initializedCallback');
+    console.log('initializedCallback for Demo.js', element);
     if (componentTexts === null) {
         _setupGlobalVariables();
     }

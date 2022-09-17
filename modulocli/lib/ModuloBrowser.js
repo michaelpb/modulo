@@ -160,12 +160,17 @@ class ModuloBrowser {
                     let results;
                     if (typeof modulo !== 'undefined' && modulo.register) {
                         // Modulo Prealpha3
-                        results = modulo.registry.commands[command](modulo);
+                        const opts = {
+                            callback: () => {
+                                resolve({ artifacts, results });
+                            },
+                        };
+                        results = modulo.registry.commands[command](modulo, opts);
                     } else {
                         // Modulo Prealpha2
                         results = Modulo.cmd[command]();
+                        resolve({ artifacts, results });
                     }
-                    resolve({ artifacts, results });
                 });
             });
         }, runSettings);
