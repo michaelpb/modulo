@@ -270,12 +270,10 @@
         const randColor = colors[randIndex];
         document.documentElement.style.setProperty('--accent1', randColor);
     }
-    // NOTE: To customize the accent color, delete this script tag and use CSS:
-    // :root {
-    //    --accent1: #999;
-    // }
 </script>
 
+<!-- NOTE: To customize the accent color, delete the script tag and use CSS: -->
+<style>/* :root { --accent1: #999; } */</style>
 
 
 <!-- Remember - Move Component definitions to a library file later:
@@ -288,7 +286,7 @@
 <!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
 <div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
     <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
-    modulo.fetchQueue.enqueue('.', text => {
+    modulo.fetchQueue.enqueue(String(location.href), text => {
         this.nextSibling.textContent = text;
         window.navigator.clipboard.writeText(text); 
         this.textContent += '  [☑ Copied to clipboard!]';

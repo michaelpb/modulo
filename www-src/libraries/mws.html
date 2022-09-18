@@ -18,6 +18,15 @@
     </Script>
 </Component>
 
+<Component namespace="mws" name="ProjectInfo" mode="vanish">
+    <StaticData -src="https://raw.githubusercontent.com/michaelpb/modulo/main/package.json"></StaticData>
+    <Template>
+        v: {{ staticdata.version }}<br />
+        <!--SLOC: {{ staticdata.sloc }} lines<br />-->
+        <a href="https://github.com/michaelpb/modulo/">github</a> | 
+        <a href="https://www.npmjs.com/package/{{ staticdata.name }}">npm (mdu-cli)</a>
+    </Template>
+</Component>
 
 <Component namespace="mws" name="DevLogNav" mode="vanish">
     <Props

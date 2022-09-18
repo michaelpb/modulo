@@ -641,3 +641,17 @@ logic in checkWait should be more robust, I think.
     }
 }
 
+
+        <!-- ######################################################################### -->
+        <!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
+        <div style="position: fixed; top: 100px; right: 0; font-size: 20px; background: #ddd; z-index: 100">
+            <a href="https://modulojs.org/docs/">&#x300A; BACK</a> | <a href="#" onclick="
+            modulo.fetchQueue.enqueue(String(location.href), text => {
+                this.nextSibling.textContent = text;
+                this.parentNode.style.position = 'absolute';
+                window.navigator.clipboard.writeText(text); 
+                this.textContent += '  [☑ Copied to clipboard!]';
+            })">COPY PAGE</a><pre></pre>
+        </div>
+        <!-- ######################################################################### -->
+

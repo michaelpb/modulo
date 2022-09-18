@@ -366,6 +366,30 @@ an example of more complicated HTML and JS behavior -->
 </Component>
 
 
+<!--
+<Component namespace="eg" name="DataVis">
+<Template>
+    <p>User data:</p>
+    <table class="charts-css area" id="my-chart">
+      <tbody>
+        {% for user in staticdata %}
+            <tr><td style="--start: 0.{{ user.id }}; --size: {{ user.address.geo.lat }}">
+                <span class="data"> {{ user.id }}</span></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+g/Template>
+
+<StaticData
+    -src="https://jsonplaceholder.typicode.com/users"
+></StaticData>
+<Style
+  -src="https://unpkg.com/charts.css/dist/charts.min.css"
+></Style>
+</Component>
+-->
+
+
 <Component namespace="eg" name="FlexibleForm">
 <!-- Here, we have a form that's easy to update. If this gets used more
 than a couple times, it could be turned into a reusable component where

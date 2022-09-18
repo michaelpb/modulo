@@ -81,12 +81,8 @@ function selectTab(newTitle) {
 }
 
 function doCopy() {
-    let mod = Modulo.factoryInstances['x-x'].baseRenderObj;
-    if (!mod || !mod.script || !mod.script.copyTextToClipboard) {
-        console.log('no mod!');
-    } else {
-        mod.script.copyTextToClipboard(state.text);
-    }
+    const { copyTextToClipboard } = modulo.registry.utils;
+    copyTextToClipboard(state.text);
 }
 
 function initializedCallback() {

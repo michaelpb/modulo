@@ -1,16 +1,35 @@
+<!--
+    This is the source code to Modulo's Demo page, and shows how Modulo's own
+    website was built. Copying and pasting this into any HTML document will
+    "import" Modulo's entire layout into that page. Examine the 4 comments
+    below for a little tour of how a Modulo's web page is built!
+-->
+
+
+<!-- 1. The 4 lines of boilerplate that initialize Modulo, and import a common
+header HTML file (all.html), which in turn imports all needed libraries -->
 <script Modulo
     src="/js/Modulo.js"
     -src="/libraries/all.html" 
 ></script>
 
+
+<!-- 2. <mws-Page> is a "vanish-into-document" component, meaning it will
+replace the entire document tree. It's Template is the base page layout. -->
 <mws-Page
     docbarselected="/demos/"
     pagetitle="Examples"
     navbar="docs">
 
+<!-- 3. The docbar, pagetitle, and navbar props control the left-hand
+navigation, the <title> tag, and the navbar's selection respectively. Within
+the mws-Page Template, templating statements like if statements, for loops, etc
+selectively highlight items in the sidebar and navbar. -->
 
 <h1>Examples</h1>
 
+<!-- 4. The rest of the file is just the content of the page, which will get
+slotted into the mws-Page layout -->
 
 <p>This page has a collection of larger demos and library of mini-examples.</p>
 
@@ -215,3 +234,4 @@ href="https://github.com/michaelpb/modulo/issues">filing a ticket for your
 browser version</a>, if one doesn't already exist.</p>
 
 </mws-Page>
+

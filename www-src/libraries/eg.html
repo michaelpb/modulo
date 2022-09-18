@@ -365,6 +365,61 @@ an example of more complicated HTML and JS behavior -->
 </Style>
 </Component>
 
+<Component namespace="eg" name="Scatter">
+<Template>
+    {% for user in staticdata %}
+        <div style="--lon: {{ user.address.geo.lat }}; --lat: {{ user.address.geo.lat }}">
+            {{ user.name }}
+        </div>
+    {% endfor %}
+</Template>
+<StaticData
+    -src="https://jsonplaceholder.typicode.com/users"
+></StaticData>
+
+<Style>
+  :host {
+      --size: 90px;
+      border-radius: 1px 5px 1px 7px;
+      border: 1px solid grey;
+      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);
+  }
+  div {
+      position: absolute;
+      top: calc(360px - var(--lat) / var(--size));
+      right: calc(360px - var(--lon) / var(--size));
+      height: 5px;
+      width: 5px;
+      border-radius: 5px;
+      border: 3px solid gray;
+  }
+</Style>
+</Component>
+
+
+<!--
+<Component namespace="eg" name="DataVis">
+<Template>
+    <p>User data:</p>
+    <table class="charts-css area" id="my-chart">
+      <tbody>
+        {% for user in staticdata %}
+            <tr><td style="--start: 0.{{ user.id }}; --size: {{ user.address.geo.lat }}">
+                <span class="data"> {{ user.id }}</span></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+g/Template>
+
+<StaticData
+    -src="https://jsonplaceholder.typicode.com/users"
+></StaticData>
+<Style
+  -src="https://unpkg.com/charts.css/dist/charts.min.css"
+></Style>
+</Component>
+-->
+
 
 <Component namespace="eg" name="FlexibleForm">
 <!-- Here, we have a form that's easy to update. If this gets used more
