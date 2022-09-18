@@ -325,7 +325,11 @@ modulo.register('cpart', class Component {
             console.warn('Empty component specified:', FullName);
             return;
         }
-        conf.namespace = conf.namespace || conf.Parent || 'x'; // TODO Make this more logical once Library etc is done
+        //conf.namespace = conf.namespace || conf.Parent || 'x'; // TODO Make this more logical once Library etc is done
+        conf.namespace = conf.namespace || 'x'; // TODO Make this more logical once Library etc is done
+        // TODO: Fix this logic when Library gets rewritten
+        const libInfo = modulo.parentDefs[conf.Parent || ''] || {};
+        conf.namespace = libInfo.namespace || libInfo.Name || conf.namespace || 'x';
         conf.TagName = (conf.TagName || `${ conf.namespace }-${ Name }`).toLowerCase();
 
         const cpartNameString = Children.map(({ Type }) => Type).join(', ');

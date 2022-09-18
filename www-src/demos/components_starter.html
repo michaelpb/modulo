@@ -12,8 +12,7 @@
 -->
 
 
-
-<template modulo-embed>
+<script Modulo src="https://modulojs.org/js/Modulo.js">
   <Component name="Btn">
     <Style>
         :host {
@@ -111,16 +110,16 @@
         selected=""
     ></State>
 
-    <Script>
+    <cpart Script>
         function prepareCallback(renderObj) {
             state.tabs = [];
             for (const child of element.originalChildren) {
-                const slot = child.getAttribute && child.getAttribute('slot');
-                if (slot) { // Is a DOM node with a slot specified
-                    state.tabs.push(slot);
-                    if (!state.selected) { // Select the first one found
-                        state.selected = slot;
-                    }
+                if (!child.hasAttribute || !child.hasAttribute('slot')) { // not a DOM node
+                    continue;
+                }
+                state.tabs.push(child.getAttribute('slot'));
+                if (!state.selected) { // Select the first one found
+                    state.selected = child.getAttribute('slot');
                 }
             }
         }
@@ -128,7 +127,7 @@
         function selectTab(tabToSelect) {
             state.selected = tabToSelect;
         }
-    </Script>
+    </cpart>
 
     <Style>
         :host {
@@ -190,14 +189,14 @@
         width:=400
     ></State>
 
-    <Script>
+    <cpart Script>
         function show() {
             state.visible = true;
         }
         function hide() {
             state.visible = false;
         }
-    </Script>
+    </cpart>
 
     <Style>
         .modal-backdrop {
@@ -232,12 +231,7 @@
     </Style>
 </Component>
 
-</template>
-
-<!-- Activate Modulo -->
-<!--<script src="https://modulojs.org/js/Modulo.js"></script>-->
-<script src="/js/Modulo.js"></script>
-<script>Modulo.defineAll();</script>
+</script>
 
 
 
@@ -284,25 +278,19 @@
 
 
 
-<!--
-    REMEMBER: While the demos show embedded components (with template
-    modulo-embed), this is only to make it easier to copy & paste into one
-    file. Always separate your components into a Library early on to avoid
-    issues later on. E.g., use code like:
-
-    <Modulo>
-        <Library src="/static/components/MyWebComponents.html"></Library>
-    </Modulo>
--->
-
+<!-- Remember - Move Component definitions to a library file later:
+<script Modulo
+    src="https://modulojs.org/js/Modulo.js"
+    -src="./libraries/my_components.html"
+></script> -->
 
 <!-- ######################################################################### -->
 <!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
 <div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
     <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
-    Modulo.fetchQ.enqueue('.', text => {
+    modulo.fetchQueue.enqueue('.', text => {
         this.nextSibling.textContent = text;
-        navigator.clipboard.writeText(text); 
+        window.navigator.clipboard.writeText(text); 
         this.textContent += '  [☑ Copied to clipboard!]';
     })">COPY DEMO</a><pre></pre>
 </div>

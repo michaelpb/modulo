@@ -48,7 +48,7 @@
     </cpart>
 
     <!-- (Note: "cpart Script" and "/cpart" is necessary while embedded. When
-    you move to a seprate file, use simple "Script" and "/Script") -->
+    you move to a seprate file, use simply "Script" and "/Script") -->
 
     <Style>
         /* (Hint: Use :host to reference the component itself) */
@@ -77,25 +77,19 @@
 <x-HelloWorld label="Another one:"></x-HelloWorld>
 <hr />
 
-<!--
-    REMEMBER: While the demos show embedded components (with template
-    modulo-embed), this is only to make it easier to copy & paste into one
-    file. Always separate your components into a Library early on to avoid
-    issues later on. E.g., use code like:
-
-    <Modulo>
-        <Library src="/static/components/MyWebComponents.html"></Library>
-    </Modulo>
--->
-
+<!-- Remember - Move Component definitions to a library file later:
+<script Modulo
+    src="https://modulojs.org/js/Modulo.js"
+    -src="./libraries/my_components.html"
+></script> -->
 
 <!-- ######################################################################### -->
 <!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
 <div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
     <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
-    Modulo.fetchQ.enqueue('.', text => {
+    modulo.fetchQueue.enqueue('.', text => {
         this.nextSibling.textContent = text;
-        navigator.clipboard.writeText(text); 
+        window.navigator.clipboard.writeText(text); 
         this.textContent += '  [☑ Copied to clipboard!]';
     })">COPY DEMO</a><pre></pre>
 </div>

@@ -766,40 +766,64 @@ experience for users. This is why building to one file is useful.</p>
 How to keep your project manageable and loading fast as <em>Component</em>
 definitions grow and larger.</p>
 
-<h3>Splitting off larger CParts with <code>-src=</code></h3>
+<h3>Library tags with <code>-src=</code></h3>
 
-<p>A convenient feature of Modulo is the ability to "split off" CParts into
-separate files. This can be done by cutting out the contents of a CPart, and
-pasting it in a new file, and then saving this new file in the same directory
-as your library. Then, to re-include it, add a <code>-src=</code> attribute to
-CPart. Note the dash (<code>-</code>) before it. This is what distinguishes it
-from an ordinary <code>src</code> attribute, which Modulo will ignore. By
-default, <code>-src=</code> is supported by any CPart that uses it's contents,
-meaning <em>Template</em> and <em>Style</em> are the only two that we've
-learned so far that support it.</p>
+<p>"Library" tags look like the following:</p>
 
-<p>For example, you can split off a <em>Template</em> into it's own separate
-file, as such:</p>
+<pre>&lt;Library
+    -src="./libraries/my-stuff.html"
+    namespace="coolstuff"&gt;
+&lt;/Library&gt;
+</pre>
 
-<pre>&lt;Template
-    -src="./my-file-name.html"
-&gt;&lt;/Template&gt;</pre>
+<p>Let's break this down:</p>
+<ul>
+
+    <li>
+        <code>-src="./libraries/my-stuff.html"</code>
+        <p>The <code>-src</code> attribute specifies the source of the
+        component library file. This file can be anywhere that is
+        accessible to your web-browser or web-server. Ideally, it should be
+        in the same place as your CSS and static media files, such as a
+        <code>static/</code> directory, or whatever the equivalent is for
+        your set-up.</p>
+        <p>The component library itself (<code>my-stuff.html</code> in this
+        example) should consist of an HTML file filled with
+        <code>&lt;Component&gt;</code> definitions.</p>
+    </li>
+
+    <li>
+
+        <blockquote>
+        <p><strong>Why use namespaces?</strong>
+        Namespaces allow different component library files to have
+        conflicting component names. This is especially useful when using
+        third-party component libraries or while working in a big team:
+        That way, if both you and another developer define a component with
+        some common name (eg <code>name="Button"</code>), there won't be a
+        conflict as long as you load each into different namespaces.</p>
+        </blockquote>
+
+        <code>namespace="coolstuff"</code>
+        <p>The <code>namespace</code> attribute specifies the
+        <em>namespace prefix</em>, which is combined with a dash and the
+        component name in order to create the component's <em>full
+        name</em>. </p>
+        <p><strong>Example:</strong> If <code>my-stuff.html</code> has a component
+        defined like <code>&lt;Component name="MyThing"&gt;</code>
+        imported with <code>namespace="coolstuff"</code>, then the
+        resulting full name would be <code>coolstuff-MyThing</code>, and
+        we'd use the component like<br>
+        <code>&lt;coolstuff-MyThing&gt;&lt;/coolstuff-MyThing&gt;</code>.</p>
+    </li>
 
 
-<p>Similarly, you can split off a <em>Style</em> as well:</p>
-
-<pre>&lt;Style
-    -src="./some/other/path.css"
-&gt;&lt;/Style&gt;</pre>
-
-<p>The rules for <code>-src=</code> relative paths are similar to HTML's rules:
-Any URI path can be specified, and use a dot (<code>.</code>) to specify a path
-relative to the current HTML file (e.g. the <em>Component</em> library file).
-The behavior is the exact same as if you had included the text in the same
-file, meaning this feature is only intended to be used when a component library
-gets too long and difficult to edit. In that case, conventional usage is to
-start splitting off larger CParts into their own files, until the HTML library
-file itself is just tie-ing everything together.</p>
+    <li><strong>Where to put it:</strong> The Modulo tag can go anywhere in
+    your HTML. For neatness, consider putting them either within the
+    <code>&lt;head&gt;</code> tag, or near the <code>&lt;/body&gt;</code>
+    closing tag. After being built, it won't matter: The JS script tag will be
+    put before the <code>&lt;/body&gt;</code>.</li>
+</ul>
 
 <p>However, there is a downside to splitting up your files: Each new file you
 create will require an additional request to load it. This means that each
@@ -1109,4 +1133,4 @@ Scripting</a></p>
 
 
 
-<script src="/_modulo/modulo-bundle-xl4amsr.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-r4p56.js"></script></body></html>
