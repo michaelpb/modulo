@@ -111,7 +111,7 @@ as static data in with JS, so it does not refresh. -->
 ></StaticData>
 </Component>
 
-<Component namespace="eg" name="API">
+<Component namespace="eg" name="GitHubAPI">
 <Template>
 <p>{{ state.name }} | {{ state.location }}</p>
 <p>{{ state.bio }}</p>
@@ -178,6 +178,52 @@ as static data in with JS, so it does not refresh. -->
 
 
 
+
+
+<Component namespace="eg" name="Search">
+<!-- Modulo can be used with APIs to create interactive apps.
+This book search shows how a Script tag can use an API -->
+<Template>
+<input [state.bind] name="search" />
+<button @click:=script.doSearch>Go</button>
+<ol>
+  {% for item in state.results %}
+    <li>
+      <img src="{{ item.cover }}" />
+      <strong>{{ item.title }}</strong>
+    </li>
+  {% endfor %}
+</ol>
+</Template>
+
+<State
+    search="the lord of the rings"
+    results:=[]
+></State>
+
+<Script>
+    const opts = '&limit=6&fields=title,author_name,cover_i';
+    const cover ='https://covers.openlibrary.org/b/id/';
+    const api = 'https://openlibrary.org/search.json?q=';
+    function doSearch() {
+        const url = api + '?q=' + state.search + opts;
+        fetch(url)
+            .then(response => response.json())
+            .then(dataBackCallback);
+    }
+
+    function dataBackCallback(data) {
+        for (const item of data.docs) {
+            // For convenience, we prepare the cover URL
+            item.cover = cover + item.cover_i + '-S.jpg';
+        }
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+</Script>
+
+</Component>
 
 
 
@@ -365,60 +411,60 @@ an example of more complicated HTML and JS behavior -->
 </Style>
 </Component>
 
+
 <Component namespace="eg" name="Scatter">
+<!-- StaticData can be used for data visualization as
+well, as an easy way to bring in data sets -->
 <Template>
     {% for user in staticdata %}
-        <div style="--lon: {{ user.address.geo.lat }}; --lat: {{ user.address.geo.lat }}">
+        <div style="--lon: {{ user.address.geo.lng }}px;
+                    --lat: {{ user.address.geo.lat }}px;">
             {{ user.name }}
         </div>
     {% endfor %}
 </Template>
+
 <StaticData
     -src="https://jsonplaceholder.typicode.com/users"
 ></StaticData>
 
 <Style>
   :host {
-      --size: 90px;
-      border-radius: 1px 5px 1px 7px;
-      border: 1px solid grey;
-      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);
+      position: relative;
+      display: block;
+      --size: 101px;
+      width: var(--size);
+      height: var(--size);
+      background-size: 10px 10px;
+      background-image: linear-gradient(to right,
+          rgba(100, 100, 100,.3) 1px, transparent 1px),
+        linear-gradient(to bottom,
+          rgba(100, 100, 100,.3) 1px, transparent 1px);
   }
   div {
       position: absolute;
-      top: calc(360px - var(--lat) / var(--size));
-      right: calc(360px - var(--lon) / var(--size));
+      /* Note: This is just a demo, not an actually
+         correct lat/lon projection */
+      top: calc(var(--lat) / 1.5 + var(--size) / 2);
+      left: calc(var(--lon) / 4.0 + var(--size) / 2);
       height: 5px;
       width: 5px;
       border-radius: 5px;
-      border: 3px solid gray;
+      font-weight: bold;
+      border: 1px solid #B90183;
+      color: rgba(0, 0, 0, 0.0);
+      background: rgba(255, 255, 255, 0.0);
+      text-transform: uppercase;
+      transition: color 0.3s, background 0.3s;
+      cursor: pointer;
+  }
+  div:hover {
+      color: rgba(0, 0, 0, 1.0);
+      background: #B90183;
   }
 </Style>
 </Component>
 
-
-<!--
-<Component namespace="eg" name="DataVis">
-<Template>
-    <p>User data:</p>
-    <table class="charts-css area" id="my-chart">
-      <tbody>
-        {% for user in staticdata %}
-            <tr><td style="--start: 0.{{ user.id }}; --size: {{ user.address.geo.lat }}">
-                <span class="data"> {{ user.id }}</span></td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-g/Template>
-
-<StaticData
-    -src="https://jsonplaceholder.typicode.com/users"
-></StaticData>
-<Style
-  -src="https://unpkg.com/charts.css/dist/charts.min.css"
-></Style>
-</Component>
--->
 
 
 <Component namespace="eg" name="FlexibleForm">
@@ -740,9 +786,74 @@ div.whole ~ div.number::after { opacity: 0; }
 
 
 
+<Component namespace="eg" name="WorldMap">
+<!-- This example places dummy data onto a world map, and provides a slide down
+modal for each user that shows more information about that user -->
+<Template>
+    {% for user in staticdata %}
+        <div style="top: {{ user.address.geo.lng|number|add:180|multiply:100|dividedinto:360 }}%;
+                    left: {{ user.address.geo.lat|number|add:90|multiply:100|dividedinto:180 }}%;">
+            <x-DemoModal button="{{ user.id }}" title="{{ user.name }}">
+                {% for key, value in user %}
+                    <dl>
+                        <dt>{{ key|capfirst }}</dt>
+                        <dd>{% if value|type == "object" %}{{ value|json }}{% else %}{{ value }}{% endif %}</dd>
+                    </dl>
+                {% endfor %}
+            </x-DemoModal>
+        </div>
+    {% endfor %}
+</Template>
+
+<StaticData
+    -src="https://jsonplaceholder.typicode.com/users"
+></StaticData>
+
+<Style>
+  :host {
+      position: relative;
+      display: block;
+      width: 160px;
+      height: 80px;
+      border-radius: 1px 5px 1px 7px;
+      border: 1px solid gray;
+      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);
+      background-size: 160px 85px;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mercator_Blank_Map_World.png/800px-Mercator_Blank_Map_World.png?20120629044350');
+  }
+  div {
+      position: absolute;
+      height: 7px;
+      width: 7px;
+      border-radius: 5px;
+      background-color: rgba(162, 228, 184);
+  }
+  div > x-DemoModal {
+      opacity: 0;
+      z-index: 50;
+  }
+  div:hover > x-DemoModal{
+      opacity: 1.0;
+  }
+  .modal-body {
+      height: 400px;
+      overflow: auto;
+  }
+  dt {
+      font-weight: 800;
+  }
+  dd {
+      max-width: 300px;
+      overflow: auto;
+      font-family: monospace;
+  }
+</Style>
+</Component>
 
 
-<Component namespace="eg" name="MemoryGame">
+
+
+<Component namespace="eg" name="Memory">
 <!-- A much more complicated example application -->
 <Template>
 {% if not state.cards.length %}
