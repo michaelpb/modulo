@@ -3,7 +3,7 @@
     -src="/libraries/all.html" 
 ></script>
 
-<!-- Note: _part1.html is intententional, to un-collapse the top thing -->
+<!-- Note: _part1.html is intentional, to un-collapse the top thing -->
 <mws-Page
     docbarselected="tutorial_part1.html"
     pagetitle="Part 3 - Tutorial"
@@ -385,8 +385,35 @@ this example:</p>
 &lt;/Script&gt;</pre>
 
 
-<blockquote><p><strong>Event directives</strong> Let's break down that last
-event directive: <code>@click:=script.sayHello</code>. First, note the at-sign:
+<p>In this above example, the <em>Script</em> CPart will execute that JS code
+once, as soon as it's loaded, causing the "console.log" to log that message to
+the web browser's Developer Tools JavaScript console exactly once.</p>
+
+<h3>Embedded components and script tags</h3>
+
+<p>Generally speaking, it's always desirable to put components in a separate
+file, as was demonstrated in <em>Part 1</em> with the <code>-src=</code> style
+attribute. This becomes even more necessary if you want to use a
+<em>Script</em> CPart. This is because of a limitation with HTML: It does not
+support "nested" script tags.  This means that the <code>&lt;/Script&gt;</code>
+tag will end up closing off the outer <code>script</code> tag early and
+"interrupting" your component definition.</p>
+
+<p>However, there is an alternative syntax to still allow a <em>Script</em>
+CPart embedded in your <code>&lt;script&nbsp;Modulo&nbsp;...</code> definition,
+even without splitting it off. This messier syntax is far from ideal, but can
+do in a pinch:</p>
+
+<pre>&lt;cpart Script&gt;
+    console.log("Hello JavaScript world!");
+&lt;/cpart&gt;</pre>
+
+<p>Note: Only use this alternative <code>cpart&nbsp;Script</code> syntax within
+a <code>&lt;script&nbsp;Modulo&nbsp;...</code> tag. There is no reason to use
+it when writing code in a separate file!</p>
+
+<blockquote><p><strong>Event directives</strong> Let's break down that event
+directive: <code>@click:=script.sayHello</code>. First, note the at-sign:
 <code>@</code>.  This is "syntactic sugar" for the
 <code>[component.event]</code> directive. This will attach a "click" event
 listener to the given element when that element is first mounted (i.e.
@@ -396,10 +423,6 @@ the click event to point to the sayHello function of the <em>Script</em> CPart.
 All functions defined in a <em>Script</em> CPart will automatically be
 "exported" and available to click events, or in dataprops in general.
 </p></blockquote>
-
-<p>In this above example, the <em>Script</em> CPart will execute that JS code
-once, as soon as it's loaded, causing the "console.log" to log that message to
-the web browser's Developer Tools JavaScript console exactly once.</p>
 
 <h3>Attaching click events</h3>
 

@@ -1,10 +1,13 @@
 
+
 Final steps for alpha documentation launch:
 
 - Fix tutorial part 1:
     - Replace Library documentation with an introduction to the -src
     - MAYBE, show how different slots can be used?
-
+- Demos page
+    - Fix all starter files
+    - Fix all MDU demo starter files, finally use absolute https
 
 
 ----

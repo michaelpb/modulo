@@ -11,7 +11,6 @@
 <h1>The Modulo Tutorial: Part 1</h1>
 
 
-
 <blockquote> <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this
 tutorial requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
 requires familiarity with JavaScript. Familiarity with React, Vue, or similar
@@ -335,83 +334,57 @@ sample code editors only focus on the CPart definitions within.</p>
 
 
 
-<mws-Section name="load">3. Loading Libraries</mws-Section>
+<mws-Section name="load">3. Loading from files</mws-Section>
 
-<blockquote> <p><strong>Why use load?</strong>
-Think of the <code>&lt;Library&gt;</code> tag as being analogous to the
-<code>&lt;link&gt;</code> tag, which lets multiple HTML files share the
-same CSS. The same rationale applies here: Components are "write once, use
-everywhere", so the way we get access to them "everywhere" is by
-<em>loading</em> them into each file that needs to use them. Other
-reasons include that <code>&lt;Library&gt;</code> smooths over certain browser
-limitations, and that it can keep your files neater.</p>
+<blockquote> <p><strong>Why use library files?</strong>
+<!-- Think of the <code>&lt;Library&gt;</code> tag as being analogous to the
+<code>&lt;link&gt;</code> tag, which lets multiple HTML files share the same
+CSS. -->
+The appeal of using a separate CSS file is sharing style across pages, as the
+<code>&lt;link&gt;</code> tag, which lets multiple HTML files share the same
+CSS. The same rationale applies here: Components are "write once, use
+everywhere", so the way we get access to them "everywhere" is by including them
+into each file that needs to use them. Finally, by putting your components in a
+separate file, you avoid some awkward HTML syntax issues, since it's impossible
+to "nest" <code>&lt;script&gt;</code> tags.</p>
 </blockquote>
 
 
 
 <p>Up until now, we have practiced with a component embedded on the same page
 that it is used. This is not recommended. Instead, you should put your
-components in a separate <em>component library</em> HTML file, and then use the
-<code>&lt;Library&gt;</code> tag to import your components into every HTML file
-that needs them.</p>
+components in a separate <em>component library</em> HTML file, and then
+importing them into each HTML file that needs them.</p>
 
-
-<p>"Library" tags look like the following:</p>
+<p>This can be done by simply copying the insides of the
+<code>&lt;script&nbsp;Modulo&nbsp;...</code> tag, and pasting them into a new
+file. Then, you must include a special <code>-src</code> attribute to specify
+the new file. See below:</p>
 
 <pre>
+&lt;script Modulo
+    src="https://modulojs.org/js/Modulo.js"
+    -src="./libraries/my-files.html"
+&gt;&lt;/script&gt;
+</pre>
+
+<p>This "4-liner" can now be included in any of your HTML files to import
+whatever components you have defined in <code>./libraries/my-files.html</code>.
+This allows you to share the same components across multiple plages.</p>
+
+
+<!--
+
 &lt;Library
     -src="./libraries/my-stuff.html"
     namespace="coolstuff"&gt;
 &lt;/Library&gt;
-</pre>
-
-<p>Let's break this down:</p>
-<ul>
-
-    <li>
-        <code>-src="./libraries/my-stuff.html"</code>
-        <p>The <code>-src</code> attribute specifies the source of the
-        component library file. This file can be anywhere that is
-        accessible to your web-browser or web-server. Ideally, it should be
-        in the same place as your CSS and static media files, such as a
-        <code>static/</code> directory, or whatever the equivalent is for
-        your set-up.</p>
-        <p>The component library itself (<code>my-stuff.html</code> in this
-        example) should consist of an HTML file filled with
-        <code>&lt;Component&gt;</code> definitions.</p>
-    </li>
-
-    <li>
-
-        <blockquote>
-        <p><strong>Why use namespaces?</strong>
-        Namespaces allow different component library files to have
-        conflicting component names. This is especially useful when using
-        third-party component libraries or while working in a big team:
-        That way, if both you and another developer define a component with
-        some common name (eg <code>name="Button"</code>), there won't be a
-        conflict as long as you load each into different namespaces.</p>
-        </blockquote>
-
-        <code>namespace="coolstuff"</code>
-        <p>The <code>namespace</code> attribute specifies the
-        <em>namespace prefix</em>, which is combined with a dash and the
-        component name in order to create the component's <em>full
-        name</em>. </p>
-        <p><strong>Example:</strong> If <code>my-stuff.html</code> has a component
-        defined like <code>&lt;Component name="MyThing"&gt;</code>
-        imported with <code>namespace="coolstuff"</code>, then the
-        resulting full name would be <code>coolstuff-MyThing</code>, and
-        we'd use the component like<br />
-        <code>&lt;coolstuff-MyThing&gt;&lt;/coolstuff-MyThing&gt;</code>.</p>
-    </li>
 
 
-    <li><strong>Where to put it:</strong> The Modulo and Library tags can go
-    anywhere in your HTML. For neatness, consider putting them either within
-    the <code>&lt;head&gt;</code> tag, or near the <code>&lt;/body&gt;</code>
-    closing tag.</li>
-</ul>
+and then use the
+<code>&lt;Library&gt;</code> tag to import your components into every HTML file
+that needs them.</p>
+-->
 
 
 <section class="Tutorial-tryit">
@@ -440,7 +413,8 @@ that needs them.</p>
         from your main HTML file into this new file, and then delete it
         from your main HTML file. If done correctly, your new component library
         file (e.g. <code>my-component-lib.html</code>) should contain the
-        following text (note the lack of "modulo-embed"):
+        following text (note the lack of
+        <code>&lt;script&nbsp;Modulo&nbsp;...</code> etc):
 <mws-Demo
 text='
 <Component name="HelloWorld">
@@ -448,33 +422,27 @@ text='
 </Component>
 '></mws-Demo></li>
 
-        <li>Add a <code>load</code> tag to your main HTML file. It
-        should have the <code>src=</code> attribute pointing toward a
-        relative path to your new component library file, and namespace can
-        be <code>lib</code>.  For example, if you named everything based on
-        the above suggestions, it would look like this:
+        <li>Add a <code>-src=</code> attribute to your Modulo script tag,
+        pointing toward a relative path to your new component library file.
+        For example, if you named everything based on the above suggestions, it
+        would look like this:
 <mws-Demo
 text='
-<script Modulo src="https://modulojs.org/js/Modulo.js">
-    <Library
-        -src="./libraries/my-component-lib.html"
-        namespace="lib"
-    ></Library>
-</Modulo>
+<script Modulo
+    src="https://modulojs.org/js/Modulo.js"
+    -src="./libraries/my-component-lib.html"
+></Modulo>
 '></mws-Demo>
 
 </li>
 
-        <li>Finally, update your main HTML file's usage of the component to now
-        use the new namespace (instead of the "x" default namespace
-        placeholder):
-<pre>
-&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
-&lt;p&gt;In a P tag: &lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;&lt;/p&gt;
-</pre></li>
         <li>Refresh the web browser to view the results. If done correctly,
         nothing should change. To confirm it's working, try editing your
         component in the library file and refresh to see the results.</li>
+
+        <li>Now, you can simply "drop in" these 4 lines of <code>script</code>
+        tag on multiple HTML pages, and they will be <em>all you need</em> to import
+        and share the same set of components between pages!</li>
     </ol>
 
     <p><strong>Bonus Challenge:</strong>
@@ -482,12 +450,63 @@ text='
     component library. Also, if you used the example name, consider renaming
     your component library. Consider naming it something that is relevant to
     you, e.g. "ecommerce-website-components" or something, whatever you think
-    is a good name based on what you are working on. Finally, practice changing
-    the namespace, or see if you can cause (and fix using the namespace
-    attribute) a naming conflict with two components.</p>
-
+    is a good name based on what you are working on.</p>
 </section>
 
+<h3>Splitting off larger CParts </h3>
+
+<p>A convenient feature of Modulo is the ability to "split off" CParts
+(individually) into separate files.  This allows you to work with dedicated
+<code>.html</code> and <code>.css</code> files separately, instead of embedding
+everything into a HTML file.</p>
+
+<p>In the previous section, <code>-src=</code> was used on a
+<code>&lt;script&nbsp;Modulo&nbsp;...</code> tag to move components into a
+separate file. Now, we'll see how this same attribute can be used on individual
+Componnt Parts.</p>
+
+<h4>Using <code>-src=</code></h4>
+<p>To "split off" a long CPart into a separate file, begin by cutting out the
+contents of a CPart, and pasting it in a new file, and then save this new file
+in the same directory as your component library. Finally, to re-include it, add a
+<code>-src=</code> attribute to CPart, just as we did with the
+<code>Modulo</code> tag. Note the dash (<code>-</code>) before it. This is what
+distinguishes it from an ordinary <code>src</code> attribute, which Modulo will
+ignore. By default, <code>-src=</code> is supported by any CPart that uses it's
+contents, meaning <em>Template</em> and <em>Style</em> are the only two that
+we've learned so far that support it.</p>
+
+<p>For example, you can split off a <em>Template</em> into it's own separate
+file, as such:</p>
+
+<pre>&lt;Template
+    -src="./my-file-name.html"
+&gt;&lt;/Template&gt;</pre>
+
+
+<p>Similarly, you can split off a <em>Style</em> as well:</p>
+
+<pre>&lt;Style
+    -src="./some/other/path.css"
+&gt;&lt;/Style&gt;</pre>
+
+<p>The rules for <code>-src=</code> relative paths are similar to HTML's rules:
+Any URI path can be specified, and use a dot (<code>.</code>) to specify a path
+relative to the current HTML file (e.g. the <em>Component</em> library file).
+The behavior is the exact same as if you had included the text in the same
+file, meaning this feature is only intended to be used when a component library
+gets too long and difficult to edit. In that case, conventional usage is to
+start splitting off larger CParts into their own files, until the HTML library
+file itself is just tie-ing everything together.</p>
+
+<!--
+<p>However, there is a downside to splitting up your files: Each new file you
+create will require an additional request to load it. This means that each
+additional individual file you include in a page will cause the page to take a
+little longer to loader. So, if <code>-src=</code> causes it to load slower, how
+can we stay neat during development, but still have a fast site? This is where
+"building" comes into play.</p>
+-->
 
 <h3>Part 1: Summary</h3>
 
@@ -509,11 +528,11 @@ used to show a graphical UI element (eg a button, or a rich-text area).
 Components can also use other components (eg a form component might contain
 both of the above as child components).  </li>
 
-<li>ComponentPart, or <strong>CPart</strong> - Each component consists of a
-"bag" or "bundle" of CParts, each CPart being a "pluggable" module that
-supplies different functionality for that component.  Every component is
-defined as a collection of CParts (e.g.  HTML <em>Template</em>, or
-<em>Style</em> tag).</li>
+<li><strong>Component Part</strong>, or <strong>CPart</strong> - Each component
+consists of a "bag" or "bundle" of CParts, each CPart being a "pluggable"
+module that supplies different functionality for that component.  Every
+component is defined as a collection of CParts (e.g.  HTML <em>Template</em>,
+or <em>Style</em> tag).</li>
 
 <li><strong>customElement</strong> - The term used for a custom HTML5 web
 component, which is the underlying technology that Modulo is a thin wrapper
