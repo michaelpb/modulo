@@ -1677,6 +1677,7 @@ modulo.config.templater.filters = (function () {
         concat: (s, arg) => s.concat ? s.concat(arg) : s + arg,
         //combine: (s, arg) => s.concat ? s.concat(arg) : Object.assign(s, arg),
         default: (s, arg) => s || arg,
+        yesno: (s, arg) => ((arg || 'yes,no') + ',,').split(',')[s === null ? 2 : (1 - (1 * !s))],
         divisibleby: (s, arg) => ((s * 1) % (arg * 1)) === 0,
         dividedinto: (s, arg) => Math.ceil((s * 1) / (arg * 1)),
         escapejs: s => JSON.stringify(String(s)).replace(/(^"|"$)/g, ''),

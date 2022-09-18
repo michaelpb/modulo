@@ -184,29 +184,32 @@ as static data in with JS, so it does not refresh. -->
 <!-- Modulo can be used with APIs to create interactive apps.
 This book search shows how a Script tag can use an API -->
 <Template>
-<input [state.bind] name="search" />
-<button @click:=script.doSearch>Go</button>
-<ol>
-  {% for item in state.results %}
-    <li>
-      <img src="{{ item.cover }}" />
-      <strong>{{ item.title }}</strong>
-    </li>
-  {% endfor %}
-</ol>
+  <input [state.bind] name="search" />
+  <button @click:=script.doSearch>Go</button>
+  {% if state.loading %}<em>Loading...</em>{% endif %}
+  <ol>
+    {% for item in state.results %}
+      <li>
+        <img src="{{ item.cover }}" />
+        <strong>{{ item.title }}</strong>
+      </li>
+    {% endfor %}
+  </ol>
 </Template>
 
 <State
     search="the lord of the rings"
+    loading:=false
     results:=[]
 ></State>
 
 <Script>
-    const opts = '&limit=6&fields=title,author_name,cover_i';
-    const cover ='https://covers.openlibrary.org/b/id/';
-    const api = 'https://openlibrary.org/search.json?q=';
+    const OPTS = '&limit=6&fields=title,author_name,cover_i';
+    const COVER ='https://covers.openlibrary.org/b/id/';
+    const API = 'https://openlibrary.org/search.json?q=';
     function doSearch() {
-        const url = api + '?q=' + state.search + opts;
+        const url = API + '?q=' + state.search + OPTS;
+        state.loading = true;
         fetch(url)
             .then(response => response.json())
             .then(dataBackCallback);
@@ -215,7 +218,7 @@ This book search shows how a Script tag can use an API -->
     function dataBackCallback(data) {
         for (const item of data.docs) {
             // For convenience, we prepare the cover URL
-            item.cover = cover + item.cover_i + '-S.jpg';
+            item.cover = COVER + item.cover_i + '-S.jpg';
         }
         state.results = data.docs;
         state.loading = false;
@@ -787,8 +790,9 @@ div.whole ~ div.number::after { opacity: 0; }
 
 
 <Component namespace="eg" name="WorldMap">
-<!-- This example places dummy data onto a world map, and provides a slide down
-modal for each user that shows more information about that user -->
+<!-- Another example of StaticData being used to visualize data, this example
+     places API data onto a world map, and provides a slide down modal for
+     each user that shows more information about that user -->
 <Template>
     {% for user in staticdata %}
         <div style="top: {{ user.address.geo.lng|number|add:180|multiply:100|dividedinto:360 }}%;
