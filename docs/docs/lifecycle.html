@@ -153,7 +153,8 @@
 
 <h1>Lifecycle</h1>
 
-
+<p>TODO: This page is not yet updated to the new structure of
+<code>prebuild</code> <code>define</code> then <code>factory</code>.</p>
 
 <p>Every Modulo Component goes through a certain "lifecycle". Here's an
 analogy: If CParts are the stage-hands and actors who put on a play, then the
@@ -170,8 +171,8 @@ it's job and set up for the next act.</p>
 phases. The lifecycle phases that a Modulo <em>Component</em> progresses
 through can be categorized into a few groups. One way to think of these phases
 is that typically, the "output" of a previous lifecycle phase in a group is the
-"input" of the next phase. As an example, <code>load</code> generates a flat,
-serializable structure that <code>factory</code> uses to instantiate more
+"input" of the next phase. As an example, <code>prebuild</code> generates a
+flat, serializable structure that <code>define</code> uses to instantiate more
 complicated JavaScript instances.  Similarly, <code>prepare</code> figures out
 the template variables, <code>render</code> causes the template to actually
 perform the render based on the variables in the previous phase, and
@@ -179,33 +180,51 @@ perform the render based on the variables in the previous phase, and
 output of the previous phase.</p>
 
 
-<h3>Group 1: Component Definition</h3>
+<h3>Modulo lifecycle phases</h3>
 
-<p>These phases happen <em>once per component definition</em>. These will
-happen even if the component is never used or instantiated anywhere, but only
-defined and loaded. They are intended for setting up the component "Factory"
-(blueprint for component instances).</p>
+<p>These phases happen <em>once per CPart definition</em>. These will happen
+even if the component is never used or instantiated anywhere, but only defined
+and loaded. They are intended for setting up the component "definition" (data
+structure blueprint for component instances).</p>
 
 <ul>
-    <li><code>load</code> - The stage of parsing a code file. This is for
+    <li><code>prebuild</code> - A stage for prebuild processing of data. This is for
     static analysis and similar pre-processing. Note that if Modulo components
-    are cached, or if they are ever pre-compiled into a single JS file, this
-    <code>load</code> phase happens BEFORE saving, and thus gets "baked-in".
-    This means that the results of a <code>load</code> phase must be
-    "serializable", such as in a JSON format.</li>
+    are built or cached, or if they are ever pre-compiled into a single JS file, this
+    <code>prebuild</code> phase happens BEFORE saving, and thus gets "baked-in".
+    This means that the results of a <code>prebuild</code> phase must be
+    "serializable", such as in a JSON format.  Note that this happens after
+    conf preprocessors, meaning it will already have things like
+    <code>-src=</code> resolved for you. This is also when you want to define
+    any assets for the asset manager, such as JS functions or CSS.</li>
 
-    <li><code>factory</code> - Any one-time, global set-up for a component
-    (e.g. compiling the template). This happens after the <code>load</code>,
-    but before the component is used.  Unlike the <code>load</code> phase,
-    <code>factory</code> happens after the page loads, and thus does not need
-    to generate serializable results.</li>
+    <li><code>define</code> - Use this to actually define and register
+    compoenents, or run global script tags. This happens after the
+    <code>prebuild</code>, but before the component is used.</li>
 </ul>
 
-<p><strong>Note:</strong> "Group 1" is only accessible to <em>CPart</em>
-developers, and <em>not</em> accessible to component developers using script
-tags.</p>
+<p><strong>Note:</strong> "Modulo lifecycle phases" are only accessible to
+<em>CPart</em> developers, and <em>not</em> accessible to component developers
+using script tags.</p>
 
-<h3>Group 2: Component Instantiation</h3>
+<h3>Component lifecycle phases: Factory</h3>
+
+<p>The factory phase happen <em>once per Component definition</em>. It will
+happen even if the component is never used or instantiated anywhere, but only
+defined.</p>
+
+<ul>
+    <li><code>factory</code> - Happens while a component is getting defined.
+    This happens after the <code>prebuild</code> and <code>define</code> phases,
+    but before the component is used.  Unlike the <code>prebuild</code> and
+    <code>define</code> phases, <code>factory</code> happens after the page
+    loads, and thus does not need to generate any sort of serializeable or
+    asset-manager based results.</li>
+</ul>
+
+
+<h3>Component lifecycle phases: Instantiation</h3>
+
 <p>Currently, only one lifecycle phase is triggered when a component is mounted
 on the page.</p>
 <ul>
@@ -216,7 +235,8 @@ on the page.</p>
 </ul>
 
 
-<h3>Group 3: Component Rendering</h3>
+<h3>Component lifecycle phases: Rendering lifecycle</h3>
+
 <p>All of 4 these lifecycle phases trigger in the following sequence every time
 a component renders.  This including the first time, every manual rerender
 (e.g. invoking <code>element.rerender()</code>), and ever automatic rerender
@@ -236,7 +256,7 @@ you don't have a <em>Template</em> CPart defined, although without a
 </ul>
 
 
-<h3>Group 4: Directives</h3>
+<h3>Directive lifecycle phases: Rendering lifecycle</h3>
 
 <p>Directives can also have lifecycle phases. More information on them is <a href="/docs/directives.html">covered in the Directives section</a>. For now,
 we'll look at 2 lifecycle phases that are introduced whenever an event occurs.
@@ -251,10 +271,8 @@ That is, these phases will be available whenever you attach an event, e.g.
 </ul>
 
 
-<mws-section name="factory" modulo-original-html="Mechanics of <em>factory</em> lifecycle">
-        <a class="secanchor" title="Click to focus on this section." id="factory" name="factory" href="#factory">#</a>
-        <h2>Mechanics of <em>factory</em> lifecycle</h2>
-    </mws-section>
+<!--
+<mws-Section name="factory">Mechanics of <em>factory</em> lifecycle</mws-Section>
 
 <p>The "factory" lifecycle behaves slightly differently. Most lifecycle methods
 can be invoked by using the <code>lifecycle</code> method of
@@ -282,7 +300,7 @@ each relevant CPart Classes, and then invoking each CPart static method
 If there are multiples of the same CPart, then whichever appears last will
 overwrite and/or merge data with the previous ones.  However, that particular
 behavior can be controlled from within each CPart factoryCallback itself.</p>
-
+-->
 
 
 <h3>Hooking into a lifecycle phase</h3>
@@ -581,4 +599,4 @@ Show messages in console</label>
 
 
 
-<script src="/_modulo/modulo-bundle-qkvp9b.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-x172rlku.js"></script></body></html>
