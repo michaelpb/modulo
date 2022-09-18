@@ -6,7 +6,7 @@
 
 **A concise JavaScript Component framework**
 
-- [X] A single file with less than 2000 lines as a thin layer over vanilla Custom Web Components
+- [X] A single file with about 2000 lines as a thin layer over vanilla Custom Web Components
 - [X] Components system inspired by React, Svelte, and Polymer
 - [X] Modular with opinionated defaults and few assumptions
 - [X] A "no fuss" drop-in to add JS to existing web apps
@@ -32,42 +32,33 @@ To get started with creating a custom component, do the following 3 steps:
 your website (for example, `/static/js/Modulo.js`)
 
 
-2. Include in your HTML file a reference to the script, followed by a
-"modulo-embed", which we'll fill later with component definitions, and finally
-followed by a `Modulo.defineAll()` to activate Modulo:
+2. Include in your HTML file a reference to the script with a "Modulo"
+attribute, which we'll fill later with component definitions:
 
 ```html
-<script src="/static/js/Modulo.js"></script>
-
-<template modulo-embed>
-</template>
-
-<script>Modulo.defineAll()</script>
+<script Modulo src="/static/js/Modulo.js">
+</script>
 ```
 
 
-3. Now, in this "modulo-embed", we can define our first component. We can use
-"template", "script", and "style" tags, to incorporate HTML, JavaScript, and
-CSS respectively into our component:
+3. Now, inside this embedded script tag, we can define a Modulo Component. We
+can use "template", "cpart script", and "style" tags, to incorporate HTML,
+JavaScript, and CSS respectively into our component:
 
 ```html
-<script src="/static/js/Modulo.js"></script>
-
-<template modulo-embed>
+<script Modulo src="/static/js/Modulo.js">
     <Component name="HelloWorld">
         <Template>
             Hello <strong>Modulo</strong> World!
         </Template>
-        <Script>
+        <cpart Script>
             console.log('Hello Modulo JS world!');
-        </Script>
+        </cpart>
         <Style>
             strong { color: purple; }
         </Style>
     </Component>
-</template>
-
-<script>Modulo.defineAll()</script>
+</script>
 ```
 
 Now, you can use and reuse your component wherever you want, just like any
