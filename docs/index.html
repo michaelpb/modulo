@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1bn7r6l.css"></head><body>
+<meta charset="utf8"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-e09lvd.css"></head><body>
 
 
     
@@ -36,7 +36,7 @@
     </ul></ul></div>
 
     <main style="margin-top: 30px">
-        <mws-demo fromlibrary="Hello,Simple,ToDo,JSON,Components,SearchBox,MemoryGame" demotype="minipreview" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
+        <mws-demo fromlibrary="Hello,Simple,ToDo,JSON,Scatter,Search,Components,Memory" demotype="minipreview" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -66,15 +66,19 @@
                 
                     <li class="TabNav-title
                         
+                    "><a @click:="script.selectTab" payload="Scatter">Scatter</a></li>
+                
+                    <li class="TabNav-title
+                        
+                    "><a @click:="script.selectTab" payload="Search">Search</a></li>
+                
+                    <li class="TabNav-title
+                        
                     "><a @click:="script.selectTab" payload="Components">Components</a></li>
                 
                     <li class="TabNav-title
                         
-                    "><a @click:="script.selectTab" payload="SearchBox">SearchBox</a></li>
-                
-                    <li class="TabNav-title
-                        
-                    "><a @click:="script.selectTab" payload="MemoryGame">MemoryGame</a></li>
+                    "><a @click:="script.selectTab" payload="Memory">Memory</a></li>
                 
             </ul>
         </nav>
@@ -121,7 +125,7 @@
 </div>
 
 </mws-demo>
-        <!--fromlibrary="Hello,Simple,ToDo,JSON,API,PrimeSieve,MemoryGame"-->
+        <!--fromlibrary="Hello,Simple,ToDo,JSON,API,PrimeSieve,Memory"-->
     </main>
 </div><span id="about" slot="above-navbar"></span></slot>
 
@@ -141,7 +145,7 @@
 
     <div class="Navbar-rightInfo">
         
-        v: 0.0.1<br>
+        v: 0.0.2<br>
         <!--SLOC: undefined lines<br />-->
         <a href="https://github.com/michaelpb/modulo/">github</a> | 
         <a href="https://www.npmjs.com/package/mdu-cli">npm (mdu-cli)</a>
@@ -203,10 +207,7 @@
 
 
 
-<!--
 
-
--->
 
 
 <section class="SideBySide">
@@ -323,4 +324,4 @@
 
 
 
-<script src="/_modulo/modulo-bundle-qlm2a0.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-xiu53s9.js"></script></body></html>
