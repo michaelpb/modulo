@@ -2159,7 +2159,7 @@ modulo.register('util', function fetchBundleData(modulo, callback) {
         });
         elem.remove();
     }
-    console.log('this is dataItems', data);
+    //console.log('this is dataItems', data);
     modulo.fetchQueue.enqueueAll(() => callback(data));
 });
 
@@ -2172,16 +2172,26 @@ modulo.register('command', function build (modulo, opts = {}) {
         pre[bundle.type].push(bundle.content);
     }
     pre.js.push('var currentModulo = new Modulo(modulo);'); // Fork modulo
-    pre.js.push('currentModulo.defs = ' + JSON.stringify(modulo.defs, null, 1) + ';');
-    pre.js.push('currentModulo.parentDefs = ' + JSON.stringify(modulo.parentDefs, null, 1) + ';');
+    // TODO: Clean this up:
+    if (opts.bundle) {
+        // Serialize parsed modulo definitions (less verbose)
+        pre.js.push('currentModulo.defs = ' + JSON.stringify(modulo.defs, null, 1) + ';');
+        pre.js.push('currentModulo.parentDefs = ' + JSON.stringify(modulo.parentDefs, null, 1) + ';');
+    } else {
+        // Serialize fetch queue (more verbose, more similar to dev)
+        pre.js.push('currentModulo.fetchQueue.data = modulo.fetchQueue.data = ' +
+                    JSON.stringify(modulo.fetchQueue.data) + ';');
+    }
     opts.jsFilePath = modulo.assets.build('js', opts, pre.js.join('\n'));
     opts.cssFilePath = modulo.assets.build('css', opts, pre.css.join('\n'));
     opts.htmlFilePath = buildhtml(modulo, opts);
-    document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
-        ${ opts.type }</a>: ${ opts.htmlFilePath }</h1>`;
-    if (opts.callback) {
-        opts.callback();
-    }
+    setTimeout(() => {
+        document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
+            ${ opts.type }</a>: ${ opts.htmlFilePath }</h1>`;
+        if (opts.callback) {
+            opts.callback();
+        }
+    }, 0);
 });
 
 modulo.register('command', function bundle (modulo, opts = {}) {
@@ -4007,7 +4017,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "1sejui7"
+   "Hash": "kfnrki"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -5624,7 +5634,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "1sejui7"
+  "Hash": "kfnrki"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -20972,7 +20982,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["1sejui7"]= function (){
+currentModulo.assets.functions["kfnrki"]= function (){
 return {
   "id": 320452827,
   "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
@@ -21041,13 +21051,13 @@ return {
   "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
   "created_at": "2020-12-11T03:08:21Z",
   "updated_at": "2022-05-03T19:15:19Z",
-  "pushed_at": "2022-09-17T21:21:02Z",
+  "pushed_at": "2022-09-17T22:31:03Z",
   "git_url": "git://github.com/michaelpb/modulo.git",
   "ssh_url": "git@github.com:michaelpb/modulo.git",
   "clone_url": "https://github.com/michaelpb/modulo.git",
   "svn_url": "https://github.com/michaelpb/modulo",
   "homepage": "https://modulojs.org/",
-  "size": 6684,
+  "size": 7171,
   "stargazers_count": 2,
   "watchers_count": 2,
   "language": "JavaScript",
@@ -22998,35 +23008,9 @@ currentModulo.assets.functions['1n2i9fj']('eg-memorygame', currentModulo);
 
 currentModulo.assets.functions['86fv1g']('eg-conwaygameoflife', currentModulo);
 
-currentModulo.assets.functions["emgqio"]= function (CTX, G){
+currentModulo.assets.functions["xrn1o07"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\n    "); // ""
-  OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
-  OUT.push(" v"); // "v"
-  OUT.push(G.escapeText(CTX.staticdata.version)); // "staticdata.version"
-  OUT.push("\n    (by "); // "(by"
-  OUT.push(G.escapeText(CTX.staticdata.author)); // "staticdata.author"
-  OUT.push(")\n"); // ")"
-
-return OUT.join("");
-};
-currentModulo.assets.functions["x1leb5ue"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\n    API data: <pre>"); // "API data: <pre>"
-  OUT.push(G.escapeText(G.filters["truncate"](G.filters["json"](CTX.state.data),80))); // "state.data|json|truncate:80"
-  OUT.push("</pre>\n    <button @click:=\"script.fetchMe\">Get API data</button>\n"); // "</pre><button @click:=\"script.fetchMe\">Get API data</button>"
-
-return OUT.join("");
-};
-currentModulo.assets.functions["xpuvhr2"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\n    <p>"); // "<p>"
-  var ARR0=CTX.script.exports.bigArray;for (var KEY in ARR0) {CTX. item=ARR0[KEY]; // "for item in script.exports.bigArray"
-  OUT.push("\n        "); // ""
-  OUT.push(G.escapeText(CTX.item)); // "item"
-  OUT.push(",\n    "); // ","
-  } // "endfor"
-  OUT.push("</p>\n"); // "</p>"
+  OUT.push("\n    <button @click:=\"script.doLog\">\n        Click to console.log\n    </button>\n"); // "<button @click:=\"script.doLog\"> Click to console.log </button>"
 
 return OUT.join("");
 };

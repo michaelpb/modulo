@@ -153,7 +153,7 @@
 
 <h1>The Modulo Tutorial: Part 1</h1>
 
-<p>TODO NOTE - Un-updated for new boilerplate!</p>
+
 
 <blockquote> <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this
 tutorial requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
@@ -190,32 +190,37 @@ Modulo?</strong></p>
         <h2>1. Components</h2>
     </mws-section>
 
+<blockquote>
+    <p><strong>JS file alternatives:</strong>
+    </p><ol>
+        <li>Directly link to a CDN hosting Modulo.js <em>(shown here)</em></li>
+        <li>Manually download the Modulo.js file to a JS or asset directory,
+        e.g. <code>src="/js/Modulo.js"</code> <em>(good for offline work)</em></li>
+        <li>Including a pre-rendered "self-bundled" Modulo "build"
+        <em>(speediest for production, covered in Part 2)</em></li>
+    </ol>
+</blockquote>
+
 <h3>Including Modulo</h3>
 
-<p>The first step is to include the Modulo.js file. You can do this one of
-3 ways:</p>
+<p>The first step is to include a Modulo script tag in your HTML file. You
+could either start with an empty file, or open up an existing HTML file, and
+paste in the following:</p>
 
-<ol>
-    <li>Using a script tag to directly link to a CDN hosting the Modulo.js file
-    <em>(easiest, you'll do this in the first exercise)</em></li>
-    <li>Manually downloading the Modulo.js file and including it with a script
-    tag, e.g.  <code>&lt;script src="/js/Modulo.js"&gt;</code> <em>(good for
-    working offline, or for bundling Modulo with other JS frameworks)</em></li>
-    <li>Including a "self-bundled" Modulo "build" that packs your custom
-    components into a single JS file for faster load times <em>(more advanced
-    usage, covered at the end of Part 2 of this tutorial)</em></li>
-</ol>
+<pre>&lt;script src="https://modulojs.org/js/Modulo.js"&gt;&lt;/script&gt;</pre>
 
-<p>Once Modulo.js is included in a page, Modulo itself needs to be explicitly
-activated. Until Modulo is activated, it <em>WILL NOT</em> register any
-components or do anything at all.  Activate Modulo with the following code
-placed somewhere before the closing "body" tag of your HTML file:</p>
-<pre>&lt;script&gt;Modulo.defineAll()&lt;/script&gt;</pre>
+<p>This will only include the JS file, but not activate Modulo. To activate
+Modulo, we need to add the <code>Modulo</code>, attribute to the script tag,
+and leave some space to indicate that this will (soon) contain Modulo code:</p>
 
-<p>Alternatively, you can have it only activate after the page finishes
-loading. This allows you to place the <code>script</code> tag anywhere on the
-page:</p>
-<pre>&lt;script&gt;window.onload = () =&gt; Modulo.defineAll()&lt;/script&gt;</pre>
+<pre>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;
+
+&lt;/script&gt;</pre>
+
+<p>Note that technically, either <code>modulo</code> or <code>Modulo</code>
+will work because HTML is case-insensitive; however, the capitalized
+<code>Modulo</code> spelling is recommended for easier reading.</p>
+
 
 
 <blockquote>
@@ -230,9 +235,10 @@ page:</p>
 <h3>Defining your first component</h3>
 
 <p>Once you have included Modulo and activated it, you can define your first
-<em>custom component</em>. Right now, we'll do that "embedded" into one file
-for simplicity's sake, although before the end of this section, we'll learn how
-to split your components into a separate file, which is the preferred way.</p>
+<em>custom component</em>. Right now, we'll do that by "embedding" the
+component definition into the script tag that we used to activate Modulo for
+simplicity's sake. Later, we'll learn how to split your components into a
+separate file and then include that file, which is the preferred way.</p>
 
 
 <p><strong>Component definitions</strong> start with a "Component"
@@ -261,17 +267,13 @@ Modulo's default behavior is to prefix custom components with an
 referenced elsewhere like
 <code>&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;</code>.</p>
 
-<p>Finally, one more thing: When defining custom components in an HTML
-document, you can't put them scattered everywhere. You have to keep them in one
-place. Specifically, to keep things neater, Modulo searches for component
-definitions only within a <code>modulo-embed</code> tag:
-<code>&lt;template modulo-embed&gt;</code></p>
+
 
 <p>To quickly summarize: Components are reusable bits of HTML, JS, and CSS
 code, and must be defined within a tag like
 <code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
-can be embedded in an HTML page within a tag like
-<code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
+can be embedded in an HTML page within a script tag like
+<code>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;</code>.</p>
 
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
@@ -284,24 +286,20 @@ can be embedded in an HTML page within a tag like
         <li>Copy &amp; paste in the following code:
 
 <mws-demo text="
-<!-- Define a custom component in a &quot;modulo-embed&quot; -->
-<template modulo-embed>
+<!-- Define a custom component in a &quot;Modulo&quot; embedded script tag -->
+<script Modulo src=&quot;https://modulojs.org/js/Modulo.js&quot;>
     <Component name=&quot;HelloWorld&quot;>
         <Template>
             Hello <strong>Modulo</strong> World!
         </Template>
     </Component>
-</template>
+</script>
 
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <div>
     <x-HelloWorld></x-HelloWorld>
     <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
 </div>
-
-<!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) -->
-<script src=&quot;https://modulojs.org/js/Modulo.js&quot;></script>
-<script>Modulo.defineAll();</script>
 " modulo-original-html=""><div class="demo-wrapper
         
            demo-wrapper__clipboard  
@@ -328,7 +326,7 @@ can be embedded in an HTML page within a tag like
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="bottom: 0px; width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 0px; height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 679.109px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 440px; min-width: 679.109px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Define a custom component in a "modulo-embed" --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">template</span> <span class="cm-attribute">modulo-embed</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Component</span> <span class="cm-attribute">name</span>=<span class="cm-string">"HelloWorld"</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            Hello <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">strong</span><span class="cm-tag cm-bracket">&gt;</span>Modulo<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">strong</span><span class="cm-tag cm-bracket">&gt;</span> World!</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Component</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Reuse it anywhere, just like any other HTML tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span>In a P tag: <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Finally, include a Modulo CDN link &amp; activate (at the bottom) --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">src</span>=<span class="cm-string">"https://modulojs.org/js/Modulo.js"</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span><span class="cm-variable">Modulo</span>.<span class="cm-property">defineAll</span>();<span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 440px;"></div><div class="CodeMirror-gutters" style="display: none; height: 490px;"></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 0px; height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 659.906px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 344px; min-width: 659.906px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Define a custom component in a "Modulo" embedded script tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">Modulo</span> <span class="cm-attribute">src</span>=<span class="cm-string">"https://modulojs.org/js/Modulo.js"</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-variable">Component</span> <span class="cm-variable">name</span><span class="cm-operator">=</span><span class="cm-string">"HelloWorld"</span><span class="cm-operator">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">&lt;</span><span class="cm-variable">Template</span><span class="cm-operator">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-variable">Hello</span> <span class="cm-operator">&lt;</span><span class="cm-variable">strong</span><span class="cm-operator">&gt;</span><span class="cm-variable">Modulo</span><span class="cm-operator">&lt;</span><span class="cm-string-2">/strong&gt; World!</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">&lt;</span><span class="cm-string-2">/Template&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-string-2">/Component&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Reuse it anywhere, just like any other HTML tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span>In a P tag: <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 344px;"></div><div class="CodeMirror-gutters" style="display: none; height: 394px;"></div></div></div></div>
         </div>
 
         
@@ -344,7 +342,7 @@ can be embedded in an HTML page within a tag like
     </ol>
 </section>
 
-<!-- TODO: Add section on "slot" and practice with that -->
+
 
 <h3>Adding component "slots"</h3>
 
@@ -492,14 +490,15 @@ with the above example:</p>
 
 
 
-<mws-section name="cparts" modulo-original-html="2. CParts">
+<mws-section name="cparts" modulo-original-html="2. Component Parts">
         <a class="secanchor" title="Click to focus on this section." id="cparts" name="cparts" href="#cparts">#</a>
-        <h2>2. CParts</h2>
+        <h2>2. Component Parts</h2>
     </mws-section>
 
 <p>The central concept to Modulo is that of <em>Component Parts</em>.
-Because it is so central, saying <em>Component Parts</em> over and over
-gets tiresome, so it's typically shortened to <em>CParts</em>.</p>
+Because it is so central, saying <em>Component Parts</em> over and over gets
+tiresome, so in this documentation and the source code it's typically shortened
+to <em>CParts</em>.</p>
 
 <blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the
 cast and crew of a musical. Each are assigned to a different task—some
@@ -725,10 +724,10 @@ that needs them.</p>
     have such a server ready.</p>
 
     <ol>
-        <li>Optional: Create a new "components" directory to house your
+        <li>Optional: Create a new "libraries" directory to house your
         component library files.</li>
         <li>Create a new file for your component library within your
-        components directory (or elsewhere). You could call it, for
+        libraries directory (or elsewhere). You could call it, for
         example, <code>my-component-lib.html</code></li>
         <li>Copy your existing <code>HelloWorld</code> component definition
         from your main HTML file into this new file, and then delete it
@@ -781,82 +780,9 @@ that needs them.</p>
         be <code>lib</code>.  For example, if you named everything based on
         the above suggestions, it would look like this:
 <mws-demo text="
-<template modulo-embed>
+<script Modulo src=&quot;https://modulojs.org/js/Modulo.js&quot;>
     <Library
-        src=&quot;./components/my-component-lib.html&quot;
-        namespace=&quot;lib&quot;
-    ></Library>
-</template>
-" modulo-original-html=""><div class="demo-wrapper
-        
-           demo-wrapper__clipboard  
-        
-        demo-wrapper__notabs     
-    ">
-    
-
-    <div class="editor-toolbar">
-        <p style="font-size: 11px; width: 120px; margin-right: 10px; text-align: right;
-                     display: none; ">
-            <em>Note: This is meant for exploring features. Your work will not be saved.</em>
-        </p>
-
-        
-            <button class="m-Btn m-Btn--sm m-Btn--faded" title="Copy this code" @click:="script.doCopy">
-                Copy <span alt="Clipboard">📋</span>
-            </button>
-        
-
-        
-
-    </div>
-
-    <div class="side-by-side-panes">
-        <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 152px; min-width: 467.891px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">template</span> <span class="cm-attribute">modulo-embed</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Library</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">src</span>=<span class="cm-string">"./components/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">namespace</span>=<span class="cm-string">"lib"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">Library</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">template</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 152px;"></div><div class="CodeMirror-gutters" style="display: none; height: 202px;"></div></div></div></div>
-        </div>
-
-        
-
-    </div>
-</div>
-
-</mws-demo></li>
-
-
-
-        <li>Finally, update your main HTML file's usage of the component to now
-        use the new namespace (instead of the "x" default namespace
-        placeholder):
-<pre>&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
-&lt;p&gt;In a P tag: &lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;&lt;/p&gt;
-</pre></li>
-        <li>Refresh the web browser to view the results. If done correctly,
-        nothing should change. To confirm it's working, try editing your
-        component in the library file and refresh to see the results.</li>
-    </ol>
-
-    <p><strong>Bonus Challenge:</strong>
-    Try practicing with multiple "main HTML" files sharing the same
-    component library. Also, if you used the example name, consider renaming
-    your component library. Consider naming it something that is relevant to
-    you, e..g "ecommerce-website-components" or something, whatever you think
-    is a good name based on what you are working on. Finally, practice changing
-    the namespace, or see if you can cause (and fix using the namespace
-    attribute) a naming conflict with two components.</p>
-
-</section>
-
-<p>There's one final, but fully optional, update we can do to make our "load"
-be a tiny bit shorter and neater.  Once you have removed any embedded
-components, you can replace <code>&lt;template&nbsp;modulo-embed&gt;</code>
-with simply <code>&lt;Modulo&gt;</code>, as such:</p>
-
-
-<mws-demo text="
-<Modulo>
-    <Library
-        src=&quot;./components/my-component-lib.html&quot;
+        -src=&quot;./libraries/my-component-lib.html&quot;
         namespace=&quot;lib&quot;
     ></Library>
 </Modulo>
@@ -886,7 +812,7 @@ with simply <code>&lt;Modulo&gt;</code>, as such:</p>
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 152px; min-width: 467.891px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Modulo</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Library</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">src</span>=<span class="cm-string">"./components/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-attribute">namespace</span>=<span class="cm-string">"lib"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">Library</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">Modulo</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 152px;"></div><div class="CodeMirror-gutters" style="display: none; height: 202px;"></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 152px; min-width: 535.141px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">Modulo</span> <span class="cm-attribute">src</span>=<span class="cm-string">"https://modulojs.org/js/Modulo.js"</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-variable">Library</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">-</span><span class="cm-variable">src</span><span class="cm-operator">=</span><span class="cm-string">"./libraries/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-variable">namespace</span><span class="cm-operator">=</span><span class="cm-string">"lib"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&gt;&lt;</span><span class="cm-string-2">/Library&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-operator">&lt;</span><span class="cm-string-2">/Modulo&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 152px;"></div><div class="CodeMirror-gutters" style="display: none; height: 202px;"></div></div></div></div>
         </div>
 
         
@@ -896,14 +822,29 @@ with simply <code>&lt;Modulo&gt;</code>, as such:</p>
 
 </mws-demo>
 
-<p>The two are almost identical, with one difference: The more verbose
-"template modulo-embed" supports both defining embedded components AND
-"loading" components from another file, while the more succinct "modulo" tag
-only supports "loading" components from another file. In other words, if all
-your components are moved to another file, you can use
-<code>&lt;Modulo&gt;</code>, but if you want to define components and then use
-them on the same page, you'll need to use
-<code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
+</li>
+
+        <li>Finally, update your main HTML file's usage of the component to now
+        use the new namespace (instead of the "x" default namespace
+        placeholder):
+<pre>&lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;
+&lt;p&gt;In a P tag: &lt;lib-HelloWorld&gt;&lt;/lib-HelloWorld&gt;&lt;/p&gt;
+</pre></li>
+        <li>Refresh the web browser to view the results. If done correctly,
+        nothing should change. To confirm it's working, try editing your
+        component in the library file and refresh to see the results.</li>
+    </ol>
+
+    <p><strong>Bonus Challenge:</strong>
+    Try practicing with multiple "main HTML" files sharing the same
+    component library. Also, if you used the example name, consider renaming
+    your component library. Consider naming it something that is relevant to
+    you, e.g. "ecommerce-website-components" or something, whatever you think
+    is a good name based on what you are working on. Finally, practice changing
+    the namespace, or see if you can cause (and fix using the namespace
+    attribute) a naming conflict with two components.</p>
+
+</section>
 
 
 <h3>Part 1: Summary</h3>
@@ -966,4 +907,4 @@ forms and interactive, changing components with the State CPart.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-x15eit06.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-10artl3.js"></script></body></html>

@@ -10,7 +10,7 @@
 
 <h1>The Modulo Tutorial: Part 1</h1>
 
-<p>TODO NOTE - Un-updated for new boilerplate!</p>
+
 
 <blockquote> <p><strong>Prerequisites:</strong> Part 1 and Part 2 of this
 tutorial requires a prerequisite knowledge of HTML &amp; CSS only.  Part 3
@@ -44,32 +44,37 @@ Modulo?</strong></p>
 
 <mws-Section name="components">1. Components</mws-Section>
 
+<blockquote>
+    <p><strong>JS file alternatives:</strong>
+    <ol>
+        <li>Directly link to a CDN hosting Modulo.js <em>(shown here)</em></li>
+        <li>Manually download the Modulo.js file to a JS or asset directory,
+        e.g. <code>src="/js/Modulo.js"</code> <em>(good for offline work)</em></li>
+        <li>Including a pre-rendered "self-bundled" Modulo "build"
+        <em>(speediest for production, covered in Part 2)</em></li>
+    </ol>
+</blockquote>
+
 <h3>Including Modulo</h3>
 
-<p>The first step is to include the Modulo.js file. You can do this one of
-3 ways:</p>
+<p>The first step is to include a Modulo script tag in your HTML file. You
+could either start with an empty file, or open up an existing HTML file, and
+paste in the following:</p>
 
-<ol>
-    <li>Using a script tag to directly link to a CDN hosting the Modulo.js file
-    <em>(easiest, you'll do this in the first exercise)</em></li>
-    <li>Manually downloading the Modulo.js file and including it with a script
-    tag, e.g.  <code>&lt;script src="/js/Modulo.js"&gt;</code> <em>(good for
-    working offline, or for bundling Modulo with other JS frameworks)</em></li>
-    <li>Including a "self-bundled" Modulo "build" that packs your custom
-    components into a single JS file for faster load times <em>(more advanced
-    usage, covered at the end of Part 2 of this tutorial)</em></li>
-</ol>
+<pre>&lt;script src="https://modulojs.org/js/Modulo.js"&gt;&lt;/script&gt;</pre>
 
-<p>Once Modulo.js is included in a page, Modulo itself needs to be explicitly
-activated. Until Modulo is activated, it <em>WILL NOT</em> register any
-components or do anything at all.  Activate Modulo with the following code
-placed somewhere before the closing "body" tag of your HTML file:</p>
-<pre>&lt;script&gt;Modulo.defineAll()&lt;/script&gt;</pre>
+<p>This will only include the JS file, but not activate Modulo. To activate
+Modulo, we need to add the <code>Modulo</code>, attribute to the script tag,
+and leave some space to indicate that this will (soon) contain Modulo code:</p>
 
-<p>Alternatively, you can have it only activate after the page finishes
-loading. This allows you to place the <code>script</code> tag anywhere on the
-page:</p>
-<pre>&lt;script&gt;window.onload = () =&gt; Modulo.defineAll()&lt;/script&gt;</pre>
+<pre>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;
+
+&lt;/script&gt;</pre>
+
+<p>Note that technically, either <code>modulo</code> or <code>Modulo</code>
+will work because HTML is case-insensitive; however, the capitalized
+<code>Modulo</code> spelling is recommended for easier reading.</p>
+
 
 
 <blockquote>
@@ -84,9 +89,10 @@ page:</p>
 <h3>Defining your first component</h3>
 
 <p>Once you have included Modulo and activated it, you can define your first
-<em>custom component</em>. Right now, we'll do that "embedded" into one file
-for simplicity's sake, although before the end of this section, we'll learn how
-to split your components into a separate file, which is the preferred way.</p>
+<em>custom component</em>. Right now, we'll do that by "embedding" the
+component definition into the script tag that we used to activate Modulo for
+simplicity's sake. Later, we'll learn how to split your components into a
+separate file and then include that file, which is the preferred way.</p>
 
 
 <p><strong>Component definitions</strong> start with a "Component"
@@ -115,17 +121,13 @@ Modulo's default behavior is to prefix custom components with an
 referenced elsewhere like
 <code>&lt;x-HelloWorld&gt;&lt;/x-HelloWorld&gt;</code>.</p>
 
-<p>Finally, one more thing: When defining custom components in an HTML
-document, you can't put them scattered everywhere. You have to keep them in one
-place. Specifically, to keep things neater, Modulo searches for component
-definitions only within a <code>modulo-embed</code> tag:
-<code>&lt;template modulo-embed&gt;</code></p>
+
 
 <p>To quickly summarize: Components are reusable bits of HTML, JS, and CSS
 code, and must be defined within a tag like
 <code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
-can be embedded in an HTML page within a tag like
-<code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
+can be embedded in an HTML page within a script tag like
+<code>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;</code>.</p>
 
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
@@ -139,24 +141,20 @@ can be embedded in an HTML page within a tag like
 
 <mws-Demo
 text='
-<!-- Define a custom component in a "modulo-embed" -->
-<template modulo-embed>
+<!-- Define a custom component in a "Modulo" embedded script tag -->
+<script Modulo src="https://modulojs.org/js/Modulo.js">
     <Component name="HelloWorld">
         <Template>
             Hello <strong>Modulo</strong> World!
         </Template>
     </Component>
-</template>
+</script>
 
 <!-- Reuse it anywhere, just like any other HTML tag -->
 <div>
     <x-HelloWorld></x-HelloWorld>
     <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
 </div>
-
-<!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
-<script src="https://modulojs.org/js/Modulo.js"></script>
-<script>Modulo.defineAll();</script>
 '></mws-Demo>
 </li>
         <li>Ensure that the HTML file is opened in your preferred, modern web
@@ -165,7 +163,7 @@ text='
     </ol>
 </section>
 
-<!-- TODO: Add section on "slot" and practice with that -->
+
 
 <h3>Adding component "slots"</h3>
 
@@ -249,11 +247,12 @@ text='
 
 
 
-<mws-Section name="cparts">2. CParts</mws-Section>
+<mws-Section name="cparts">2. Component Parts</mws-Section>
 
 <p>The central concept to Modulo is that of <em>Component Parts</em>.
-Because it is so central, saying <em>Component Parts</em> over and over
-gets tiresome, so it's typically shortened to <em>CParts</em>.</p>
+Because it is so central, saying <em>Component Parts</em> over and over gets
+tiresome, so in this documentation and the source code it's typically shortened
+to <em>CParts</em>.</p>
 
 <blockquote> <p><strong>CParts: The Musical</strong> Think of CParts like the
 cast and crew of a musical. Each are assigned to a different task&mdash;some
@@ -432,10 +431,10 @@ that needs them.</p>
     have such a server ready.</p>
 
     <ol>
-        <li>Optional: Create a new "components" directory to house your
+        <li>Optional: Create a new "libraries" directory to house your
         component library files.</li>
         <li>Create a new file for your component library within your
-        components directory (or elsewhere). You could call it, for
+        libraries directory (or elsewhere). You could call it, for
         example, <code>my-component-lib.html</code></li>
         <li>Copy your existing <code>HelloWorld</code> component definition
         from your main HTML file into this new file, and then delete it
@@ -456,13 +455,13 @@ text='
         the above suggestions, it would look like this:
 <mws-Demo
 text='
-<template modulo-embed>
+<script Modulo src="https://modulojs.org/js/Modulo.js">
     <Library
-        src="./components/my-component-lib.html"
+        -src="./libraries/my-component-lib.html"
         namespace="lib"
     ></Library>
-</template>
-'></mws-Demo></li>
+</Modulo>
+'></mws-Demo>
 
 </li>
 
@@ -482,37 +481,12 @@ text='
     Try practicing with multiple "main HTML" files sharing the same
     component library. Also, if you used the example name, consider renaming
     your component library. Consider naming it something that is relevant to
-    you, e..g "ecommerce-website-components" or something, whatever you think
+    you, e.g. "ecommerce-website-components" or something, whatever you think
     is a good name based on what you are working on. Finally, practice changing
     the namespace, or see if you can cause (and fix using the namespace
     attribute) a naming conflict with two components.</p>
 
 </section>
-
-<p>There's one final, but fully optional, update we can do to make our "load"
-be a tiny bit shorter and neater.  Once you have removed any embedded
-components, you can replace <code>&lt;template&nbsp;modulo-embed&gt;</code>
-with simply <code>&lt;Modulo&gt;</code>, as such:</p>
-
-
-<mws-Demo
-text='
-<Modulo>
-    <Library
-        src="./components/my-component-lib.html"
-        namespace="lib"
-    ></Library>
-</Modulo>
-'></mws-Demo>
-
-<p>The two are almost identical, with one difference: The more verbose
-"template modulo-embed" supports both defining embedded components AND
-"loading" components from another file, while the more succinct "modulo" tag
-only supports "loading" components from another file. In other words, if all
-your components are moved to another file, you can use
-<code>&lt;Modulo&gt;</code>, but if you want to define components and then use
-them on the same page, you'll need to use
-<code>&lt;template&nbsp;modulo-embed&gt;</code>.</p>
 
 
 <h3>Part 1: Summary</h3>

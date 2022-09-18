@@ -14845,16 +14845,26 @@ modulo.register('command', function build (modulo, opts = {}) {
         pre[bundle.type].push(bundle.content);
     }
     pre.js.push('var currentModulo = new Modulo(modulo);'); // Fork modulo
-    pre.js.push('currentModulo.defs = ' + JSON.stringify(modulo.defs, null, 1) + ';');
-    pre.js.push('currentModulo.parentDefs = ' + JSON.stringify(modulo.parentDefs, null, 1) + ';');
+    // TODO: Clean this up:
+    if (opts.bundle) {
+        // Serialize parsed modulo definitions (less verbose)
+        pre.js.push('currentModulo.defs = ' + JSON.stringify(modulo.defs, null, 1) + ';');
+        pre.js.push('currentModulo.parentDefs = ' + JSON.stringify(modulo.parentDefs, null, 1) + ';');
+    } else {
+        // Serialize fetch queue (more verbose, more similar to dev)
+        pre.js.push('currentModulo.fetchQueue.data = modulo.fetchQueue.data = ' +
+                    JSON.stringify(modulo.fetchQueue.data) + ';');
+    }
     opts.jsFilePath = modulo.assets.build('js', opts, pre.js.join('\n'));
     opts.cssFilePath = modulo.assets.build('css', opts, pre.css.join('\n'));
     opts.htmlFilePath = buildhtml(modulo, opts);
-    document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
-        ${ opts.type }</a>: ${ opts.htmlFilePath }</h1>`;
-    if (opts.callback) {
-        opts.callback();
-    }
+    setTimeout(() => {
+        document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
+            ${ opts.type }</a>: ${ opts.htmlFilePath }</h1>`;
+        if (opts.callback) {
+            opts.callback();
+        }
+    }, 0);
 });
 
 modulo.register('command', function bundle (modulo, opts = {}) {
