@@ -156,11 +156,22 @@ function initializedCallback() {
     state.selected = state.tabs[0].title; // set first as tab title
     //setupShaChecksum();
     if (demoType === 'minipreview') {
-        // TODO: Instead, do state.preview = '<eg-XYZ>' on initial render so it
-        // mounts instantly, and is lighterweight for first load / prebuilt
         if (firstPreviewTag) {
             state.preview = `<${ firstPreviewTag }></${ firstPreviewTag }>`;
         } else {
+            doRun();
+        }
+    }
+}
+
+function rerenderFirstTime() {
+    // This is required as a workaround for a side-effect of prerendering the
+    // firstPreviewTag. While it results in a faster initial page loading time,
+    // and no flicker, it will double attache events due to the
+    // patchAndDescendants in the first mount
+    if (state.nscounter < 2) {
+        const demoType = props.demotype || 'snippet';
+        if (demoType === 'minipreview') {
             doRun();
         }
     }
