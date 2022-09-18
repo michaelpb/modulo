@@ -1,20 +1,18 @@
 
-- NEXT BUG:
-    - Got to fix Demo.js to support getting component text
-    - Another bug:
-        - running bundle() doesn't work for CLI
-        - It results in empty .html files
-        - The reason is because it writes it before it's ready
-        - Backend needs to wait longer
+Final steps for alpha documentation launch:
+
+- Fix tutorial part 1:
+    - Replace Library documentation with an introduction to the -src
+    - MAYBE, show how different slots can be used?
+
+
 
 ----
 
 
+
+
 New new next steps:
-
-Remaining issues with building:
-- Still doesn't run, since confArray is not getting created correctly
-
 - Maybe finally clean up Name and Namespace nonsense? General CPart hack
   refactor so we can approach this final conf issue cleanly
 
@@ -24,35 +22,17 @@ Remaining issues with building:
 
 - Known bug: Built JS has "use strict"; over and over
 
-- Known bug: The x-DemoChart is getting buggy again, wrong formatting (due to :host bug with CSS)
-    -  THE REASON: probably related to other bug, is that conf.mode isn't
-       "sticking" - its not vanishing etc
-
 ----
 
 
 - New factoryCallback flow is mostly done!
 - Now getting to work on m.build()
 
-- FIXED!  BUG: 31MB JS builds: Due to CodeMirror code getting repeated in every
-  script tag, some bug with conf.Content getting the first script tag encountered's content
-        - Delete all ".factories" references
-        - NEXT step for bug, is to DELETE all old school config references,
-          make config WRITE ONLY for now
-
 
 
 
 ----
 
-
-New next steps:
-
-- Lots of good progress has been made on refactoring the define/asset/factory
-  lifecycle
-- Next steps are just going 1 by 1 and fixing Template, Script, and StaticData
-- Then is combing through component and making sure that's in place
-- Finally, rewriting build cmd, and working on restoring the modulocli build command
 
 New lifecycle structure:
                        (build starts here)

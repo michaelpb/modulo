@@ -2360,7 +2360,7 @@ currentModulo.defs = {
    "Parent": "x_x",
    "DefName": "x",
    "FullName": "x_x_x",
-   "Hash": "x1ldrcnf"
+   "Hash": "xulc6v5"
   },
   {
    "Type": "Library",
@@ -2433,14 +2433,14 @@ currentModulo.defs = {
     "Content"
    ],
    "RenderObj": "component",
+   "namespace": "x",
    "name": "DemoChart",
    "Parent": "x_x_x",
    "DefName": null,
    "Name": "DemoChart",
    "FullName": "x_x_x_DemoChart",
    "Hash": "x1sgecs4",
-   "namespace": "x_x_x",
-   "TagName": "x_x_x-demochart",
+   "TagName": "x-demochart",
    "FuncDefHash": "j6jhe5"
   },
   {
@@ -3507,7 +3507,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_Demo_x",
-   "Hash": "t08jf1"
+   "Hash": "xb425lp"
   },
   {
    "Type": "State",
@@ -3533,7 +3533,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_Demo_x",
-   "Hash": "x5atjus",
+   "Hash": "roup7i",
    "localVars": [
     "component",
     "modulo",
@@ -3586,7 +3586,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_AllExamples_x",
-   "Hash": "xrgjiia",
+   "Hash": "1neith7",
    "localVars": [
     "component",
     "modulo",
@@ -4017,7 +4017,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "kfnrki"
+   "Hash": "x1vj9fe1"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -4619,7 +4619,7 @@ currentModulo.parentDefs = {
   "Parent": "x_x",
   "DefName": "x",
   "FullName": "x_x_x",
-  "Hash": "x1ldrcnf"
+  "Hash": "xulc6v5"
  },
  "x_x_mws": {
   "Type": "Library",
@@ -4690,14 +4690,14 @@ currentModulo.parentDefs = {
    "Content"
   ],
   "RenderObj": "component",
+  "namespace": "x",
   "name": "DemoChart",
   "Parent": "x_x_x",
   "DefName": null,
   "Name": "DemoChart",
   "FullName": "x_x_x_DemoChart",
   "Hash": "x1sgecs4",
-  "namespace": "x_x_x",
-  "TagName": "x_x_x-demochart",
+  "TagName": "x-demochart",
   "FuncDefHash": "j6jhe5"
  },
  "x_x_x_ExampleBtn": {
@@ -5634,7 +5634,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "kfnrki"
+  "Hash": "x1vj9fe1"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -20278,9 +20278,9 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 "_child": typeof _child !== "undefined" ? _child : undefined,
  setLocalVariable: __set, exports: script.exports}
 };
-currentModulo.assets.functions["t08jf1"]= function (CTX, G){
+currentModulo.assets.functions["xb425lp"]= function (CTX, G){
 var OUT=[];
-  OUT.push("<div class=\"demo-wrapper\n        "); // "<div class=\"demo-wrapper"
+  OUT.push("<div \n    @mouseenter:=script.rerenderFirstTime\n    class=\"demo-wrapper\n        "); // "<div @mouseenter:=script.rerenderFirstTime class=\"demo-wrapper"
   if (CTX.state.showpreview) { // "if state.showpreview"
   OUT.push("     demo-wrapper__minipreview"); // "demo-wrapper__minipreview"
   } // "endif"
@@ -20340,7 +20340,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["x5atjus"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+currentModulo.assets.functions["roup7i"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 let componentTexts = null;
 let exCounter = window._modExCounter || 0; // global variable to prevent conflicts
 
@@ -20499,11 +20499,22 @@ function initializedCallback() {
     state.selected = state.tabs[0].title; // set first as tab title
     //setupShaChecksum();
     if (demoType === 'minipreview') {
-        // TODO: Instead, do state.preview = '<eg-XYZ>' on initial render so it
-        // mounts instantly, and is lighterweight for first load / prebuilt
         if (firstPreviewTag) {
             state.preview = `<${ firstPreviewTag }></${ firstPreviewTag }>`;
         } else {
+            doRun();
+        }
+    }
+}
+
+function rerenderFirstTime() {
+    // This is required as a workaround for a side-effect of prerendering the
+    // firstPreviewTag. While it results in a faster initial page loading time,
+    // and no flicker, it will double attache events due to the
+    // patchAndDescendants in the first mount
+    if (state.nscounter < 2) {
+        const demoType = props.demotype || 'snippet';
+        if (demoType === 'minipreview') {
             doRun();
         }
     }
@@ -20721,6 +20732,7 @@ return { "_setupGlobalVariables": typeof _setupGlobalVariables !== "undefined" ?
 "selectTab": typeof selectTab !== "undefined" ? selectTab : undefined,
 "doCopy": typeof doCopy !== "undefined" ? doCopy : undefined,
 "initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+"rerenderFirstTime": typeof rerenderFirstTime !== "undefined" ? rerenderFirstTime : undefined,
 "_newModulo": typeof _newModulo !== "undefined" ? _newModulo : undefined,
 "runModuloText": typeof runModuloText !== "undefined" ? runModuloText : undefined,
 "doRun": typeof doRun !== "undefined" ? doRun : undefined,
@@ -20766,7 +20778,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["xrgjiia"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+currentModulo.assets.functions["1neith7"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 function toggleExample(payload) {
     if (state.selected === payload) {
         state.selected = '';
@@ -20776,6 +20788,10 @@ function toggleExample(payload) {
 }
 
 function initializedCallback() {
+    const { getComponentDefs } = modulo.registry.utils;
+    if (!getComponentDefs) {
+          throw new Error('Uh oh, getComponentDefs isnt getting defined!');
+    }
     const eg = getComponentDefs('/libraries/eg.html');
     state.examples = [];
     for (const [ name, content ] of Object.entries(eg)) {
@@ -20982,7 +20998,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["kfnrki"]= function (){
+currentModulo.assets.functions["x1vj9fe1"]= function (){
 return {
   "id": 320452827,
   "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
@@ -21051,13 +21067,13 @@ return {
   "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
   "created_at": "2020-12-11T03:08:21Z",
   "updated_at": "2022-05-03T19:15:19Z",
-  "pushed_at": "2022-09-17T22:31:03Z",
+  "pushed_at": "2022-09-18T01:05:35Z",
   "git_url": "git://github.com/michaelpb/modulo.git",
   "ssh_url": "git@github.com:michaelpb/modulo.git",
   "clone_url": "https://github.com/michaelpb/modulo.git",
   "svn_url": "https://github.com/michaelpb/modulo",
   "homepage": "https://modulojs.org/",
-  "size": 7171,
+  "size": 7644,
   "stargazers_count": 2,
   "watchers_count": 2,
   "language": "JavaScript",
@@ -22940,7 +22956,7 @@ currentModulo.assets.functions['xpq350q'].call(window, currentModulo);
 
 currentModulo.assets.functions['x829hs9']('x-demomodal', currentModulo);
 
-currentModulo.assets.functions['j6jhe5']('x_x_x-demochart', currentModulo);
+currentModulo.assets.functions['j6jhe5']('x-demochart', currentModulo);
 
 currentModulo.assets.functions['u4j43f']('x-examplebtn', currentModulo);
 
@@ -23008,15 +23024,341 @@ currentModulo.assets.functions['1n2i9fj']('eg-memorygame', currentModulo);
 
 currentModulo.assets.functions['86fv1g']('eg-conwaygameoflife', currentModulo);
 
-currentModulo.assets.functions["1t9ugvv"]= function (CTX, G){
+currentModulo.assets.functions["x8j3c54"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\nHello <strong>Modulo</strong> World!\nOpen your browser dev console to see messages...\n<button @click:=\"script.gotClicked\">Click me to generate an event</button>\n"); // "Hello <strong>Modulo</strong> World! Open your browser dev console to see messages... <button @click:=\"script.gotClicked\">Click me to generate an event</button>"
+  OUT.push("\n    <p>Before comment</p>\n    "); // "<p>Before comment</p>"
+  /* // "comment \"Optional note\""
+  OUT.push("\n        <p>Commented out text that will be ignored\n          "); // "<p>Commented out text that will be ignored"
+  OUT.push(G.escapeText(G.filters["brokenFilter"](CTX.nonExistingVar,"abc"))); // "nonExistingVar|brokenFilter:\"abc\""
+  OUT.push("</p>\n    "); // "</p>"
+  */ // "endcomment"
+  OUT.push("\n    <p>After comment</p>\n"); // "<p>After comment</p>"
 
 return OUT.join("");
 };
-currentModulo.assets.functions["3447k3"]= function (CTX, G){
+currentModulo.assets.functions["x11k4oji"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\n<label>\n<input [state.bind]=\"\" name=\"enabled\" type=\"checkbox\">\nShow messages in console</label>\n"); // "<label><input [state.bind]=\"\" name=\"enabled\" type=\"checkbox\"> Show messages in console</label>"
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.athletes;for (var KEY in ARR0) {CTX. athlete=ARR0[KEY]; // "for athlete in state.athletes"
+  OUT.push("\n            <li>"); // "<li>"
+  OUT.push(G.escapeText(CTX.athlete.name)); // "athlete.name"
+  OUT.push("</li>\n        "); // "</li>"
+  } // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1g4g3r1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.fave_colors;for (var KEY in ARR0) {CTX.name=KEY;CTX.color=ARR0[KEY]; // "for name, color in state.fave_colors"
+  OUT.push("\n            <li><strong>"); // "<li><strong>"
+  OUT.push(G.escapeText(CTX.name)); // "name"
+  OUT.push("</strong>: "); // "</strong>:"
+  OUT.push(G.escapeText(CTX.color)); // "color"
+  OUT.push("</li>\n        "); // "</li>"
+  } // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x14l5i9t"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.fave_colors;for (var KEY in ARR0) {CTX.name=KEY;CTX.color=ARR0[KEY]; // "for name, color in state.fave_colors"
+  OUT.push("\n            <li><strong>"); // "<li><strong>"
+  OUT.push(G.escapeText(CTX.name)); // "name"
+  OUT.push("</strong>: "); // "</strong>:"
+  OUT.push(G.escapeText(CTX.color)); // "color"
+  OUT.push("</li>\n        "); // "</li>"
+  G.FORLOOP_NOT_EMPTY1=true; } if (!G.FORLOOP_NOT_EMPTY1) { // "empty"
+  OUT.push("\n            No colors were found.\n        "); // "No colors were found."
+  }G.FORLOOP_NOT_EMPTY1 = false; // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["a5djj"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.show) { // "if state.show"
+  OUT.push("\n        Hello testing template world!\n    "); // "Hello testing template world!"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x7lkdod"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.athletes) { // "if state.athletes"
+  OUT.push("\n        Athletes exists. Total athletes: "); // "Athletes exists. Total athletes:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.athletes))); // "state.athletes|length"
+  OUT.push("\n    "); // ""
+  } else if (CTX.state.benched) { // "elif state.benched"
+  OUT.push("\n        Benched exists. Total benched: "); // "Benched exists. Total benched:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.benched))); // "state.benched|length"
+  OUT.push("\n    "); // ""
+  } else { // "else"
+  OUT.push("\n        No athletes.\n    "); // "No athletes."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["2rm5kq"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar === "x") { // "if state.somevar == \"x\""
+  OUT.push("\n        This appears if variable somevar equals the string \"x\"\n    "); // "This appears if variable somevar equals the string \"x\""
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x1k1tbb1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar != "x") { // "if state.somevar != \"x\""
+  OUT.push("\n        This appears if variable state.somevar does not equal the string \"x\".\n    "); // "This appears if variable state.somevar does not equal the string \"x\"."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x15dnkp2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (!(CTX.state.show)) { // "if not state.show"
+  OUT.push("\n        Do not show it!\n    "); // "Do not show it!"
+  } else { // "else"
+  OUT.push("\n        Show it!\n    "); // "Show it!"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x8rv5n5"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar < 100) { // "if state.somevar lt 100"
+  OUT.push("\n        This appears if variable somevar is less than 100.\n    "); // "This appears if variable somevar is less than 100."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["cip3uc"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar > 100) { // "if state.somevar gt 100"
+  OUT.push("\n        This appears if variable somevar is greater than 100.\n    "); // "This appears if variable somevar is greater than 100."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1otvgl5"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if ((CTX.state.era).includes ? (CTX.state.era).includes("B.C.E.") : ("B.C.E." in CTX.state.era)) { // "if \"B.C.E.\" in state.era"
+  OUT.push("\n        This appears since \"B.C.E.\" is a substring of \""); // "This appears since \"B.C.E.\" is a substring of \""
+  OUT.push(G.escapeText(CTX.state.era)); // "state.era"
+  OUT.push("\"\n    "); // "\""
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["ale86f"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (G.filters["length"](CTX.state.athletes) > 2) { // "if state.athletes|length gt 2"
+  OUT.push("\n        <p>There are more than 2 athletes!</p>\n    "); // "<p>There are more than 2 athletes!</p>"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1nj3f1e"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  OUT.push(G.escapeText(G.filters["add"](CTX.state.value,7))); // "state.value|add:7"
+  OUT.push(" hacks <br>\n    "); // "hacks <br>"
+  OUT.push(G.escapeText(G.filters["add"](CTX.state.value,CTX.state.another))); // "state.value|add:state.another"
+  OUT.push(" hz\n"); // "hz"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1ofib1a"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Valid: "); // "Valid:"
+  OUT.push(G.escapeText(G.filters["allow"](CTX.state.value,"orange,apple,pear"))); // "state.value|allow:\"orange,apple,pear\""
+  OUT.push(" <br>\n    Invalid: "); // "<br> Invalid:"
+  OUT.push(G.escapeText(G.filters["allow"](CTX.state.value,"a,b,c"))); // "state.value|allow:\"a,b,c\""
+  OUT.push(" <br>\n    Invalid + default: "); // "<br> Invalid + default:"
+  OUT.push(G.escapeText(G.filters["default"](G.filters["allow"](CTX.state.value,"a,b,c"),"Oops!"))); // "state.value|allow:\"a,b,c\"|default:\"Oops!\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x1q1s27l"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    The "); // "The"
+  OUT.push(G.escapeText(G.filters["capfirst"](CTX.state.value))); // "state.value|capfirst"
+  OUT.push(" framework is my favorite\n"); // "framework is my favorite"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xqccfe1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Fave snack: "); // "Fave snack:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.snack,"icecream"))); // "state.snack|default:\"icecream\""
+  OUT.push(" <br>\n    Snack count: "); // "<br> Snack count:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.count,"none"))); // "state.count|default:\"none\""
+  OUT.push(" <br>\n    Fave soda: "); // "<br> Fave soda:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.soda,"Cola"))); // "state.soda|default:\"Cola\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xu2cevu"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Can "); // "Can"
+  OUT.push(G.escapeText(CTX.state.value)); // "state.value"
+  OUT.push(" divide by 3? <br>\n    "); // "divide by 3? <br>"
+  OUT.push(G.escapeText(G.filters["divisibleby"](CTX.state.value,3))); // "state.value|divisibleby:3"
+  OUT.push(" <br>\n    "); // "<br>"
+  if (G.filters["divisibleby"](CTX.state.value,2)) { // "if state.value|divisibleby:2"
+  OUT.push("\n        "); // ""
+  OUT.push(G.escapeText(CTX.state.value)); // "state.value"
+  OUT.push(" is even\n    "); // "is even"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1sa0mpn"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Result: "); // "Result:"
+  OUT.push(G.escapeText(G.filters["escapejs"](CTX.state.value))); // "state.value|escapejs"
+  OUT.push(" <br>\n"); // "<br>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["18vl137"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["first"](CTX.state.athletes))); // "state.athletes|first"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1d8ujon"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["join"](CTX.state.athletes))); // "state.athletes|join"
+  OUT.push("</p>\n    <p>"); // "</p><p>"
+  OUT.push(G.escapeText(G.filters["join"](CTX.state.athletes," + "))); // "state.athletes|join:\" + \""
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x139tl73"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <pre>"); // "<pre>"
+  OUT.push(G.escapeText(G.filters["json"](CTX.state.athletes))); // "state.athletes|json"
+  OUT.push("</pre>\n    <pre>"); // "</pre><pre>"
+  OUT.push(G.escapeText(G.filters["json"](CTX.state.athletes,2))); // "state.athletes|json:2"
+  OUT.push("</pre>\n"); // "</pre>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["jrca7"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["last"](CTX.state.athletes))); // "state.athletes|last"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["ljtjgd"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Sentence length: "); // "<p>Sentence length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.sentence))); // "state.sentence|length"
+  OUT.push("</p>\n    <p>Flowers length: "); // "</p><p>Flowers length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flowers))); // "state.flowers|length"
+  OUT.push("</p>\n    <p>Flights length: "); // "</p><p>Flights length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flights))); // "state.flights|length"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["qoh762"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Without: "); // "<p>Without:"
+  OUT.push(G.escapeText(CTX.state.word)); // "state.word"
+  OUT.push("</p>\n    <p>Lower: "); // "</p><p>Lower:"
+  OUT.push(G.escapeText(G.filters["lower"](CTX.state.word))); // "state.word|lower"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xpgpf73"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    We visited "); // "We visited"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.citynames))); // "state.citynames|length"
+  OUT.push(" \n    "); // ""
+  OUT.push(G.escapeText(G.filters["pluralize"](G.filters["length"](CTX.state.citynames),"cities,city"))); // "state.citynames|length|pluralize:\"cities,city\""
+  OUT.push("\n\n    and picked "); // "and picked"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flowers))); // "state.flowers|length"
+  OUT.push(" \n    flower"); // "flower"
+  OUT.push(G.escapeText(G.filters["pluralize"](G.filters["length"](CTX.state.flowers),"s"))); // "state.flowers|length|pluralize:\"s\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["12f47p2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  OUT.push(G.escapeText(G.filters["subtract"](CTX.state.value,3))); // "state.value|subtract:3"
+  OUT.push(" hacks <br>\n    "); // "hacks <br>"
+  OUT.push(G.escapeText(G.filters["subtract"](CTX.state.value,CTX.state.another))); // "state.value|subtract:state.another"
+  OUT.push(" is the answer\n"); // "is the answer"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1p6tva9"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Long sentence: "); // "<p>Long sentence:"
+  OUT.push(G.escapeText(G.filters["truncate"](CTX.state.sentence,20))); // "state.sentence|truncate:20"
+  OUT.push("</p>\n    <p>Short word: "); // "</p><p>Short word:"
+  OUT.push(G.escapeText(G.filters["truncate"](CTX.state.word,20))); // "state.word|truncate:20"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x36bu36"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["join"](G.filters["reversed"](CTX.state.flowers)))); // "state.flowers|reversed|join"
+  OUT.push("</p>\n    "); // "</p>"
+  var ARR0=G.filters["reversed"](CTX.state.cities);for (var KEY in ARR0) {CTX. city=ARR0[KEY]; // "for city in state.cities|reversed"
+  OUT.push("\n        <p>"); // "<p>"
+  OUT.push(G.escapeText(CTX.city)); // "city"
+  OUT.push("</p>\n    "); // "</p>"
+  } // "endfor"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["17hmqg2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Without: "); // "<p>Without:"
+  OUT.push(G.escapeText(CTX.state.word)); // "state.word"
+  OUT.push("</p>\n    <p>Upper: "); // "</p><p>Upper:"
+  OUT.push(G.escapeText(G.filters["upper"](CTX.state.word))); // "state.word|upper"
+  OUT.push("</p>\n"); // "</p>"
 
 return OUT.join("");
 };

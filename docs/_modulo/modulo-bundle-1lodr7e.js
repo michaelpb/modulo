@@ -2360,7 +2360,7 @@ currentModulo.defs = {
    "Parent": "x_x",
    "DefName": "x",
    "FullName": "x_x_x",
-   "Hash": "x1ldrcnf"
+   "Hash": "xulc6v5"
   },
   {
    "Type": "Library",
@@ -2433,14 +2433,14 @@ currentModulo.defs = {
     "Content"
    ],
    "RenderObj": "component",
+   "namespace": "x",
    "name": "DemoChart",
    "Parent": "x_x_x",
    "DefName": null,
    "Name": "DemoChart",
    "FullName": "x_x_x_DemoChart",
    "Hash": "x1sgecs4",
-   "namespace": "x_x_x",
-   "TagName": "x_x_x-demochart",
+   "TagName": "x-demochart",
    "FuncDefHash": "j6jhe5"
   },
   {
@@ -3507,7 +3507,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_Demo_x",
-   "Hash": "t08jf1"
+   "Hash": "xb425lp"
   },
   {
    "Type": "State",
@@ -3533,7 +3533,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_Demo_x",
-   "Hash": "x5atjus",
+   "Hash": "roup7i",
    "localVars": [
     "component",
     "modulo",
@@ -3586,7 +3586,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_AllExamples_x",
-   "Hash": "xrgjiia",
+   "Hash": "1neith7",
    "localVars": [
     "component",
     "modulo",
@@ -4017,7 +4017,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "1ij3tg5"
+   "Hash": "x1vj9fe1"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -4619,7 +4619,7 @@ currentModulo.parentDefs = {
   "Parent": "x_x",
   "DefName": "x",
   "FullName": "x_x_x",
-  "Hash": "x1ldrcnf"
+  "Hash": "xulc6v5"
  },
  "x_x_mws": {
   "Type": "Library",
@@ -4690,14 +4690,14 @@ currentModulo.parentDefs = {
    "Content"
   ],
   "RenderObj": "component",
+  "namespace": "x",
   "name": "DemoChart",
   "Parent": "x_x_x",
   "DefName": null,
   "Name": "DemoChart",
   "FullName": "x_x_x_DemoChart",
   "Hash": "x1sgecs4",
-  "namespace": "x_x_x",
-  "TagName": "x_x_x-demochart",
+  "TagName": "x-demochart",
   "FuncDefHash": "j6jhe5"
  },
  "x_x_x_ExampleBtn": {
@@ -5634,7 +5634,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "1ij3tg5"
+  "Hash": "x1vj9fe1"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -20278,9 +20278,9 @@ return { "initializedCallback": typeof initializedCallback !== "undefined" ? ini
 "_child": typeof _child !== "undefined" ? _child : undefined,
  setLocalVariable: __set, exports: script.exports}
 };
-currentModulo.assets.functions["t08jf1"]= function (CTX, G){
+currentModulo.assets.functions["xb425lp"]= function (CTX, G){
 var OUT=[];
-  OUT.push("<div class=\"demo-wrapper\n        "); // "<div class=\"demo-wrapper"
+  OUT.push("<div \n    @mouseenter:=script.rerenderFirstTime\n    class=\"demo-wrapper\n        "); // "<div @mouseenter:=script.rerenderFirstTime class=\"demo-wrapper"
   if (CTX.state.showpreview) { // "if state.showpreview"
   OUT.push("     demo-wrapper__minipreview"); // "demo-wrapper__minipreview"
   } // "endif"
@@ -20340,7 +20340,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["x5atjus"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+currentModulo.assets.functions["roup7i"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 let componentTexts = null;
 let exCounter = window._modExCounter || 0; // global variable to prevent conflicts
 
@@ -20499,11 +20499,22 @@ function initializedCallback() {
     state.selected = state.tabs[0].title; // set first as tab title
     //setupShaChecksum();
     if (demoType === 'minipreview') {
-        // TODO: Instead, do state.preview = '<eg-XYZ>' on initial render so it
-        // mounts instantly, and is lighterweight for first load / prebuilt
         if (firstPreviewTag) {
             state.preview = `<${ firstPreviewTag }></${ firstPreviewTag }>`;
         } else {
+            doRun();
+        }
+    }
+}
+
+function rerenderFirstTime() {
+    // This is required as a workaround for a side-effect of prerendering the
+    // firstPreviewTag. While it results in a faster initial page loading time,
+    // and no flicker, it will double attache events due to the
+    // patchAndDescendants in the first mount
+    if (state.nscounter < 2) {
+        const demoType = props.demotype || 'snippet';
+        if (demoType === 'minipreview') {
             doRun();
         }
     }
@@ -20721,6 +20732,7 @@ return { "_setupGlobalVariables": typeof _setupGlobalVariables !== "undefined" ?
 "selectTab": typeof selectTab !== "undefined" ? selectTab : undefined,
 "doCopy": typeof doCopy !== "undefined" ? doCopy : undefined,
 "initializedCallback": typeof initializedCallback !== "undefined" ? initializedCallback : undefined,
+"rerenderFirstTime": typeof rerenderFirstTime !== "undefined" ? rerenderFirstTime : undefined,
 "_newModulo": typeof _newModulo !== "undefined" ? _newModulo : undefined,
 "runModuloText": typeof runModuloText !== "undefined" ? runModuloText : undefined,
 "doRun": typeof doRun !== "undefined" ? doRun : undefined,
@@ -20766,7 +20778,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["xrgjiia"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
+currentModulo.assets.functions["1neith7"]= function (modulo, require, component, library, props, style, template, staticdata, script, state, element, cparts){var script = { exports: {} };  function __set(name, value) { if (name === 'modulo') modulo = value; if (name === 'require') require = value; if (name === 'component') component = value; if (name === 'library') library = value; if (name === 'props') props = value; if (name === 'style') style = value; if (name === 'template') template = value; if (name === 'staticdata') staticdata = value; if (name === 'script') script = value; if (name === 'state') state = value; if (name === 'element') element = value; if (name === 'cparts') cparts = value; }
 function toggleExample(payload) {
     if (state.selected === payload) {
         state.selected = '';
@@ -20776,6 +20788,10 @@ function toggleExample(payload) {
 }
 
 function initializedCallback() {
+    const { getComponentDefs } = modulo.registry.utils;
+    if (!getComponentDefs) {
+          throw new Error('Uh oh, getComponentDefs isnt getting defined!');
+    }
     const eg = getComponentDefs('/libraries/eg.html');
     state.examples = [];
     for (const [ name, content ] of Object.entries(eg)) {
@@ -20982,7 +20998,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["1ij3tg5"]= function (){
+currentModulo.assets.functions["x1vj9fe1"]= function (){
 return {
   "id": 320452827,
   "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
@@ -21051,13 +21067,13 @@ return {
   "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
   "created_at": "2020-12-11T03:08:21Z",
   "updated_at": "2022-05-03T19:15:19Z",
-  "pushed_at": "2022-09-18T00:19:56Z",
+  "pushed_at": "2022-09-18T01:05:35Z",
   "git_url": "git://github.com/michaelpb/modulo.git",
   "ssh_url": "git@github.com:michaelpb/modulo.git",
   "clone_url": "https://github.com/michaelpb/modulo.git",
   "svn_url": "https://github.com/michaelpb/modulo",
   "homepage": "https://modulojs.org/",
-  "size": 7171,
+  "size": 7644,
   "stargazers_count": 2,
   "watchers_count": 2,
   "language": "JavaScript",
@@ -22940,7 +22956,7 @@ currentModulo.assets.functions['xpq350q'].call(window, currentModulo);
 
 currentModulo.assets.functions['x829hs9']('x-demomodal', currentModulo);
 
-currentModulo.assets.functions['j6jhe5']('x_x_x-demochart', currentModulo);
+currentModulo.assets.functions['j6jhe5']('x-demochart', currentModulo);
 
 currentModulo.assets.functions['u4j43f']('x-examplebtn', currentModulo);
 
@@ -23008,35 +23024,11 @@ currentModulo.assets.functions['1n2i9fj']('eg-memorygame', currentModulo);
 
 currentModulo.assets.functions['86fv1g']('eg-conwaygameoflife', currentModulo);
 
-currentModulo.assets.functions["x1leb5ue"]= function (CTX, G){
+currentModulo.assets.functions["u8a55d"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\n    API data: <pre>"); // "API data: <pre>"
-  OUT.push(G.escapeText(G.filters["truncate"](G.filters["json"](CTX.state.data),80))); // "state.data|json|truncate:80"
-  OUT.push("</pre>\n    <button @click:=\"script.fetchMe\">Get API data</button>\n"); // "</pre><button @click:=\"script.fetchMe\">Get API data</button>"
-
-return OUT.join("");
-};
-currentModulo.assets.functions["xpuvhr2"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\n    <p>"); // "<p>"
-  var ARR0=CTX.script.exports.bigArray;for (var KEY in ARR0) {CTX. item=ARR0[KEY]; // "for item in script.exports.bigArray"
-  OUT.push("\n        "); // ""
-  OUT.push(G.escapeText(CTX.item)); // "item"
-  OUT.push(",\n    "); // ","
-  } // "endfor"
-  OUT.push("</p>\n"); // "</p>"
-
-return OUT.join("");
-};
-currentModulo.assets.functions["emgqio"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\n    "); // ""
-  OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
-  OUT.push(" v"); // "v"
-  OUT.push(G.escapeText(CTX.staticdata.version)); // "staticdata.version"
-  OUT.push("\n    (by "); // "(by"
-  OUT.push(G.escapeText(CTX.staticdata.author)); // "staticdata.author"
-  OUT.push(")\n"); // ")"
+  OUT.push("\n"); // ""
+  OUT.push("\n<input [script.myinput]=\"\">\n\n"); // "<input [script.myinput]=\"\">"
+  OUT.push("\n<button [component.event]click:=\"script.showInfo\">\n    Click me\n</button>\n"); // "<button [component.event]click:=\"script.showInfo\"> Click me </button>"
 
 return OUT.join("");
 };

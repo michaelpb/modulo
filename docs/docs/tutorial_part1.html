@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><title>Part 1 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x494o6d.css"></head><body>
+<meta charset="utf8"><title>Part 1 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1bn7r6l.css"></head><body>
 
 
     
@@ -300,7 +300,7 @@ can be embedded in an HTML page within a script tag like
     <x-HelloWorld></x-HelloWorld>
     <p>In a P tag: <x-HelloWorld></x-HelloWorld></p>
 </div>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -404,7 +404,7 @@ with the above example:</p>
         Hello <strong><slot></slot></strong> World!
     </Template>
 </Component>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -446,7 +446,7 @@ with the above example:</p>
 <mws-demo text="
 <x-HelloWorld>Learning</x-HelloWorld>
 <p>In a P tag: <x-HelloWorld>Small</x-HelloWorld></p>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -573,7 +573,7 @@ sample code editors only focus on the CPart definitions within.</p>
         component definition (that is, the one that you created in the
         previous part of this tutorial)<p></p>
     </li></ol>
-    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P1" modulo-original-html=""><div class="demo-wrapper
+    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P1" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -654,7 +654,7 @@ that needs them.</p>
 <p>"Library" tags look like the following:</p>
 
 <pre>&lt;Library
-    src="./components/my-stuff.html"
+    -src="./libraries/my-stuff.html"
     namespace="coolstuff"&gt;
 &lt;/Library&gt;
 </pre>
@@ -663,8 +663,8 @@ that needs them.</p>
 <ul>
 
     <li>
-        <code>src="./components/my-stuff.html"</code>
-        <p>The <code>src</code> attribute specifies the source of the
+        <code>-src="./libraries/my-stuff.html"</code>
+        <p>The <code>-src</code> attribute specifies the source of the
         component library file. This file can be anywhere that is
         accessible to your web-browser or web-server. Ideally, it should be
         in the same place as your CSS and static media files, such as a
@@ -738,7 +738,7 @@ that needs them.</p>
 <Component name=&quot;HelloWorld&quot;>
     <!-- ... snip ... -->
 </Component>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -786,7 +786,7 @@ that needs them.</p>
         namespace=&quot;lib&quot;
     ></Library>
 </Modulo>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -907,4 +907,4 @@ forms and interactive, changing components with the State CPart.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-103qosq.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-xl4amsr.js"></script></body></html>

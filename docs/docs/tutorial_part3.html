@@ -1,7 +1,7 @@
 <!DOCTYPE HTML><html><head>
 
 <!-- Note: _part1.html is intententional, to un-collapse the top thing -->
-<meta charset="utf8"><title>Part 3 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x494o6d.css"></head><body>
+<meta charset="utf8"><title>Part 3 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1bn7r6l.css"></head><body>
 
 
     
@@ -257,8 +257,8 @@ once again taken from the demo page:</p>
 
 <p>Once again, we can determine that state is being used, as the text on the
 button changes when that button is clicked. Furthermore, this demonstrates how
-state is not shared: Each button is a totally separate instance that keeps it's
-own private state.</p>
+state is not shared: Each button is a totally separate instance that keeps
+track of it's own separate number.</p>
 
 <p>By the end of this third part, we will have examined every detail that goes
 into this counting button, so you will be able understand it's code in full.</p>
@@ -309,7 +309,7 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
         definition (that is, the one that you created in the <em>Part 1</em> of
         this tutorial)</li>
     </ol>
-    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P3_state_demo" modulo-original-html=""><div class="demo-wrapper
+    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P3_state_demo" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -504,7 +504,7 @@ that input.</p>
     </ol>
 
 
-    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P3_state_bind" modulo-original-html=""><div class="demo-wrapper
+    <mws-demo demotype="minipreview" fromlibrary="Tutorial_P3_state_bind" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -632,7 +632,7 @@ that input.</p>
         &quot;c&quot;: &quot;d&quot;
     }'
 ></State>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -774,7 +774,7 @@ function, logging the text into the JavaScript console.</p>
         console.log(&quot;THE <button> GOT CLICKED!&quot;);
     }
 </Script>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
              demo-wrapper__minipreview
         
         
@@ -859,7 +859,7 @@ the Hello button:</p>
         state.num++;
     }
 </Script>
-" modulo-original-html=""><div class="demo-wrapper
+" modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
         
@@ -964,4 +964,4 @@ Modulo development.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-x3bcs3g.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-16il7r5.js"></script></body></html>
