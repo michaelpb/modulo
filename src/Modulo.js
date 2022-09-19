@@ -2235,6 +2235,27 @@ modulo.register('command', function buildhtml(modulo, opts = {}) {
 });
 
 
+
+if (typeof document !== 'undefined' && document.head) { // Browser environ
+    Modulo.globals = window; // TODO, remove?
+    modulo.globals = window;
+    window.hackCoreModulo = new Modulo(modulo); // XXX
+    window.hackRunBlocking = (document.querySelectorAll('script[modulo]')).length === 1;
+    if (window.hackRunBlocking) {
+        // TODO - Cleanup this logic, need to determine advantages of running
+        // preprocess blocking vs not, and make more consistent / documented
+        modulo.loadFromDOM(document.head, null, true);
+        modulo.preprocessAndDefine();
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            modulo.loadFromDOM(document.head, null, true);
+            modulo.preprocessAndDefine();
+        });
+    }
+} else if (typeof exports !== 'undefined') { // Node.js / silo'ed script
+    exports = { Modulo, modulo };
+}
+
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => modulo.fetchQueue.wait(() => {
         // TODO: Better way to know if in built-version browser environ
@@ -2272,13 +2293,3 @@ if (typeof document !== 'undefined') {
     }));
 }
 
-if (typeof document !== 'undefined' && document.head) { // Browser environ
-    Modulo.globals = window; // TODO, remove?
-    modulo.globals = window;
-    window.hackCoreModulo = new Modulo(modulo); // XXX
-    // TODO - Not sure advantages of running preprocess blocking vs not
-    modulo.loadFromDOM(document.head, null, true);
-    modulo.preprocessAndDefine();
-} else if (typeof exports !== 'undefined') { // Node.js / silo'ed script
-    exports = { Modulo, modulo };
-}

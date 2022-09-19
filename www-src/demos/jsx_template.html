@@ -1,20 +1,9 @@
-<script src="/js/Modulo.js"></script>
-
-<!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
-     to prevent it from being included in a final bundle. -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
-<script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
-
-<!-- Load JSXTemplate CPart, which uses Babel to compile JSX-style templates -->
-<script src="/demos/mdu/cparts/JSXTemplate.js"></script>
-
-
-<template modulo-embed>
+<template Modulo>
     <Component name="ExampleChild">
         <Props
             stuff
         ></Props>
-        <script type="modulo/JSXTemplate">
+        <script JSXTemplate>
             <div>Example prop: {props.stuff}</div>
         </script>
     </Component>
@@ -23,7 +12,7 @@
         <Props
             txt
         ></Props>
-        <script type="modulo/JSXTemplate">
+        <script JSXTemplate>
             <div>
                 {/* With JSX, we can switch to JS syntax using {} */}
                 <h3>Parent "props" example: {props.txt}</h3>
@@ -47,8 +36,8 @@
 
                 {/* Unlike regular Modulo Templating, we can also embed real
                     JS, or anonymous JS events */}
-                <button onClick={() => { state.count++; }}>
-                    Increment #2 (with anonymous function in template): {state.count}
+                <button onClick={() => { state.num++; }}>
+                    Increment #2 (with anonymous function in template): {state.num}
                 </button> <br />
 
                 <h3>Using array and style attribute:</h3>
@@ -56,7 +45,7 @@
                     to CSS syntax, so you can compute styles more easily */}
                 {
                     state.alphabet.map((val, i) => 
-                        <div style={{ background: "orange", width: 50 * (i + 1) }}
+                        <div style={{ background: 'orange', width: 50 * (i + 1) }}
                             onMouseOver={() => {
                                 state.message = val + ' has value ' + (i + 1);
                             }}>{ val.toUpperCase() }</div>
@@ -70,13 +59,19 @@
 
         <State
             count:=5
+            num:=42
             message=""
             alphabet:='["abc", "def", "ghi", "jkl", "mno"]'
         ></State>
 
         <Script>
-            // Just like with components that the regular Template, we can
-            // define functions in a Script CPart to be used by our JSXTemplate
+            // Just like with components that use the regular Template CPart,
+            // we can add callbacks functions in the Script
+            function initializedCallback() {
+                console.log('JSX-based Modulo element loaded:', element);
+            }
+
+            // Also, we can define functions that get attached to events
             function getClicked() {
                 state.count++;
             }
@@ -92,7 +87,16 @@
 
 </template>
 
-<script> Modulo.defineAll() </script>
+
+<script src="/js/Modulo.js"></script>
+
+<!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
+     to prevent it from being included in a final bundle. -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
+<script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
+
+<!-- Load JSXTemplate CPart, which uses Babel to compile JSX-style templates -->
+<script src="/demos/mdu/cparts/JSXTemplate.js"></script>
 
 
 <h1>Custom CPart: JSXTemplate Demo</h1>
@@ -107,11 +111,6 @@ attachment of embedded or arbitrary JavaScript code.</p>
 <hr />
 <!-- Finally, instantiate our JSX-based component -->
 <x-ExampleJSXComponent txt="Hello"></x-ExampleJSXComponent>
-
-
-
-
-
 
 
 <!-- ######################################################################### -->

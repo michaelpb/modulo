@@ -1,13 +1,67 @@
+True final ToDo list:
 
 
-Final steps for alpha documentation launch:
+## Documentation updates
+
+1. Fix Experiments
+2. Finish "what's left" / alpha targets blog post
+
+
+## Bug fixes
+
+1. Do script / cpart substitution on Modulo and/or Component
+2. Finish Library CPart and sort around terminology around "namespace"
+"definition" "name" "TagName" etc, make it very simple and predictable. Also
+possibly implement "Config" concept
+3. Clean up nupatches  / nufactories etc
+  - Refactor: HTMLElement, Component CPart, lifecycle, etc
+  - Fix directives with finalized config concept (and reintroduce
+    directiveShortcuts to docs)
+  - Possibly refactor into create/engine system
+  - Refactor legacyCPartSetup
+7. Shadow dom?
+8. Fix some TODO/XXXs
+9. Get remaining ~100 extra tests running
+
+## New features
+- modulo-create
+    - Finish this as the NPM quick start example
+- index.html
+    - Quick start info on front page? Maybe 5-line starter (sM/C/T/C/sm) on the
+      left, and npm modulo on the other?
+- Standard starter template for Modulo SSG based site
+- Bootstrap5 starter file
+- StaticData
+    - Basic CSV support
+    - Have it actually compile into the conf
+- Script
+    - Possible: If it's easy, some switch that makes the script tag the
+      initialized callback, and thus isolated per-component.
+    - This might be the more intuitive behavior for some, and will prevent any
+      need for weird variable prep stuff
+    - If it seems fast on large numbers of elements, then maybe make default,
+      and possibly even make current script behavior StaticScript, or something
+    - Downsides: Might be too tempting to then put state in Script
+- Template
+    - Possible: If it's easy, add in {% include state.templateinfo %}
+      (replacing renderas), which includes given text verbatim into template.
+      Somewhat more dangerous, but could finally be used for the following:
+        - {% include component.innerHTML %}
+        - This would allow <x-Page ....>{% if blahblah %} .... {% endif %} stuff
+    - Better yet: Compile includes as separate Templaters, so that they
+      generate different hashed functions
+
+----
+
+
+# (OLD) Final steps for alpha documentation launch:
 
 - Fix tutorial part 1:
-    - Replace Library documentation with an introduction to the -src
+    - (DONE) Replace Library documentation with an introduction to the -src
     - MAYBE, show how different slots can be used?
 - Demos page
-    - Fix all starter files
-    - Fix all MDU demo starter files, finally use absolute https
+    - (DONE) Fix all starter files
+    - (DONE) Fix all MDU demo starter files, finally use absolute https
 
 
 ----
