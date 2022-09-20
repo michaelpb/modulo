@@ -1,7 +1,7 @@
 {
   "name": "mdu-cli",
   "author": "michaelb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Lightweight, easy to learn Web Component JavaScript framework",
   "homepage": "https://modulojs.org/",
   "main": "modulocli/modulocli.js",
@@ -36,7 +36,18 @@
     "url": "git+https://github.com/michaelpb/modulo.git"
   },
   "keywords": [
+    "UI",
+    "templates",
+    "templating",
+    "components",
     "framework"
+  ],
+  "files": [
+    "src/*",
+    "modulocli/*",
+    "modulocli/**/*",
+    "mdu/*",
+    "mdu/**/*"
   ],
   "license": "LGPL-2.1",
   "bugs": {
