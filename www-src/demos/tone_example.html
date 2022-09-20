@@ -6,7 +6,7 @@
 <!-- Note: Modulo is a work in progress, and may still need some tweaking
 around rendering and state triggering for proper performance. -->
 
-<template modulo-embed>
+<template Modulo>
 
   <Component name="HelloWorld">
     <Props
@@ -157,6 +157,7 @@ around rendering and state triggering for proper performance. -->
 
     <Script>
         function initializedCallback() {
+            modulo.assert(tone, 'Tone is not defined!');
             setInterval(() => {
                 if (tone.isStarted) {
                     element.rerender();
@@ -242,9 +243,6 @@ around rendering and state triggering for proper performance. -->
 <script src="https://unpkg.com/tone"></script>
 <script src="/js/Modulo.js"></script>
 <script src="/demos/mdu/cparts/ToneJsAdaptor.js"></script>
-
-
-<script>Modulo.defineAll();</script>
 
 
 <!-- Use it anywhere, each instance is isolated: -->
