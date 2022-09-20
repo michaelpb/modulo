@@ -1,7 +1,7 @@
 {
   "name": "mdu-cli",
   "author": "michaelb",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Lightweight, easy to learn Web Component JavaScript framework",
   "homepage": "https://modulojs.org/",
   "main": "modulocli/modulocli.js",
