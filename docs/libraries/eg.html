@@ -180,179 +180,6 @@ as static data in with JS, so it does not refresh. -->
 
 
 
-<Component namespace="eg" name="Search">
-<!-- Modulo can be used with APIs to create interactive apps.
-This book search shows how a Script tag can use an API -->
-<Template>
-  <input [state.bind] name="search" />
-  <button @click:=script.doSearch>Go</button>
-  {% if state.loading %}<em>Loading...</em>{% endif %}
-  <ol>
-    {% for item in state.results %}
-      <li>
-        <img src="{{ item.cover }}" />
-        <strong>{{ item.title }}</strong>
-      </li>
-    {% endfor %}
-  </ol>
-</Template>
-
-<State
-    search="the lord of the rings"
-    loading:=false
-    results:=[]
-></State>
-
-<Script>
-    const OPTS = '&limit=6&fields=title,author_name,cover_i';
-    const COVER ='https://covers.openlibrary.org/b/id/';
-    const API = 'https://openlibrary.org/search.json?q=';
-    function doSearch() {
-        const url = API + '?q=' + state.search + OPTS;
-        state.loading = true;
-        fetch(url)
-            .then(response => response.json())
-            .then(dataBackCallback);
-    }
-
-    function dataBackCallback(data) {
-        for (const item of data.docs) {
-            // For convenience, we prepare the cover URL
-            item.cover = COVER + item.cover_i + '-S.jpg';
-        }
-        state.results = data.docs;
-        state.loading = false;
-        element.rerender();
-    }
-</Script>
-
-</Component>
-
-
-
-<Component namespace="eg" name="SearchBox">
-<!-- A "type as you go" search box implementation,
-an example of more complicated HTML and JS behavior -->
-<Template>
-<p>Type a book name for "search as you type"
-(e.g. try &ldquo;the lord of the rings&rdquo;)</p>
-
-<input [state.bind] name="search"
-  @keyup:=script.typingCallback />
-
-<div class="results {% if state.search.length gt 0 %}
-                      visible {% endif %}">
-  <div class="results-container">
-    {% if state.loading %}
-      <img src="{{ staticdata.gif }}" alt="loading" />
-    {% else %}
-      {% for result in state.results %}
-        <div class="result">
-          <img
-            src="{{ staticdata.cover|add:result.cover_i }}-S.jpg"
-          /> <label>{{ result.title }}</label>
-        </div>
-      {% empty %}
-        <p>No books found.</p>
-      {% endfor %}
-    {% endif %}
-  </div>
-</div>
-</Template>
-
-<State
-    search=""
-    results:=[]
-    loading:=false
-></State>
-
-<!-- Puting long URLs down here to declutter -->
-<StaticData>
-{
-  apiBase: 'https://openlibrary.org/search.json',
-  cover: 'https://covers.openlibrary.org/b/id/',
-  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
-    'semantic-ui/0.16.1/images/loader-large.gif'
-}
-</StaticData>
-
-<Script>
-    function typingCallback() {
-        state.loading = true;
-        const search = `q=${state.search}`;
-        const opts = 'limit=6&fields=title,author_name,cover_i';
-        const url = `${staticdata.apiBase}?${search}&${opts}`;
-        _globalDebounce(() => {
-            fetch(url)
-                .then(response => response.json())
-                .then(dataBackCallback);
-        });
-    }
-
-    function dataBackCallback(data) {
-        state.results = data.docs;
-        state.loading = false;
-        element.rerender();
-    }
-
-    let _globalDebounceTimeout = null;
-    function _globalDebounce(func) {
-        if (_globalDebounceTimeout) {
-            clearTimeout(_globalDebounceTimeout);
-        }
-        _globalDebounceTimeout = setTimeout(func, 500);
-    }
-</Script>
-
-<Style>
-    input {
-        width: 100%;
-    }
-    .results-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .results-container > img { margin-top 30px; }
-    .results {
-        position: absolute;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        display: block;
-        border: 2px solid #B90183;
-        border-radius: 0 0 20px 20px;
-        transition: height 0.2s;
-        z-index: 20;
-        background: white;
-    }
-    .results.visible {
-        height: 200px;
-        width: 200px;
-    }
-    .result {
-        padding: 10px;
-        width: 80px;
-        position: relative;
-    }
-    .result label {
-        position: absolute;
-        width: 80px;
-        background: rgba(255, 255, 255, 0.5);
-        font-size: 0.7rem;
-        top: 0;
-        left: 0;
-    }
-</Style>
-
-<TestSuite
-    src="./examplelib-tests/SearchBox-tests.html"
-></TestSuite>
-
-</Component>
-
-
-
 <Component namespace="eg" name="DateNumberPicker">
 <Template>
     <p>ISO: <tt>{{ state.year }}-{{ state.month }}-{{ state.day }}</tt></p>
@@ -415,15 +242,90 @@ an example of more complicated HTML and JS behavior -->
 </Component>
 
 
+
+<Component namespace="eg" name="PrimeSieve">
+<!-- Demos mouseover, template filters, template control flow,
+     and static script exports -->
+<Template>
+  <div class="grid">
+    {% for i in script.exports.range %}
+      <div @mouseover:=script.setNum
+        class="
+            {# If-statements to check divisibility in template: #}
+            {% if state.number == i %}number{% endif %}
+            {% if state.number lt i %}hidden{% else %}
+              {% if state.number|divisibleby:i %}whole{% endif %}
+            {% endif %}
+        ">{{ i }}</div>
+    {% endfor %}
+  </div>
+</Template>
+
+<State
+    number:=64
+></State>
+
+<Script>
+    // Getting big a range of numbers in JS. Use "script.exports"
+    // to export this as a one-time global constant.
+    // (Hint: Curious how it calculates prime? See CSS!)
+    script.exports.range = 
+        Array.from({length: 63}, (x, i) => i + 2);
+    function setNum(payload, ev) {
+        state.number = Number(ev.target.textContent);
+    }
+</Script>
+
+<Style>
+.grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    color: #ccc;
+    font-weight: bold;
+    width: 100%;
+    margin: -5px;
+}
+.grid > div {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    transition: 0.2s;
+}
+div.whole {
+    color: white;
+    background: #B90183;
+}
+div.hidden {
+    background: #ccc;
+    color: #ccc;
+}
+
+/* Color green and add asterisk */
+div.number { background: green; }
+div.number::after { content: "*"; }
+/* Check for whole factors (an adjacent div.whole).
+   If found, then hide asterisk and green */
+div.whole ~ div.number { background: #B90183; }
+div.whole ~ div.number::after { opacity: 0; }
+</Style>
+
+<TestSuite
+    src="./examplelib-tests/PrimeSieve-tests.html"
+></TestSuite>
+
+</Component>
+
+
+
 <Component namespace="eg" name="Scatter">
 <!-- StaticData can be used for data visualization as
-well, as an easy way to bring in data sets -->
+well, as an quick way to bring in data sets. Here we loop
+through data, creating labels that appear when hovering. -->
 <Template>
     {% for user in staticdata %}
-        <div style="--lon: {{ user.address.geo.lng }}px;
-                    --lat: {{ user.address.geo.lat }}px;">
-            {{ user.name }}
-        </div>
+        <div style="--x: {{ user.address.geo.lng }}px;
+                    --y: {{ user.address.geo.lat }}px;"
+        ></div>
+        <label>{{ user.name }} ({{ user.email }})</label>
     {% endfor %}
 </Template>
 
@@ -446,24 +348,27 @@ well, as an easy way to bring in data sets -->
   }
   div {
       position: absolute;
-      /* Note: This is just a demo, not an actually
-         correct lat/lon projection */
-      top: calc(var(--lat) / 1.5 + var(--size) / 2);
-      left: calc(var(--lon) / 4.0 + var(--size) / 2);
-      height: 5px;
-      width: 5px;
-      border-radius: 5px;
-      font-weight: bold;
+      top: calc(var(--y) / 1.5 + var(--size) / 2 + 5px);
+      left: calc(var(--x) / 4.0 + var(--size) / 2 + 5px);
+      height: 10px;
+      width: 10px;
+      border-radius: 10px;
       border: 1px solid #B90183;
-      color: rgba(0, 0, 0, 0.0);
       background: rgba(255, 255, 255, 0.0);
-      text-transform: uppercase;
-      transition: color 0.3s, background 0.3s;
-      cursor: pointer;
   }
   div:hover {
-      color: rgba(0, 0, 0, 1.0);
       background: #B90183;
+  }
+  label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      opacity: 0;
+      height: 0;
+      font-size: 11px;
+  }
+  div:hover + label {
+      opacity: 1;
   }
 </Style>
 </Component>
@@ -705,6 +610,179 @@ DemoModal and DemoChart are already defined. Try using below! -->
 
 
 
+<Component namespace="eg" name="Search">
+<!-- Modulo can be used with APIs to create interactive apps.
+This book search shows how a Script tag can use an API -->
+<Template>
+  <input [state.bind] name="search" />
+  <button @click:=script.doSearch>Go</button>
+  {% if state.loading %}<em>Loading...</em>{% endif %}
+  <ol>
+    {% for item in state.results %}
+      <li>
+        <img src="{{ item.cover }}" />
+        <strong>{{ item.title }}</strong>
+      </li>
+    {% endfor %}
+  </ol>
+</Template>
+
+<State
+    search="the lord of the rings"
+    loading:=false
+    results:=[]
+></State>
+
+<Script>
+    const OPTS = '&limit=6&fields=title,author_name,cover_i';
+    const COVER ='https://covers.openlibrary.org/b/id/';
+    const API = 'https://openlibrary.org/search.json?q=';
+    function doSearch() {
+        const url = API + '?q=' + state.search + OPTS;
+        state.loading = true;
+        fetch(url)
+            .then(response => response.json())
+            .then(dataBackCallback);
+    }
+
+    function dataBackCallback(data) {
+        for (const item of data.docs) {
+            // For convenience, we prepare the cover URL
+            item.cover = COVER + item.cover_i + '-S.jpg';
+        }
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+</Script>
+
+</Component>
+
+
+
+<Component namespace="eg" name="SearchBox">
+<!-- A "type as you go" search box implementation,
+an example of more complicated HTML and JS behavior -->
+<Template>
+<p>Type a book name for "search as you type"
+(e.g. try &ldquo;the lord of the rings&rdquo;)</p>
+
+<input [state.bind] name="search"
+  @keyup:=script.typingCallback />
+
+<div class="results {% if state.search.length gt 0 %}
+                      visible {% endif %}">
+  <div class="results-container">
+    {% if state.loading %}
+      <img src="{{ staticdata.gif }}" alt="loading" />
+    {% else %}
+      {% for result in state.results %}
+        <div class="result">
+          <img
+            src="{{ staticdata.cover|add:result.cover_i }}-S.jpg"
+          /> <label>{{ result.title }}</label>
+        </div>
+      {% empty %}
+        <p>No books found.</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+</Template>
+
+<State
+    search=""
+    results:=[]
+    loading:=false
+></State>
+
+<!-- Puting long URLs down here to declutter -->
+<StaticData>
+{
+  apiBase: 'https://openlibrary.org/search.json',
+  cover: 'https://covers.openlibrary.org/b/id/',
+  gif: 'https://cdnjs.cloudflare.com/ajax/libs/' +
+    'semantic-ui/0.16.1/images/loader-large.gif'
+}
+</StaticData>
+
+<Script>
+    function typingCallback() {
+        state.loading = true;
+        const search = `q=${state.search}`;
+        const opts = 'limit=6&fields=title,author_name,cover_i';
+        const url = `${staticdata.apiBase}?${search}&${opts}`;
+        _globalDebounce(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(dataBackCallback);
+        });
+    }
+
+    function dataBackCallback(data) {
+        state.results = data.docs;
+        state.loading = false;
+        element.rerender();
+    }
+
+    let _globalDebounceTimeout = null;
+    function _globalDebounce(func) {
+        if (_globalDebounceTimeout) {
+            clearTimeout(_globalDebounceTimeout);
+        }
+        _globalDebounceTimeout = setTimeout(func, 500);
+    }
+</Script>
+
+<Style>
+    input {
+        width: 100%;
+    }
+    .results-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .results-container > img { margin-top 30px; }
+    .results {
+        position: absolute;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        display: block;
+        border: 2px solid #B90183;
+        border-radius: 0 0 20px 20px;
+        transition: height 0.2s;
+        z-index: 20;
+        background: white;
+    }
+    .results.visible {
+        height: 200px;
+        width: 200px;
+    }
+    .result {
+        padding: 10px;
+        width: 80px;
+        position: relative;
+    }
+    .result label {
+        position: absolute;
+        width: 80px;
+        background: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        top: 0;
+        left: 0;
+    }
+</Style>
+
+<TestSuite
+    src="./examplelib-tests/SearchBox-tests.html"
+></TestSuite>
+
+</Component>
+
+
+
 <!--
 
     {% comment "Uncomment this comment to try changing the easing!" %}
@@ -715,78 +793,6 @@ DemoModal and DemoChart are already defined. Try using below! -->
     ></x-DemoSelector>
     {% endcomment %}
 -->
-
-<Component namespace="eg" name="PrimeSieve">
-<!-- Demos mouseover, template filters, template control flow,
-     and static script exports -->
-<Template>
-  <div class="grid">
-    {% for i in script.exports.range %}
-      <div @mouseover:=script.setNum
-        class="
-            {# If-statements to check divisibility in template: #}
-            {% if state.number == i %}number{% endif %}
-            {% if state.number lt i %}hidden{% else %}
-              {% if state.number|divisibleby:i %}whole{% endif %}
-            {% endif %}
-        ">{{ i }}</div>
-    {% endfor %}
-  </div>
-</Template>
-
-<State
-    number:=64
-></State>
-
-<Script>
-    // Getting big a range of numbers in JS. Use "script.exports"
-    // to export this as a one-time global constant.
-    // (Hint: Curious how it calculates prime? See CSS!)
-    script.exports.range = 
-        Array.from({length: 63}, (x, i) => i + 2);
-    function setNum(payload, ev) {
-        state.number = Number(ev.target.textContent);
-    }
-</Script>
-
-<Style>
-.grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    color: #ccc;
-    font-weight: bold;
-    width: 100%;
-    margin: -5px;
-}
-.grid > div {
-    border: 1px solid #ccc;
-    cursor: crosshair;
-    transition: 0.2s;
-}
-div.whole {
-    color: white;
-    background: #B90183;
-}
-div.hidden {
-    background: #ccc;
-    color: #ccc;
-}
-
-/* Color green and add asterisk */
-div.number { background: green; }
-div.number::after { content: "*"; }
-/* Check for whole factors (an adjacent div.whole).
-   If found, then hide asterisk and green */
-div.whole ~ div.number { background: #B90183; }
-div.whole ~ div.number::after { opacity: 0; }
-</Style>
-
-<TestSuite
-    src="./examplelib-tests/PrimeSieve-tests.html"
-></TestSuite>
-
-</Component>
-
 
 
 <Component namespace="eg" name="WorldMap">

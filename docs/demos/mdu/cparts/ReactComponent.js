@@ -1,3 +1,5 @@
+// Note: Future progress on this is blocked on creating a NodeRequire CPart
+// E.g. something like <NodeRequire react="1.16.8"></NodeRequire>
 // TODO:
 // - Move packagePaths to be in attrs, so that users can even define
 //   mappings (allows for easy patching).
@@ -5,7 +7,6 @@
 //   gives Node-style "require" behavior.
 // - This would allow "require" style deps to be used in general.
 // - The packagePaths would be attached to the assetmanager
-// - Maybe expose a <NodeRequire react=""></NodeRequire> package?
 
 // Current breaking bug: Will be unable to load "./Button/Button.js", for two
 // reasons:
