@@ -1,0 +1,68 @@
+<template Modulo>
+    <Script -src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"
+          register="engine"
+          register-name="HandlebarsTemplater">
+        // Using the -src attribute, we load Handlebars to be private within
+        // this Script tag (and not pollute the global namespace).
+
+        // Extend the built-in Templater to insert our own code
+        const { Templater } = modulo.registry.engines;
+        modulo.register('engine', class HandlebarsTemplater extends Templater {
+            compile(text) {
+                const code = Handlebars.precompile(text);
+                console.log('this si code', code);
+                return code;
+            }
+        });
+
+        // modulo.register('util', Handlebars); // Allows Handlebars obj to be accessed elsewhere
+    </Script>
+
+    <Component name="ExampleChild">
+        <Props
+            stuff
+        ></Props>
+        <Template engine="HandlebarsTemplater">
+            <div>Example prop: {{ props.stuff }}</div>
+        </Template>
+        <Style>
+            button {
+                border: 3px solid orange;
+                font-size: 30px;
+            }
+        </Style>
+    </Component>
+
+</template>
+
+
+<script src="/js/Modulo.js"></script>
+
+<!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
+     to prevent it from being included in a final bundle. -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
+<script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
+
+<!-- Load JSXTemplate CPart, which uses Babel to compile JSX-style templates -->
+<script src="/demos/mdu/cparts/JSXTemplate.js"></script>
+
+
+<h1>Custom Template Engine: Handlebars.js Demo</h1>
+
+<hr />
+<!-- Finally, instantiate our JSX-based component -->
+<x-ExampleJSXComponent txt="Hello"></x-ExampleJSXComponent>
+
+
+<!-- ######################################################################### -->
+<!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
+<div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
+    <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
+    modulo.fetchQueue.enqueue(String(location.href), text => {
+        this.nextSibling.textContent = text;
+        window.navigator.clipboard.writeText(text); 
+        this.textContent += '  [☑ Copied to clipboard!]';
+    })">COPY DEMO</a><pre></pre>
+</div>
+<!-- ######################################################################### -->
+

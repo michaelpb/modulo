@@ -1,7 +1,7 @@
 <script src="/js/Modulo.js"></script>
 
 <!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
-     to prevent it from being included when compiled into a final bundle. -->
+     to prevent it from being included in a final bundle. -->
 <script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
 <script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
 
@@ -15,8 +15,8 @@ components as named in the script -->
 <script src="/demos/mdu/cparts/ReactComponent.js"></script>
 
 
-<template modulo-embed>
-    <script type="modulo/ReactComponent" name="LikeButton">
+<template Modulo>
+    <script ReactComponent name="LikeButton">
         // Example taken from React's "Like button" tutorial
         class LikeButton extends React.Component {
             constructor(props) {
@@ -38,7 +38,7 @@ components as named in the script -->
     </script>
 
     <Component name="LikeButtonModulo">
-        <!-- Same example as above, except in Modulo -->
+        <!-- Same example as above, except written in Modulo -->
         <Props
             message
         ></Props>
@@ -60,7 +60,6 @@ components as named in the script -->
     </Component>
 </template>
 
-<script> Modulo.defineAll() </script>
 
 
 <h1>Custom CPart: ReactComponent Demo</h1>
@@ -92,9 +91,9 @@ a similar ramp up.</p>
 <!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
 <div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
     <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
-    Modulo.fetchQ.enqueue('.', text => {
+    modulo.fetchQueue.enqueue(String(location.href), text => {
         this.nextSibling.textContent = text;
-        navigator.clipboard.writeText(text); 
+        window.navigator.clipboard.writeText(text); 
         this.textContent += '  [☑ Copied to clipboard!]';
     })">COPY DEMO</a><pre></pre>
 </div>

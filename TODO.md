@@ -24,6 +24,8 @@ possibly implement "Config" concept
 9. Get remaining ~100 extra tests running
 
 ## New features
+- Finish "register=" Script syntax
+- Redo build system to "record" invocations
 - modulo-create
     - Finish this as the NPM quick start example
 - index.html

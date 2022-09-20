@@ -1176,7 +1176,8 @@ modulo.register('cpart', class Template {
         // (Reconciler), and maybe even Script (something that wraps and
         // exposes, e.g.  ScriptContainer) and StaticData (DataProcessor)
         modulo.assert(conf.Content, 'No Template Content specified.');
-        const instance = new modulo.registry.engines.Templater(modulo, conf);
+        const engine = conf.engine || 'Templater';
+        const instance = new modulo.registry.engines[engine](modulo, conf);
         conf.Hash = instance.Hash;
         delete conf.Content;
     }
@@ -1245,10 +1246,6 @@ modulo.register('cpart', class Script {
 
         const opts = { exports: 'script' };
         if (!conf.Parent) {
-            // TODO Confirm this works
-            if (!code.includes('CodeMirror, copyright (c)')) { // CodeMirror Source
-                console.log('WARNING: Hardcoded PARENTLESS code.'); // XXX
-            }
             localVars = [];
             allArgs = [ 'modulo' ];
             delete opts.exports;
@@ -1257,6 +1254,18 @@ modulo.register('cpart', class Script {
         const func = modulo.assets.registerFunction(allArgs, code, opts);
         conf.Hash = modulo.assets.getHash(allArgs, code);
         conf.localVars = localVars;
+
+        if (conf.register) {
+            // XXX HAX
+            // TODO: Refactor:
+            // Run as prebuild
+            modulo.assert(conf.registerName, 'Must specify register name as well');
+            const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
+            // NOTE: Uses "window" as "this." context for better compat
+            modulo.assets.runInline(`modulo.register("${ conf.register }", ` +
+                `${ exCode }.call(window, currentModulo).${ conf.registerName });\n`);
+            delete conf.Hash; // prevent getting run again
+        }
     }
 
     static defineCallback(modulo, conf) {
