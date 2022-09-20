@@ -11,12 +11,11 @@
             immediately starts drag motion
 
 
-
 ANOTHER IDEA:
 - Have parameters hook up directly with state properties, so turning knobs can
   be fast
 - Write a script that just goes through API docs and parses into JSON, that can
-  then be read as DataSource for a DAW or modular synth-type app
+  then be read as StaticData for a DAW or modular synth-type app
 */
 
 const TONE_JS_API_EVENT_TYPED = { Loop: true, Part: true, Pattern: true,
@@ -85,7 +84,11 @@ const TONE_JS_API = [
 const TONE_JS_API_SETS = Object.fromEntries(
     TONE_JS_API.map(({ name, devices }) => ([name, new Set(devices)])));
 
-Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
+modulo.register('cpart', class ToneJsAdaptor {
+    // Set a static property of name to override the class name
+    // (ToneJsAdaptor), so the CPart is simply '<Tone'
+    static name = 'Tone';
+
     initializedCallback(renderObj) {
         if (!this.attrs.engine) {
             this.Tone = Tone;
@@ -132,7 +135,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
     }
 
     prepParameters(parameters, deviceName) {
-        const { type } = Modulo.templating.defaultOptions.filters;
+        const { type } = this.modulo.config.templater.filters;
         const pType = type(parameters);
         if (!parameters) {
             return undefined; // Use default
@@ -150,7 +153,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             return this.boundState.data[stateKey];
 
         } else {
-            Modulo.assert(false, `Device node (${string}) invalid: ${parameters}`);
+            this.modulo.assert(false, `Device node (${string}) invalid: ${parameters}`);
         }
     }
 
@@ -167,7 +170,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
     }
 
     bindToState(stateKey, deviceName) {
-        const { get } = Modulo.utils;
+        const { get } = this.modulo.registry.utils;
         if (!(stateKey in this.devicesByStateKey)) {
             this.devicesByStateKey[stateKey] = [];
         }
@@ -184,7 +187,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
 
         // Bind to sub-keys as well (e.g. state.envelope.attack)
         const getSubKeys = (obj, stateKey) => {
-            console.log('theres', obj, stateKey);
+            // console.log('theres', obj, stateKey);
             const subObj = get(obj, stateKey);
             const keyArr = [];
             for (const keySuffix of Object.keys(subObj)) {
@@ -198,7 +201,6 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
         };
 
         for (const key of getSubKeys(state.data, stateKey)) {
-            console.log('keyyy', key);
             if (!(key in state.boundElements)) {
                 state.boundElements[key] = [];
             }
@@ -216,7 +218,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             lastObj[key] = {};
             lastObj = lastObj[key];
         }
-        const { set } = Modulo.utils;
+        const { set } = this.modulo.registry.utils;
         set(obj, keyPath, val); // finally, do the assign TODO refactor
         return obj;
     }
@@ -253,7 +255,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
         const deviceName = name.replace(/[0-9]/g, ''); // allow for named, e.g. Oscillator1
         const lcName = deviceName.toLowerCase(); // normalize (for attr names)
         const deviceType = this.lowerToCapitalized[lcName];
-        Modulo.assert(deviceType, `No device named: ${ deviceName }`);
+        this.modulo.assert(deviceType, `No device named: ${ deviceName } (${ lcName })`);
 
         let device = null;
         if (deviceType in TONE_JS_API_EVENT_TYPED) {
@@ -290,7 +292,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
 
         // Redo type-based arrays
         this.setupTypeBasedArrays();
-        console.log('device', device);
+        // console.log('device', device);
     }
 
     getNextAdaptorId() {
@@ -448,7 +450,7 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             identifier = args[0];
             time = args[1];
         }
-        console.log('this is', methodName, identifier, time);
+        // console.log('this is', methodName, identifier, time);
         for (const device of this.data.deviceArray) {
             if (methodName in device) {
                 if (duration) {
@@ -474,11 +476,15 @@ Modulo.cparts.tone = class ToneJsAdaptor extends Modulo.ComponentPart {
             }
         }
     }
-}
+
+    getDirectives() {  LEGACY.push('tonejsadaptor.getDirectives'); return []; }
+});
 
 // Add a "getval" filter (TODO: Make this component silo'ed)
-Modulo.templating.defaultOptions.filters.getval = s => s.getValue();
-Modulo.templating.defaultOptions.filters.stepprogress = (s) => {
+//modulo.config.templater.defaultOptions.filters.getval = s => s.getValue();
+//modulo.config.templater.defaultOptions.filters.stepprogress = (s) => {
+modulo.config.templater.filters.getval = s => s.getValue();
+modulo.config.templater.filters.stepprogress = (s) => {
     // TODO hardcoding, should use increment from s
     const steps = 8;
     return Math.floor(Number(s.progress) * steps);
