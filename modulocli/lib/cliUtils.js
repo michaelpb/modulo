@@ -193,7 +193,12 @@ function processBrowserConsoleLog(args) {
     }
 
     args[0] = args[0].substr(2); // remove %c
-    const style = args.pop(); // remove style specification
+
+    let style = args.pop(); // remove style specification
+    if (typeof style !== 'string' || style === '[object Object]') {
+        style = args.pop(); // Delete bogus style string
+    }
+
     if (style.includes('red')) {
         args[0] = TERM.RED_FG + args[0] + TERM.RESET;
     } else if (style.includes('yellow')) {

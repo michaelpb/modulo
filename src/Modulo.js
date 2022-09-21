@@ -96,12 +96,12 @@ window.Modulo = class Modulo {
 
     preprocessAndDefine() {
         this.repeatConfigurePreprocessors(() => {
-            // XXX TODO: remove nu nonsense
             this.setupParents(); // Ensure sync'ed up
-            const nupatches = this.getNuLifecyclePatches(this.registry.cparts, 'prebuild');
-            this.applyPatches(nupatches);
-            const nupatches2 = this.getNuLifecyclePatches(this.registry.cparts, 'define');
-            this.applyPatches(nupatches2);
+            const names = [ 'prebuild', 'define' ]; // TODO, make config?
+            const lcObj = this.registry.cparts;
+            const defArray = Array.from(Object.values(this.defs)).flat();
+            const patches = this.getLifecyclePatches(lcObj, names, defArray);
+            this.applyPatches(patches);
         });
     }
 
@@ -117,74 +117,30 @@ window.Modulo = class Modulo {
         return result;
     }
 
-    getNuLifecyclePatches(lcObj, lifecycleName, searchNamespace = null, hackSNS = null) {
-        // todo: Make it lifecycleNames (plural)
+    getLifecyclePatches(lcObj, lifecycleNames, defArray = null) {
         const patches = [];
-        const methodName = lifecycleName + 'Callback';
-        const foundNS = [];
-        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
-            // TODO refactor searchNamespace & hackSNS away somehow
-            if (searchNamespace) {
-                if (searchNamespace !== namespace && hackSNS !== namespace) {
-                    continue;
-                } else {
-                    foundNS.push(namespace);
+        for (const lifecycleName of lifecycleNames) {
+            const methodName = lifecycleName + 'Callback';
+            for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
+                if (!(methodName in obj)) {
+                    continue; // Skip if obj has not registered callback
                 }
-            }
-            for (const conf of confArray) {
-                if (conf.Type in lcObj && methodName in lcObj[conf.Type]) {
-                    patches.push([ lcObj[conf.Type], methodName, conf ]);
+                const isType = ({ Type }) => Type === typeUpper;
+                const defConf = this.config[typeUpper.toLowerCase()];
+                const confs = defArray ? defArray.filter(isType) : [ defConf ];
+                for (const conf of confs) {
+                    patches.push([ obj, methodName, conf ]);
                 }
             }
         }
-        if (searchNamespace && !foundNS.length) {
-            console.log('NS HACK SEARCH ERROR:', this.defs, searchNamespace, hackSNS, JSON.stringify(foundNS));
-        }
         return patches;
     }
 
-    patchesFromConfArray(lcObj, lifecycleName, confArray) {
-        // TODO refactor into above
-        const patches = [];
-        const methodName = lifecycleName + 'Callback';
-        for (const conf of confArray) {
-            if (conf.Type in lcObj && methodName in lcObj[conf.Type]) {
-                patches.push([ lcObj[conf.Type], methodName, conf ]);
-            }
-        }
-        return patches;
-    }
-
-    getConfArray(searchNamespace, hackSNS) {
-        const found = [];
-        for (const [ namespace, confArray ] of Object.entries(this.defs)) {
-            // TODO ugghhh searchNamespace & hackSNS away somehow
-            if (searchNamespace === namespace || hackSNS === namespace) {
-                found.push(...confArray);
-            }
-        }
-        return found;
-    }
-
-    getLifecyclePatches(lcObj, lifecycleName) {
-        // todo: Make it lifecycleNames (plural)
-        const patches = [];
-        const methodName = lifecycleName + 'Callback';
-        for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
-            if (!(methodName in obj)) {
-                continue; // Skip if obj has not registered callback
-            }
-            const type = typeUpper.toLowerCase();
-            patches.push([ obj, methodName, this.config[type] ]);
-        }
-        return patches;
-    }
-
-    applyPatches(patches, collectObj = null) {
+    applyPatches(patches, renderObj = null) {
         for (const [ obj, methodName, conf ] of patches) {
-            const result = obj[methodName].call(obj, collectObj || this, conf, this);
-            if (collectObj && result && conf.RenderObj) {
-                collectObj[conf.RenderObj] = result;
+            const result = obj[methodName].call(obj, renderObj || this, conf, this);
+            if (renderObj && result && conf.RenderObj) {
+                renderObj[conf.RenderObj] = result;
             }
         }
     }
@@ -331,36 +287,15 @@ modulo.register('cpart', class Component {
         const libInfo = modulo.parentDefs[conf.Parent || ''] || {};
         conf.namespace = libInfo.namespace || libInfo.Name || conf.namespace || 'x';
         conf.TagName = (conf.TagName || `${ conf.namespace }-${ Name }`).toLowerCase();
+        const cpartTypes = new Set(Children.map(({ Type }) => Type));
+        const cpartNameString = Array.from(cpartTypes).join(', ');
 
-        const cpartNameString = Children.map(({ Type }) => Type).join(', ');
-        let unrolledFactoryMethods = 'const initRenderObj = {};';
-        let unrolledCPartSetup = 'this.cparts = {};';
-        let i = 0;
-        while (i < Children.length) {
-            const conf = Children[i];
-            const { Type } = conf;
-            unrolledCPartSetup += `\nthis.cparts.${ conf.RenderObj } = new ${ conf.Type }();`
-            if (!('factoryCallback' in modulo.registry.cparts[conf.Type])) {
-                i++;
-                continue;
-            }
-            const fn = `initRenderObj.${ conf.RenderObj } = ${ conf.Type }.factoryCallback`;
-            const expr = `${ fn }(initRenderObj, confArray[${ i }], modulo)`;
-            unrolledFactoryMethods += '\n    ' + expr + ';';
-            i++;
-        }
-        // TODO: When refactoring, reincoroprate the new unrolled style,
-        // probably into constructor() instead of parsedCallback
-        /*
-                new__parsedCallback() {
-                    ${ unrolledCPartSetup }
-                    modulo.setupCParts(this, confArray);
-                }
-        */
         const code = (`
             const { ${ cpartNameString } } = modulo.registry.cparts;
             const confArray = modulo.defs['${ FullName }'];
-            ${ unrolledFactoryMethods }
+
+            const cpartClasses = { ${ cpartNameString } };
+            const factoryPatches = modulo.getLifecyclePatches(cpartClasses, [ 'factory' ], confArray);
             class ${ Name } extends modulo.registry.utils.BaseElement {
                 constructor() {
                     super();
@@ -371,6 +306,9 @@ modulo.register('cpart', class Component {
                     this.moduloComponentConf = modulo.parentDefs['${ FullName }'];
                 }
             }
+
+            const initRenderObj = { elementClass: ${ Name } };
+            modulo.applyPatches(factoryPatches, initRenderObj);
             modulo.globals.customElements.define(tagName, ${ Name });
             //console.log("Registered: ${ Name } as " + tagName);
             return ${ Name };
@@ -854,12 +792,10 @@ modulo.register('util', class BaseElement extends HTMLElement {
         this.lifecycle([ 'prepare', 'render', 'reconcile', 'update' ]);
     }
 
-    lifecycle(lifecycleNames, rObj={}) {
+    lifecycle(lcNames, rObj={}) {
         this.renderObj = Object.assign({}, rObj, this.getCurrentRenderObj());
-        for (const lc of lifecycleNames) {
-            const patches = this.modulo.getLifecyclePatches(this.cparts, lc, true);
-            this.modulo.applyPatches(patches, this.renderObj);
-        }
+        const patches = this.modulo.getLifecyclePatches(this.cparts, lcNames);
+        this.modulo.applyPatches(patches, this.renderObj);
         //this.renderObj = null; // ?rendering is over, set to null
     }
 
@@ -2152,6 +2088,23 @@ modulo.register('engine', class Reconciler {
             }
         }
     }
+});
+
+
+modulo.register('util', function unrollLifecycles(modulo, lcObj, lifecycleNames) {
+    let result = '';
+    for (const lifecycleName of lifeCyleNames) {
+        const methodName = lifecycleName + 'Callback';
+        for (const [ type, obj ] of Object.entries(lcObj)) {
+            if (!(methodName in obj)) {
+                continue; // Skip if obj has not registered callback
+            }
+            const { RenderObj } = this.config[type.toLowerCase()];
+            result += `renderObj.${ RenderObj } = ${ type }.${ methodName }`
+            result += `(renderObj) || renderObj.${ RenderObj };`;
+        }
+    }
+    return result;
 });
 
 

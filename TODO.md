@@ -3,25 +3,26 @@ True final ToDo list:
 
 ## Documentation updates
 
-1. Fix Experiments
+1. (DONE) Fix Experiments
 2. Finish "what's left" / alpha targets blog post
+3. Fix all CDN links to point toward unpkg or jsdelivr or something equivalent
 
 
 ## Bug fixes
 
-1. Do script / cpart substitution on Modulo and/or Component
-2. Finish Library CPart and sort around terminology around "namespace"
-"definition" "name" "TagName" etc, make it very simple and predictable. Also
-possibly implement "Config" concept
-3. Clean up nupatches  / nufactories etc
+1. Clean up nupatches  / nufactories etc
   - Refactor: HTMLElement, Component CPart, lifecycle, etc
   - Fix directives with finalized config concept (and reintroduce
     directiveShortcuts to docs)
   - Possibly refactor into create/engine system
   - Refactor legacyCPartSetup
-7. Shadow dom?
-8. Fix some TODO/XXXs
-9. Get remaining ~100 extra tests running
+2. Do script / cpart substitution on Modulo and/or Component
+3. Finish Library CPart and sort around terminology around "namespace"
+"definition" "name" "TagName" etc, make it very simple and predictable. Also
+possibly implement "Config" concept
+4. Shadow dom?
+5. Fix some TODO/XXXs
+6. Get remaining ~100 extra tests running
 
 ## New features
 - Finish "register=" Script syntax
@@ -711,3 +712,30 @@ logic in checkWait should be more robust, I think.
         </div>
         <!-- ######################################################################### -->
 
+        // TODO: Remove dupes
+        const cpartNameString = Children.map(({ Type }) => Type).join(', ');
+        let unrolledFactoryMethods = 'const initRenderObj = {};';
+        let unrolledCPartSetup = 'this.cparts = {};';
+        let i = 0;
+        while (i < Children.length) {
+            const conf = Children[i];
+            const { Type } = conf;
+            unrolledCPartSetup += `\nthis.cparts.${ conf.RenderObj } = new ${ conf.Type }();`
+            if (!('factoryCallback' in modulo.registry.cparts[conf.Type])) {
+                i++;
+                continue;
+            }
+            const fn = `initRenderObj.${ conf.RenderObj } = ${ conf.Type }.factoryCallback`;
+            const expr = `${ fn }(initRenderObj, confArray[${ i }], modulo)`;
+            unrolledFactoryMethods += '\n    ' + expr + ';';
+            i++;
+        }
+        // TODO: When refactoring, reincoroprate the new unrolled style,
+        // probably into constructor() instead of parsedCallback
+        /*
+                new__parsedCallback() {
+                    ${ unrolledCPartSetup }
+                    modulo.setupCParts(this, confArray);
+                }
+        */
+            /*${ unrolledFactoryMethods }*/

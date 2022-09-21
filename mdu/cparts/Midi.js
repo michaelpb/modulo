@@ -1,5 +1,8 @@
+modulo.register('cparts', class WebMidiAdaptor  {
+    // Set a static property of name to override the class name
+    // (WebMidiAdaptor), so the CPart is simply '<Midi'
+    static name = 'Midi';
 
-Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
     initializedCallback() {
         if (!this.attrs.engine) {
             this.WebMidi = WebMidi; // Use WebMidi API
@@ -21,16 +24,16 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         this.WebMidi.addListener('disconnected', ev => this.element.rerender());
 
         this.WebMidi
-          .enable()
-          .then(() => {
-              this.data.isReady = true;
-              this.element.rerender();
-          })
-          .catch(err => {
-              this.data.isError = true;
-              this.data.error = err;
-              this.element.rerender();
-          });
+            .enable()
+            .then(() => {
+                this.data.isReady = true;
+                this.element.rerender();
+            })
+            .catch(err => {
+                this.data.isError = true;
+                this.data.error = err;
+                this.element.rerender();
+            });
     }
 
     /*
@@ -85,6 +88,7 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
     clearListeners() {
         if (this.selectedInputListeners) {
             for (const listener of this.selectedInputListeners) {
+                console.log(listener);
                 listener.remove(); // close out existing listeners
             }
         }
@@ -94,7 +98,8 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         if (!this.selectedInputListeners) {
             this.selectedInputListeners = [];
         }
-        this.selectedInputListeners.push(this.data.input.addListener(evName, func));
+        const listener = this.data.input.addListener(evName, func)
+        this.selectedInputListeners.push(listener);
     }
 
     connectToTone(tone) {
@@ -153,12 +158,11 @@ Modulo.cparts.midi = class WebMidiAdaptor extends Modulo.ComponentPart {
         //this.data.noteOff = this.noteOff.bind(this);
         return this.data;
     }
+    getDirectives() {  LEGACY.push('midi.getDirectives'); return []; }
+});
 
 
-}
-
-
-Modulo.cparts.midikeyboard = class MidiKeyboard extends Modulo.ComponentPart {
+modulo.register('cparts', class MidiKeyboard {
     initializedCallback() {
         this.data = {};
         this.data.fullKeys = this.makeKeyboard(0, 127);
@@ -190,5 +194,6 @@ Modulo.cparts.midikeyboard = class MidiKeyboard extends Modulo.ComponentPart {
         }
         return data;
     }
-}
+    getDirectives() {  LEGACY.push('midi.getDirectives'); return []; }
+});
 
