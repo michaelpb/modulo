@@ -119,17 +119,21 @@ window.Modulo = class Modulo {
 
     getLifecyclePatches(lcObj, lifecycleNames, defArray = null) {
         const patches = [];
+        // TODO: Make this configurable
+        const typeOrder = defArray ? Array.from(new Set(defArray.map(({ Type }) => Type)))
+                                   : Object.keys(lcObj);
         for (const lifecycleName of lifecycleNames) {
             const methodName = lifecycleName + 'Callback';
-            for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
-                if (!(methodName in obj)) {
+            //for (const [ typeUpper, obj ] of Object.entries(lcObj)) {
+            for (const typeName of typeOrder) {
+                if (!(typeName in lcObj) || !(methodName in lcObj[typeName])) {
                     continue; // Skip if obj has not registered callback
                 }
-                const isType = ({ Type }) => Type === typeUpper;
-                const defConf = this.config[typeUpper.toLowerCase()];
+                const isType = ({ Type }) => Type === typeName;
+                const defConf = this.config[typeName.toLowerCase()];
                 const confs = defArray ? defArray.filter(isType) : [ defConf ];
                 for (const conf of confs) {
-                    patches.push([ obj, methodName, conf ]);
+                    patches.push([ lcObj[typeName], methodName, conf ]);
                 }
             }
         }
@@ -1107,10 +1111,6 @@ modulo.register('cpart', class Template {
     getDirectives() {  LEGACY.push('template.getDirectives'); return []; }
 
     static prebuildCallback(modulo, conf) {
-        // TODO:  Possibly could refactor the hashing / engine system into
-        // Preprocessors, shared by Template (Templater), Component
-        // (Reconciler), and maybe even Script (something that wraps and
-        // exposes, e.g.  ScriptContainer) and StaticData (DataProcessor)
         modulo.assert(conf.Content, 'No Template Content specified.');
         const engine = conf.engine || 'Templater';
         const instance = new modulo.registry.engines[engine](modulo, conf);
@@ -1118,9 +1118,9 @@ modulo.register('cpart', class Template {
         delete conf.Content;
     }
 
-    initializedCallback(modulo, conf) {
-        const { Templater } = this.modulo.registry.engines;
-        this.templater = new Templater(this.modulo, this.conf);
+    initializedCallback() {
+        const engine = this.conf.engine || 'Templater';
+        this.templater = new this.modulo.registry.engines[engine](this.modulo, this.conf);
     }
 
     /*
@@ -1192,8 +1192,7 @@ modulo.register('cpart', class Script {
         conf.localVars = localVars;
 
         if (conf.register) {
-            // XXX HAX
-            // TODO: Refactor:
+            // XXX HAX TODO Refactor
             // Run as prebuild
             modulo.assert(conf.registerName, 'Must specify register name as well');
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
@@ -1206,7 +1205,7 @@ modulo.register('cpart', class Script {
 
     static defineCallback(modulo, conf) {
         // XXX -- HAX
-        if (!conf.Parent || conf.Parent === 'x_x') {
+        if (!conf.Parent || conf.Parent === 'x_x' && conf.Hash) {
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
             // TODO: Refactor:
             // NOTE: Uses "window" as "this." context for better compat
@@ -1513,13 +1512,6 @@ modulo.register('engine', class Templater {
         return s.match(/^\d+$/) ? s : `CTX.${cleanWord(s)}`
     }
 
-    /*
-    nextMode(mode, token) {
-        // Dead code, might be useful for extension
-        return (mode === 'text') ? null : (mode ? 'text' : token);
-    }
-    */
-
     escapeText(text) {
         if (text && text.safe) {
             return text;
@@ -1546,7 +1538,6 @@ modulo.register('engine', class Templater {
 // TODO: Consider patterns like this to avoid excess reapplication of
 // filters:
 // (x = X, y = Y).includes ? y.includes(x) : (x in y)
-
 modulo.config.templater.modes = {
     '{%': (text, tmplt, stack) => {
         const tTag = text.trim().split(' ')[0];
@@ -2091,23 +2082,6 @@ modulo.register('engine', class Reconciler {
 });
 
 
-modulo.register('util', function unrollLifecycles(modulo, lcObj, lifecycleNames) {
-    let result = '';
-    for (const lifecycleName of lifeCyleNames) {
-        const methodName = lifecycleName + 'Callback';
-        for (const [ type, obj ] of Object.entries(lcObj)) {
-            if (!(methodName in obj)) {
-                continue; // Skip if obj has not registered callback
-            }
-            const { RenderObj } = this.config[type.toLowerCase()];
-            result += `renderObj.${ RenderObj } = ${ type }.${ methodName }`
-            result += `(renderObj) || renderObj.${ RenderObj };`;
-        }
-    }
-    return result;
-});
-
-
 modulo.register('util', function fetchBundleData(modulo, callback) {
     const query = 'script[src],link[rel=stylesheet]';
     const data = [];
@@ -2195,7 +2169,6 @@ modulo.register('command', function buildhtml(modulo, opts = {}) {
     const filename = window.location.pathname.split('/').pop();
     return saveFileAs(filename, getBuiltHTML(modulo, opts));
 });
-
 
 
 if (typeof document !== 'undefined' && document.head) { // Browser environ

@@ -135,58 +135,22 @@ they become fully recommended.</p>
 
 
 
-<h2>Unit testing demos</h2>
+<h2>Custom templating: Handlebars and JSX integrations</h2>
 
-
-<p>MDU (a planned collection of CParts and other utilities) includes
-<em>TestSuite</em>, a unit testing framework that is used to test Modulo.js
-itself. Like other MDU CParts, it's usable already, but it's API may change in
-the future.</p>
-
-
-<ul class="DemoPanels">
-    <li>
-        <a href="/demos/testsuite_example.html">TestSuite Demo</a>
-        <p>Show how you use the TestSuite CPart to write your own succinct
-        unit-tests for your components.</p>
-    </li>
-    <li>
-        <a href="/demos/tests/">Modulo.js Tests</a>
-        <p>Run the full Modulo.js TestSuite in your browser. Examine how
-        TestSuite reports output in the console.</p>
-    </li>
-</ul>
-
-
-<h2>JSX and React integration</h2>
-
-<p>MDU (a planned collection of CParts and other utilities) includes CParts
-intended to make it easier to integrate with JSX or other JavaScript
-frameworks.<!-- and also to write frontend apps that use REST APIs in a
-low-code way.-->  Like other MDU CParts, they are usable already, but may
-change in the future.</p>
-
-<!--
-Should re-think FetchState, e.g. Have it bind with state or something,
-simplify to handle only one route, not use templating, and if it can be
-short enough, include in Modulo.js
-<li>
-    <a href="/demos/fetchstate_book_browser.html">FetchState API</a>
-    <p>Demonstration of an API-backed, paginated book search app,
-    <em>without</em> use of any JavaScript, beyond using the custom CPart
-    <em>FetchState</em>.</p>
-</li>
--->
+<p>Modulo templating and HTML generation can be customized at various levels.
+You can register custom CParts, in the case of using React-style JSX syntax
+which allows embedding of arbitrary JavaScript. You can also register a custom
+<em>Templater</em> engine, which the existing <em>Template</em> CPart will
+integrate into the render-flow, most notably including Modulo and third-party
+filters into the other syntax.</p>
 
 
 <ul class="DemoPanels">
-    <!--
     <li>
         <a href="/demos/handlebars_templater.html">Handlebars</a>
-        <p>Demonstration of integrating Modulo with the custom templating
-        engine, Handlebars.</p>
+        <p>Demonstration of integrating Modulo with a custom <em>Templater</em>
+        engine (in this case, Handlebars).</p>
     </li>
-    -->
 
     <li>
         <a href="/demos/jsx_template.html">JSX Templating</a>
@@ -208,6 +172,18 @@ short enough, include in Modulo.js
     -->
 
 </ul>
+
+<!--
+Should re-think FetchState, e.g. Have it bind with state or something,
+simplify to handle only one route, not use templating, and if it can be
+short enough, include in Modulo.js
+<li>
+    <a href="/demos/fetchstate_book_browser.html">FetchState API</a>
+    <p>Demonstration of an API-backed, paginated book search app,
+    <em>without</em> use of any JavaScript, beyond using the custom CPart
+    <em>FetchState</em>.</p>
+</li>
+-->
 
 <h2>Modulo for Sound & Music</h2>
 
@@ -236,28 +212,38 @@ has limited browser compatibility</a>.</p>
 
 
 
-<h2>Modulo.js browser compatibility checker</h2>
+<h2>Unit testing demos</h2>
 
-<p>One way to check for browser-compatibility bugs is by running
-Modulo.js's full test-suite in your browser.</p>
+
+<p>MDU (a planned collection of CParts and other utilities) includes
+<em>TestSuite</em>, a unit testing framework that is used to test Modulo.js
+itself. Like other MDU CParts, it's usable already, but it's API may change in
+the future.</p>
 
 
 <ul class="DemoPanels">
     <li>
-        <p>
-            Click below to launch Modulo's TestSuite:
-        </p>
+        <a href="/demos/testsuite_example.html">TestSuite Demo</a>
+        <p>Show how you use the TestSuite CPart to write your own succinct
+        unit-tests for your components.</p>
+    </li>
+
+
+    <li>
+        <a href="/demos/tests/">Modulo.js Tests</a>
+        <p>One way to check for browser-compatibility bugs is by running
+        Modulo.js's full test-suite in a new tab. View the console for
+        output.</p>
+    </li>
+
+    <li>
+        <p>Or, you can run it embedded in an iframe below. If you get anything
+        other than "Success: true", consider filing a bug.</p>
         <iframe src="/demos/tests/"
             height="40px" width="150px" style="border:none" scrolling="no"></iframe>
     </li>
-</ul>
 
-<p>Troubleshooting: If you do not see a button above, or if when you click the
-button you see <code>Success: false</code> (or nothing at all), this means that
-Modulo's test suite isn't running successfully. If you think your browser
-should be supported, consider <a
-href="https://github.com/michaelpb/modulo/issues">filing a ticket for your
-browser version</a>, if one doesn't already exist.</p>
+</ul>
 
 </mws-Page>
 

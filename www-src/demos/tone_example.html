@@ -8,13 +8,13 @@ around rendering and state triggering for proper performance. -->
 
 <template Modulo>
 
-  <Component name="HelloWorld">
+  <Component name="ModuloSynth">
     <Props
         label
     ></Props>
 
     <Template>
-        <h1 class="logo">MODULO SYNTH</h1>
+        <h1 class="logo">Modulo Synth</h1>
 
         <div class="synth controls" style="display: flex">
             <div class="label-boxes"><h2>OSCILLATOR</h2>
@@ -213,7 +213,11 @@ around rendering and state triggering for proper performance. -->
         }
         h1.logo {
             position: absolute;
-            font-size: 23px;
+            font-size: 30px;
+            font-style: italic;
+            font-weight: 200;
+            font-variant: small-caps;
+            margin-top: -13px;
         }
 
         .vertical-labels > label {
@@ -245,10 +249,7 @@ around rendering and state triggering for proper performance. -->
 <script src="/demos/mdu/cparts/ToneJsAdaptor.js"></script>
 
 
-<!-- Use it anywhere, each instance is isolated: -->
-<hr />
-<x-HelloWorld></x-HelloWorld>
-<hr />
+<x-ModuloSynth></x-ModuloSynth>
 
 <p><strong>NOTE:</strong> This audio experiment may not work on all
 platforms!</p>

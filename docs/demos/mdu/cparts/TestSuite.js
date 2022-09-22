@@ -516,7 +516,8 @@ modulo.register('util', function runTest(modulo, discovered, skippedCount) {
 
     if (window.LEG && window.LEG.length > 0) {
         //omission++;
-        console.log('LEGACY ERRORS:', window.LEG);
+        //console.log('LEGACY ERRORS:', window.LEG);
+        console.log('(LEGACY ERRORS silenced)');
     }
 
     if (!failure && !omission && success) {

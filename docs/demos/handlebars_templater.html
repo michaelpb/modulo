@@ -1,3 +1,13 @@
+<!--
+    This example shows how the templating engine ("Templater") can be swapped
+    out for your own. In this case, we write an adapter for the Handlebars
+    templating language. This will incorporate Modulo's built-in filters as
+    what Handlebars calls "Helpers". Furthermore, even any custom filters you
+    may import will get incorporated as Helpers.
+
+    Use this as a guide for creating your own Templater adaptors to register
+    whatever templating engines are useful to your project!
+-->
 <template Modulo>
     <Script -src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"
           register="engine"
@@ -6,27 +16,54 @@
         // this Script tag (and not pollute the global namespace).
 
         // Extend the built-in Templater to insert our own code
-        const { Templater } = modulo.registry.engines;
-        modulo.register('engine', class HandlebarsTemplater extends Templater {
+        class HandlebarsTemplater extends modulo.registry.engines.Templater {
             compile(text) {
-                const code = Handlebars.precompile(text);
-                console.log('this si code', code);
+                // Followed Handlebar's documentation for precompiling:
+                // https://handlebarsjs.com/api-reference/compilation.html
+                const code = 'return ' + Handlebars.precompile(text);
+                this.Hash = modulo.assets.getHash([], code);
+                this.stack = []; // ensure stack is set to empty
                 return code;
             }
-        });
 
-        // modulo.register('util', Handlebars); // Allows Handlebars obj to be accessed elsewhere
+            render(renderObj) {
+                if (!this.handlebarsTemplate) {
+                    const spec = this.renderFunc(); // "Rehydrate" spec
+                    this.handlebarsTemplate = Handlebars.template(spec);
+                    this.hbOptions = { helpers: this.filters };
+                }
+                const templateCtx = Object.assign({ renderObj }, renderObj);
+                return this.handlebarsTemplate(templateCtx, this.hbOptions);
+            }
+        }
     </Script>
 
-    <Component name="ExampleChild">
+    <Component name="ExampleComponent">
         <Props
-            stuff
+            txt
         ></Props>
         <Template engine="HandlebarsTemplater">
-            <div>Example prop: {{ props.stuff }}</div>
+            <div>Props work: {{props.txt}}</div>
+            {{#unless (first state.data)}}
+                <em>First item of data is falsy</em>
+            {{/unless}}
+            <ul class="people_list">
+                <!-- handlebar "helper" syntax can be used for filters -->
+                {{#each state.people}}
+                    <li>{{upper this}}</li>
+                {{/each}}
+            </ul>
         </Template>
+        <State
+            data:='[ null, true, false ]'
+            people:='[
+                "Ah Sahm",
+                "Mai Ling",
+                "Young Jun"
+            ]'
+        ></State>
         <Style>
-            button {
+            li {
                 border: 3px solid orange;
                 font-size: 30px;
             }
@@ -38,20 +75,11 @@
 
 <script src="/js/Modulo.js"></script>
 
-<!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
-     to prevent it from being included in a final bundle. -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
-<script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
-
-<!-- Load JSXTemplate CPart, which uses Babel to compile JSX-style templates -->
-<script src="/demos/mdu/cparts/JSXTemplate.js"></script>
-
-
 <h1>Custom Template Engine: Handlebars.js Demo</h1>
 
 <hr />
 <!-- Finally, instantiate our JSX-based component -->
-<x-ExampleJSXComponent txt="Hello"></x-ExampleJSXComponent>
+<x-ExampleComponent txt="Hello"></x-ExampleComponent>
 
 
 <!-- ######################################################################### -->

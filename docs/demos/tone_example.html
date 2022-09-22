@@ -8,13 +8,13 @@ around rendering and state triggering for proper performance. -->
 
 <template Modulo>
 
-  <Component name="HelloWorld">
+  <Component name="ModuloSynth">
     <Props
         label
     ></Props>
 
     <Template>
-        <h1 class="logo">MODULO SYNTH</h1>
+        <h1 class="logo">Modulo Synth</h1>
 
         <div class="synth controls" style="display: flex">
             <div class="label-boxes"><h2>OSCILLATOR</h2>
@@ -213,7 +213,11 @@ around rendering and state triggering for proper performance. -->
         }
         h1.logo {
             position: absolute;
-            font-size: 23px;
+            font-size: 30px;
+            font-style: italic;
+            font-weight: 200;
+            font-variant: small-caps;
+            margin-top: -13px;
         }
 
         .vertical-labels > label {
@@ -245,10 +249,7 @@ around rendering and state triggering for proper performance. -->
 <script src="/demos/mdu/cparts/ToneJsAdaptor.js"></script>
 
 
-<!-- Use it anywhere, each instance is isolated: -->
-<hr />
-<x-HelloWorld></x-HelloWorld>
-<hr />
+<x-ModuloSynth></x-ModuloSynth>
 
 <p><strong>NOTE:</strong> This audio experiment may not work on all
 platforms!</p>
@@ -261,25 +262,20 @@ Tone.js, composed of basic elements mixed together using Tone.js, using the Web
 Audio engine. Play around with the other sliders to adjust other aspects of the
 sound.</em>
 
-<!--
-    REMEMBER: While the demos show embedded components (with template
-    modulo-embed), this is only to make it easier to copy & paste into one
-    file. Always separate your components into a Library early on to avoid
-    issues later on. E.g., use code like:
 
-    <Modulo>
-        <Library src="/static/components/MyWebComponents.html"></Library>
-    </Modulo>
--->
-
+<!-- Remember - Move Component definitions to a library file later:
+<script Modulo
+    src="https://modulojs.org/js/Modulo.js"
+    -src="./libraries/my_components.html"
+></script> -->
 
 <!-- ######################################################################### -->
 <!-- # BOILERPLATE FOR MODULO DEMOS    ####################################### -->
 <div style="position: absolute; top: 0; right: 0; font-size: 20px; background: #ddd;">
     <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
-    Modulo.fetchQ.enqueue('.', text => {
+    modulo.fetchQueue.enqueue(String(location.href), text => {
         this.nextSibling.textContent = text;
-        navigator.clipboard.writeText(text); 
+        window.navigator.clipboard.writeText(text); 
         this.textContent += '  [☑ Copied to clipboard!]';
     })">COPY DEMO</a><pre></pre>
 </div>

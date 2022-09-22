@@ -10,11 +10,17 @@ True final ToDo list:
 
 ## Bug fixes
 
-1. Clean up nupatches  / nufactories etc
+1. Clean up
+  - (DONE) nupatches  / nufactories etc
+  - Possibly refactor into create/engine system (next, so we can better
+    finalize config?)
+        - Possibly could refactor the hashing / engine system into
+          Preprocessors, shared by Template (Templater), Component
+          (Reconciler), and maybe even Script (something that wraps and
+          exposes, e.g.  ScriptContainer) and StaticData (DataProcessor)
   - Refactor: HTMLElement, Component CPart, lifecycle, etc
   - Fix directives with finalized config concept (and reintroduce
     directiveShortcuts to docs)
-  - Possibly refactor into create/engine system
   - Refactor legacyCPartSetup
 2. Do script / cpart substitution on Modulo and/or Component
 3. Finish Library CPart and sort around terminology around "namespace"
@@ -739,3 +745,22 @@ logic in checkWait should be more robust, I think.
                 }
         */
             /*${ unrolledFactoryMethods }*/
+
+
+
+modulo.register('util', function unrollLifecycles(modulo, lcObj, lifecycleNames) {
+    let result = '';
+    for (const lifecycleName of lifeCyleNames) {
+        const methodName = lifecycleName + 'Callback';
+        for (const [ type, obj ] of Object.entries(lcObj)) {
+            if (!(methodName in obj)) {
+                continue; // Skip if obj has not registered callback
+            }
+            const { RenderObj } = this.config[type.toLowerCase()];
+            result += `renderObj.${ RenderObj } = ${ type }.${ methodName }`
+            result += `(renderObj) || renderObj.${ RenderObj };`;
+        }
+    }
+    return result;
+});
+
