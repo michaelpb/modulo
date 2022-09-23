@@ -12,7 +12,7 @@
 - [X] A "no fuss" drop-in to add JS to existing web apps
 
 
-- **Status**: `prealpha` *(unreleased, but keep an eye on it!)*
+- **Status**: `alpha` *(ready for some use, but likely has bugs!)*
 
 
 -----
