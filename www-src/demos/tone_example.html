@@ -2,10 +2,6 @@
 <!-- This is a complete working example of using a CPart to integrate the Tone.JS
     https://tonejs.github.io/ library into a Modulo project -->
 
-
-<!-- Note: Modulo is a work in progress, and may still need some tweaking
-around rendering and state triggering for proper performance. -->
-
 <template Modulo>
 
   <Component name="ModuloSynth">
@@ -245,14 +241,14 @@ around rendering and state triggering for proper performance. -->
 
 <!-- Finally, include a Modulo CDN link & activate (at the bottom) -->
 <script src="https://unpkg.com/tone"></script>
-<script src="/js/Modulo.js"></script>
-<script src="/demos/mdu/cparts/ToneJsAdaptor.js"></script>
+<script src="https://unpkg.com/mdu.js"></script>
+<script src="https://unpkg.com/mdu.js@latest/mdu/cparts/ToneJsAdaptor.js"></script>
 
 
 <x-ModuloSynth></x-ModuloSynth>
 
-<p><strong>NOTE:</strong> This audio experiment may not work on all
-platforms!</p>
+<p><strong>NOTE:</strong> This audio experiment is susceptible to lag, and may
+not work on all platforms!</p>
 
 <p><strong>Instructions:</strong> Press the "Play" triangle button to start the
 sequencer playing back. Click on the note steps (initially all C3, designating
@@ -265,8 +261,8 @@ sound.</em>
 
 <!-- Remember - Move Component definitions to a library file later:
 <script Modulo
-    src="https://modulojs.org/js/Modulo.js"
-    -src="./libraries/my_components.html"
+    src="https://unpkg.com/mdu.js"
+    -src="/static/libraries/all.html"
 ></script> -->
 
 <!-- ######################################################################### -->

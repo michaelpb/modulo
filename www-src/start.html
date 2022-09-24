@@ -7,141 +7,104 @@
     pagetitle="Start"
     navbar="start">
 
+<br />
 <h1>Get started with Modulo</h1>
-<br />
-
-<div class="Docs-squareInfo">
-    <section class="Tutorial-tryit">
-        <h4>Brand new?</h4>
-
-        <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
-
-        <p>Modulo is brand new in general, so it's probably brand new to you as
-        well!  The Modulo tutorial walks through the basics of setting up
-        Modulo in a project and creating components.<br />
-        <em>Prerequisites: HTML, CSS (for part 1 and 2), and
-        JavaScript (for part 3)</em></p>
-
-        <a class="m-Btn" style="margin-top: 30px"
-            href="/docs/tutorial_part1.html">Start the Modulo Tutorial &#187;</a>
-    </section>
-</div>
-
-<br />
-<div class="Docs-squareInfo">
-    <h2>Starting snippet</h2>
-    <p>Want to get started as quickly as possible? Copy &amp; paste
-    the following starting code into your HTML document:</p>
 
 
+<div class="Docs-sideBySide">
 
-<mws-Demo
-text='
-<!-- Include JS source, and define an embedded Component -->
-<script Modulo src="https://modulojs.org/js/Modulo.js">
-    <Component name="ButtonExample">
-        <Props
-            txt
-        ></Props>
+    <div class="Docs-squareInfo">
+        <h2>Starting snippet (embedded)</h2>
+    <mws-Demo
+    text='<!-- Include CDN & embed Component -->
+<script Modulo src="https://unpkg.com/mdu.js">
+    <Component name="BtnEx">
         <Template>
-            <button><em>{{ props.txt }}</em></button>
+            <button><slot></slot></button>
         </Template>
         <Style>
-            button { background-color: tomato }
+            button { background: tomato }
         </Style>
     </Component>
 </script>
-
-<!-- Use it anywhere: -->
-<p><x-ButtonExample txt="Click me"></x-ButtonExample></p>
-
-<!-- TODO - Move Component definitions to a library file:
-<script Modulo
-    src="https://modulojs.org/js/Modulo.js"
-    -src="./libraries/my_components.html"
-></script> -->
-'></mws-Demo>
-
-<p>Note: The TODO is there as a reminder that it's best to keep your components
-defined in a separate file.  Otherwise, you won't be able to reuse them across
-pages, or normally use &lt;Script&gt; CParts.</p>
-
-<!--
-Example custom component, using some CParts
-<template modulo-embed>
-  <Component name="HelloWorld">
-    <Props txt></Props>
-    <Template> <a @click:=script.inc>{{ props.txt }} {{ state.num }}</a> </Template>
-    <State num:=1 ></State>
-    <Script> function inc() { state.num++; } </Script>
-    <Style> a { color: green; } </Style>
-  </Component>
-</template>
-
-Use it anywhere:
-<x-HelloWorld txt="Click to count:"></x-HelloWorld>
-
-Finally, include a Modulo CDN link & activate (at the bottom)
-<script src="https://modulojs.org/js/Modulo.js"></script>
-<script>Modulo.defineAll();</script>
+<p><x-BtnEx><em>Hello Modulo</em></x-BtnEx></p>'></mws-Demo>
+    </div>
 
 
-Use the latest version, served by GitHub pages
-<script src="https://modulojs.org/js/Modulo.js"></script>
+    <div class="Docs-squareInfo">
+        <section class="Tutorial-tryit">
+            <h4>Brand new?</h4>
 
+            <p style="margin-top: 10px"><strong>Take the tutorial!</strong></p>
 
-COMING SOON: Use a proper CDN, such as Skypack
-Add ?min to the URL to get minified version.
-<script src="https://cdn.skypack.dev/modulo"></script>
+            <p>Modulo is brand new in general, so it's probably brand new to you as
+            well! The Modulo tutorial goes through Modulo basics, starting with
+            HTML and CSS (part 1 and 2), and then JavaScript (part 3).</p>
 
-Once included, use defineAll() to activate
-<script>Modulo.defineAll()</script>
--->
-<!-- Better: Include integrity checksum:
-<script src="https://modulojs.org/js/Modulo.js"
-integrity="sha384-$modulojs_sha384_checksum$"
-crossorigin="anonymous"></script>
- -->
-
+            <a class="m-Btn" style="margin-top: 30px"
+                href="/docs/tutorial_part1.html">Start the Tutorial &#187;</a>
+        </section>
+    </div>
 </div>
 
-<br />
-<!--
-<div class="Docs-squareInfo">
-    <h2>NPM</h2>
-    <p>Coming soon!</p>
-</div>
--->
 
+<div class="Docs-sideBySide">
+    <div class="Docs-squareInfo">
+        <h2>Starting snippet (library)</h2>
+        <p>When keeping your <em>Components</em> in a separate file (e.g.
+        <code>static/components.html</code>), include with the following:</p>
+        <mws-Demo
+        text='<script Modulo
+    src="https://unpkg.com/mdu.js"
+    -src="/static/components.html"
+></script>'></mws-Demo>
+    </div>
 
-<br />
-
-<div class="Docs-squareInfo">
-    <h2>Examples</h2>
-    <p>Prefer to learn from examples, to get an idea of what you can do?</p>
-    <p><a href="/demos/">Learn from mini-examples and demos &#187;</a></p>
-</div>
-
-<br />
-<div class="Docs-squareInfo">
-    <h2>NPM</h2>
-    <p>The following command will initialize a static site:</p>
-    <code>npm init modulo</code>
+    <div class="Docs-squareInfo Docs-demos">
+        <p><strong style="background: white;">Learn by example?</strong></p>
+        <a class="m-Btn" href="/demos/">
+            <span>Explore the demos &#187;</span>
+        </a>
+    </div>
 </div>
 
-<br />
+
 <div class="Docs-squareInfo">
-    <h2>Download</h2>
-    <a style="text-transform: none"
-        class="m-Btn"
-        href="https://modulojs.org/js/Modulo.js" download="Modulo.js">
-    <span alt="Down arrow">&#x2304;</span> Modulo.js
-    <span id="vnum"></span> (Latest)</a>
+    <h2>More ways to get started</h2>
+
+    <h3>Alternative CDNs</h3>
+    <ul>
+        <li>If want to integrate Modulo into a project that already uses ESM-style
+        <code>import</code> syntax, you can use the Skypack CDN to do so, as
+        follows:
+        <pre>import { Modulo, modulo } from 'https://cdn.skypack.dev/mdu.js';</pre>
+        </li>
+
+        <li>You can also pin a specific version of Modulo as such:
+        <pre>https://unpkg.com/mdu.js@0.0.8/src/Modulo.js</pre>
+        </li>
+    </ul>
+</div>
+
+<div class="Docs-sideBySide">
+    <div>
+        <h3>Download</h3>
+        <a style="text-transform: none"
+            class="m-Btn"
+            href="https://unpkg.com/mdu.js" download="Modulo.js">
+        <span alt="Down arrow">&#x2304;</span> Modulo.js
+        <span id="vnum"></span> (Latest)</a>
 
 
-    <p style="margin-top: 20px">Or run the following command:</p>
+        <p style="margin-top: 20px">Or run the following command:</p>
 
-    <code>curl https://modulojs.org/js/Modulo.js -o Modulo.js</code>
+        <code>curl https://unpkg.com/mdu.js -o Modulo.js</code>
+    </div>
+    <div>
+        <h3>NPM (Experimental)</h3>
+        <p>Initialize a Modulo-powered SSG project:</p>
+        <code>npm init modulo</code>
+    </div>
 </div>
 
 

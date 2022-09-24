@@ -539,10 +539,35 @@ a:visited {
     grid-template-columns: 350px 1fr;
 }
 
+.Docs-squareInfo {
+    padding: 10px;
+}
+
+.Docs-squareInfo > h2 {
+    /*border-top: 3px #ddd dashed;*/
+    padding-top: 10px;
+    font-weight: bold;
+}
+
+.Docs-demos {
+  background-image: url(/img/demosmontage.png);
+  background-size: 170px 170px;
+  background-position: 70px 100px;
+  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */
+  text-align: center;
+  padding-top: 90px;
+  margin-top: 10px;
+}
+
+.Docs-sideBySide {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+}
 
 
 @media (max-width: 992px) {
     .Main { display: block; }
+    .Docs-sideBySide { display: block; }
 }
 
 @media (max-width: 992px) {
