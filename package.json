@@ -1,7 +1,7 @@
 {
-  "name": "modulo.js",
+  "name": "mdu.js",
   "author": "michaelb",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Lightweight, easy to learn Web Component JavaScript framework",
   "homepage": "https://modulojs.org/",
   "main": "modulocli/modulocli.js",
