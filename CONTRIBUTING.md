@@ -20,27 +20,33 @@ standards:
 - Avoid continuing long statements onto new lines. Instead, create
   descriptively named temporary variables.
 - For larger blocks of code, consider JS constructs such as `for..of` loops to
-  keep the code's logical flow clear and imperitive, instead of chaining
+  keep the code's logical flow clear and imperative, instead of chaining
   methods such as `.forEach` or `.map`.
 - Most operations should be synchronous, so they can finish before reflow (e.g.
   do not add unnecessary layers of callback indirection)
 
 
-## Status: `prealpha`
+## Status: `alpha`
 
-- **prealpha - unreleased, keep an eye on it!**
-- alpha - use it if you don't mind large bugs or incomplete feature
+- prealpha - unreleased, keep an eye on it!
+- **alpha - use it if you don't mind large bugs or incomplete feature**
 - beta - use it if you don't mind small bugs
 - 1.x release - use it, ready for general use, some small bugs may crop up, and
   some extra features may be added
-- mature - use it, featureset is stable and will have no changes
+- mature - use it, featureset is stable and will have no changes (including
+  additions)
 
 
 ## Versioning roadmap
 
-- Prealpha / alpha: no version numbers
+- Prealpha
+- Alpha: 0.0.x
+    - Alpha versions will be released as patches on 0.0 release
 - Beta: 0.x.y
-    - Patch releases: No documentation changes
+    - Beta versions will be released according to a typical major/minor/patch
+      versioning system, as described below
+- Released:
+    - Major releases: Backwards incompatibility introduced
     - Minor releases: Documentation or feature changes
-    - Major releases: Backwards incompatibility
+    - Patch releases: No documentation changes (beyond bug fixes)
 
