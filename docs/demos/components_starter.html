@@ -10,9 +10,7 @@
     important for accessibility, see:
     https://www.w3.org/TR/wai-aria-practices/examples/dialog-modal/dialog.html
 -->
-
-
-<script Modulo src="https://modulojs.org/js/Modulo.js">
+<script Modulo src="https://unpkg.com/mdu.js">
   <Component name="Btn">
     <Style>
         :host {
@@ -105,12 +103,14 @@
         {% endfor %}
     </Template>
 
+    <!-- (Hint: The ="" syntax is for strings, while :='' is for other types) -->
     <State
         tabs:=[]
         selected=""
     ></State>
 
     <cpart Script>
+        // (Hint: prepareCallback is invoked before every render)
         function prepareCallback(renderObj) {
             state.tabs = [];
             for (const child of element.originalChildren) {
@@ -190,6 +190,7 @@
     ></State>
 
     <cpart Script>
+        // (Hint: All named functions defined at the top level will be exported)
         function show() {
             state.visible = true;
         }
@@ -278,7 +279,7 @@
 
 <!-- Remember - Move Component definitions to a library file later:
 <script Modulo
-    src="https://modulojs.org/js/Modulo.js"
+    src="https://unpkg.com/mdu.js"
     -src="./libraries/my_components.html"
 ></script> -->
 

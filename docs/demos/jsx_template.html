@@ -1,3 +1,4 @@
+<!doctype html>
 <template Modulo>
     <Component name="ExampleChild">
         <Props
@@ -88,15 +89,15 @@
 </template>
 
 
-<script src="/js/Modulo.js"></script>
+<script src="https://unpkg.com/mdu.js"></script>
 
 <!-- Load Babel & Modulo's Babel compatibility extension. The modulo-asset=y is
      to prevent it from being included in a final bundle. -->
 <script src="https://unpkg.com/@babel/standalone/babel.min.js" modulo-asset=y></script>
-<script src="/demos/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
+<script src="https://unpkg.com/mdu.js@latest/mdu/extensions/asset-manager-babel.js" modulo-asset=y></script>
 
 <!-- Load JSXTemplate CPart, which uses Babel to compile JSX-style templates -->
-<script src="/demos/mdu/cparts/JSXTemplate.js"></script>
+<script src="https://unpkg.com/mdu.js@latest/mdu/cparts/JSXTemplate.js"></script>
 
 
 <h1>Custom CPart: JSXTemplate Demo</h1>
@@ -119,7 +120,7 @@ attachment of embedded or arbitrary JavaScript code.</p>
     <a href="https://modulojs.org/demos/">&#x300A; BACK</a> | <a href="#" onclick="
     modulo.fetchQueue.enqueue(String(location.href), text => {
         this.nextSibling.textContent = text;
-        window.navigator.clipboard.writeText(text); 
+        window.navigator.clipboard.writeText(text);
         this.textContent += '  [☑ Copied to clipboard!]';
     })">COPY DEMO</a><pre></pre>
 </div>

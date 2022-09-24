@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><title>Part 1 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-xf6qsjp.css"></head><body>
+<meta charset="utf8"><title>Part 1 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-h2llqh.css"></head><body>
 
 
     
@@ -15,7 +15,7 @@
 <slot name="above-navbar"></slot>
 
 <nav class="Navbar">
-    <a href="/index.html"><img src="/img/mono_logo.png" style="height:70px" alt="Modulo"></a>
+    <a href="/index.html"><img src="/img/modulo_logo.svg" style="height:70px" alt="Modulo"></a>
     <ul>
         <li>
             <a href="/index.html#about">About</a>
@@ -216,13 +216,13 @@ Modulo?</strong></p>
 could either start with an empty file, or open up an existing HTML file, and
 paste in the following:</p>
 
-<pre>&lt;script src="https://modulojs.org/js/Modulo.js"&gt;&lt;/script&gt;</pre>
+<pre>&lt;script src="https://unpkg.com/mdu.js"&gt;&lt;/script&gt;</pre>
 
 <p>This will only include the JS file, but not activate Modulo. To activate
 Modulo, we need to add the <code>Modulo</code>, attribute to the script tag,
 and leave some space to indicate that this will (soon) contain Modulo code:</p>
 
-<pre>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;
+<pre>&lt;script Modulo src="https://unpkg.com/mdu.js"&gt;
 
 &lt;/script&gt;</pre>
 
@@ -282,7 +282,7 @@ referenced elsewhere like
 code, and must be defined within a tag like
 <code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
 can be embedded in an HTML page within a script tag like
-<code>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;</code>.</p>
+<code>&lt;script Modulo src="https://unpkg.com/mdu.js"&gt;</code>.</p>
 
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
@@ -296,7 +296,7 @@ can be embedded in an HTML page within a script tag like
 
 <mws-demo text="
 <!-- Define a custom component in a &quot;Modulo&quot; embedded script tag -->
-<script Modulo src=&quot;https://modulojs.org/js/Modulo.js&quot;>
+<script Modulo src=&quot;https://unpkg.com/mdu.js&quot;>
     <Component name=&quot;HelloWorld&quot;>
         <Template>
             Hello <strong>Modulo</strong> World!
@@ -335,7 +335,7 @@ can be embedded in an HTML page within a script tag like
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 0px; height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 659.906px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 344px; min-width: 659.906px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Define a custom component in a "Modulo" embedded script tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">Modulo</span> <span class="cm-attribute">src</span>=<span class="cm-string">"https://modulojs.org/js/Modulo.js"</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-variable">Component</span> <span class="cm-variable">name</span><span class="cm-operator">=</span><span class="cm-string">"HelloWorld"</span><span class="cm-operator">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">&lt;</span><span class="cm-variable">Template</span><span class="cm-operator">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-variable">Hello</span> <span class="cm-operator">&lt;</span><span class="cm-variable">strong</span><span class="cm-operator">&gt;</span><span class="cm-variable">Modulo</span><span class="cm-operator">&lt;</span><span class="cm-string-2">/strong&gt; World!</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">&lt;</span><span class="cm-string-2">/Template&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-string-2">/Component&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Reuse it anywhere, just like any other HTML tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span>In a P tag: <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 344px;"></div><div class="CodeMirror-gutters" style="display: none; height: 394px;"></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="display: block; right: 0px; left: 0px; height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 659.906px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 344px; min-width: 659.906px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Define a custom component in a "Modulo" embedded script tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">Modulo</span> <span class="cm-attribute">src</span>=<span class="cm-string">"https://unpkg.com/mdu.js"</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-variable">Component</span> <span class="cm-variable">name</span><span class="cm-operator">=</span><span class="cm-string">"HelloWorld"</span><span class="cm-operator">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">&lt;</span><span class="cm-variable">Template</span><span class="cm-operator">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">            <span class="cm-variable">Hello</span> <span class="cm-operator">&lt;</span><span class="cm-variable">strong</span><span class="cm-operator">&gt;</span><span class="cm-variable">Modulo</span><span class="cm-operator">&lt;</span><span class="cm-string-2">/strong&gt; World!</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">        <span class="cm-operator">&lt;</span><span class="cm-string-2">/Template&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-operator">&lt;</span><span class="cm-string-2">/Component&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">&lt;!-- Reuse it anywhere, just like any other HTML tag --&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span>In a P tag: <span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">x-HelloWorld</span><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">p</span><span class="cm-tag cm-bracket">&gt;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">div</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 344px;"></div><div class="CodeMirror-gutters" style="display: none; height: 394px;"></div></div></div></div>
         </div>
 
         
@@ -667,20 +667,21 @@ file. Then, you must include a special <code>-src</code> attribute to specify
 the new file. See below:</p>
 
 <pre>&lt;script Modulo
-    src="https://modulojs.org/js/Modulo.js"
-    -src="./libraries/my-files.html"
+    src="https://unpkg.com/mdu.js"
+    -src="/libraries/my_components.html"
 &gt;&lt;/script&gt;
 </pre>
 
 <p>This "4-liner" can now be included in any of your HTML files to import
-whatever components you have defined in <code>./libraries/my-files.html</code>.
-This allows you to share the same components across multiple plages.</p>
+whatever components you have defined in
+<code>/libraries/my_components.html</code>.
+This allows you to share the same components across multiple pages.</p>
 
 
 <!--
 
 &lt;Library
-    -src="./libraries/my-stuff.html"
+    -src="/libraries/my-stuff.html"
     namespace="coolstuff"&gt;
 &lt;/Library&gt;
 
@@ -764,9 +765,9 @@ that needs them.</p>
         would look like this:
 <mws-demo text="
 <script Modulo
-    src=&quot;https://modulojs.org/js/Modulo.js&quot;
-    -src=&quot;./libraries/my-component-lib.html&quot;
-></Modulo>
+    src=&quot;https://unpkg.com/mdu.js&quot;
+    -src=&quot;/libraries/my-component-lib.html&quot;
+></script>
 " modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
            demo-wrapper__clipboard  
@@ -793,7 +794,7 @@ that needs them.</p>
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none; bottom: 0px;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 104px; min-width: 429.484px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation"><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">Modulo</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">src</span>=<span class="cm-string">"https://modulojs.org/js/Modulo.js"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">-src</span>=<span class="cm-string">"./libraries/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;</span><span class="cm-operator">&lt;</span><span class="cm-string-2">/Modulo&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 104px;"></div><div class="CodeMirror-gutters" style="display: none; height: 154px;"></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none; bottom: 0px;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 104px; min-width: 419.875px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation"><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">Modulo</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">src</span>=<span class="cm-string">"https://unpkg.com/mdu.js"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">-src</span>=<span class="cm-string">"/libraries/my-component-lib.html"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 104px;"></div><div class="CodeMirror-gutters" style="display: none; height: 154px;"></div></div></div></div>
         </div>
 
         
@@ -937,4 +938,4 @@ forms and interactive, changing components with the State CPart.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-x13ho61r.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-x2t9oog.js"></script></body></html>

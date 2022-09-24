@@ -8,7 +8,7 @@
 
 modulo.register('cpart', class JSXTemplate {
     static prebuildCallback(modulo, conf) {
-        console.log('thsi si modulo', modulo, modulo.parentDefs[conf.Parent].Parent);
+        //console.log('thsi si modulo', modulo, modulo.parentDefs[conf.Parent].Parent);
         const DEFAULT_CONF = { presets: [ "env", "react" ] };
         let { Content } = conf;
         if (!conf.multiline) {
@@ -19,13 +19,13 @@ modulo.register('cpart', class JSXTemplate {
         // TODO: Redo nameMap stuff once namespace stuff is finalized
         const sibs = modulo.defs[modulo.parentDefs[conf.Parent].Parent];
         const componentSibs = sibs.filter(({ Type }) => Type === 'Component');
-        console.log('siblingComponents', componentSibs);
+        //console.log('siblingComponents', componentSibs);
 
 
         // Create map for: local name -> registered TagName
         conf.nameMap = Object.fromEntries(componentSibs.map(
                 (({ name, Name, TagName }) => [ name || Name, TagName ])));
-        console.log('conf.nameMap', conf.nameMap);
+        //console.log('conf.nameMap', conf.nameMap);
 
         // Get all registered cparts with a configured RenderObj 
         const getRO = ({ RenderObj }) => RenderObj;

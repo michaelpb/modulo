@@ -296,20 +296,33 @@ h1.Tagline-title {
     line-height: 1.0;
     /*font-weight: lighter;*/
     font-weight: 800; /* heavy if possible */
-    letter-spacing: 10px;
+    margin-left: 10px; /* off-center looks better */
+    /*letter-spacing: 10px;*/
     /*color: black;*/
     /*color: var(--highlight-color);*/
-    text-shadow: 0 0 1px var(--highlight-color); /* extremely subtle shadow */
+    /*
+    text-shadow: 0 0 1px var(--highlight-color);
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
+    */
+    /* extremely subtle shadow */
     color: black;
 }
 
 .Tagline-logoimg {
-    height: 100px;
+    height: 50px;
 }
 @media (min-height: 768px) {
-    .Tagline-logoimg { height: 150px; }
+    .Tagline-logoimg {
+        height: 100px;
+        margin: 10px;
+    }
+}
+@media (min-height: 1000px) {
+    .Tagline-logoimg {
+        height: 150px;
+        margin: 30px;
+    }
 }
 
 h1.Tagline-logo {
@@ -539,10 +552,35 @@ a:visited {
     grid-template-columns: 350px 1fr;
 }
 
+.Docs-squareInfo {
+    padding: 10px;
+}
+
+.Docs-squareInfo > h2 {
+    /*border-top: 3px #ddd dashed;*/
+    padding-top: 10px;
+    font-weight: bold;
+}
+
+.Docs-demos {
+  background-image: url(/img/demosmontage.png);
+  background-size: 170px 170px;
+  background-position: 70px 100px;
+  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */
+  text-align: center;
+  padding-top: 90px;
+  margin-top: 10px;
+}
+
+.Docs-sideBySide {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+}
 
 
 @media (max-width: 992px) {
     .Main { display: block; }
+    .Docs-sideBySide { display: block; }
 }
 
 @media (max-width: 992px) {
