@@ -29,7 +29,8 @@ To get started with creating a custom component, do the following 3 steps:
 
 1. Download [src/Modulo.js](https://github.com/michaelpb/modulo/blob/main/src/Modulo.js)
 (the single file that contains all of Modulo) to wherever you put JS files for
-your website (for example, `/static/js/Modulo.js`)
+your website (for example, `/static/js/Modulo.js`). Or, skip downloading, and
+directly link to a CDN: `https://unpkg.com/mdu.js`
 
 
 2. Include in your HTML file a reference to the script with a "Modulo"

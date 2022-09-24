@@ -60,13 +60,13 @@ Modulo?</strong></p>
 could either start with an empty file, or open up an existing HTML file, and
 paste in the following:</p>
 
-<pre>&lt;script src="https://modulojs.org/js/Modulo.js"&gt;&lt;/script&gt;</pre>
+<pre>&lt;script src="https://unpkg.com/mdu.js"&gt;&lt;/script&gt;</pre>
 
 <p>This will only include the JS file, but not activate Modulo. To activate
 Modulo, we need to add the <code>Modulo</code>, attribute to the script tag,
 and leave some space to indicate that this will (soon) contain Modulo code:</p>
 
-<pre>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;
+<pre>&lt;script Modulo src="https://unpkg.com/mdu.js"&gt;
 
 &lt;/script&gt;</pre>
 
@@ -126,7 +126,7 @@ referenced elsewhere like
 code, and must be defined within a tag like
 <code>&lt;Component&nbsp;name="HelloWorld"&gt;</code>, and then this definition
 can be embedded in an HTML page within a script tag like
-<code>&lt;script Modulo src="https://modulojs.org/js/Modulo.js"&gt;</code>.</p>
+<code>&lt;script Modulo src="https://unpkg.com/mdu.js"&gt;</code>.</p>
 
 <p><strong>Okay, enough talk, let's actually try this out!</strong></p>
 
@@ -141,7 +141,7 @@ can be embedded in an HTML page within a script tag like
 <mws-Demo
 text='
 <!-- Define a custom component in a "Modulo" embedded script tag -->
-<script Modulo src="https://modulojs.org/js/Modulo.js">
+<script Modulo src="https://unpkg.com/mdu.js">
     <Component name="HelloWorld">
         <Template>
             Hello <strong>Modulo</strong> World!
@@ -363,20 +363,21 @@ the new file. See below:</p>
 
 <pre>
 &lt;script Modulo
-    src="https://modulojs.org/js/Modulo.js"
-    -src="./libraries/my-files.html"
+    src="https://unpkg.com/mdu.js"
+    -src="/libraries/my_components.html"
 &gt;&lt;/script&gt;
 </pre>
 
 <p>This "4-liner" can now be included in any of your HTML files to import
-whatever components you have defined in <code>./libraries/my-files.html</code>.
-This allows you to share the same components across multiple plages.</p>
+whatever components you have defined in
+<code>/libraries/my_components.html</code>.
+This allows you to share the same components across multiple pages.</p>
 
 
 <!--
 
 &lt;Library
-    -src="./libraries/my-stuff.html"
+    -src="/libraries/my-stuff.html"
     namespace="coolstuff"&gt;
 &lt;/Library&gt;
 
@@ -429,9 +430,9 @@ text='
 <mws-Demo
 text='
 <script Modulo
-    src="https://modulojs.org/js/Modulo.js"
-    -src="./libraries/my-component-lib.html"
-></Modulo>
+    src="https://unpkg.com/mdu.js"
+    -src="/libraries/my-component-lib.html"
+></script>
 '></mws-Demo>
 
 </li>
