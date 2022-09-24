@@ -4,7 +4,7 @@ True final ToDo list:
 ## Documentation updates
 
 1. (DONE) Fix Experiments
-2. Finish "what's left" / alpha targets blog post
+2. (DONE) Finish "what's left" / alpha targets blog post
 3. Fix all CDN links to point toward unpkg or jsdelivr or something equivalent
 
 
