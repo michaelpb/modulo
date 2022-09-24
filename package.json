@@ -1,10 +1,10 @@
 {
   "name": "mdu.js",
   "author": "michaelb",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Lightweight, easy to learn Web Component JavaScript framework",
   "homepage": "https://modulojs.org/",
-  "main": "modulocli/modulocli.js",
+  "main": "./src/Modulo.js",
   "bin": {
         "mdu-cli": "modulocli/modulocli.js",
         "modulocli": "modulocli/modulocli.js"
@@ -34,6 +34,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/michaelpb/modulo.git"
+  },
+  "exports": {
+    "require": "./src/Modulo.js"
   },
   "keywords": [
     "UI",
