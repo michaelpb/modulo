@@ -2266,17 +2266,6 @@ currentModulo.defs = {
      "WorldMap": "<!-- Another example of StaticData being used to visualize data, this example\n     places API data onto a world map, and provides a slide down modal for\n     each user that shows more information about that user -->\n<Template>\n    {% for user in staticdata %}\n        <div style=\"top: {{ user.address.geo.lng|number|add:180|multiply:100|dividedinto:360 }}%;\n                    left: {{ user.address.geo.lat|number|add:90|multiply:100|dividedinto:180 }}%;\">\n            <x-DemoModal button=\"{{ user.id }}\" title=\"{{ user.name }}\">\n                {% for key, value in user %}\n                    <dl>\n                        <dt>{{ key|capfirst }}</dt>\n                        <dd>{% if value|type == \"object\" %}{{ value|json }}{% else %}{{ value }}{% endif %}</dd>\n                    </dl>\n                {% endfor %}\n            </x-DemoModal>\n        </div>\n    {% endfor %}\n</Template>\n\n<StaticData\n    -src=\"https://jsonplaceholder.typicode.com/users\"\n></StaticData>\n\n<Style>\n  :host {\n      position: relative;\n      display: block;\n      width: 160px;\n      height: 80px;\n      border-radius: 1px 5px 1px 7px;\n      border: 1px solid gray;\n      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);\n      background-size: 160px 85px;\n      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mercator_Blank_Map_World.png/800px-Mercator_Blank_Map_World.png?20120629044350');\n  }\n  div {\n      position: absolute;\n      height: 7px;\n      width: 7px;\n      border-radius: 5px;\n      background-color: rgba(162, 228, 184);\n  }\n  div > x-DemoModal {\n      opacity: 0;\n      z-index: 50;\n  }\n  div:hover > x-DemoModal{\n      opacity: 1.0;\n  }\n  .modal-body {\n      height: 400px;\n      overflow: auto;\n  }\n  dt {\n      font-weight: 800;\n  }\n  dd {\n      max-width: 300px;\n      overflow: auto;\n      font-family: monospace;\n  }\n</Style>\n",
      "Memory": "<!-- A much more complicated example application -->\n<Template>\n{% if not state.cards.length %}\n    <h3>The Symbolic Memory Game</h3>\n    <p>Choose your difficulty:</p>\n    <button @click:=script.setup click.payload=8>2x4</button>\n    <button @click:=script.setup click.payload=16>4x4</button>\n    <button @click:=script.setup click.payload=36>6x6</button>\n{% else %}\n    <div class=\"board\n        {% if state.cards.length > 16 %}hard{% endif %}\">\n    {# Loop through each card in the \"deck\" (state.cards) #}\n    {% for card in state.cards %}\n        {# Use \"key=\" to speed up DOM reconciler #}\n        <div key=\"c{{ card.id }}\"\n            class=\"card\n            {% if card.id in state.revealed %}\n                flipped\n            {% endif %}\n            \"\n            style=\"\n            {% if state.win %}\n                animation: flipping 0.5s infinite alternate;\n                animation-delay: {{ card.id }}.{{ card.id }}s;\n            {% endif %}\n            \"\n            @click:=script.flip\n            click.payload=\"{{ card.id }}\">\n            {% if card.id in state.revealed %}\n                {{ card.symbol }}\n            {% endif %}\n        </div>\n    {% endfor %}\n    </div>\n    <p style=\"{% if state.failedflip %}\n                color: red{% endif %}\">\n        {{ state.message }}</p>\n{% endif %}\n</Template>\n\n<State\n    message=\"Good luck!\"\n    win:=false\n    cards:=[]\n    revealed:=[]\n    lastflipped:=null\n    failedflip:=null\n></State>\n\n<Script>\nconst symbolsStr = \"%!@#=?&+~÷≠∑µ‰∂Δƒσ\"; // 16 options\nfunction setup(payload) {\n    const count = Number(payload);\n    let symbols = symbolsStr.substr(0, count/2).split(\"\");\n    symbols = symbols.concat(symbols); // duplicate cards\n    let id = 0;\n    while (id < count) {\n        const index = Math.floor(Math.random()\n                                    * symbols.length);\n        const symbol = symbols.splice(index, 1)[0];\n        state.cards.push({symbol, id});\n        id++;\n    }\n}\n\nfunction failedFlipCallback() {\n    // Remove both from revealed array & set to null\n    state.revealed = state.revealed.filter(\n            id => id !== state.failedflip\n                    && id !== state.lastflipped);\n    state.failedflip = null;\n    state.lastflipped = null;\n    state.message = \"\";\n    element.rerender();\n}\n\nfunction flip(id) {\n    if (state.failedflip !== null) {\n        return;\n    }\n    id = Number(id);\n    if (state.revealed.includes(id)) {\n        return; // double click\n    } else if (state.lastflipped === null) {\n        state.lastflipped = id;\n        state.revealed.push(id);\n    } else {\n        state.revealed.push(id);\n        const {symbol} = state.cards[id];\n        const lastCard = state.cards[state.lastflipped];\n        if (symbol === lastCard.symbol) {\n            // Successful match! Check for win.\n            const {revealed, cards} = state;\n            if (revealed.length === cards.length) {\n                state.message = \"You win!\";\n                state.win = true;\n            } else {\n                state.message = \"Nice match!\";\n            }\n            state.lastflipped = null;\n        } else {\n            state.message = \"No match.\";\n            state.failedflip = id;\n            setTimeout(failedFlipCallback, 1000);\n        }\n    }\n}\n</Script>\n\n<Style>\nh3 {\n    background: #B90183;\n    border-radius: 8px;\n    text-align: center;\n    color: white;\n    font-weight: bold;\n}\n.board {\n    display: grid;\n    grid-template-rows: repeat(4, 1fr);\n    grid-template-columns: repeat(4, 1fr);\n    grid-gap: 2px;\n    width: 100%;\n    height: 150px;\n    width: 150px;\n}\n.board.hard {\n    grid-gap: 1px;\n    grid-template-rows: repeat(6, 1fr);\n    grid-template-columns: repeat(6, 1fr);\n}\n.board > .card {\n    background: #B90183;\n    border: 2px solid black;\n    border-radius: 1px;\n    cursor: pointer;\n    text-align: center;\n    min-height: 15px;\n    transition: background 0.3s, transform 0.3s;\n    transform: scaleX(-1);\n    padding-top: 2px;\n    color: #B90183;\n}\n.board.hard > .card {\n    border: none !important;\n    padding: 0;\n}\n.board > .card.flipped {\n    background: #FFFFFF;\n    border: 2px solid #B90183;\n    transform: scaleX(1);\n}\n\n@keyframes flipping {\n    from { transform: scaleX(-1.1); background: #B90183; }\n    to {   transform: scaleX(1.0);  background: #FFFFFF; }\n}\n</Style>\n\n\n",
      "ConwayGameOfLife": "<Template>\n  <div class=\"grid\">\n    {% for i in script.exports.range %}\n        {% for j in script.exports.range %}\n          <div\n            @click:=script.toggle\n            payload:='[ {{ i }}, {{ j }} ]'\n            style=\"{% if state.cells|get:i %}\n                {% if state.cells|get:i|get:j %}\n                    background: #B90183;\n                {% endif %}\n            {% endif %}\"\n           ></div>\n        {% endfor %}\n    {% endfor %}\n  </div>\n  <div class=\"controls\">\n    {% if not state.playing %}\n        <button @click:=script.play alt=\"Play\">&#x25B6;</button>\n    {% else %}\n        <button @click:=script.pause alt=\"Pause\">&#x2016;</button>\n    {% endif %}\n\n    <button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>\n</Template>\n\n<State\n    playing:=false\n    speed:=3\n    cells:='{\n        \"12\": { \"10\": true, \"11\": true, \"12\": true },\n        \"11\": { \"12\": true },\n        \"10\": { \"11\": true }\n    }'\n></State>\n\n<Script>\n    function toggle([ i, j ]) {\n        if (!state.cells[i]) {\n            state.cells[i] = {};\n        }\n        state.cells[i][j] = !state.cells[i][j];\n    }\n\n    function play() {\n        state.playing = true;\n        setTimeout(() => {\n            if (state.playing) {\n                updateNextFrame();\n                element.rerender(); // manually rerender\n                play(); // cue next frame\n            }\n        }, 2000 / state.speed);\n    }\n\n    function pause() {\n        state.playing = false;\n    }\n\n    function clear() {\n        state.cells = {};\n    }\n\n    function randomize() {\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!state.cells[i]) {\n                    state.cells[i] = {};\n                }\n                state.cells[i][j] = (Math.random() > 0.5);\n            }\n        }\n    }\n\n    // Helper function for getting a cell from data\n    const get = (i, j) => !!(state.cells[i] && state.cells[i][j]);\n    function updateNextFrame() {\n        const nextData = {};\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!nextData[i]) {\n                    nextData[i] = {};\n                }\n                const count = countNeighbors(i, j);\n                nextData[i][j] = get(i, j) ?\n                    (count === 2 || count === 3) : // stays alive\n                    (count === 3); // comes alive\n            }\n        }\n        state.cells = nextData;\n    }\n\n    function countNeighbors(i, j) {\n        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),\n                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),\n                get(i + 1, j - 1), get(i - 1, j + 1)];\n        return neighbors.filter(v => v).length;\n    }\n    script.exports.range = Array.from({length: 24}, (x, i) => i);\n</Script>\n\n<Style>\n    :host {\n        display: flex;\n    }\n    .grid {\n        display: grid;\n        grid-template-columns: repeat(24, 5px);\n        margin: -2px;\n        grid-gap: 1px;\n    }\n    .grid > div {\n        background: white;\n        width: 5px;\n        height: 5px;\n    }\n    input, button {\n        width: 40px;\n    }\n</Style>\n\n"
-    },
-    "/libraries/docseg.html": {
-     "Templating_1": "<Template>\n<p>There are <em>{{ state.count }}\n  {{ state.count|pluralize:\"articles,article\" }}</em>\n  on {{ script.exports.title }}.</p>\n\n{# Show the articles #}\n{% for article in state.articles %}\n    <h4 style=\"color: blue\">{{ article.headline|upper }}</h4>\n    {% if article.tease %}\n      <p>{{ article.tease|truncate:30 }}</p>\n    {% endif %}\n{% endfor %}\n</Template>\n\n<!-- The data below was used to render the template above -->\n<State\n    count:=42\n    articles:='[\n      {\"headline\": \"Modulo released!\",\n       \"tease\": \"The most exciting news of the century.\"},\n      {\"headline\": \"Can JS be fun again?\"},\n      {\"headline\": \"MTL considered harmful\",\n       \"tease\": \"Why constructing JS is risky business.\"}\n    ]'\n></State>\n<Script>\n    script.exports.title = \"ModuloNews\";\n</Script>\n\n\n",
-     "Templating_PrepareCallback": "<Template>\n    <input name=\"perc\" [state.bind] />% of\n    <input name=\"total\" [state.bind] />\n    is: {{ script.calcResult }}\n</Template>\n\n<State\n    perc:=50\n    total:=30\n></State>\n\n<Script>\n    function prepareCallback() {\n        const calcResult = (state.perc / 100) * state.total;\n        return { calcResult };\n    }\n</Script>\n\n<Style>\n    input { display: inline; width: 25px }\n</Style>\n\n\n",
-     "Templating_Comments": "<Template>\n    <h1>hello {# greeting #}</h1>\n    {% comment %}\n      {% if a %}<div>{{ b }}</div>{% endif %}\n      <h3>{{ state.items|first }}</h3>\n    {% endcomment %}\n    <p>Below the greeting...</p>\n</Template>\n\n\n",
-     "Templating_Escaping": "<Template>\n<p>User \"<em>{{ state.username }}</em>\" sent a message:</p>\n<div class=\"msgcontent\">\n    {{ state.content|safe }}\n</div>\n</Template>\n\n<State\n    username=\"Little <Bobby> <Drop> &tables\"\n    content='\n        I <i>love</i> the classic <a target=\"_blank\"\n        href=\"https://xkcd.com/327/\">xkcd #327</a> on\n        the risk of trusting <b>user inputted data</b>\n    '\n></State>\n<Style>\n    .msgcontent {\n        background: #999;\n        padding: 10px;\n        margin: 10px;\n    }\n</Style>\n\n\n",
-     "Tutorial_P1": "<Template>\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n</Template>\n<Style>\n/* ...and any CSS here! */\nstrong {\n    color: blue;\n}\n.neat {\n    font-variant: small-caps;\n}\n:host { /* styles the entire component */\n    display: inline-block;\n    background-color: cornsilk;\n    padding: 5px;\n    box-shadow: 10px 10px 0 0 turquoise;\n}\n</Style>\n\n\n\n",
-     "Tutorial_P2": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n",
-     "Tutorial_P2_filters_demo": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n\n\n",
-     "Tutorial_P3_state_demo": "<Template>\n<p>Nonsense poem:</p> <pre>\nProfessor {{ state.verb|capfirst }} who\n{{ state.verb }}ed a {{ state.noun }},\ntaught {{ state.verb }}ing in\nthe City of {{ state.noun|capfirst }},\nto {{ state.count }} {{ state.noun }}s.\n</pre>\n</Template>\n\n<State\n    verb=\"toot\"\n    noun=\"kazoo\"\n    count=\"two\"\n></State>\n\n<Style>\n    :host {\n        font-size: 0.8rem;\n    }\n</Style>\n\n\n",
-     "Tutorial_P3_state_bind": "<Template>\n\n<div>\n    <label>Username:\n        <input [state.bind] name=\"username\" /></label>\n    <label>Color (\"green\" or \"blue\"):\n        <input [state.bind] name=\"color\" /></label>\n    <label>Opacity: <input [state.bind]\n        name=\"opacity\"\n        type=\"number\" min=\"0\" max=\"1\" step=\"0.1\" /></label>\n\n    <h5 style=\"\n            opacity: {{ state.opacity }};\n            color: {{ state.color|allow:'green,blue'|default:'red' }};\n        \">\n        {{ state.username|lower }}\n    </h5>\n</div>\n\n</Template>\n\n<State\n    opacity=\"0.5\"\n    color=\"blue\"\n    username=\"Testing_Username\"\n></State>\n\n\n"
     }
    }
   }
@@ -4098,7 +4087,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "xtmq6f6"
+   "Hash": "1f71c6c"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -4781,17 +4770,6 @@ currentModulo.parentDefs = {
     "WorldMap": "<!-- Another example of StaticData being used to visualize data, this example\n     places API data onto a world map, and provides a slide down modal for\n     each user that shows more information about that user -->\n<Template>\n    {% for user in staticdata %}\n        <div style=\"top: {{ user.address.geo.lng|number|add:180|multiply:100|dividedinto:360 }}%;\n                    left: {{ user.address.geo.lat|number|add:90|multiply:100|dividedinto:180 }}%;\">\n            <x-DemoModal button=\"{{ user.id }}\" title=\"{{ user.name }}\">\n                {% for key, value in user %}\n                    <dl>\n                        <dt>{{ key|capfirst }}</dt>\n                        <dd>{% if value|type == \"object\" %}{{ value|json }}{% else %}{{ value }}{% endif %}</dd>\n                    </dl>\n                {% endfor %}\n            </x-DemoModal>\n        </div>\n    {% endfor %}\n</Template>\n\n<StaticData\n    -src=\"https://jsonplaceholder.typicode.com/users\"\n></StaticData>\n\n<Style>\n  :host {\n      position: relative;\n      display: block;\n      width: 160px;\n      height: 80px;\n      border-radius: 1px 5px 1px 7px;\n      border: 1px solid gray;\n      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);\n      background-size: 160px 85px;\n      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mercator_Blank_Map_World.png/800px-Mercator_Blank_Map_World.png?20120629044350');\n  }\n  div {\n      position: absolute;\n      height: 7px;\n      width: 7px;\n      border-radius: 5px;\n      background-color: rgba(162, 228, 184);\n  }\n  div > x-DemoModal {\n      opacity: 0;\n      z-index: 50;\n  }\n  div:hover > x-DemoModal{\n      opacity: 1.0;\n  }\n  .modal-body {\n      height: 400px;\n      overflow: auto;\n  }\n  dt {\n      font-weight: 800;\n  }\n  dd {\n      max-width: 300px;\n      overflow: auto;\n      font-family: monospace;\n  }\n</Style>\n",
     "Memory": "<!-- A much more complicated example application -->\n<Template>\n{% if not state.cards.length %}\n    <h3>The Symbolic Memory Game</h3>\n    <p>Choose your difficulty:</p>\n    <button @click:=script.setup click.payload=8>2x4</button>\n    <button @click:=script.setup click.payload=16>4x4</button>\n    <button @click:=script.setup click.payload=36>6x6</button>\n{% else %}\n    <div class=\"board\n        {% if state.cards.length > 16 %}hard{% endif %}\">\n    {# Loop through each card in the \"deck\" (state.cards) #}\n    {% for card in state.cards %}\n        {# Use \"key=\" to speed up DOM reconciler #}\n        <div key=\"c{{ card.id }}\"\n            class=\"card\n            {% if card.id in state.revealed %}\n                flipped\n            {% endif %}\n            \"\n            style=\"\n            {% if state.win %}\n                animation: flipping 0.5s infinite alternate;\n                animation-delay: {{ card.id }}.{{ card.id }}s;\n            {% endif %}\n            \"\n            @click:=script.flip\n            click.payload=\"{{ card.id }}\">\n            {% if card.id in state.revealed %}\n                {{ card.symbol }}\n            {% endif %}\n        </div>\n    {% endfor %}\n    </div>\n    <p style=\"{% if state.failedflip %}\n                color: red{% endif %}\">\n        {{ state.message }}</p>\n{% endif %}\n</Template>\n\n<State\n    message=\"Good luck!\"\n    win:=false\n    cards:=[]\n    revealed:=[]\n    lastflipped:=null\n    failedflip:=null\n></State>\n\n<Script>\nconst symbolsStr = \"%!@#=?&+~÷≠∑µ‰∂Δƒσ\"; // 16 options\nfunction setup(payload) {\n    const count = Number(payload);\n    let symbols = symbolsStr.substr(0, count/2).split(\"\");\n    symbols = symbols.concat(symbols); // duplicate cards\n    let id = 0;\n    while (id < count) {\n        const index = Math.floor(Math.random()\n                                    * symbols.length);\n        const symbol = symbols.splice(index, 1)[0];\n        state.cards.push({symbol, id});\n        id++;\n    }\n}\n\nfunction failedFlipCallback() {\n    // Remove both from revealed array & set to null\n    state.revealed = state.revealed.filter(\n            id => id !== state.failedflip\n                    && id !== state.lastflipped);\n    state.failedflip = null;\n    state.lastflipped = null;\n    state.message = \"\";\n    element.rerender();\n}\n\nfunction flip(id) {\n    if (state.failedflip !== null) {\n        return;\n    }\n    id = Number(id);\n    if (state.revealed.includes(id)) {\n        return; // double click\n    } else if (state.lastflipped === null) {\n        state.lastflipped = id;\n        state.revealed.push(id);\n    } else {\n        state.revealed.push(id);\n        const {symbol} = state.cards[id];\n        const lastCard = state.cards[state.lastflipped];\n        if (symbol === lastCard.symbol) {\n            // Successful match! Check for win.\n            const {revealed, cards} = state;\n            if (revealed.length === cards.length) {\n                state.message = \"You win!\";\n                state.win = true;\n            } else {\n                state.message = \"Nice match!\";\n            }\n            state.lastflipped = null;\n        } else {\n            state.message = \"No match.\";\n            state.failedflip = id;\n            setTimeout(failedFlipCallback, 1000);\n        }\n    }\n}\n</Script>\n\n<Style>\nh3 {\n    background: #B90183;\n    border-radius: 8px;\n    text-align: center;\n    color: white;\n    font-weight: bold;\n}\n.board {\n    display: grid;\n    grid-template-rows: repeat(4, 1fr);\n    grid-template-columns: repeat(4, 1fr);\n    grid-gap: 2px;\n    width: 100%;\n    height: 150px;\n    width: 150px;\n}\n.board.hard {\n    grid-gap: 1px;\n    grid-template-rows: repeat(6, 1fr);\n    grid-template-columns: repeat(6, 1fr);\n}\n.board > .card {\n    background: #B90183;\n    border: 2px solid black;\n    border-radius: 1px;\n    cursor: pointer;\n    text-align: center;\n    min-height: 15px;\n    transition: background 0.3s, transform 0.3s;\n    transform: scaleX(-1);\n    padding-top: 2px;\n    color: #B90183;\n}\n.board.hard > .card {\n    border: none !important;\n    padding: 0;\n}\n.board > .card.flipped {\n    background: #FFFFFF;\n    border: 2px solid #B90183;\n    transform: scaleX(1);\n}\n\n@keyframes flipping {\n    from { transform: scaleX(-1.1); background: #B90183; }\n    to {   transform: scaleX(1.0);  background: #FFFFFF; }\n}\n</Style>\n\n\n",
     "ConwayGameOfLife": "<Template>\n  <div class=\"grid\">\n    {% for i in script.exports.range %}\n        {% for j in script.exports.range %}\n          <div\n            @click:=script.toggle\n            payload:='[ {{ i }}, {{ j }} ]'\n            style=\"{% if state.cells|get:i %}\n                {% if state.cells|get:i|get:j %}\n                    background: #B90183;\n                {% endif %}\n            {% endif %}\"\n           ></div>\n        {% endfor %}\n    {% endfor %}\n  </div>\n  <div class=\"controls\">\n    {% if not state.playing %}\n        <button @click:=script.play alt=\"Play\">&#x25B6;</button>\n    {% else %}\n        <button @click:=script.pause alt=\"Pause\">&#x2016;</button>\n    {% endif %}\n\n    <button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>\n</Template>\n\n<State\n    playing:=false\n    speed:=3\n    cells:='{\n        \"12\": { \"10\": true, \"11\": true, \"12\": true },\n        \"11\": { \"12\": true },\n        \"10\": { \"11\": true }\n    }'\n></State>\n\n<Script>\n    function toggle([ i, j ]) {\n        if (!state.cells[i]) {\n            state.cells[i] = {};\n        }\n        state.cells[i][j] = !state.cells[i][j];\n    }\n\n    function play() {\n        state.playing = true;\n        setTimeout(() => {\n            if (state.playing) {\n                updateNextFrame();\n                element.rerender(); // manually rerender\n                play(); // cue next frame\n            }\n        }, 2000 / state.speed);\n    }\n\n    function pause() {\n        state.playing = false;\n    }\n\n    function clear() {\n        state.cells = {};\n    }\n\n    function randomize() {\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!state.cells[i]) {\n                    state.cells[i] = {};\n                }\n                state.cells[i][j] = (Math.random() > 0.5);\n            }\n        }\n    }\n\n    // Helper function for getting a cell from data\n    const get = (i, j) => !!(state.cells[i] && state.cells[i][j]);\n    function updateNextFrame() {\n        const nextData = {};\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!nextData[i]) {\n                    nextData[i] = {};\n                }\n                const count = countNeighbors(i, j);\n                nextData[i][j] = get(i, j) ?\n                    (count === 2 || count === 3) : // stays alive\n                    (count === 3); // comes alive\n            }\n        }\n        state.cells = nextData;\n    }\n\n    function countNeighbors(i, j) {\n        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),\n                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),\n                get(i + 1, j - 1), get(i - 1, j + 1)];\n        return neighbors.filter(v => v).length;\n    }\n    script.exports.range = Array.from({length: 24}, (x, i) => i);\n</Script>\n\n<Style>\n    :host {\n        display: flex;\n    }\n    .grid {\n        display: grid;\n        grid-template-columns: repeat(24, 5px);\n        margin: -2px;\n        grid-gap: 1px;\n    }\n    .grid > div {\n        background: white;\n        width: 5px;\n        height: 5px;\n    }\n    input, button {\n        width: 40px;\n    }\n</Style>\n\n"
-   },
-   "/libraries/docseg.html": {
-    "Templating_1": "<Template>\n<p>There are <em>{{ state.count }}\n  {{ state.count|pluralize:\"articles,article\" }}</em>\n  on {{ script.exports.title }}.</p>\n\n{# Show the articles #}\n{% for article in state.articles %}\n    <h4 style=\"color: blue\">{{ article.headline|upper }}</h4>\n    {% if article.tease %}\n      <p>{{ article.tease|truncate:30 }}</p>\n    {% endif %}\n{% endfor %}\n</Template>\n\n<!-- The data below was used to render the template above -->\n<State\n    count:=42\n    articles:='[\n      {\"headline\": \"Modulo released!\",\n       \"tease\": \"The most exciting news of the century.\"},\n      {\"headline\": \"Can JS be fun again?\"},\n      {\"headline\": \"MTL considered harmful\",\n       \"tease\": \"Why constructing JS is risky business.\"}\n    ]'\n></State>\n<Script>\n    script.exports.title = \"ModuloNews\";\n</Script>\n\n\n",
-    "Templating_PrepareCallback": "<Template>\n    <input name=\"perc\" [state.bind] />% of\n    <input name=\"total\" [state.bind] />\n    is: {{ script.calcResult }}\n</Template>\n\n<State\n    perc:=50\n    total:=30\n></State>\n\n<Script>\n    function prepareCallback() {\n        const calcResult = (state.perc / 100) * state.total;\n        return { calcResult };\n    }\n</Script>\n\n<Style>\n    input { display: inline; width: 25px }\n</Style>\n\n\n",
-    "Templating_Comments": "<Template>\n    <h1>hello {# greeting #}</h1>\n    {% comment %}\n      {% if a %}<div>{{ b }}</div>{% endif %}\n      <h3>{{ state.items|first }}</h3>\n    {% endcomment %}\n    <p>Below the greeting...</p>\n</Template>\n\n\n",
-    "Templating_Escaping": "<Template>\n<p>User \"<em>{{ state.username }}</em>\" sent a message:</p>\n<div class=\"msgcontent\">\n    {{ state.content|safe }}\n</div>\n</Template>\n\n<State\n    username=\"Little <Bobby> <Drop> &tables\"\n    content='\n        I <i>love</i> the classic <a target=\"_blank\"\n        href=\"https://xkcd.com/327/\">xkcd #327</a> on\n        the risk of trusting <b>user inputted data</b>\n    '\n></State>\n<Style>\n    .msgcontent {\n        background: #999;\n        padding: 10px;\n        margin: 10px;\n    }\n</Style>\n\n\n",
-    "Tutorial_P1": "<Template>\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n</Template>\n<Style>\n/* ...and any CSS here! */\nstrong {\n    color: blue;\n}\n.neat {\n    font-variant: small-caps;\n}\n:host { /* styles the entire component */\n    display: inline-block;\n    background-color: cornsilk;\n    padding: 5px;\n    box-shadow: 10px 10px 0 0 turquoise;\n}\n</Style>\n\n\n\n",
-    "Tutorial_P2": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n",
-    "Tutorial_P2_filters_demo": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n\n\n",
-    "Tutorial_P3_state_demo": "<Template>\n<p>Nonsense poem:</p> <pre>\nProfessor {{ state.verb|capfirst }} who\n{{ state.verb }}ed a {{ state.noun }},\ntaught {{ state.verb }}ing in\nthe City of {{ state.noun|capfirst }},\nto {{ state.count }} {{ state.noun }}s.\n</pre>\n</Template>\n\n<State\n    verb=\"toot\"\n    noun=\"kazoo\"\n    count=\"two\"\n></State>\n\n<Style>\n    :host {\n        font-size: 0.8rem;\n    }\n</Style>\n\n\n",
-    "Tutorial_P3_state_bind": "<Template>\n\n<div>\n    <label>Username:\n        <input [state.bind] name=\"username\" /></label>\n    <label>Color (\"green\" or \"blue\"):\n        <input [state.bind] name=\"color\" /></label>\n    <label>Opacity: <input [state.bind]\n        name=\"opacity\"\n        type=\"number\" min=\"0\" max=\"1\" step=\"0.1\" /></label>\n\n    <h5 style=\"\n            opacity: {{ state.opacity }};\n            color: {{ state.color|allow:'green,blue'|default:'red' }};\n        \">\n        {{ state.username|lower }}\n    </h5>\n</div>\n\n</Template>\n\n<State\n    opacity=\"0.5\"\n    color=\"blue\"\n    username=\"Testing_Username\"\n></State>\n\n\n"
    }
   }
  },
@@ -5896,7 +5874,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "xtmq6f6"
+  "Hash": "1f71c6c"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -22386,124 +22364,8 @@ return {
   }
 };
 };
-currentModulo.assets.functions["xtmq6f6"]= function (){
-return {
-  "id": 320452827,
-  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
-  "name": "modulo",
-  "full_name": "michaelpb/modulo",
-  "private": false,
-  "owner": {
-    "login": "michaelpb",
-    "id": 181549,
-    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
-    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
-    "gravatar_id": "",
-    "url": "https://api.github.com/users/michaelpb",
-    "html_url": "https://github.com/michaelpb",
-    "followers_url": "https://api.github.com/users/michaelpb/followers",
-    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
-    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
-    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
-    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
-    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
-    "repos_url": "https://api.github.com/users/michaelpb/repos",
-    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
-    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
-    "type": "User",
-    "site_admin": false
-  },
-  "html_url": "https://github.com/michaelpb/modulo",
-  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
-  "fork": false,
-  "url": "https://api.github.com/repos/michaelpb/modulo",
-  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
-  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
-  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
-  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
-  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
-  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
-  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
-  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
-  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
-  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
-  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
-  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
-  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
-  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
-  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
-  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
-  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
-  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
-  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
-  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
-  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
-  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
-  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
-  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
-  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
-  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
-  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
-  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
-  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
-  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
-  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
-  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
-  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
-  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
-  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
-  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
-  "created_at": "2020-12-11T03:08:21Z",
-  "updated_at": "2022-09-23T22:20:01Z",
-  "pushed_at": "2022-09-23T18:14:18Z",
-  "git_url": "git://github.com/michaelpb/modulo.git",
-  "ssh_url": "git@github.com:michaelpb/modulo.git",
-  "clone_url": "https://github.com/michaelpb/modulo.git",
-  "svn_url": "https://github.com/michaelpb/modulo",
-  "homepage": "https://modulojs.org/",
-  "size": 6186,
-  "stargazers_count": 3,
-  "watchers_count": 3,
-  "language": "JavaScript",
-  "has_issues": true,
-  "has_projects": true,
-  "has_downloads": true,
-  "has_wiki": true,
-  "has_pages": true,
-  "forks_count": 0,
-  "mirror_url": null,
-  "archived": false,
-  "disabled": false,
-  "open_issues_count": 0,
-  "license": {
-    "key": "lgpl-2.1",
-    "name": "GNU Lesser General Public License v2.1",
-    "spdx_id": "LGPL-2.1",
-    "url": "https://api.github.com/licenses/lgpl-2.1",
-    "node_id": "MDc6TGljZW5zZTEx"
-  },
-  "allow_forking": true,
-  "is_template": false,
-  "web_commit_signoff_required": false,
-  "topics": [
-    "component-based",
-    "framework",
-    "html",
-    "javascript",
-    "state-management",
-    "template-engine",
-    "vanilla-js",
-    "web-components"
-  ],
-  "visibility": "public",
-  "forks": 0,
-  "open_issues": 0,
-  "watchers": 3,
-  "default_branch": "main",
-  "temp_clone_token": null,
-  "network_count": 0,
-  "subscribers_count": 2
-};
+currentModulo.assets.functions["1f71c6c"]= function (){
+return {"message":"API rate limit exceeded for 23.93.99.86. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"};
 };
 currentModulo.assets.functions["16lf05u"]= function (){
 return [
@@ -24030,16 +23892,3 @@ currentModulo.assets.functions['x4dmr4r']('eg-worldmap', currentModulo);
 currentModulo.assets.functions['xrqe02h']('eg-memory', currentModulo);
 
 currentModulo.assets.functions['xairn07']('eg-conwaygameoflife', currentModulo);
-
-currentModulo.assets.functions["1t9ugvv"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\nHello <strong>Modulo</strong> World!\nOpen your browser dev console to see messages...\n<button @click:=\"script.gotClicked\">Click me to generate an event</button>\n"); // "Hello <strong>Modulo</strong> World! Open your browser dev console to see messages... <button @click:=\"script.gotClicked\">Click me to generate an event</button>"
-
-return OUT.join("");
-};
-currentModulo.assets.functions["3447k3"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\n<label>\n<input [state.bind]=\"\" name=\"enabled\" type=\"checkbox\">\nShow messages in console</label>\n"); // "<label><input [state.bind]=\"\" name=\"enabled\" type=\"checkbox\"> Show messages in console</label>"
-
-return OUT.join("");
-};

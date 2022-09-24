@@ -3427,7 +3427,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_ProjectInfo_x",
-   "Hash": "xuat1mm"
+   "Hash": "4kdual"
   },
   {
    "Type": "Template",
@@ -4098,7 +4098,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "xtmq6f6"
+   "Hash": "1f71c6c"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -5896,7 +5896,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "xtmq6f6"
+  "Hash": "1f71c6c"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -22328,14 +22328,14 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["xuat1mm"]= function (){
+currentModulo.assets.functions["4kdual"]= function (){
 return {
-  "name": "mdu-cli",
+  "name": "mdu.js",
   "author": "michaelb",
-  "version": "0.0.6",
-  "description": "Lightweight, easy to learn Web Component JavaScript framework",
+  "version": "0.0.9",
+  "description": "Lightweight, easy-to-learn Web Component JavaScript framework",
   "homepage": "https://modulojs.org/",
-  "main": "modulocli/modulocli.js",
+  "main": "./src/Modulo.js",
   "bin": {
         "mdu-cli": "modulocli/modulocli.js",
         "modulocli": "modulocli/modulocli.js"
@@ -22366,6 +22366,9 @@ return {
     "type": "git",
     "url": "git+https://github.com/michaelpb/modulo.git"
   },
+  "exports": {
+    "require": "./src/Modulo.js"
+  },
   "keywords": [
     "UI",
     "templates",
@@ -22386,124 +22389,8 @@ return {
   }
 };
 };
-currentModulo.assets.functions["xtmq6f6"]= function (){
-return {
-  "id": 320452827,
-  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
-  "name": "modulo",
-  "full_name": "michaelpb/modulo",
-  "private": false,
-  "owner": {
-    "login": "michaelpb",
-    "id": 181549,
-    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
-    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
-    "gravatar_id": "",
-    "url": "https://api.github.com/users/michaelpb",
-    "html_url": "https://github.com/michaelpb",
-    "followers_url": "https://api.github.com/users/michaelpb/followers",
-    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
-    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
-    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
-    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
-    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
-    "repos_url": "https://api.github.com/users/michaelpb/repos",
-    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
-    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
-    "type": "User",
-    "site_admin": false
-  },
-  "html_url": "https://github.com/michaelpb/modulo",
-  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
-  "fork": false,
-  "url": "https://api.github.com/repos/michaelpb/modulo",
-  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
-  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
-  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
-  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
-  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
-  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
-  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
-  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
-  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
-  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
-  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
-  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
-  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
-  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
-  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
-  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
-  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
-  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
-  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
-  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
-  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
-  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
-  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
-  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
-  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
-  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
-  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
-  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
-  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
-  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
-  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
-  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
-  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
-  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
-  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
-  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
-  "created_at": "2020-12-11T03:08:21Z",
-  "updated_at": "2022-09-23T22:20:01Z",
-  "pushed_at": "2022-09-23T18:14:18Z",
-  "git_url": "git://github.com/michaelpb/modulo.git",
-  "ssh_url": "git@github.com:michaelpb/modulo.git",
-  "clone_url": "https://github.com/michaelpb/modulo.git",
-  "svn_url": "https://github.com/michaelpb/modulo",
-  "homepage": "https://modulojs.org/",
-  "size": 6186,
-  "stargazers_count": 3,
-  "watchers_count": 3,
-  "language": "JavaScript",
-  "has_issues": true,
-  "has_projects": true,
-  "has_downloads": true,
-  "has_wiki": true,
-  "has_pages": true,
-  "forks_count": 0,
-  "mirror_url": null,
-  "archived": false,
-  "disabled": false,
-  "open_issues_count": 0,
-  "license": {
-    "key": "lgpl-2.1",
-    "name": "GNU Lesser General Public License v2.1",
-    "spdx_id": "LGPL-2.1",
-    "url": "https://api.github.com/licenses/lgpl-2.1",
-    "node_id": "MDc6TGljZW5zZTEx"
-  },
-  "allow_forking": true,
-  "is_template": false,
-  "web_commit_signoff_required": false,
-  "topics": [
-    "component-based",
-    "framework",
-    "html",
-    "javascript",
-    "state-management",
-    "template-engine",
-    "vanilla-js",
-    "web-components"
-  ],
-  "visibility": "public",
-  "forks": 0,
-  "open_issues": 0,
-  "watchers": 3,
-  "default_branch": "main",
-  "temp_clone_token": null,
-  "network_count": 0,
-  "subscribers_count": 2
-};
+currentModulo.assets.functions["1f71c6c"]= function (){
+return {"message":"API rate limit exceeded for 23.93.99.86. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"};
 };
 currentModulo.assets.functions["16lf05u"]= function (){
 return [
@@ -24031,15 +23918,9 @@ currentModulo.assets.functions['xrqe02h']('eg-memory', currentModulo);
 
 currentModulo.assets.functions['xairn07']('eg-conwaygameoflife', currentModulo);
 
-currentModulo.assets.functions["x1js9ikf"]= function (CTX, G){
+currentModulo.assets.functions["xrn1o07"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\n    <nav>Shop|<a @click:=\"script.swap\" payload=\"home\">Home</a></nav>\n    <h1>Shop</h1>\n    <p>$10 - A banana</p>\n"); // "<nav>Shop|<a @click:=\"script.swap\" payload=\"home\">Home</a></nav><h1>Shop</h1><p>$10 - A banana</p>"
-
-return OUT.join("");
-};
-currentModulo.assets.functions["mnieh9"]= function (CTX, G){
-var OUT=[];
-  OUT.push("\n    <nav><a @click:=\"script.swap\" payload=\"shop\">Shop</a>|Home</nav>\n    <h1>Home</h1>\n    <p>Welcome to my banana stand!</p>\n"); // "<nav><a @click:=\"script.swap\" payload=\"shop\">Shop</a>|Home</nav><h1>Home</h1><p>Welcome to my banana stand!</p>"
+  OUT.push("\n    <button @click:=\"script.doLog\">\n        Click to console.log\n    </button>\n"); // "<button @click:=\"script.doLog\"> Click to console.log </button>"
 
 return OUT.join("");
 };
