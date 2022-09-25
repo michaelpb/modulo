@@ -1,8 +1,9 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><title>CParts - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-h2llqh.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>CParts - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-1ei6lcp.css"></head><body>
 
 
+    
     
     
     
@@ -15,7 +16,8 @@
 <slot name="above-navbar"></slot>
 
 <nav class="Navbar">
-    <a href="/index.html"><img src="/img/modulo_logo.svg" style="height:70px" alt="Modulo"></a>
+    <a href="/index.html" class="Navbar-logo"><img src="/img/modulo_logo.svg" style="height:70px" alt="Modulo"></a>
+    <a href="/index.html" class="Navbar-tinyText">[%] Modulo.js</a>
     <ul>
         <li>
             <a href="/index.html#about">About</a>
@@ -31,7 +33,7 @@
     <div class="Navbar-rightInfo">
         
         
-            v: 0.0.9<br>
+            v: 0.0.10<br>
             <!--SLOC: undefined lines<br />-->
             <a href="https://github.com/michaelpb/modulo/">github</a> |
             <a href="https://www.npmjs.com/package/mdu.js">npm (mdu-cli)</a>
@@ -593,6 +595,7 @@ contents.</p>
            demo-wrapper__clipboard  
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -701,6 +704,7 @@ function itself).</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -713,7 +717,7 @@ function itself).</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -894,6 +898,7 @@ in Script, Template, etc).</p>
         
         
         
+        demo-wrapper__tabs       
     ">
     
         <nav class="TabNav">
@@ -926,7 +931,7 @@ in Script, Template, etc).</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -948,7 +953,7 @@ in Script, Template, etc).</p>
             <div class="editor-minipreview">
                 <div modulo-ignore="">
                     <e1g1-democomponent modulo-original-html="">
-    mdu.js v0.0.9
+    mdu.js v0.0.10
     (by michaelb)
 </e1g1-democomponent>
                 </div>
@@ -1015,6 +1020,7 @@ time the component renders. See below for a simple example:</p>
            demo-wrapper__clipboard  
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1073,6 +1079,7 @@ you can write <code>&lt;cpart Script&gt;</code> as the opening tag, and
            demo-wrapper__clipboard  
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1116,6 +1123,7 @@ certain "events" occur to your component. Consider the following example:</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1128,7 +1136,7 @@ certain "events" occur to your component. Consider the following example:</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -1220,6 +1228,7 @@ you should avoid direct DOM manipulation whenever you can, instead using a
            demo-wrapper__clipboard  
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1269,6 +1278,7 @@ CPart when it renders during the <code>render</code> lifecycle.</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1281,7 +1291,7 @@ CPart when it renders during the <code>render</code> lifecycle.</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -1390,6 +1400,7 @@ example of this:</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1402,7 +1413,7 @@ example of this:</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -1492,6 +1503,7 @@ assumptions about using a synchronous or asynchronous coding style.</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1504,7 +1516,7 @@ assumptions about using a synchronous or asynchronous coding style.</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -1794,6 +1806,7 @@ rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -1806,7 +1819,7 @@ rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -1854,4 +1867,4 @@ Hello <strong>Modulo</strong> World!
 
 
 
-<script src="/_modulo/modulo-bundle-1vg1mlc.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-x1i38un9.js"></script></body></html>

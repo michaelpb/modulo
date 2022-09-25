@@ -32,6 +32,7 @@
     position: relative;
     display: block;
     width: 100%;
+    max-width: 100vw;
 }
 
 .Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {
@@ -181,12 +182,12 @@
 
 .TabNav-title--selected {
     border-color: var(--highlight-color);
-    background: var(--highlight-color);
+    background: var(--highlight-color) !important; /* Why !important ?? TODO */
     box-shadow: 0 0 0 8px var(--highlight-color);
     border-radius: 8px 8px 8px 8px;
 }
 .TabNav-title--selected a {
-    color: white !important;
+    color: white !important; /* Why !important ?? TODO */
 }
 
 
@@ -196,10 +197,73 @@
         justify-content: flex-start;
     }
 }
+
 @media (max-width: 768px) {
     .TabNav-title {
         padding: 7px;
     }
+    .demo-wrapper {
+        --side-width: 150px;
+    }
+    .demo-fs-button {
+        display: none;
+    }
+
+
+    .demo-wrapper.demo-wrapper__tabs {
+        display: grid;
+        grid-template-columns: var(--side-width) 1fr;
+        grid-template-rows: 1fr 80px;
+    }
+    
+
+    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {
+        grid-row: 1 / span 2;
+    }
+    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {
+        position: absolute;
+        top: 121px;
+        right: -18px;
+        background: white;
+        border-color: black;
+    }
+    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    .demo-wrapper.demo-wrapper__tabs .TabNav-title {
+        border: 1px solid black;
+        border-radius: 1px;
+        background: white;
+        width: var(--side-width);
+    }
+
+    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {
+        display: grid;
+        grid-template-rows: 200px 1fr;
+    }
+    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {
+        grid-row: 2;
+        width: auto;
+        max-width: calc(100vw - var(--side-width) - 2px);
+    }
+    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {
+        grid-row: 1;
+        width: auto;
+        max-width: calc(100vw - var(--side-width) - 2px);
+    }
+    /*
+    .TabNav-title--selected {
+        box-shadow: 0 0 0 0 var(--highlight-color);
+        box-shadow: none;
+    }
+    */
+ /* UGH TODO */
+    /*
+    .TabNav-title--selected a {
+        color: var(--highlight-color) !important;
+    }
+    */
 }
 
 

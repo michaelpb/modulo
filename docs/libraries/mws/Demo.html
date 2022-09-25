@@ -5,6 +5,7 @@
         {% if state.showclipboard %}   demo-wrapper__clipboard  {% endif %}
         {% if state.fullscreen %}      demo-wrapper__fullscreen {% endif %}
         {% if state.tabs.length == 1 %}demo-wrapper__notabs     {% endif %}
+        {% if state.tabs.length gt 1 %}demo-wrapper__tabs       {% endif %}
     ">
     {% if state.tabs.length gt 1 %}
         <nav class="TabNav">
@@ -36,7 +37,7 @@
         {% endif %}
 
         {% if state.showpreview %}
-            <button class="m-Btn"
+            <button class="m-Btn demo-fs-button"
                     title="Toggle full screen view of code" @click:=script.doFullscreen>
                 {% if state.fullscreen %}
                     <span alt="Shrink">&swarr;</span>

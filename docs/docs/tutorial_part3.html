@@ -1,9 +1,10 @@
 <!DOCTYPE HTML><html><head>
 
 <!-- Note: _part1.html is intentional, to un-collapse the top thing -->
-<meta charset="utf8"><title>Part 3 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-h2llqh.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Part 3 - Tutorial - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-1ei6lcp.css"></head><body>
 
 
+    
     
     
     
@@ -16,7 +17,8 @@
 <slot name="above-navbar"></slot>
 
 <nav class="Navbar">
-    <a href="/index.html"><img src="/img/modulo_logo.svg" style="height:70px" alt="Modulo"></a>
+    <a href="/index.html" class="Navbar-logo"><img src="/img/modulo_logo.svg" style="height:70px" alt="Modulo"></a>
+    <a href="/index.html" class="Navbar-tinyText">[%] Modulo.js</a>
     <ul>
         <li>
             <a href="/index.html#about">About</a>
@@ -32,7 +34,7 @@
     <div class="Navbar-rightInfo">
         
         
-            v: 0.0.9<br>
+            v: 0.0.10<br>
             <!--SLOC: undefined lines<br />-->
             <a href="https://github.com/michaelpb/modulo/">github</a> |
             <a href="https://www.npmjs.com/package/mdu.js">npm (mdu-cli)</a>
@@ -324,6 +326,7 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -336,7 +339,7 @@ our <em>Template</em>, in a similar way to how we did with <em>Props</em>:</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -519,6 +522,7 @@ that input.</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -531,7 +535,7 @@ that input.</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -647,6 +651,7 @@ that input.</p>
            demo-wrapper__clipboard  
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -812,6 +817,7 @@ function, logging the text into the JavaScript console.</p>
         
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -824,7 +830,7 @@ function, logging the text into the JavaScript console.</p>
         
 
         
-            <button class="m-Btn" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
                 
                     <span alt="Go Full Screen">↗</span>
                 
@@ -897,6 +903,7 @@ the Hello button:</p>
            demo-wrapper__clipboard  
         
         demo-wrapper__notabs     
+        
     ">
     
 
@@ -997,4 +1004,4 @@ Modulo development.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-1loj14g.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-xk4o8g5.js"></script></body></html>

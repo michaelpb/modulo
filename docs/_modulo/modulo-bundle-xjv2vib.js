@@ -2266,6 +2266,17 @@ currentModulo.defs = {
      "WorldMap": "<!-- Another example of StaticData being used to visualize data, this example\n     places API data onto a world map, and provides a slide down modal for\n     each user that shows more information about that user -->\n<Template>\n    {% for user in staticdata %}\n        <div style=\"top: {{ user.address.geo.lng|number|add:180|multiply:100|dividedinto:360 }}%;\n                    left: {{ user.address.geo.lat|number|add:90|multiply:100|dividedinto:180 }}%;\">\n            <x-DemoModal button=\"{{ user.id }}\" title=\"{{ user.name }}\">\n                {% for key, value in user %}\n                    <dl>\n                        <dt>{{ key|capfirst }}</dt>\n                        <dd>{% if value|type == \"object\" %}{{ value|json }}{% else %}{{ value }}{% endif %}</dd>\n                    </dl>\n                {% endfor %}\n            </x-DemoModal>\n        </div>\n    {% endfor %}\n</Template>\n\n<StaticData\n    -src=\"https://jsonplaceholder.typicode.com/users\"\n></StaticData>\n\n<Style>\n  :host {\n      position: relative;\n      display: block;\n      width: 160px;\n      height: 80px;\n      border-radius: 1px 5px 1px 7px;\n      border: 1px solid gray;\n      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);\n      background-size: 160px 85px;\n      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mercator_Blank_Map_World.png/800px-Mercator_Blank_Map_World.png?20120629044350');\n  }\n  div {\n      position: absolute;\n      height: 7px;\n      width: 7px;\n      border-radius: 5px;\n      background-color: rgba(162, 228, 184);\n  }\n  div > x-DemoModal {\n      opacity: 0;\n      z-index: 50;\n  }\n  div:hover > x-DemoModal{\n      opacity: 1.0;\n  }\n  .modal-body {\n      height: 400px;\n      overflow: auto;\n  }\n  dt {\n      font-weight: 800;\n  }\n  dd {\n      max-width: 300px;\n      overflow: auto;\n      font-family: monospace;\n  }\n</Style>\n",
      "Memory": "<!-- A much more complicated example application -->\n<Template>\n{% if not state.cards.length %}\n    <h3>The Symbolic Memory Game</h3>\n    <p>Choose your difficulty:</p>\n    <button @click:=script.setup click.payload=8>2x4</button>\n    <button @click:=script.setup click.payload=16>4x4</button>\n    <button @click:=script.setup click.payload=36>6x6</button>\n{% else %}\n    <div class=\"board\n        {% if state.cards.length > 16 %}hard{% endif %}\">\n    {# Loop through each card in the \"deck\" (state.cards) #}\n    {% for card in state.cards %}\n        {# Use \"key=\" to speed up DOM reconciler #}\n        <div key=\"c{{ card.id }}\"\n            class=\"card\n            {% if card.id in state.revealed %}\n                flipped\n            {% endif %}\n            \"\n            style=\"\n            {% if state.win %}\n                animation: flipping 0.5s infinite alternate;\n                animation-delay: {{ card.id }}.{{ card.id }}s;\n            {% endif %}\n            \"\n            @click:=script.flip\n            click.payload=\"{{ card.id }}\">\n            {% if card.id in state.revealed %}\n                {{ card.symbol }}\n            {% endif %}\n        </div>\n    {% endfor %}\n    </div>\n    <p style=\"{% if state.failedflip %}\n                color: red{% endif %}\">\n        {{ state.message }}</p>\n{% endif %}\n</Template>\n\n<State\n    message=\"Good luck!\"\n    win:=false\n    cards:=[]\n    revealed:=[]\n    lastflipped:=null\n    failedflip:=null\n></State>\n\n<Script>\nconst symbolsStr = \"%!@#=?&+~÷≠∑µ‰∂Δƒσ\"; // 16 options\nfunction setup(payload) {\n    const count = Number(payload);\n    let symbols = symbolsStr.substr(0, count/2).split(\"\");\n    symbols = symbols.concat(symbols); // duplicate cards\n    let id = 0;\n    while (id < count) {\n        const index = Math.floor(Math.random()\n                                    * symbols.length);\n        const symbol = symbols.splice(index, 1)[0];\n        state.cards.push({symbol, id});\n        id++;\n    }\n}\n\nfunction failedFlipCallback() {\n    // Remove both from revealed array & set to null\n    state.revealed = state.revealed.filter(\n            id => id !== state.failedflip\n                    && id !== state.lastflipped);\n    state.failedflip = null;\n    state.lastflipped = null;\n    state.message = \"\";\n    element.rerender();\n}\n\nfunction flip(id) {\n    if (state.failedflip !== null) {\n        return;\n    }\n    id = Number(id);\n    if (state.revealed.includes(id)) {\n        return; // double click\n    } else if (state.lastflipped === null) {\n        state.lastflipped = id;\n        state.revealed.push(id);\n    } else {\n        state.revealed.push(id);\n        const {symbol} = state.cards[id];\n        const lastCard = state.cards[state.lastflipped];\n        if (symbol === lastCard.symbol) {\n            // Successful match! Check for win.\n            const {revealed, cards} = state;\n            if (revealed.length === cards.length) {\n                state.message = \"You win!\";\n                state.win = true;\n            } else {\n                state.message = \"Nice match!\";\n            }\n            state.lastflipped = null;\n        } else {\n            state.message = \"No match.\";\n            state.failedflip = id;\n            setTimeout(failedFlipCallback, 1000);\n        }\n    }\n}\n</Script>\n\n<Style>\nh3 {\n    background: #B90183;\n    border-radius: 8px;\n    text-align: center;\n    color: white;\n    font-weight: bold;\n}\n.board {\n    display: grid;\n    grid-template-rows: repeat(4, 1fr);\n    grid-template-columns: repeat(4, 1fr);\n    grid-gap: 2px;\n    width: 100%;\n    height: 150px;\n    width: 150px;\n}\n.board.hard {\n    grid-gap: 1px;\n    grid-template-rows: repeat(6, 1fr);\n    grid-template-columns: repeat(6, 1fr);\n}\n.board > .card {\n    background: #B90183;\n    border: 2px solid black;\n    border-radius: 1px;\n    cursor: pointer;\n    text-align: center;\n    min-height: 15px;\n    transition: background 0.3s, transform 0.3s;\n    transform: scaleX(-1);\n    padding-top: 2px;\n    color: #B90183;\n}\n.board.hard > .card {\n    border: none !important;\n    padding: 0;\n}\n.board > .card.flipped {\n    background: #FFFFFF;\n    border: 2px solid #B90183;\n    transform: scaleX(1);\n}\n\n@keyframes flipping {\n    from { transform: scaleX(-1.1); background: #B90183; }\n    to {   transform: scaleX(1.0);  background: #FFFFFF; }\n}\n</Style>\n\n\n",
      "ConwayGameOfLife": "<Template>\n  <div class=\"grid\">\n    {% for i in script.exports.range %}\n        {% for j in script.exports.range %}\n          <div\n            @click:=script.toggle\n            payload:='[ {{ i }}, {{ j }} ]'\n            style=\"{% if state.cells|get:i %}\n                {% if state.cells|get:i|get:j %}\n                    background: #B90183;\n                {% endif %}\n            {% endif %}\"\n           ></div>\n        {% endfor %}\n    {% endfor %}\n  </div>\n  <div class=\"controls\">\n    {% if not state.playing %}\n        <button @click:=script.play alt=\"Play\">&#x25B6;</button>\n    {% else %}\n        <button @click:=script.pause alt=\"Pause\">&#x2016;</button>\n    {% endif %}\n\n    <button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>\n</Template>\n\n<State\n    playing:=false\n    speed:=3\n    cells:='{\n        \"12\": { \"10\": true, \"11\": true, \"12\": true },\n        \"11\": { \"12\": true },\n        \"10\": { \"11\": true }\n    }'\n></State>\n\n<Script>\n    function toggle([ i, j ]) {\n        if (!state.cells[i]) {\n            state.cells[i] = {};\n        }\n        state.cells[i][j] = !state.cells[i][j];\n    }\n\n    function play() {\n        state.playing = true;\n        setTimeout(() => {\n            if (state.playing) {\n                updateNextFrame();\n                element.rerender(); // manually rerender\n                play(); // cue next frame\n            }\n        }, 2000 / state.speed);\n    }\n\n    function pause() {\n        state.playing = false;\n    }\n\n    function clear() {\n        state.cells = {};\n    }\n\n    function randomize() {\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!state.cells[i]) {\n                    state.cells[i] = {};\n                }\n                state.cells[i][j] = (Math.random() > 0.5);\n            }\n        }\n    }\n\n    // Helper function for getting a cell from data\n    const get = (i, j) => !!(state.cells[i] && state.cells[i][j]);\n    function updateNextFrame() {\n        const nextData = {};\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!nextData[i]) {\n                    nextData[i] = {};\n                }\n                const count = countNeighbors(i, j);\n                nextData[i][j] = get(i, j) ?\n                    (count === 2 || count === 3) : // stays alive\n                    (count === 3); // comes alive\n            }\n        }\n        state.cells = nextData;\n    }\n\n    function countNeighbors(i, j) {\n        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),\n                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),\n                get(i + 1, j - 1), get(i - 1, j + 1)];\n        return neighbors.filter(v => v).length;\n    }\n    script.exports.range = Array.from({length: 24}, (x, i) => i);\n</Script>\n\n<Style>\n    :host {\n        display: flex;\n    }\n    .grid {\n        display: grid;\n        grid-template-columns: repeat(24, 5px);\n        margin: -2px;\n        grid-gap: 1px;\n    }\n    .grid > div {\n        background: white;\n        width: 5px;\n        height: 5px;\n    }\n    input, button {\n        width: 40px;\n    }\n</Style>\n\n"
+    },
+    "/libraries/docseg.html": {
+     "Templating_1": "<Template>\n<p>There are <em>{{ state.count }}\n  {{ state.count|pluralize:\"articles,article\" }}</em>\n  on {{ script.exports.title }}.</p>\n\n{# Show the articles #}\n{% for article in state.articles %}\n    <h4 style=\"color: blue\">{{ article.headline|upper }}</h4>\n    {% if article.tease %}\n      <p>{{ article.tease|truncate:30 }}</p>\n    {% endif %}\n{% endfor %}\n</Template>\n\n<!-- The data below was used to render the template above -->\n<State\n    count:=42\n    articles:='[\n      {\"headline\": \"Modulo released!\",\n       \"tease\": \"The most exciting news of the century.\"},\n      {\"headline\": \"Can JS be fun again?\"},\n      {\"headline\": \"MTL considered harmful\",\n       \"tease\": \"Why constructing JS is risky business.\"}\n    ]'\n></State>\n<Script>\n    script.exports.title = \"ModuloNews\";\n</Script>\n\n\n",
+     "Templating_PrepareCallback": "<Template>\n    <input name=\"perc\" [state.bind] />% of\n    <input name=\"total\" [state.bind] />\n    is: {{ script.calcResult }}\n</Template>\n\n<State\n    perc:=50\n    total:=30\n></State>\n\n<Script>\n    function prepareCallback() {\n        const calcResult = (state.perc / 100) * state.total;\n        return { calcResult };\n    }\n</Script>\n\n<Style>\n    input { display: inline; width: 25px }\n</Style>\n\n\n",
+     "Templating_Comments": "<Template>\n    <h1>hello {# greeting #}</h1>\n    {% comment %}\n      {% if a %}<div>{{ b }}</div>{% endif %}\n      <h3>{{ state.items|first }}</h3>\n    {% endcomment %}\n    <p>Below the greeting...</p>\n</Template>\n\n\n",
+     "Templating_Escaping": "<Template>\n<p>User \"<em>{{ state.username }}</em>\" sent a message:</p>\n<div class=\"msgcontent\">\n    {{ state.content|safe }}\n</div>\n</Template>\n\n<State\n    username=\"Little <Bobby> <Drop> &tables\"\n    content='\n        I <i>love</i> the classic <a target=\"_blank\"\n        href=\"https://xkcd.com/327/\">xkcd #327</a> on\n        the risk of trusting <b>user inputted data</b>\n    '\n></State>\n<Style>\n    .msgcontent {\n        background: #999;\n        padding: 10px;\n        margin: 10px;\n    }\n</Style>\n\n\n",
+     "Tutorial_P1": "<Template>\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n</Template>\n<Style>\n/* ...and any CSS here! */\nstrong {\n    color: blue;\n}\n.neat {\n    font-variant: small-caps;\n}\n:host { /* styles the entire component */\n    display: inline-block;\n    background-color: cornsilk;\n    padding: 5px;\n    box-shadow: 10px 10px 0 0 turquoise;\n}\n</Style>\n\n\n\n",
+     "Tutorial_P2": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n",
+     "Tutorial_P2_filters_demo": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n\n\n",
+     "Tutorial_P3_state_demo": "<Template>\n<p>Nonsense poem:</p> <pre>\nProfessor {{ state.verb|capfirst }} who\n{{ state.verb }}ed a {{ state.noun }},\ntaught {{ state.verb }}ing in\nthe City of {{ state.noun|capfirst }},\nto {{ state.count }} {{ state.noun }}s.\n</pre>\n</Template>\n\n<State\n    verb=\"toot\"\n    noun=\"kazoo\"\n    count=\"two\"\n></State>\n\n<Style>\n    :host {\n        font-size: 0.8rem;\n    }\n</Style>\n\n\n",
+     "Tutorial_P3_state_bind": "<Template>\n\n<div>\n    <label>Username:\n        <input [state.bind] name=\"username\" /></label>\n    <label>Color (\"green\" or \"blue\"):\n        <input [state.bind] name=\"color\" /></label>\n    <label>Opacity: <input [state.bind]\n        name=\"opacity\"\n        type=\"number\" min=\"0\" max=\"1\" step=\"0.1\" /></label>\n\n    <h5 style=\"\n            opacity: {{ state.opacity }};\n            color: {{ state.color|allow:'green,blue'|default:'red' }};\n        \">\n        {{ state.username|lower }}\n    </h5>\n</div>\n\n</Template>\n\n<State\n    opacity=\"0.5\"\n    color=\"blue\"\n    username=\"Testing_Username\"\n></State>\n\n\n"
     }
    }
   }
@@ -3360,7 +3371,7 @@ currentModulo.defs = {
   {
    "Type": "Style",
    "RenderObj": "style",
-   "Content": ":root {\n    --highlight-color: #B90183;\n}\n\ncode {\n  font-family: monospace;\n  border-bottom: 1px dotted var(--highlight-color);\n}\n\nhtml {\n  box-sizing: border-box;\n  font-size: 16px;\n  line-height: 1.5;\n  font-family: sans-serif;\n  /*font-family: serif;*/\n  overflow-y: scroll;\n}\n\n*, *:before, *:after {\n  box-sizing: inherit;\n}\n\nbody, h1, h2, h3, h4, h5, h6, p, ol, ul {\n  margin: 0;\n  padding: 0;\n  font-weight: normal;\n}\n\nol, ul {\n  list-style: none;\n}\n\nimg {\n  max-width: 100%;\n  height: auto;\n}\n\n.m-Btn,\n.m-Btn:visited,\n.m-Btn:active,\n.m-Btn:hover {\n    display: inline-block;\n    border: 2px solid black;\n    border-top-width: 1px;\n    border-bottom-width: 3px;\n    border-radius: 3px;\n    background: white;\n    font-weight: lighter;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    color: black;\n    padding: 5px;\n    text-decoration: none;\n    margin-top: 2px;\n}\n\n.m-Btn.m-Btn--sm,\n.m-Btn.m-Btn--sm:hover {\n    font-size: 0.95rem;\n    border-bottom-width: 2px;\n    padding: 2px;\n}\n\n.m-Btn--faded {\n    opacity: 0.3;\n    transition: opacity 0.2s;\n}\n.m-Btn--faded:hover {\n    opacity: 1.0;\n}\n\n.m-Btn:active {\n    border-top-width: 3px;\n    border-bottom-width: 1px;\n}\n\n.m-Btn:hover {\n    box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n}\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7; /* code mirror scrollbars are 6 */\n    height: 100px;\n}\n\nnav.Navbar--docs {\n  /*\n  height: 50px;\n  padding-top: 0;\n  border-top: 1px dotted black;\n  top: 100px !important;\n  position: fixed !important;\n  width: 100%;\n  */\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n    align-items: baseline;\n}\n\nnav.Navbar li {\n    margin-left: 50px;\n}\n\nnav.Navbar li a {\n    font-size: 30px;\n    text-transform: uppercase;\n    color: black;\n}\n\nnav.Navbar--subbar li a {\n    text-transform: none;\n    font-size: 20px;\n    text-decoration: none;\n    font-weight: bold;\n    line-height: 0.9;\n    text-align: left;\n}\n\nnav.Navbar li a.Navbar--selected {\n    text-decoration: overline underline;\n}\n\nnav.Navbar--subbar li a.Navbar--selected {\n    text-decoration: none;\n    color: #B90183;\n}\n\nnav.Navbar .Navbar-rightInfo {\n    font-size: 12px;\n    text-align: left;\n    margin-left: 40px;\n    /*border: 1px solid black;*/\n    padding: 5px;\n}\n\n.Main {\n    max-width: 820px;\n    margin: auto;\n    clear: both;\n    box-sizing: border-box;\n}\n\n.Main--fluid {\n    width: 98%;\n    padding-left: 20px;\n    padding-right: 20px;\n    max-width: 100vw;\n}\n\nsection.SideBySide {\n    display: flex;\n}\n\nsection.SideBySide aside strong {\n    color: #B90183;\n}\n\nsection.SideBySide aside h3 {\n    font-size: 30px;\n}\n\nsection.SideBySide aside h3 span {\n    font-size: 80px;\n    font-weight: bold;\n    color: #B90183;\n}\n\nsection.SideBySide aside.TitleAside {\n    text-align: right;\n}\nsection.SideBySide aside.TitleAside a {\n    font-size: 18px;\n}\n\n\n.TitleAside-navigation {\n  position: sticky;\n  top: 100px;\n  left: 0px;\n}\n\n.TitleAside--navBar nav {\n  text-align: left;\n}\n\n@media (max-width: 992px) {\n    .TitleAside--navBar {\n        position: static;\n        width: 100%;\n    }\n}\n\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7;\n    /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/\n    border-bottom: 1px solid black;\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n}\n\n\ndiv.IndexWrapper {\n    min-height: calc(100vh - 100px);\n}\n\ndiv.IndexWrapper mws-Demo {\n  margin-top: 10px;\n}\n\n@media (min-height: 768px) {\n    div.IndexWrapper mws-Demo {\n        margin-top: 100px;\n    }\n}\n\ndiv.Tagline {\n    text-align: center;\n}\ndiv.Tagline ul {\n    width: 500px;\n    margin: auto;\n}\n\ndiv.Tagline ul > li {\n    text-align: left;\n    list-style-type: '>>   ';\n}\n@media (min-height: 768px) {\n    div.Tagline ul {\n        margin-top: 50px;\n        width: 560px;\n    }\n    div.Tagline ul > li {\n        font-size: 1.3rem;\n    }\n}\n\nh1.Tagline-title {\n    text-align: center;\n    font-size: 50px;\n    line-height: 1.0;\n    /*font-weight: lighter;*/\n    font-weight: 800; /* heavy if possible */\n    margin-left: 10px; /* off-center looks better */\n    /*letter-spacing: 10px;*/\n    /*color: black;*/\n    /*color: var(--highlight-color);*/\n    /*\n    text-shadow: 0 0 1px var(--highlight-color);\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    */\n    /* extremely subtle shadow */\n    color: black;\n}\n\n.Tagline-logoimg {\n    height: 50px;\n}\n@media (min-height: 768px) {\n    .Tagline-logoimg {\n        height: 100px;\n        margin: 10px;\n    }\n}\n@media (min-height: 1000px) {\n    .Tagline-logoimg {\n        height: 150px;\n        margin: 30px;\n    }\n}\n\nh1.Tagline-logo {\n    text-align: center;\n    font-size: 200px;\n    line-height: 1.0;\n    /*text-shadow: 0 0 27px var(--highlight-color);*/\n    /*text-shadow: 0 0 5px #000;*/\n    text-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    color: black;\n    background: white;\n    font-weight: 300; /* lightest if possible */\n}\n\nmain {\n    max-width: 800px;\n    margin: auto;\n}\n\nmain.give-left-padding > :not(.TitleAside) {\n    margin-left: 300px;\n}\n\nsection {\n    display: flex;\n}\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n.Main p {\n    margin-top: 5px;\n    margin-bottom: 20px;\n}\n\n.Main p:last-of-type {\n    margin-bottom: 0;\n}\n\n.Main ul li {\n    list-style: disc;\n    margin-left: 40px;\n}\n\n.Main nav:not(.TitleAside-navigation) ul li {\n    list-style: none;\n    margin-left: 0;\n}\n\n.Main .InfoBox {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n    font-size: 0.95rem;\n}\n\n.Main hr {\n    border: 1px solid #888;\n    width: 80%;\n}\n\n.Main .InfoBox > h2 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main > h2,\n.Main > * > h2,\n.Main > * > * > h2 {\n    /*border-top: 1px solid #888;*/\n    /*padding-top: 10px;*/\n    width: 80%;\n    /*margin-top: 20px;*/\n    font-weight: bold;\n    font-size: 1.6rem;\n}\n\n.Main h3 {\n    font-weight: bold;\n    font-size: 1.3rem;\n    margin-top: 10px;\n}\n.Main h4 {\n    font-weight: bold;\n    font-size: 1.1rem;\n    margin-top: 5px;\n}\n\n/* Adding some top margin for the top-level h3/h4s */\n.Main > * > h3 {\n    margin-top: 40px;\n}\n.Main > * > h4 {\n    margin-top: 20px;\n}\n.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {\n    margin-bottom: 60px;\n}\n\n.Main blockquote {\n    max-width: 30%;\n    float: right;\n    border: 1px solid black;\n    border-radius: 10px;\n    padding: 10px;\n    margin: 10px;\n    line-height: 1.3;\n    font-size: 0.98rem;\n}\n@media (max-width: 992px) {\n    .Main blockquote {\n        max-width: none;\n        float: none;\n        clear: both;\n    }\n}\n\n.Main blockquote > p {\n    margin-top: 5px;\n    margin-bottom: 0;\n}\n.Main blockquote > p:first-child {\n    margin-top: 0;\n}\n\n.Main blockquote strong {\n    color: var(--highlight-color);\n    font-size: 1.1rem;\n}\n\n.Main blockquote strong:first-child::before {\n    content: '%   ';\n}\n\n.Tutorial-tryit::before {\n    content: '';\n}\n.Tutorial-tryit {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n}\n\n.DemoPanels {\n    display: flex;\n}\n\n.DemoPanels > li {\n    display: block;\n    width: 200px;\n    height: 200px;\n    border: 3px solid black;\n    border-radius: 2px;\n    padding: 5px;\n    margin: 5px;\n    position: relative;\n}\n\n.DemoPanels li a {\n    text-align: center;\n    font-size: 20px;\n}\n.DemoPanels li a::after {\n    content: '\\300B';\n}\n\n.DemoPanels li a:hover {\n    color: var(--highlight-color);\n}\n.DemoPanels > li:hover {\n    border-color: var(--highlight-color);\n}\n\n.DemoPanels li a::before {\n    content: ' ';\n    position: absolute;\n    display: block;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    z-index: 1;\n}\n\n.Tutorial-tryit h4 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 22px;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main ol > li {\n    list-style: decimal;\n    margin-left: 40px;\n}\n\n.Main--withSidebar {\n    display: grid;\n    grid-template-columns: 350px 1fr;\n}\n\n.Docs-squareInfo {\n    padding: 10px;\n}\n\n.Docs-squareInfo > h2 {\n    /*border-top: 3px #ddd dashed;*/\n    padding-top: 10px;\n    font-weight: bold;\n}\n\n.Docs-demos {\n  background-image: url(/img/demosmontage.png);\n  background-size: 170px 170px;\n  background-position: 70px 100px;\n  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */\n  text-align: center;\n  padding-top: 90px;\n  margin-top: 10px;\n}\n\n.Docs-sideBySide {\n    display: grid;\n    grid-template-columns: 3fr 2fr;\n}\n\n\n@media (max-width: 992px) {\n    .Main { display: block; }\n    .Docs-sideBySide { display: block; }\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n\n    div.Tagline {\n        padding: 5px;\n    }\n    nav.Navbar .Navbar-rightInfo {\n        padding: 2px;\n        margin-left: 10px;\n    }\n\n}\n\nfooter {\n    color: #aaa;\n    padding: 20px;\n    margin-top: 50px;\n    text-align: center;\n}\n\n",
+   "Content": ":root {\n    --highlight-color: #B90183;\n}\n\ncode {\n  font-family: monospace;\n  border-bottom: 1px dotted var(--highlight-color);\n}\n\nhtml {\n  box-sizing: border-box;\n  font-size: 16px;\n  line-height: 1.5;\n  font-family: sans-serif;\n  /*font-family: serif;*/\n  overflow-y: scroll;\n}\n\n*, *:before, *:after {\n  box-sizing: inherit;\n}\n\nbody, h1, h2, h3, h4, h5, h6, p, ol, ul {\n  margin: 0;\n  padding: 0;\n  font-weight: normal;\n}\n\nol, ul {\n  list-style: none;\n}\n\nimg {\n  max-width: 100%;\n  height: auto;\n}\n\n.m-Btn,\n.m-Btn:visited,\n.m-Btn:active,\n.m-Btn:hover {\n    display: inline-block;\n    border: 2px solid black;\n    border-top-width: 1px;\n    border-bottom-width: 3px;\n    border-radius: 3px;\n    background: white;\n    font-weight: lighter;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    color: black;\n    padding: 5px;\n    text-decoration: none;\n    margin-top: 2px;\n}\n\n.m-Btn.m-Btn--sm,\n.m-Btn.m-Btn--sm:hover {\n    font-size: 0.95rem;\n    border-bottom-width: 2px;\n    padding: 2px;\n}\n\n.m-Btn--faded {\n    opacity: 0.3;\n    transition: opacity 0.2s;\n}\n.m-Btn--faded:hover {\n    opacity: 1.0;\n}\n\n.m-Btn:active {\n    border-top-width: 3px;\n    border-bottom-width: 1px;\n}\n\n.m-Btn:hover {\n    box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n}\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7; /* code mirror scrollbars are 6 */\n    height: 100px;\n}\n\nnav.Navbar--docs {\n  /*\n  height: 50px;\n  padding-top: 0;\n  border-top: 1px dotted black;\n  top: 100px !important;\n  position: fixed !important;\n  width: 100%;\n  */\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n    align-items: baseline;\n}\n\nnav.Navbar li {\n    margin-left: 50px;\n}\n\nnav.Navbar li a {\n    font-size: 30px;\n    text-transform: uppercase;\n    color: black;\n}\n\nnav.Navbar--subbar li a {\n    text-transform: none;\n    font-size: 20px;\n    text-decoration: none;\n    font-weight: bold;\n    line-height: 0.9;\n    text-align: left;\n}\n\nnav.Navbar li a.Navbar--selected {\n    text-decoration: overline underline;\n}\n\nnav.Navbar--subbar li a.Navbar--selected {\n    text-decoration: none;\n    color: #B90183;\n}\n\nnav.Navbar .Navbar-rightInfo {\n    font-size: 12px;\n    text-align: left;\n    margin-left: 40px;\n    /*border: 1px solid black;*/\n    padding: 5px;\n}\n\n.Main {\n    max-width: 820px;\n    margin: auto;\n    clear: both;\n    box-sizing: border-box;\n}\n\n.Main--fluid {\n    width: 98%;\n    padding-left: 20px;\n    padding-right: 20px;\n    max-width: 100vw;\n}\n\nsection.SideBySide {\n    display: flex;\n}\n\nsection.SideBySide aside strong {\n    color: #B90183;\n}\n\nsection.SideBySide aside h3 {\n    font-size: 30px;\n}\n\nsection.SideBySide aside h3 span {\n    font-size: 80px;\n    font-weight: bold;\n    color: #B90183;\n}\n\nsection.SideBySide aside.TitleAside {\n    text-align: right;\n}\nsection.SideBySide aside.TitleAside a {\n    font-size: 18px;\n}\n\n\n.TitleAside-navigation {\n  position: sticky;\n  top: 100px;\n  left: 0px;\n}\n\n.TitleAside--navBar nav {\n  text-align: left;\n}\n\n@media (max-width: 992px) {\n    .TitleAside--navBar {\n        position: static;\n        width: 100%;\n    }\n}\n\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7;\n    /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/\n    border-bottom: 1px solid black;\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n}\n\n\ndiv.IndexWrapper {\n    min-height: calc(100vh - 100px);\n}\n\ndiv.IndexWrapper mws-Demo {\n  margin-top: 10px;\n}\n\n@media (min-height: 768px) {\n    div.IndexWrapper mws-Demo {\n        margin-top: 100px;\n    }\n}\n\ndiv.Tagline {\n    text-align: center;\n}\ndiv.Tagline ul {\n    width: 500px;\n    margin: auto;\n}\n\ndiv.Tagline ul > li {\n    text-align: left;\n    list-style-type: '>>   ';\n}\n@media (min-height: 768px) {\n    div.Tagline ul {\n        margin-top: 50px;\n        width: 560px;\n    }\n    div.Tagline ul > li {\n        font-size: 1.3rem;\n    }\n}\n\nh1.Tagline-title {\n    text-align: center;\n    font-size: 50px;\n    line-height: 1.0;\n    /*font-weight: lighter;*/\n    font-weight: 800; /* heavy if possible */\n    margin-left: 10px; /* off-center looks better */\n    /*letter-spacing: 10px;*/\n    /*color: black;*/\n    /*color: var(--highlight-color);*/\n    /*\n    text-shadow: 0 0 1px var(--highlight-color);\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    */\n    /* extremely subtle shadow */\n    color: black;\n}\n\n.Tagline-logoimg {\n    height: 50px;\n}\n@media (min-height: 768px) {\n    .Tagline-logoimg {\n        height: 100px;\n        margin: 10px;\n    }\n}\n@media (min-height: 1000px) {\n    .Tagline-logoimg {\n        height: 150px;\n        margin: 30px;\n    }\n}\n\nh1.Tagline-logo {\n    text-align: center;\n    font-size: 200px;\n    line-height: 1.0;\n    /*text-shadow: 0 0 27px var(--highlight-color);*/\n    /*text-shadow: 0 0 5px #000;*/\n    text-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    color: black;\n    background: white;\n    font-weight: 300; /* lightest if possible */\n}\n\nmain {\n    max-width: 800px;\n    margin: auto;\n}\n\nmain.give-left-padding > :not(.TitleAside) {\n    margin-left: 300px;\n}\n\nsection {\n    display: flex;\n}\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n.Main p {\n    margin-top: 5px;\n    margin-bottom: 20px;\n}\n\n.Main p:last-of-type {\n    margin-bottom: 0;\n}\n\n.Main ul li {\n    list-style: disc;\n    margin-left: 40px;\n}\n\n.Main nav:not(.TitleAside-navigation) ul li {\n    list-style: none;\n    margin-left: 0;\n}\n\n.Main .InfoBox {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n    font-size: 0.95rem;\n}\n\n.Main hr {\n    border: 1px solid #888;\n    width: 80%;\n}\n\n.Main .InfoBox > h2 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main > h2,\n.Main > * > h2,\n.Main > * > * > h2 {\n    /*border-top: 1px solid #888;*/\n    /*padding-top: 10px;*/\n    width: 80%;\n    /*margin-top: 20px;*/\n    font-weight: bold;\n    font-size: 1.6rem;\n}\n\n.Main h3 {\n    font-weight: bold;\n    font-size: 1.3rem;\n    margin-top: 10px;\n}\n.Main h4 {\n    font-weight: bold;\n    font-size: 1.1rem;\n    margin-top: 5px;\n}\n\n/* Adding some top margin for the top-level h3/h4s */\n.Main > * > h3 {\n    margin-top: 40px;\n}\n.Main > * > h4 {\n    margin-top: 20px;\n}\n.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {\n    margin-bottom: 60px;\n}\n\n.Main blockquote {\n    max-width: 30%;\n    float: right;\n    border: 1px solid black;\n    border-radius: 10px;\n    padding: 10px;\n    margin: 10px;\n    line-height: 1.3;\n    font-size: 0.98rem;\n}\n@media (max-width: 992px) {\n    .Main blockquote {\n        max-width: none;\n        float: none;\n        clear: both;\n    }\n}\n\n.Main blockquote > p {\n    margin-top: 5px;\n    margin-bottom: 0;\n}\n.Main blockquote > p:first-child {\n    margin-top: 0;\n}\n\n.Main blockquote strong {\n    color: var(--highlight-color);\n    font-size: 1.1rem;\n}\n\n.Main blockquote strong:first-child::before {\n    content: '%   ';\n}\n\n.Tutorial-tryit::before {\n    content: '';\n}\n.Tutorial-tryit {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n}\n\n.DemoPanels {\n    display: flex;\n}\n\n.DemoPanels > li {\n    display: block;\n    width: 200px;\n    height: 200px;\n    border: 3px solid black;\n    border-radius: 2px;\n    padding: 5px;\n    margin: 5px;\n    position: relative;\n}\n\n.DemoPanels li a {\n    text-align: center;\n    font-size: 20px;\n}\n.DemoPanels li a::after {\n    content: '\\300B';\n}\n\n.DemoPanels li a:hover {\n    color: var(--highlight-color);\n}\n.DemoPanels > li:hover {\n    border-color: var(--highlight-color);\n}\n\n.DemoPanels li a::before {\n    content: ' ';\n    position: absolute;\n    display: block;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    z-index: 1;\n}\n\n.Tutorial-tryit h4 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 22px;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main ol > li {\n    list-style: decimal;\n    margin-left: 40px;\n}\n\n.Main--withSidebar {\n    display: grid;\n    grid-template-columns: 350px 1fr;\n}\n\n.Docs-squareInfo {\n    padding: 10px;\n}\n\n.Docs-squareInfo > h2 {\n    /*border-top: 3px #ddd dashed;*/\n    padding-top: 10px;\n    font-weight: bold;\n}\n\n.Docs-demos {\n  background-image: url(/img/demosmontage.png);\n  background-size: 170px 170px;\n  background-position: 70px 100px;\n  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */\n  text-align: center;\n  padding-top: 90px;\n  margin-top: 10px;\n}\n\n.Docs-sideBySide {\n    display: grid;\n    grid-template-columns: 3fr 2fr;\n}\n\nfooter {\n    color: #aaa;\n    padding: 20px;\n    margin-top: 50px;\n    text-align: center;\n}\n\n\n@media (max-width: 992px) {\n    .Main { display: block; }\n    .Docs-sideBySide { display: block; }\n}\n\n.Navbar-tinyText {\n    display: none;\n}\n@media (max-width: 768px) {\n    section, section.SideBySide {\n        display: block;\n    }\n    .Navbar-rightInfo {\n        display: none;\n    }\n    .Navbar-logo {\n        display: none;\n    }\n    .Navbar-tinyText {\n        display: block;\n        position: absolute;\n        top: 0;\n        text-align: center;\n    }\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n\n    div.Tagline {\n        padding: 5px;\n    }\n    nav.Navbar .Navbar-rightInfo {\n        padding: 2px;\n        margin-left: 10px;\n    }\n\n}\n\n",
    "Parent": "x_x_mws_Page",
    "DefName": null,
    "Name": "x",
@@ -3373,7 +3384,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_Page_x",
-   "Hash": "x1p9bcn0"
+   "Hash": "xh5ulli"
   },
   {
    "Type": "Script",
@@ -3416,7 +3427,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_ProjectInfo_x",
-   "Hash": "xuat1mm"
+   "Hash": "4vmddl"
   },
   {
    "Type": "Template",
@@ -3577,7 +3588,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_Demo_x",
-   "Hash": "xb425lp"
+   "Hash": "x1f6skam"
   },
   {
    "Type": "State",
@@ -3621,7 +3632,7 @@ currentModulo.defs = {
   {
    "Type": "Style",
    "RenderObj": "style",
-   "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color);\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important;\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
+   "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color) !important; /* Why !important ?? TODO */\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important; /* Why !important ?? TODO */\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n    .demo-wrapper {\n        --side-width: 150px;\n    }\n    .demo-fs-button {\n        display: none;\n    }\n\n\n    .demo-wrapper.demo-wrapper__tabs {\n        display: grid;\n        grid-template-columns: var(--side-width) 1fr;\n        grid-template-rows: 1fr 80px;\n    }\n    \n\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {\n        grid-row: 1 / span 2;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {\n        position: absolute;\n        top: 121px;\n        right: -18px;\n        background: white;\n        border-color: black;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {\n        grid-column: 2;\n        grid-row: 1;\n    }\n    .demo-wrapper.demo-wrapper__tabs .TabNav-title {\n        border: 1px solid black;\n        border-radius: 1px;\n        background: white;\n        width: var(--side-width);\n    }\n\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {\n        display: grid;\n        grid-template-rows: 200px 1fr;\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {\n        grid-row: 2;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {\n        grid-row: 1;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    /*\n    .TabNav-title--selected {\n        box-shadow: 0 0 0 0 var(--highlight-color);\n        box-shadow: none;\n    }\n    */\n /* UGH TODO */\n    /*\n    .TabNav-title--selected a {\n        color: var(--highlight-color) !important;\n    }\n    */\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
    "Parent": "x_x_mws_Demo",
    "DefName": null,
    "Name": "x",
@@ -4087,7 +4098,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "1f71c6c"
+   "Hash": "xvtf413"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -4770,6 +4781,17 @@ currentModulo.parentDefs = {
     "WorldMap": "<!-- Another example of StaticData being used to visualize data, this example\n     places API data onto a world map, and provides a slide down modal for\n     each user that shows more information about that user -->\n<Template>\n    {% for user in staticdata %}\n        <div style=\"top: {{ user.address.geo.lng|number|add:180|multiply:100|dividedinto:360 }}%;\n                    left: {{ user.address.geo.lat|number|add:90|multiply:100|dividedinto:180 }}%;\">\n            <x-DemoModal button=\"{{ user.id }}\" title=\"{{ user.name }}\">\n                {% for key, value in user %}\n                    <dl>\n                        <dt>{{ key|capfirst }}</dt>\n                        <dd>{% if value|type == \"object\" %}{{ value|json }}{% else %}{{ value }}{% endif %}</dd>\n                    </dl>\n                {% endfor %}\n            </x-DemoModal>\n        </div>\n    {% endfor %}\n</Template>\n\n<StaticData\n    -src=\"https://jsonplaceholder.typicode.com/users\"\n></StaticData>\n\n<Style>\n  :host {\n      position: relative;\n      display: block;\n      width: 160px;\n      height: 80px;\n      border-radius: 1px 5px 1px 7px;\n      border: 1px solid gray;\n      box-shadow: inset -2px -3px 1px 1px hsla(0,0%,39.2%,.3);\n      background-size: 160px 85px;\n      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Mercator_Blank_Map_World.png/800px-Mercator_Blank_Map_World.png?20120629044350');\n  }\n  div {\n      position: absolute;\n      height: 7px;\n      width: 7px;\n      border-radius: 5px;\n      background-color: rgba(162, 228, 184);\n  }\n  div > x-DemoModal {\n      opacity: 0;\n      z-index: 50;\n  }\n  div:hover > x-DemoModal{\n      opacity: 1.0;\n  }\n  .modal-body {\n      height: 400px;\n      overflow: auto;\n  }\n  dt {\n      font-weight: 800;\n  }\n  dd {\n      max-width: 300px;\n      overflow: auto;\n      font-family: monospace;\n  }\n</Style>\n",
     "Memory": "<!-- A much more complicated example application -->\n<Template>\n{% if not state.cards.length %}\n    <h3>The Symbolic Memory Game</h3>\n    <p>Choose your difficulty:</p>\n    <button @click:=script.setup click.payload=8>2x4</button>\n    <button @click:=script.setup click.payload=16>4x4</button>\n    <button @click:=script.setup click.payload=36>6x6</button>\n{% else %}\n    <div class=\"board\n        {% if state.cards.length > 16 %}hard{% endif %}\">\n    {# Loop through each card in the \"deck\" (state.cards) #}\n    {% for card in state.cards %}\n        {# Use \"key=\" to speed up DOM reconciler #}\n        <div key=\"c{{ card.id }}\"\n            class=\"card\n            {% if card.id in state.revealed %}\n                flipped\n            {% endif %}\n            \"\n            style=\"\n            {% if state.win %}\n                animation: flipping 0.5s infinite alternate;\n                animation-delay: {{ card.id }}.{{ card.id }}s;\n            {% endif %}\n            \"\n            @click:=script.flip\n            click.payload=\"{{ card.id }}\">\n            {% if card.id in state.revealed %}\n                {{ card.symbol }}\n            {% endif %}\n        </div>\n    {% endfor %}\n    </div>\n    <p style=\"{% if state.failedflip %}\n                color: red{% endif %}\">\n        {{ state.message }}</p>\n{% endif %}\n</Template>\n\n<State\n    message=\"Good luck!\"\n    win:=false\n    cards:=[]\n    revealed:=[]\n    lastflipped:=null\n    failedflip:=null\n></State>\n\n<Script>\nconst symbolsStr = \"%!@#=?&+~÷≠∑µ‰∂Δƒσ\"; // 16 options\nfunction setup(payload) {\n    const count = Number(payload);\n    let symbols = symbolsStr.substr(0, count/2).split(\"\");\n    symbols = symbols.concat(symbols); // duplicate cards\n    let id = 0;\n    while (id < count) {\n        const index = Math.floor(Math.random()\n                                    * symbols.length);\n        const symbol = symbols.splice(index, 1)[0];\n        state.cards.push({symbol, id});\n        id++;\n    }\n}\n\nfunction failedFlipCallback() {\n    // Remove both from revealed array & set to null\n    state.revealed = state.revealed.filter(\n            id => id !== state.failedflip\n                    && id !== state.lastflipped);\n    state.failedflip = null;\n    state.lastflipped = null;\n    state.message = \"\";\n    element.rerender();\n}\n\nfunction flip(id) {\n    if (state.failedflip !== null) {\n        return;\n    }\n    id = Number(id);\n    if (state.revealed.includes(id)) {\n        return; // double click\n    } else if (state.lastflipped === null) {\n        state.lastflipped = id;\n        state.revealed.push(id);\n    } else {\n        state.revealed.push(id);\n        const {symbol} = state.cards[id];\n        const lastCard = state.cards[state.lastflipped];\n        if (symbol === lastCard.symbol) {\n            // Successful match! Check for win.\n            const {revealed, cards} = state;\n            if (revealed.length === cards.length) {\n                state.message = \"You win!\";\n                state.win = true;\n            } else {\n                state.message = \"Nice match!\";\n            }\n            state.lastflipped = null;\n        } else {\n            state.message = \"No match.\";\n            state.failedflip = id;\n            setTimeout(failedFlipCallback, 1000);\n        }\n    }\n}\n</Script>\n\n<Style>\nh3 {\n    background: #B90183;\n    border-radius: 8px;\n    text-align: center;\n    color: white;\n    font-weight: bold;\n}\n.board {\n    display: grid;\n    grid-template-rows: repeat(4, 1fr);\n    grid-template-columns: repeat(4, 1fr);\n    grid-gap: 2px;\n    width: 100%;\n    height: 150px;\n    width: 150px;\n}\n.board.hard {\n    grid-gap: 1px;\n    grid-template-rows: repeat(6, 1fr);\n    grid-template-columns: repeat(6, 1fr);\n}\n.board > .card {\n    background: #B90183;\n    border: 2px solid black;\n    border-radius: 1px;\n    cursor: pointer;\n    text-align: center;\n    min-height: 15px;\n    transition: background 0.3s, transform 0.3s;\n    transform: scaleX(-1);\n    padding-top: 2px;\n    color: #B90183;\n}\n.board.hard > .card {\n    border: none !important;\n    padding: 0;\n}\n.board > .card.flipped {\n    background: #FFFFFF;\n    border: 2px solid #B90183;\n    transform: scaleX(1);\n}\n\n@keyframes flipping {\n    from { transform: scaleX(-1.1); background: #B90183; }\n    to {   transform: scaleX(1.0);  background: #FFFFFF; }\n}\n</Style>\n\n\n",
     "ConwayGameOfLife": "<Template>\n  <div class=\"grid\">\n    {% for i in script.exports.range %}\n        {% for j in script.exports.range %}\n          <div\n            @click:=script.toggle\n            payload:='[ {{ i }}, {{ j }} ]'\n            style=\"{% if state.cells|get:i %}\n                {% if state.cells|get:i|get:j %}\n                    background: #B90183;\n                {% endif %}\n            {% endif %}\"\n           ></div>\n        {% endfor %}\n    {% endfor %}\n  </div>\n  <div class=\"controls\">\n    {% if not state.playing %}\n        <button @click:=script.play alt=\"Play\">&#x25B6;</button>\n    {% else %}\n        <button @click:=script.pause alt=\"Pause\">&#x2016;</button>\n    {% endif %}\n\n    <button @click:=script.randomize alt=\"Randomize\">RND</button>\n    <button @click:=script.clear alt=\"Randomize\">CLR</button>\n    <label>Spd: <input [state.bind]\n        name=\"speed\"\n        type=\"number\" min=\"1\" max=\"10\" step=\"1\" /></label>\n  </div>\n</Template>\n\n<State\n    playing:=false\n    speed:=3\n    cells:='{\n        \"12\": { \"10\": true, \"11\": true, \"12\": true },\n        \"11\": { \"12\": true },\n        \"10\": { \"11\": true }\n    }'\n></State>\n\n<Script>\n    function toggle([ i, j ]) {\n        if (!state.cells[i]) {\n            state.cells[i] = {};\n        }\n        state.cells[i][j] = !state.cells[i][j];\n    }\n\n    function play() {\n        state.playing = true;\n        setTimeout(() => {\n            if (state.playing) {\n                updateNextFrame();\n                element.rerender(); // manually rerender\n                play(); // cue next frame\n            }\n        }, 2000 / state.speed);\n    }\n\n    function pause() {\n        state.playing = false;\n    }\n\n    function clear() {\n        state.cells = {};\n    }\n\n    function randomize() {\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!state.cells[i]) {\n                    state.cells[i] = {};\n                }\n                state.cells[i][j] = (Math.random() > 0.5);\n            }\n        }\n    }\n\n    // Helper function for getting a cell from data\n    const get = (i, j) => !!(state.cells[i] && state.cells[i][j]);\n    function updateNextFrame() {\n        const nextData = {};\n        for (const i of script.exports.range) {\n            for (const j of script.exports.range) {\n                if (!nextData[i]) {\n                    nextData[i] = {};\n                }\n                const count = countNeighbors(i, j);\n                nextData[i][j] = get(i, j) ?\n                    (count === 2 || count === 3) : // stays alive\n                    (count === 3); // comes alive\n            }\n        }\n        state.cells = nextData;\n    }\n\n    function countNeighbors(i, j) {\n        const neighbors = [get(i - 1, j), get(i - 1, j - 1), get(i, j - 1),\n                get(i + 1, j), get(i + 1, j + 1), get(i, j + 1),\n                get(i + 1, j - 1), get(i - 1, j + 1)];\n        return neighbors.filter(v => v).length;\n    }\n    script.exports.range = Array.from({length: 24}, (x, i) => i);\n</Script>\n\n<Style>\n    :host {\n        display: flex;\n    }\n    .grid {\n        display: grid;\n        grid-template-columns: repeat(24, 5px);\n        margin: -2px;\n        grid-gap: 1px;\n    }\n    .grid > div {\n        background: white;\n        width: 5px;\n        height: 5px;\n    }\n    input, button {\n        width: 40px;\n    }\n</Style>\n\n"
+   },
+   "/libraries/docseg.html": {
+    "Templating_1": "<Template>\n<p>There are <em>{{ state.count }}\n  {{ state.count|pluralize:\"articles,article\" }}</em>\n  on {{ script.exports.title }}.</p>\n\n{# Show the articles #}\n{% for article in state.articles %}\n    <h4 style=\"color: blue\">{{ article.headline|upper }}</h4>\n    {% if article.tease %}\n      <p>{{ article.tease|truncate:30 }}</p>\n    {% endif %}\n{% endfor %}\n</Template>\n\n<!-- The data below was used to render the template above -->\n<State\n    count:=42\n    articles:='[\n      {\"headline\": \"Modulo released!\",\n       \"tease\": \"The most exciting news of the century.\"},\n      {\"headline\": \"Can JS be fun again?\"},\n      {\"headline\": \"MTL considered harmful\",\n       \"tease\": \"Why constructing JS is risky business.\"}\n    ]'\n></State>\n<Script>\n    script.exports.title = \"ModuloNews\";\n</Script>\n\n\n",
+    "Templating_PrepareCallback": "<Template>\n    <input name=\"perc\" [state.bind] />% of\n    <input name=\"total\" [state.bind] />\n    is: {{ script.calcResult }}\n</Template>\n\n<State\n    perc:=50\n    total:=30\n></State>\n\n<Script>\n    function prepareCallback() {\n        const calcResult = (state.perc / 100) * state.total;\n        return { calcResult };\n    }\n</Script>\n\n<Style>\n    input { display: inline; width: 25px }\n</Style>\n\n\n",
+    "Templating_Comments": "<Template>\n    <h1>hello {# greeting #}</h1>\n    {% comment %}\n      {% if a %}<div>{{ b }}</div>{% endif %}\n      <h3>{{ state.items|first }}</h3>\n    {% endcomment %}\n    <p>Below the greeting...</p>\n</Template>\n\n\n",
+    "Templating_Escaping": "<Template>\n<p>User \"<em>{{ state.username }}</em>\" sent a message:</p>\n<div class=\"msgcontent\">\n    {{ state.content|safe }}\n</div>\n</Template>\n\n<State\n    username=\"Little <Bobby> <Drop> &tables\"\n    content='\n        I <i>love</i> the classic <a target=\"_blank\"\n        href=\"https://xkcd.com/327/\">xkcd #327</a> on\n        the risk of trusting <b>user inputted data</b>\n    '\n></State>\n<Style>\n    .msgcontent {\n        background: #999;\n        padding: 10px;\n        margin: 10px;\n    }\n</Style>\n\n\n",
+    "Tutorial_P1": "<Template>\nHello <strong>Modulo</strong> World!\n<p class=\"neat\">Any HTML can be here!</p>\n</Template>\n<Style>\n/* ...and any CSS here! */\nstrong {\n    color: blue;\n}\n.neat {\n    font-variant: small-caps;\n}\n:host { /* styles the entire component */\n    display: inline-block;\n    background-color: cornsilk;\n    padding: 5px;\n    box-shadow: 10px 10px 0 0 turquoise;\n}\n</Style>\n\n\n\n",
+    "Tutorial_P2": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n",
+    "Tutorial_P2_filters_demo": "<Template>\n    <p>Trying out the button...</p>\n    <x-ExampleBtn\n        label=\"Button Example\"\n        shape=\"square\"\n    ></x-ExampleBtn>\n\n    <p>Another button...</p>\n    <x-ExampleBtn\n        label=\"Example 2: Rounded\"\n        shape=\"round\"\n    ></x-ExampleBtn>\n</Template>\n\n\n\n",
+    "Tutorial_P3_state_demo": "<Template>\n<p>Nonsense poem:</p> <pre>\nProfessor {{ state.verb|capfirst }} who\n{{ state.verb }}ed a {{ state.noun }},\ntaught {{ state.verb }}ing in\nthe City of {{ state.noun|capfirst }},\nto {{ state.count }} {{ state.noun }}s.\n</pre>\n</Template>\n\n<State\n    verb=\"toot\"\n    noun=\"kazoo\"\n    count=\"two\"\n></State>\n\n<Style>\n    :host {\n        font-size: 0.8rem;\n    }\n</Style>\n\n\n",
+    "Tutorial_P3_state_bind": "<Template>\n\n<div>\n    <label>Username:\n        <input [state.bind] name=\"username\" /></label>\n    <label>Color (\"green\" or \"blue\"):\n        <input [state.bind] name=\"color\" /></label>\n    <label>Opacity: <input [state.bind]\n        name=\"opacity\"\n        type=\"number\" min=\"0\" max=\"1\" step=\"0.1\" /></label>\n\n    <h5 style=\"\n            opacity: {{ state.opacity }};\n            color: {{ state.color|allow:'green,blue'|default:'red' }};\n        \">\n        {{ state.username|lower }}\n    </h5>\n</div>\n\n</Template>\n\n<State\n    opacity=\"0.5\"\n    color=\"blue\"\n    username=\"Testing_Username\"\n></State>\n\n\n"
    }
   }
  },
@@ -5693,7 +5715,7 @@ currentModulo.parentDefs = {
  "x_x_mws_Demo_x": {
   "Type": "Style",
   "RenderObj": "style",
-  "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color);\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important;\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
+  "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color) !important; /* Why !important ?? TODO */\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important; /* Why !important ?? TODO */\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n    .demo-wrapper {\n        --side-width: 150px;\n    }\n    .demo-fs-button {\n        display: none;\n    }\n\n\n    .demo-wrapper.demo-wrapper__tabs {\n        display: grid;\n        grid-template-columns: var(--side-width) 1fr;\n        grid-template-rows: 1fr 80px;\n    }\n    \n\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {\n        grid-row: 1 / span 2;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {\n        position: absolute;\n        top: 121px;\n        right: -18px;\n        background: white;\n        border-color: black;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {\n        grid-column: 2;\n        grid-row: 1;\n    }\n    .demo-wrapper.demo-wrapper__tabs .TabNav-title {\n        border: 1px solid black;\n        border-radius: 1px;\n        background: white;\n        width: var(--side-width);\n    }\n\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {\n        display: grid;\n        grid-template-rows: 200px 1fr;\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {\n        grid-row: 2;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {\n        grid-row: 1;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    /*\n    .TabNav-title--selected {\n        box-shadow: 0 0 0 0 var(--highlight-color);\n        box-shadow: none;\n    }\n    */\n /* UGH TODO */\n    /*\n    .TabNav-title--selected a {\n        color: var(--highlight-color) !important;\n    }\n    */\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
   "Parent": "x_x_mws_Demo",
   "DefName": null,
   "Name": "x",
@@ -5874,7 +5896,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "1f71c6c"
+  "Hash": "xvtf413"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -21524,11 +21546,11 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["x1p9bcn0"]= function (CTX, G){
+currentModulo.assets.functions["xh5ulli"]= function (CTX, G){
 var OUT=[];
-  OUT.push("<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <title>"); // "<!DOCTYPE html><html><head><meta charset=\"utf8\" /><title>"
+  OUT.push("<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1\" />\n    <title>"); // "<!DOCTYPE html><html><head><meta charset=\"utf8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1\" /><title>"
   OUT.push(G.escapeText(CTX.props.pagetitle)); // "props.pagetitle"
-  OUT.push(" - modulojs.org</title>\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n\n    <!-- Some global CSS that is not tied to any component: -->\n    <link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />\n</head>\n<body>\n\n<slot name=\"above-navbar\"></slot>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\"><img src=\"/img/modulo_logo.svg\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\" "); // "- modulojs.org</title><link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" /><!-- Some global CSS that is not tied to any component: --><link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" /></head><body><slot name=\"above-navbar\"></slot><nav class=\"Navbar\"><a href=\"/index.html\"><img src=\"/img/modulo_logo.svg\" style=\"height:70px\" alt=\"Modulo\" /></a><ul><li><a href=\"/index.html#about\""
+  OUT.push(" - modulojs.org</title>\n    <link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" />\n\n    <!-- Some global CSS that is not tied to any component: -->\n    <link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" />\n</head>\n<body>\n\n<slot name=\"above-navbar\"></slot>\n\n<nav class=\"Navbar\">\n    <a href=\"/index.html\" class=\"Navbar-logo\"><img src=\"/img/modulo_logo.svg\" style=\"height:70px\" alt=\"Modulo\" /></a>\n    <a href=\"/index.html\" class=\"Navbar-tinyText\">[%] Modulo.js</a>\n    <ul>\n        <li>\n            <a href=\"/index.html#about\" "); // "- modulojs.org</title><link rel=\"icon\" type=\"image/png\" href=\"/img/mono_logo.png\" /><!-- Some global CSS that is not tied to any component: --><link rel=\"stylesheet\" href=\"/js/codemirror_5.63.0/codemirror_bundled.css\" /></head><body><slot name=\"above-navbar\"></slot><nav class=\"Navbar\"><a href=\"/index.html\" class=\"Navbar-logo\"><img src=\"/img/modulo_logo.svg\" style=\"height:70px\" alt=\"Modulo\" /></a><a href=\"/index.html\" class=\"Navbar-tinyText\">[%] Modulo.js</a><ul><li><a href=\"/index.html#about\""
   if (CTX.props.navbar === "about") { // "if props.navbar == \"about\""
   OUT.push("class=\"Navbar--selected\""); // "class=\"Navbar--selected\""
   } // "endif"
@@ -21546,7 +21568,7 @@ var OUT=[];
   OUT.push(G.escapeText(CTX.script.exports.version)); // "script.exports.version"
   OUT.push("<br />\n            SLOC: "); // "<br /> SLOC:"
   OUT.push(G.escapeText(CTX.script.exports.sloc)); // "script.exports.sloc"
-  OUT.push(" lines<br />\n            <a href=\"https://github.com/michaelpb/modulo/\">github</a> | \n            <a href=\"https://npmjs.com/https://www.npmjs.com/package/mdu-cli\">npm (mdu-cli)</a> \n        "); // "lines<br /><a href=\"https://github.com/michaelpb/modulo/\">github</a> | <a href=\"https://npmjs.com/https://www.npmjs.com/package/mdu-cli\">npm (mdu-cli)</a>"
+  OUT.push(" lines<br />\n            <a href=\"https://github.com/michaelpb/modulo/\">github</a> | \n            <a href=\"https://npmjs.com/https://www.npmjs.com/package/mdu.js\">npm (mdu.js)</a> \n        "); // "lines<br /><a href=\"https://github.com/michaelpb/modulo/\">github</a> | <a href=\"https://npmjs.com/https://www.npmjs.com/package/mdu.js\">npm (mdu.js)</a>"
   } else { // "else"
   OUT.push("\n            <a href=\"https://github.com/michaelpb/modulo/\">Source Code\n                <br />\n                (on GitHub)\n            </a>\n        "); // "<a href=\"https://github.com/michaelpb/modulo/\">Source Code <br /> (on GitHub) </a>"
   } // "endif"
@@ -21678,7 +21700,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["xb425lp"]= function (CTX, G){
+currentModulo.assets.functions["x1f6skam"]= function (CTX, G){
 var OUT=[];
   OUT.push("<div \n    @mouseenter:=script.rerenderFirstTime\n    class=\"demo-wrapper\n        "); // "<div @mouseenter:=script.rerenderFirstTime class=\"demo-wrapper"
   if (CTX.state.showpreview) { // "if state.showpreview"
@@ -21695,6 +21717,10 @@ var OUT=[];
   OUT.push("\n        "); // ""
   if (CTX.state.tabs.length === 1) { // "if state.tabs.length == 1"
   OUT.push("demo-wrapper__notabs     "); // "demo-wrapper__notabs"
+  } // "endif"
+  OUT.push("\n        "); // ""
+  if (CTX.state.tabs.length > 1) { // "if state.tabs.length gt 1"
+  OUT.push("demo-wrapper__tabs       "); // "demo-wrapper__tabs"
   } // "endif"
   OUT.push("\n    \">\n    "); // "\">"
   if (CTX.state.tabs.length > 1) { // "if state.tabs.length gt 1"
@@ -21722,7 +21748,7 @@ var OUT=[];
   } // "endif"
   OUT.push("\n\n        "); // ""
   if (CTX.state.showpreview) { // "if state.showpreview"
-  OUT.push("\n            <button class=\"m-Btn\"\n                    title=\"Toggle full screen view of code\" @click:=script.doFullscreen>\n                "); // "<button class=\"m-Btn\" title=\"Toggle full screen view of code\" @click:=script.doFullscreen>"
+  OUT.push("\n            <button class=\"m-Btn demo-fs-button\"\n                    title=\"Toggle full screen view of code\" @click:=script.doFullscreen>\n                "); // "<button class=\"m-Btn demo-fs-button\" title=\"Toggle full screen view of code\" @click:=script.doFullscreen>"
   if (CTX.state.fullscreen) { // "if state.fullscreen"
   OUT.push("\n                    <span alt=\"Shrink\">&swarr;</span>\n                "); // "<span alt=\"Shrink\">&swarr;</span>"
   } else { // "else"
@@ -22306,14 +22332,14 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["xuat1mm"]= function (){
+currentModulo.assets.functions["4vmddl"]= function (){
 return {
-  "name": "mdu-cli",
+  "name": "mdu.js",
   "author": "michaelb",
-  "version": "0.0.6",
-  "description": "Lightweight, easy to learn Web Component JavaScript framework",
+  "version": "0.0.10",
+  "description": "Lightweight, easy-to-learn Web Component JavaScript framework",
   "homepage": "https://modulojs.org/",
-  "main": "modulocli/modulocli.js",
+  "main": "./src/Modulo.js",
   "bin": {
         "mdu-cli": "modulocli/modulocli.js",
         "modulocli": "modulocli/modulocli.js"
@@ -22344,6 +22370,9 @@ return {
     "type": "git",
     "url": "git+https://github.com/michaelpb/modulo.git"
   },
+  "exports": {
+    "require": "./src/Modulo.js"
+  },
   "keywords": [
     "UI",
     "templates",
@@ -22364,8 +22393,124 @@ return {
   }
 };
 };
-currentModulo.assets.functions["1f71c6c"]= function (){
-return {"message":"API rate limit exceeded for 23.93.99.86. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"};
+currentModulo.assets.functions["xvtf413"]= function (){
+return {
+  "id": 320452827,
+  "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
+  "name": "modulo",
+  "full_name": "michaelpb/modulo",
+  "private": false,
+  "owner": {
+    "login": "michaelpb",
+    "id": 181549,
+    "node_id": "MDQ6VXNlcjE4MTU0OQ==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/181549?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/michaelpb",
+    "html_url": "https://github.com/michaelpb",
+    "followers_url": "https://api.github.com/users/michaelpb/followers",
+    "following_url": "https://api.github.com/users/michaelpb/following{/other_user}",
+    "gists_url": "https://api.github.com/users/michaelpb/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/michaelpb/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/michaelpb/subscriptions",
+    "organizations_url": "https://api.github.com/users/michaelpb/orgs",
+    "repos_url": "https://api.github.com/users/michaelpb/repos",
+    "events_url": "https://api.github.com/users/michaelpb/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/michaelpb/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/michaelpb/modulo",
+  "description": "Modulo.js is a minimalist javascript framewor- 🤮",
+  "fork": false,
+  "url": "https://api.github.com/repos/michaelpb/modulo",
+  "forks_url": "https://api.github.com/repos/michaelpb/modulo/forks",
+  "keys_url": "https://api.github.com/repos/michaelpb/modulo/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/michaelpb/modulo/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/michaelpb/modulo/teams",
+  "hooks_url": "https://api.github.com/repos/michaelpb/modulo/hooks",
+  "issue_events_url": "https://api.github.com/repos/michaelpb/modulo/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/michaelpb/modulo/events",
+  "assignees_url": "https://api.github.com/repos/michaelpb/modulo/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/michaelpb/modulo/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/michaelpb/modulo/tags",
+  "blobs_url": "https://api.github.com/repos/michaelpb/modulo/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/michaelpb/modulo/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/michaelpb/modulo/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/michaelpb/modulo/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/michaelpb/modulo/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/michaelpb/modulo/languages",
+  "stargazers_url": "https://api.github.com/repos/michaelpb/modulo/stargazers",
+  "contributors_url": "https://api.github.com/repos/michaelpb/modulo/contributors",
+  "subscribers_url": "https://api.github.com/repos/michaelpb/modulo/subscribers",
+  "subscription_url": "https://api.github.com/repos/michaelpb/modulo/subscription",
+  "commits_url": "https://api.github.com/repos/michaelpb/modulo/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/michaelpb/modulo/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/michaelpb/modulo/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/michaelpb/modulo/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/michaelpb/modulo/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/michaelpb/modulo/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/michaelpb/modulo/merges",
+  "archive_url": "https://api.github.com/repos/michaelpb/modulo/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/michaelpb/modulo/downloads",
+  "issues_url": "https://api.github.com/repos/michaelpb/modulo/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/michaelpb/modulo/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/michaelpb/modulo/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/michaelpb/modulo/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/michaelpb/modulo/labels{/name}",
+  "releases_url": "https://api.github.com/repos/michaelpb/modulo/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
+  "created_at": "2020-12-11T03:08:21Z",
+  "updated_at": "2022-09-23T22:20:01Z",
+  "pushed_at": "2022-09-25T17:08:56Z",
+  "git_url": "git://github.com/michaelpb/modulo.git",
+  "ssh_url": "git@github.com:michaelpb/modulo.git",
+  "clone_url": "https://github.com/michaelpb/modulo.git",
+  "svn_url": "https://github.com/michaelpb/modulo",
+  "homepage": "https://modulojs.org/",
+  "size": 6729,
+  "stargazers_count": 3,
+  "watchers_count": 3,
+  "language": "JavaScript",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": true,
+  "forks_count": 0,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 0,
+  "license": {
+    "key": "lgpl-2.1",
+    "name": "GNU Lesser General Public License v2.1",
+    "spdx_id": "LGPL-2.1",
+    "url": "https://api.github.com/licenses/lgpl-2.1",
+    "node_id": "MDc6TGljZW5zZTEx"
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "web_commit_signoff_required": false,
+  "topics": [
+    "component-based",
+    "framework",
+    "html",
+    "javascript",
+    "state-management",
+    "template-engine",
+    "vanilla-js",
+    "web-components"
+  ],
+  "visibility": "public",
+  "forks": 0,
+  "open_issues": 0,
+  "watchers": 3,
+  "default_branch": "main",
+  "temp_clone_token": null,
+  "network_count": 0,
+  "subscribers_count": 2
+};
 };
 currentModulo.assets.functions["16lf05u"]= function (){
 return [
@@ -23892,3 +24037,342 @@ currentModulo.assets.functions['x4dmr4r']('eg-worldmap', currentModulo);
 currentModulo.assets.functions['xrqe02h']('eg-memory', currentModulo);
 
 currentModulo.assets.functions['xairn07']('eg-conwaygameoflife', currentModulo);
+
+currentModulo.assets.functions["x8j3c54"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Before comment</p>\n    "); // "<p>Before comment</p>"
+  /* // "comment \"Optional note\""
+  OUT.push("\n        <p>Commented out text that will be ignored\n          "); // "<p>Commented out text that will be ignored"
+  OUT.push(G.escapeText(G.filters["brokenFilter"](CTX.nonExistingVar,"abc"))); // "nonExistingVar|brokenFilter:\"abc\""
+  OUT.push("</p>\n    "); // "</p>"
+  */ // "endcomment"
+  OUT.push("\n    <p>After comment</p>\n"); // "<p>After comment</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x11k4oji"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.athletes;for (var KEY in ARR0) {CTX. athlete=ARR0[KEY]; // "for athlete in state.athletes"
+  OUT.push("\n            <li>"); // "<li>"
+  OUT.push(G.escapeText(CTX.athlete.name)); // "athlete.name"
+  OUT.push("</li>\n        "); // "</li>"
+  } // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1g4g3r1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.fave_colors;for (var KEY in ARR0) {CTX.name=KEY;CTX.color=ARR0[KEY]; // "for name, color in state.fave_colors"
+  OUT.push("\n            <li><strong>"); // "<li><strong>"
+  OUT.push(G.escapeText(CTX.name)); // "name"
+  OUT.push("</strong>: "); // "</strong>:"
+  OUT.push(G.escapeText(CTX.color)); // "color"
+  OUT.push("</li>\n        "); // "</li>"
+  } // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x14l5i9t"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.fave_colors;for (var KEY in ARR0) {CTX.name=KEY;CTX.color=ARR0[KEY]; // "for name, color in state.fave_colors"
+  OUT.push("\n            <li><strong>"); // "<li><strong>"
+  OUT.push(G.escapeText(CTX.name)); // "name"
+  OUT.push("</strong>: "); // "</strong>:"
+  OUT.push(G.escapeText(CTX.color)); // "color"
+  OUT.push("</li>\n        "); // "</li>"
+  G.FORLOOP_NOT_EMPTY1=true; } if (!G.FORLOOP_NOT_EMPTY1) { // "empty"
+  OUT.push("\n            No colors were found.\n        "); // "No colors were found."
+  }G.FORLOOP_NOT_EMPTY1 = false; // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["a5djj"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.show) { // "if state.show"
+  OUT.push("\n        Hello testing template world!\n    "); // "Hello testing template world!"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x7lkdod"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.athletes) { // "if state.athletes"
+  OUT.push("\n        Athletes exists. Total athletes: "); // "Athletes exists. Total athletes:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.athletes))); // "state.athletes|length"
+  OUT.push("\n    "); // ""
+  } else if (CTX.state.benched) { // "elif state.benched"
+  OUT.push("\n        Benched exists. Total benched: "); // "Benched exists. Total benched:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.benched))); // "state.benched|length"
+  OUT.push("\n    "); // ""
+  } else { // "else"
+  OUT.push("\n        No athletes.\n    "); // "No athletes."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["2rm5kq"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar === "x") { // "if state.somevar == \"x\""
+  OUT.push("\n        This appears if variable somevar equals the string \"x\"\n    "); // "This appears if variable somevar equals the string \"x\""
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x1k1tbb1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar != "x") { // "if state.somevar != \"x\""
+  OUT.push("\n        This appears if variable state.somevar does not equal the string \"x\".\n    "); // "This appears if variable state.somevar does not equal the string \"x\"."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x15dnkp2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (!(CTX.state.show)) { // "if not state.show"
+  OUT.push("\n        Do not show it!\n    "); // "Do not show it!"
+  } else { // "else"
+  OUT.push("\n        Show it!\n    "); // "Show it!"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x8rv5n5"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar < 100) { // "if state.somevar lt 100"
+  OUT.push("\n        This appears if variable somevar is less than 100.\n    "); // "This appears if variable somevar is less than 100."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["cip3uc"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar > 100) { // "if state.somevar gt 100"
+  OUT.push("\n        This appears if variable somevar is greater than 100.\n    "); // "This appears if variable somevar is greater than 100."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1otvgl5"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if ((CTX.state.era).includes ? (CTX.state.era).includes("B.C.E.") : ("B.C.E." in CTX.state.era)) { // "if \"B.C.E.\" in state.era"
+  OUT.push("\n        This appears since \"B.C.E.\" is a substring of \""); // "This appears since \"B.C.E.\" is a substring of \""
+  OUT.push(G.escapeText(CTX.state.era)); // "state.era"
+  OUT.push("\"\n    "); // "\""
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["ale86f"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (G.filters["length"](CTX.state.athletes) > 2) { // "if state.athletes|length gt 2"
+  OUT.push("\n        <p>There are more than 2 athletes!</p>\n    "); // "<p>There are more than 2 athletes!</p>"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1nj3f1e"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  OUT.push(G.escapeText(G.filters["add"](CTX.state.value,7))); // "state.value|add:7"
+  OUT.push(" hacks <br>\n    "); // "hacks <br>"
+  OUT.push(G.escapeText(G.filters["add"](CTX.state.value,CTX.state.another))); // "state.value|add:state.another"
+  OUT.push(" hz\n"); // "hz"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1ofib1a"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Valid: "); // "Valid:"
+  OUT.push(G.escapeText(G.filters["allow"](CTX.state.value,"orange,apple,pear"))); // "state.value|allow:\"orange,apple,pear\""
+  OUT.push(" <br>\n    Invalid: "); // "<br> Invalid:"
+  OUT.push(G.escapeText(G.filters["allow"](CTX.state.value,"a,b,c"))); // "state.value|allow:\"a,b,c\""
+  OUT.push(" <br>\n    Invalid + default: "); // "<br> Invalid + default:"
+  OUT.push(G.escapeText(G.filters["default"](G.filters["allow"](CTX.state.value,"a,b,c"),"Oops!"))); // "state.value|allow:\"a,b,c\"|default:\"Oops!\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x1q1s27l"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    The "); // "The"
+  OUT.push(G.escapeText(G.filters["capfirst"](CTX.state.value))); // "state.value|capfirst"
+  OUT.push(" framework is my favorite\n"); // "framework is my favorite"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xqccfe1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Fave snack: "); // "Fave snack:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.snack,"icecream"))); // "state.snack|default:\"icecream\""
+  OUT.push(" <br>\n    Snack count: "); // "<br> Snack count:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.count,"none"))); // "state.count|default:\"none\""
+  OUT.push(" <br>\n    Fave soda: "); // "<br> Fave soda:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.soda,"Cola"))); // "state.soda|default:\"Cola\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xu2cevu"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Can "); // "Can"
+  OUT.push(G.escapeText(CTX.state.value)); // "state.value"
+  OUT.push(" divide by 3? <br>\n    "); // "divide by 3? <br>"
+  OUT.push(G.escapeText(G.filters["divisibleby"](CTX.state.value,3))); // "state.value|divisibleby:3"
+  OUT.push(" <br>\n    "); // "<br>"
+  if (G.filters["divisibleby"](CTX.state.value,2)) { // "if state.value|divisibleby:2"
+  OUT.push("\n        "); // ""
+  OUT.push(G.escapeText(CTX.state.value)); // "state.value"
+  OUT.push(" is even\n    "); // "is even"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1sa0mpn"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Result: "); // "Result:"
+  OUT.push(G.escapeText(G.filters["escapejs"](CTX.state.value))); // "state.value|escapejs"
+  OUT.push(" <br>\n"); // "<br>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["18vl137"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["first"](CTX.state.athletes))); // "state.athletes|first"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1d8ujon"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["join"](CTX.state.athletes))); // "state.athletes|join"
+  OUT.push("</p>\n    <p>"); // "</p><p>"
+  OUT.push(G.escapeText(G.filters["join"](CTX.state.athletes," + "))); // "state.athletes|join:\" + \""
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x139tl73"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <pre>"); // "<pre>"
+  OUT.push(G.escapeText(G.filters["json"](CTX.state.athletes))); // "state.athletes|json"
+  OUT.push("</pre>\n    <pre>"); // "</pre><pre>"
+  OUT.push(G.escapeText(G.filters["json"](CTX.state.athletes,2))); // "state.athletes|json:2"
+  OUT.push("</pre>\n"); // "</pre>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["jrca7"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["last"](CTX.state.athletes))); // "state.athletes|last"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["ljtjgd"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Sentence length: "); // "<p>Sentence length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.sentence))); // "state.sentence|length"
+  OUT.push("</p>\n    <p>Flowers length: "); // "</p><p>Flowers length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flowers))); // "state.flowers|length"
+  OUT.push("</p>\n    <p>Flights length: "); // "</p><p>Flights length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flights))); // "state.flights|length"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["qoh762"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Without: "); // "<p>Without:"
+  OUT.push(G.escapeText(CTX.state.word)); // "state.word"
+  OUT.push("</p>\n    <p>Lower: "); // "</p><p>Lower:"
+  OUT.push(G.escapeText(G.filters["lower"](CTX.state.word))); // "state.word|lower"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xpgpf73"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    We visited "); // "We visited"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.citynames))); // "state.citynames|length"
+  OUT.push(" \n    "); // ""
+  OUT.push(G.escapeText(G.filters["pluralize"](G.filters["length"](CTX.state.citynames),"cities,city"))); // "state.citynames|length|pluralize:\"cities,city\""
+  OUT.push("\n\n    and picked "); // "and picked"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flowers))); // "state.flowers|length"
+  OUT.push(" \n    flower"); // "flower"
+  OUT.push(G.escapeText(G.filters["pluralize"](G.filters["length"](CTX.state.flowers),"s"))); // "state.flowers|length|pluralize:\"s\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["12f47p2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  OUT.push(G.escapeText(G.filters["subtract"](CTX.state.value,3))); // "state.value|subtract:3"
+  OUT.push(" hacks <br>\n    "); // "hacks <br>"
+  OUT.push(G.escapeText(G.filters["subtract"](CTX.state.value,CTX.state.another))); // "state.value|subtract:state.another"
+  OUT.push(" is the answer\n"); // "is the answer"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1p6tva9"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Long sentence: "); // "<p>Long sentence:"
+  OUT.push(G.escapeText(G.filters["truncate"](CTX.state.sentence,20))); // "state.sentence|truncate:20"
+  OUT.push("</p>\n    <p>Short word: "); // "</p><p>Short word:"
+  OUT.push(G.escapeText(G.filters["truncate"](CTX.state.word,20))); // "state.word|truncate:20"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x36bu36"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["join"](G.filters["reversed"](CTX.state.flowers)))); // "state.flowers|reversed|join"
+  OUT.push("</p>\n    "); // "</p>"
+  var ARR0=G.filters["reversed"](CTX.state.cities);for (var KEY in ARR0) {CTX. city=ARR0[KEY]; // "for city in state.cities|reversed"
+  OUT.push("\n        <p>"); // "<p>"
+  OUT.push(G.escapeText(CTX.city)); // "city"
+  OUT.push("</p>\n    "); // "</p>"
+  } // "endfor"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["17hmqg2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Without: "); // "<p>Without:"
+  OUT.push(G.escapeText(CTX.state.word)); // "state.word"
+  OUT.push("</p>\n    <p>Upper: "); // "</p><p>Upper:"
+  OUT.push(G.escapeText(G.filters["upper"](CTX.state.word))); // "state.word|upper"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
