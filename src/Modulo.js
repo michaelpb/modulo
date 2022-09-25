@@ -380,7 +380,7 @@ modulo.register('cpart', class Component {
         this.mode = 'regular';
         const opts = { directiveShortcuts: [], directives: [] };
         for (const cPart of Object.values(this.element.cparts)) {
-            for (const directiveName of cPart.getDirectives()) {
+            for (const directiveName of cPart.getDirectives ? cPart.getDirectives() : []) {
                 opts.directives[directiveName] = cPart;
             }
         }
@@ -1035,8 +1035,6 @@ modulo.register('core', class FetchQueue {
 
 
 modulo.register('cpart', class Props {
-    getDirectives() {  LEGACY.push('props.getDirectives'); return []; }
-
     initializedCallback(renderObj) {
         const props = {};
         const { resolveDataProp } = modulo.registry.utils;
@@ -1059,8 +1057,6 @@ modulo.register('cpart', class Props {
 
 
 modulo.register('cpart', class Style {
-    getDirectives() {  LEGACY.push('style.getDirectives'); return []; }
-
     static prebuildCallback(modulo, conf) {
 
         /*
@@ -1108,8 +1104,6 @@ modulo.register('cpart', class Style {
 
 
 modulo.register('cpart', class Template {
-    getDirectives() {  LEGACY.push('template.getDirectives'); return []; }
-
     static prebuildCallback(modulo, conf) {
         modulo.assert(conf.Content, 'No Template Content specified.');
         const engine = conf.engine || 'Templater';
@@ -1164,8 +1158,6 @@ modulo.register('cpart', class StaticData {
         // Now, actually run code in Script tag to do factory method
         return modulo.assets.functions[conf.Hash]();
     }
-
-    getDirectives() { LEGACY.push("staticdata.getDirectives"); return []; } // XXX
 });
 
 modulo.register('cpart', class Script {
