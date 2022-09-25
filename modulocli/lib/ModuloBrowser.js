@@ -1,4 +1,4 @@
-// This is a simpler rewrite of ModuloNode, using Pupeteer
+// This is a simpler rewrite of ModuloNode, using Puppeteer
 
 const fs = require('fs');
 const path = require('path');
@@ -30,10 +30,25 @@ class ModuloBrowser {
         });
     }
 
+    notInstalledExit(browserBackend) {
+        console.log(`ERROR: Could not require '${ browserBackend }'`);
+        console.log(`This might be because ${ browserBackend } is not ` +
+                    'installed. You might be able to install it with:');
+        console.log(`        npm install --save-dev ${ browserBackend }`);
+        process.exit(1);
+    }
+
     _startBrowser() {
         // TODO: refactor
         const { browserBackend, browserBackendVisible, verbose } = this.config;
-        const puppeteer = require(browserBackend);
+        let puppeteer;
+        try {
+            puppeteer = require(browserBackend);
+        } catch (e) {
+            this.log(`|%| - - ${ e.toString() }`);
+            this.notInstalledExit(browserBackend);
+        }
+
         const pConfig = {
             headless: !browserBackendVisible,
             dumpio: verbose, // Too verbose? (It's the browser process's)

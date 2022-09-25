@@ -2,7 +2,7 @@
 
 # Modulo
 
-[modulojs.org](https://modulojs.org)
+Full getting started guide on Modulo's website: <https://modulojs.org/start.html>
 
 **A concise JavaScript Component framework**
 
@@ -19,18 +19,20 @@
 
 # Quick start
 
-Full getting started guide on Modulo's website: <https://modulojs.org/start.html>
-
 Modulo is a small framework for creating custom Web Components: Reusable
 snippets of HTML, CSS, and JavaScript that create new HTML-like tags that can
 be used and reused anywhere on your site. Under the hood, it uses a widely
 compatible subset of the [customElements API](https://caniuse.com/custom-elementsv1).
-To get started with creating a custom component, do the following 3 steps:
 
-1. Download [src/Modulo.js](https://github.com/michaelpb/modulo/blob/main/src/Modulo.js)
+Modulo runs entirely in the browser, and can be incorporated with just a couple
+lines of code into any HTML file, **no terminal usage or `npm` necessary**.  To
+get started with creating a custom component, do the following 3 steps:
+
+1. Download
+[src/Modulo.js](https://github.com/michaelpb/modulo/blob/main/src/Modulo.js)
 (the single file that contains all of Modulo) to wherever you put JS files for
 your website (for example, `/static/js/Modulo.js`). Or, skip downloading, and
-directly link to a CDN: `https://unpkg.com/mdu.js`
+use a link to a CDN for the next step (`https://unpkg.com/mdu.js`)
 
 
 2. Include in your HTML file a reference to the script with a "Modulo"
@@ -75,6 +77,20 @@ normal HTML tag:
   starting with
 [Part 1, Section 2: CParts](https://modulojs.org/docs/tutorial_part1.html#cparts)
 
+
+-----
+
+# Modulo via `create-modulo` on `npm`
+
+If you prefer the `create-react-app` experience, you can use `create-modulo` as
+such:
+
+```bash
+npm init modulo
+```
+
+Note that the `modulocli` is still under heavy development, and is more poorly
+documented than the rest of Modulo.
 
 -----
 
