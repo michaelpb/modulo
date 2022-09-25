@@ -271,7 +271,7 @@ div.Tagline {
     text-align: center;
 }
 div.Tagline ul {
-    width: 500px;
+    max-width: 98vw;
     margin: auto;
 }
 
@@ -600,29 +600,8 @@ footer {
     .Docs-sideBySide { display: block; }
 }
 
-.Navbar-tinyText {
-    display: none;
-}
 
 @media (max-width: 768px) {
-    section, section.SideBySide {
-        display: block;
-    }
-    .Navbar-rightInfo {
-        display: none;
-    }
-    .Navbar-logo {
-        display: none;
-    }
-    .Navbar-tinyText {
-        display: block;
-        position: absolute;
-        top: -1px;
-        padding: 2px;
-        text-align: center;
-        background: #eee;
-        width: 100%;
-    }
 
     .Main--fluid {
         width: 100vw;
@@ -637,6 +616,11 @@ footer {
     }
 }
 
+@media (max-width: 550px) {
+    section, section.SideBySide {
+        display: block;
+    }
+}
 
 @media (max-height: 600px) {
     nav.Navbar {
@@ -645,6 +629,29 @@ footer {
     }
 }
 
+.Navbar-tinyText {
+    display: none;
+}
+
+@media (max-width: 550px) {
+    /* Turn off logo for the smallest devices */
+    .Navbar-rightInfo {
+        display: none;
+    }
+    .Navbar-logo {
+        display: none;
+    }
+
+    .Navbar-tinyText {
+        display: block;
+        position: absolute;
+        top: -1px;
+        padding: 2px;
+        text-align: center;
+        background: #eee;
+        width: 100%;
+    }
+}
 
 @media (max-width: 992px) {
     nav.Navbar li {

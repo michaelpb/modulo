@@ -690,7 +690,6 @@ nav.Navbar .Navbar-rightInfo {
     padding-right: 20px;
     max-width: 100vw;
 }
-
 section.SideBySide {
     display: flex;
 }
@@ -805,7 +804,7 @@ div.Tagline {
     text-align: center;
 }
 div.Tagline ul {
-    width: 500px;
+    max-width: 98vw;
     margin: auto;
 }
 
@@ -1066,6 +1065,17 @@ a:visited {
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    .DemoPanels {
+        display: block;
+    }
+
+    .DemoPanels > li {
+        width: auto;
+        height: auto;
+    }
+}
+
 .Tutorial-tryit h4 {
     color: var(--highlight-color);
     font-weight: bold;
@@ -1123,24 +1133,56 @@ footer {
     .Docs-sideBySide { display: block; }
 }
 
-.Navbar-tinyText {
-    display: none;
-}
+
 @media (max-width: 768px) {
+
+    .Main--fluid {
+        width: 100vw;
+        padding: 1px;
+    }
+    aside {
+        padding: 1px;
+    }
+
+    p, h1, h2, h3, h4, h5, h6 {
+        padding: 5px;
+    }
+}
+
+@media (max-width: 550px) {
     section, section.SideBySide {
         display: block;
     }
+}
+
+@media (max-height: 600px) {
+    nav.Navbar {
+        /* Turn off sticky for the smallest devices */
+        position: relative;
+    }
+}
+
+.Navbar-tinyText {
+    display: none;
+}
+
+@media (max-width: 550px) {
+    /* Turn off logo for the smallest devices */
     .Navbar-rightInfo {
         display: none;
     }
     .Navbar-logo {
         display: none;
     }
+
     .Navbar-tinyText {
         display: block;
         position: absolute;
-        top: 0;
+        top: -1px;
+        padding: 2px;
         text-align: center;
+        background: #eee;
+        width: 100%;
     }
 }
 
@@ -1199,6 +1241,12 @@ mws-DevLogNav h1 {
     margin-bottom: 20px;
 }
 
+@media (max-width: 768px) {
+mws-DevLogNav ul {
+        grid-auto-flow: row;
+        grid-template-columns: 1fr;
+    }
+}
 
 mws-DocSidebar li {
     margin-left: 50px;
@@ -1422,7 +1470,7 @@ mws-Demo .TabNav-title {
         padding: 7px;
     }
 mws-Demo .demo-wrapper {
-        --side-width: 150px;
+        --side-width: 130px;
     }
 mws-Demo .demo-fs-button {
         display: none;
@@ -1432,7 +1480,6 @@ mws-Demo .demo-fs-button {
 mws-Demo .demo-wrapper.demo-wrapper__tabs {
         display: grid;
         grid-template-columns: var(--side-width) 1fr;
-        grid-template-rows: 1fr 80px;
     }
     
 
@@ -1455,6 +1502,7 @@ mws-Demo .demo-wrapper.demo-wrapper__tabs .TabNav-title {
         border-radius: 1px;
         background: white;
         width: var(--side-width);
+        padding: 6px;
     }
 
 mws-Demo .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {
@@ -1609,7 +1657,7 @@ mws-AllExamples {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 550px) {
 mws-AllExamples {
         --colcount: 1;
     }

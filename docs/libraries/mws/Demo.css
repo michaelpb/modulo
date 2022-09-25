@@ -203,7 +203,7 @@
         padding: 7px;
     }
     .demo-wrapper {
-        --side-width: 150px;
+        --side-width: 130px;
     }
     .demo-fs-button {
         display: none;
@@ -213,7 +213,6 @@
     .demo-wrapper.demo-wrapper__tabs {
         display: grid;
         grid-template-columns: var(--side-width) 1fr;
-        grid-template-rows: 1fr 80px;
     }
     
 
@@ -236,6 +235,7 @@
         border-radius: 1px;
         background: white;
         width: var(--side-width);
+        padding: 6px;
     }
 
     .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {

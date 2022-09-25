@@ -32,3 +32,9 @@ h1 {
     margin-bottom: 20px;
 }
 
+@media (max-width: 768px) {
+    ul {
+        grid-auto-flow: row;
+        grid-template-columns: 1fr;
+    }
+}

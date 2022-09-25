@@ -2327,7 +2327,7 @@ currentModulo.defs = {
    "Parent": "x_x",
    "DefName": "mws",
    "FullName": "x_x_mws",
-   "Hash": "8juoaq"
+   "Hash": "x9buum7"
   },
   {
    "Type": "Library",
@@ -2475,9 +2475,9 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "ProjectInfo",
    "FullName": "x_x_mws_ProjectInfo",
-   "Hash": "1mt37h4",
+   "Hash": "18lkdh5",
    "TagName": "mws-projectinfo",
-   "FuncDefHash": "1vt7v7k"
+   "FuncDefHash": "12ib52h"
   },
   {
    "Type": "Component",
@@ -3371,7 +3371,7 @@ currentModulo.defs = {
   {
    "Type": "Style",
    "RenderObj": "style",
-   "Content": ":root {\n    --highlight-color: #B90183;\n}\n\ncode {\n  font-family: monospace;\n  border-bottom: 1px dotted var(--highlight-color);\n}\n\nhtml {\n  box-sizing: border-box;\n  font-size: 16px;\n  line-height: 1.5;\n  font-family: sans-serif;\n  /*font-family: serif;*/\n  overflow-y: scroll;\n}\n\n*, *:before, *:after {\n  box-sizing: inherit;\n}\n\nbody, h1, h2, h3, h4, h5, h6, p, ol, ul {\n  margin: 0;\n  padding: 0;\n  font-weight: normal;\n}\n\nol, ul {\n  list-style: none;\n}\n\nimg {\n  max-width: 100%;\n  height: auto;\n}\n\n.m-Btn,\n.m-Btn:visited,\n.m-Btn:active,\n.m-Btn:hover {\n    display: inline-block;\n    border: 2px solid black;\n    border-top-width: 1px;\n    border-bottom-width: 3px;\n    border-radius: 3px;\n    background: white;\n    font-weight: lighter;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    color: black;\n    padding: 5px;\n    text-decoration: none;\n    margin-top: 2px;\n}\n\n.m-Btn.m-Btn--sm,\n.m-Btn.m-Btn--sm:hover {\n    font-size: 0.95rem;\n    border-bottom-width: 2px;\n    padding: 2px;\n}\n\n.m-Btn--faded {\n    opacity: 0.3;\n    transition: opacity 0.2s;\n}\n.m-Btn--faded:hover {\n    opacity: 1.0;\n}\n\n.m-Btn:active {\n    border-top-width: 3px;\n    border-bottom-width: 1px;\n}\n\n.m-Btn:hover {\n    box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n}\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7; /* code mirror scrollbars are 6 */\n    height: 100px;\n}\n\nnav.Navbar--docs {\n  /*\n  height: 50px;\n  padding-top: 0;\n  border-top: 1px dotted black;\n  top: 100px !important;\n  position: fixed !important;\n  width: 100%;\n  */\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n    align-items: baseline;\n}\n\nnav.Navbar li {\n    margin-left: 50px;\n}\n\nnav.Navbar li a {\n    font-size: 30px;\n    text-transform: uppercase;\n    color: black;\n}\n\nnav.Navbar--subbar li a {\n    text-transform: none;\n    font-size: 20px;\n    text-decoration: none;\n    font-weight: bold;\n    line-height: 0.9;\n    text-align: left;\n}\n\nnav.Navbar li a.Navbar--selected {\n    text-decoration: overline underline;\n}\n\nnav.Navbar--subbar li a.Navbar--selected {\n    text-decoration: none;\n    color: #B90183;\n}\n\nnav.Navbar .Navbar-rightInfo {\n    font-size: 12px;\n    text-align: left;\n    margin-left: 40px;\n    /*border: 1px solid black;*/\n    padding: 5px;\n}\n\n.Main {\n    max-width: 820px;\n    margin: auto;\n    clear: both;\n    box-sizing: border-box;\n}\n\n.Main--fluid {\n    width: 98%;\n    padding-left: 20px;\n    padding-right: 20px;\n    max-width: 100vw;\n}\n\nsection.SideBySide {\n    display: flex;\n}\n\nsection.SideBySide aside strong {\n    color: #B90183;\n}\n\nsection.SideBySide aside h3 {\n    font-size: 30px;\n}\n\nsection.SideBySide aside h3 span {\n    font-size: 80px;\n    font-weight: bold;\n    color: #B90183;\n}\n\nsection.SideBySide aside.TitleAside {\n    text-align: right;\n}\nsection.SideBySide aside.TitleAside a {\n    font-size: 18px;\n}\n\n\n.TitleAside-navigation {\n  position: sticky;\n  top: 100px;\n  left: 0px;\n}\n\n.TitleAside--navBar nav {\n  text-align: left;\n}\n\n@media (max-width: 992px) {\n    .TitleAside--navBar {\n        position: static;\n        width: 100%;\n    }\n}\n\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7;\n    /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/\n    border-bottom: 1px solid black;\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n}\n\n\ndiv.IndexWrapper {\n    min-height: calc(100vh - 100px);\n}\n\ndiv.IndexWrapper mws-Demo {\n  margin-top: 10px;\n}\n\n@media (min-height: 768px) {\n    div.IndexWrapper mws-Demo {\n        margin-top: 100px;\n    }\n}\n\ndiv.Tagline {\n    text-align: center;\n}\ndiv.Tagline ul {\n    width: 500px;\n    margin: auto;\n}\n\ndiv.Tagline ul > li {\n    text-align: left;\n    list-style-type: '>>   ';\n}\n@media (min-height: 768px) {\n    div.Tagline ul {\n        margin-top: 50px;\n        width: 560px;\n    }\n    div.Tagline ul > li {\n        font-size: 1.3rem;\n    }\n}\n\nh1.Tagline-title {\n    text-align: center;\n    font-size: 50px;\n    line-height: 1.0;\n    /*font-weight: lighter;*/\n    font-weight: 800; /* heavy if possible */\n    margin-left: 10px; /* off-center looks better */\n    /*letter-spacing: 10px;*/\n    /*color: black;*/\n    /*color: var(--highlight-color);*/\n    /*\n    text-shadow: 0 0 1px var(--highlight-color);\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    */\n    /* extremely subtle shadow */\n    color: black;\n}\n\n.Tagline-logoimg {\n    height: 50px;\n}\n@media (min-height: 768px) {\n    .Tagline-logoimg {\n        height: 100px;\n        margin: 10px;\n    }\n}\n@media (min-height: 1000px) {\n    .Tagline-logoimg {\n        height: 150px;\n        margin: 30px;\n    }\n}\n\nh1.Tagline-logo {\n    text-align: center;\n    font-size: 200px;\n    line-height: 1.0;\n    /*text-shadow: 0 0 27px var(--highlight-color);*/\n    /*text-shadow: 0 0 5px #000;*/\n    text-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    color: black;\n    background: white;\n    font-weight: 300; /* lightest if possible */\n}\n\nmain {\n    max-width: 800px;\n    margin: auto;\n}\n\nmain.give-left-padding > :not(.TitleAside) {\n    margin-left: 300px;\n}\n\nsection {\n    display: flex;\n}\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n.Main p {\n    margin-top: 5px;\n    margin-bottom: 20px;\n}\n\n.Main p:last-of-type {\n    margin-bottom: 0;\n}\n\n.Main ul li {\n    list-style: disc;\n    margin-left: 40px;\n}\n\n.Main nav:not(.TitleAside-navigation) ul li {\n    list-style: none;\n    margin-left: 0;\n}\n\n.Main .InfoBox {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n    font-size: 0.95rem;\n}\n\n.Main hr {\n    border: 1px solid #888;\n    width: 80%;\n}\n\n.Main .InfoBox > h2 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main > h2,\n.Main > * > h2,\n.Main > * > * > h2 {\n    /*border-top: 1px solid #888;*/\n    /*padding-top: 10px;*/\n    width: 80%;\n    /*margin-top: 20px;*/\n    font-weight: bold;\n    font-size: 1.6rem;\n}\n\n.Main h3 {\n    font-weight: bold;\n    font-size: 1.3rem;\n    margin-top: 10px;\n}\n.Main h4 {\n    font-weight: bold;\n    font-size: 1.1rem;\n    margin-top: 5px;\n}\n\n/* Adding some top margin for the top-level h3/h4s */\n.Main > * > h3 {\n    margin-top: 40px;\n}\n.Main > * > h4 {\n    margin-top: 20px;\n}\n.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {\n    margin-bottom: 60px;\n}\n\n.Main blockquote {\n    max-width: 30%;\n    float: right;\n    border: 1px solid black;\n    border-radius: 10px;\n    padding: 10px;\n    margin: 10px;\n    line-height: 1.3;\n    font-size: 0.98rem;\n}\n@media (max-width: 992px) {\n    .Main blockquote {\n        max-width: none;\n        float: none;\n        clear: both;\n    }\n}\n\n.Main blockquote > p {\n    margin-top: 5px;\n    margin-bottom: 0;\n}\n.Main blockquote > p:first-child {\n    margin-top: 0;\n}\n\n.Main blockquote strong {\n    color: var(--highlight-color);\n    font-size: 1.1rem;\n}\n\n.Main blockquote strong:first-child::before {\n    content: '%   ';\n}\n\n.Tutorial-tryit::before {\n    content: '';\n}\n.Tutorial-tryit {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n}\n\n.DemoPanels {\n    display: flex;\n}\n\n.DemoPanels > li {\n    display: block;\n    width: 200px;\n    height: 200px;\n    border: 3px solid black;\n    border-radius: 2px;\n    padding: 5px;\n    margin: 5px;\n    position: relative;\n}\n\n.DemoPanels li a {\n    text-align: center;\n    font-size: 20px;\n}\n.DemoPanels li a::after {\n    content: '\\300B';\n}\n\n.DemoPanels li a:hover {\n    color: var(--highlight-color);\n}\n.DemoPanels > li:hover {\n    border-color: var(--highlight-color);\n}\n\n.DemoPanels li a::before {\n    content: ' ';\n    position: absolute;\n    display: block;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    z-index: 1;\n}\n\n.Tutorial-tryit h4 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 22px;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main ol > li {\n    list-style: decimal;\n    margin-left: 40px;\n}\n\n.Main--withSidebar {\n    display: grid;\n    grid-template-columns: 350px 1fr;\n}\n\n.Docs-squareInfo {\n    padding: 10px;\n}\n\n.Docs-squareInfo > h2 {\n    /*border-top: 3px #ddd dashed;*/\n    padding-top: 10px;\n    font-weight: bold;\n}\n\n.Docs-demos {\n  background-image: url(/img/demosmontage.png);\n  background-size: 170px 170px;\n  background-position: 70px 100px;\n  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */\n  text-align: center;\n  padding-top: 90px;\n  margin-top: 10px;\n}\n\n.Docs-sideBySide {\n    display: grid;\n    grid-template-columns: 3fr 2fr;\n}\n\nfooter {\n    color: #aaa;\n    padding: 20px;\n    margin-top: 50px;\n    text-align: center;\n}\n\n\n@media (max-width: 992px) {\n    .Main { display: block; }\n    .Docs-sideBySide { display: block; }\n}\n\n.Navbar-tinyText {\n    display: none;\n}\n@media (max-width: 768px) {\n    section, section.SideBySide {\n        display: block;\n    }\n    .Navbar-rightInfo {\n        display: none;\n    }\n    .Navbar-logo {\n        display: none;\n    }\n    .Navbar-tinyText {\n        display: block;\n        position: absolute;\n        top: 0;\n        text-align: center;\n    }\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n\n    div.Tagline {\n        padding: 5px;\n    }\n    nav.Navbar .Navbar-rightInfo {\n        padding: 2px;\n        margin-left: 10px;\n    }\n\n}\n\n",
+   "Content": ":root {\n    --highlight-color: #B90183;\n}\n\ncode {\n  font-family: monospace;\n  border-bottom: 1px dotted var(--highlight-color);\n}\n\nhtml {\n  box-sizing: border-box;\n  font-size: 16px;\n  line-height: 1.5;\n  font-family: sans-serif;\n  /*font-family: serif;*/\n  overflow-y: scroll;\n}\n\n*, *:before, *:after {\n  box-sizing: inherit;\n}\n\nbody, h1, h2, h3, h4, h5, h6, p, ol, ul {\n  margin: 0;\n  padding: 0;\n  font-weight: normal;\n}\n\nol, ul {\n  list-style: none;\n}\n\nimg {\n  max-width: 100%;\n  height: auto;\n}\n\n.m-Btn,\n.m-Btn:visited,\n.m-Btn:active,\n.m-Btn:hover {\n    display: inline-block;\n    border: 2px solid black;\n    border-top-width: 1px;\n    border-bottom-width: 3px;\n    border-radius: 3px;\n    background: white;\n    font-weight: lighter;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    color: black;\n    padding: 5px;\n    text-decoration: none;\n    margin-top: 2px;\n}\n\n.m-Btn.m-Btn--sm,\n.m-Btn.m-Btn--sm:hover {\n    font-size: 0.95rem;\n    border-bottom-width: 2px;\n    padding: 2px;\n}\n\n.m-Btn--faded {\n    opacity: 0.3;\n    transition: opacity 0.2s;\n}\n.m-Btn--faded:hover {\n    opacity: 1.0;\n}\n\n.m-Btn:active {\n    border-top-width: 3px;\n    border-bottom-width: 1px;\n}\n\n.m-Btn:hover {\n    box-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n}\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7; /* code mirror scrollbars are 6 */\n    height: 100px;\n}\n\nnav.Navbar--docs {\n  /*\n  height: 50px;\n  padding-top: 0;\n  border-top: 1px dotted black;\n  top: 100px !important;\n  position: fixed !important;\n  width: 100%;\n  */\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n    align-items: baseline;\n}\n\nnav.Navbar li {\n    margin-left: 50px;\n}\n\nnav.Navbar li a {\n    font-size: 30px;\n    text-transform: uppercase;\n    color: black;\n}\n\nnav.Navbar--subbar li a {\n    text-transform: none;\n    font-size: 20px;\n    text-decoration: none;\n    font-weight: bold;\n    line-height: 0.9;\n    text-align: left;\n}\n\nnav.Navbar li a.Navbar--selected {\n    text-decoration: overline underline;\n}\n\nnav.Navbar--subbar li a.Navbar--selected {\n    text-decoration: none;\n    color: #B90183;\n}\n\nnav.Navbar .Navbar-rightInfo {\n    font-size: 12px;\n    text-align: left;\n    margin-left: 40px;\n    /*border: 1px solid black;*/\n    padding: 5px;\n}\n\n.Main {\n    max-width: 820px;\n    margin: auto;\n    clear: both;\n    box-sizing: border-box;\n}\n\n.Main--fluid {\n    width: 98%;\n    padding-left: 20px;\n    padding-right: 20px;\n    max-width: 100vw;\n}\nsection.SideBySide {\n    display: flex;\n}\n\nsection.SideBySide aside strong {\n    color: #B90183;\n}\n\nsection.SideBySide aside h3 {\n    font-size: 30px;\n}\n\nsection.SideBySide aside h3 span {\n    font-size: 80px;\n    font-weight: bold;\n    color: #B90183;\n}\n\nsection.SideBySide aside.TitleAside {\n    text-align: right;\n}\nsection.SideBySide aside.TitleAside a {\n    font-size: 18px;\n}\n\n\n.TitleAside-navigation {\n  position: sticky;\n  top: 100px;\n  left: 0px;\n}\n\n.TitleAside--navBar nav {\n  text-align: left;\n}\n\n@media (max-width: 992px) {\n    .TitleAside--navBar {\n        position: static;\n        width: 100%;\n    }\n}\n\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n\nnav.Navbar {\n    padding-top: 10px;\n    background: white;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    position: sticky;\n    top: 0;\n    z-index: 7;\n    /*box-shadow: 0 50px 50px 2px rgba(255, 255, 255, 1);*/\n    border-bottom: 1px solid black;\n}\n\nnav.Navbar ul {\n    max-width: 800px;\n    display: flex;\n    justify-content: center;\n}\n\n\ndiv.IndexWrapper {\n    min-height: calc(100vh - 100px);\n}\n\ndiv.IndexWrapper mws-Demo {\n  margin-top: 10px;\n}\n\n@media (min-height: 768px) {\n    div.IndexWrapper mws-Demo {\n        margin-top: 100px;\n    }\n}\n\ndiv.Tagline {\n    text-align: center;\n}\ndiv.Tagline ul {\n    max-width: 98vw;\n    margin: auto;\n}\n\ndiv.Tagline ul > li {\n    text-align: left;\n    list-style-type: '>>   ';\n}\n@media (min-height: 768px) {\n    div.Tagline ul {\n        margin-top: 50px;\n        width: 560px;\n    }\n    div.Tagline ul > li {\n        font-size: 1.3rem;\n    }\n}\n\nh1.Tagline-title {\n    text-align: center;\n    font-size: 50px;\n    line-height: 1.0;\n    /*font-weight: lighter;*/\n    font-weight: 800; /* heavy if possible */\n    margin-left: 10px; /* off-center looks better */\n    /*letter-spacing: 10px;*/\n    /*color: black;*/\n    /*color: var(--highlight-color);*/\n    /*\n    text-shadow: 0 0 1px var(--highlight-color);\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    */\n    /* extremely subtle shadow */\n    color: black;\n}\n\n.Tagline-logoimg {\n    height: 50px;\n}\n@media (min-height: 768px) {\n    .Tagline-logoimg {\n        height: 100px;\n        margin: 10px;\n    }\n}\n@media (min-height: 1000px) {\n    .Tagline-logoimg {\n        height: 150px;\n        margin: 30px;\n    }\n}\n\nh1.Tagline-logo {\n    text-align: center;\n    font-size: 200px;\n    line-height: 1.0;\n    /*text-shadow: 0 0 27px var(--highlight-color);*/\n    /*text-shadow: 0 0 5px #000;*/\n    text-shadow: 0 0 2px var(--highlight-color); /* extremely subtle shadow */\n    -webkit-text-stroke-width: 1px;\n    -webkit-text-stroke-color: black;\n    color: black;\n    background: white;\n    font-weight: 300; /* lightest if possible */\n}\n\nmain {\n    max-width: 800px;\n    margin: auto;\n}\n\nmain.give-left-padding > :not(.TitleAside) {\n    margin-left: 300px;\n}\n\nsection {\n    display: flex;\n}\n\naside {\n    border: 1px solid black;\n    margin-right: 10px;\n    padding: 20px;\n    margin-bottom: 10px;\n    margin-top: 30px;\n}\naside:last-of-type {\n    margin-right: 0;\n}\n\n\na {\n    color: #000;\n}\na:visited {\n    color: #666;\n}\n\n.Main p {\n    margin-top: 5px;\n    margin-bottom: 20px;\n}\n\n.Main p:last-of-type {\n    margin-bottom: 0;\n}\n\n.Main ul li {\n    list-style: disc;\n    margin-left: 40px;\n}\n\n.Main nav:not(.TitleAside-navigation) ul li {\n    list-style: none;\n    margin-left: 0;\n}\n\n.Main .InfoBox {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n    font-size: 0.95rem;\n}\n\n.Main hr {\n    border: 1px solid #888;\n    width: 80%;\n}\n\n.Main .InfoBox > h2 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 1.1rem;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main > h2,\n.Main > * > h2,\n.Main > * > * > h2 {\n    /*border-top: 1px solid #888;*/\n    /*padding-top: 10px;*/\n    width: 80%;\n    /*margin-top: 20px;*/\n    font-weight: bold;\n    font-size: 1.6rem;\n}\n\n.Main h3 {\n    font-weight: bold;\n    font-size: 1.3rem;\n    margin-top: 10px;\n}\n.Main h4 {\n    font-weight: bold;\n    font-size: 1.1rem;\n    margin-top: 5px;\n}\n\n/* Adding some top margin for the top-level h3/h4s */\n.Main > * > h3 {\n    margin-top: 40px;\n}\n.Main > * > h4 {\n    margin-top: 20px;\n}\n.Main > * > mws-Demo:not(:last-child) > .demo-wrapper {\n    margin-bottom: 60px;\n}\n\n.Main blockquote {\n    max-width: 30%;\n    float: right;\n    border: 1px solid black;\n    border-radius: 10px;\n    padding: 10px;\n    margin: 10px;\n    line-height: 1.3;\n    font-size: 0.98rem;\n}\n@media (max-width: 992px) {\n    .Main blockquote {\n        max-width: none;\n        float: none;\n        clear: both;\n    }\n}\n\n.Main blockquote > p {\n    margin-top: 5px;\n    margin-bottom: 0;\n}\n.Main blockquote > p:first-child {\n    margin-top: 0;\n}\n\n.Main blockquote strong {\n    color: var(--highlight-color);\n    font-size: 1.1rem;\n}\n\n.Main blockquote strong:first-child::before {\n    content: '%   ';\n}\n\n.Tutorial-tryit::before {\n    content: '';\n}\n.Tutorial-tryit {\n    border: 1px solid var(--highlight-color);\n    padding: 20px;\n    display: block;\n    position: relative;\n    clear: both;\n}\n\n.DemoPanels {\n    display: flex;\n}\n\n.DemoPanels > li {\n    display: block;\n    width: 200px;\n    height: 200px;\n    border: 3px solid black;\n    border-radius: 2px;\n    padding: 5px;\n    margin: 5px;\n    position: relative;\n}\n\n.DemoPanels li a {\n    text-align: center;\n    font-size: 20px;\n}\n.DemoPanels li a::after {\n    content: '\\300B';\n}\n\n.DemoPanels li a:hover {\n    color: var(--highlight-color);\n}\n.DemoPanels > li:hover {\n    border-color: var(--highlight-color);\n}\n\n.DemoPanels li a::before {\n    content: ' ';\n    position: absolute;\n    display: block;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    z-index: 1;\n}\n\n@media (max-width: 768px) {\n    .DemoPanels {\n        display: block;\n    }\n\n    .DemoPanels > li {\n        width: auto;\n        height: auto;\n    }\n}\n\n.Tutorial-tryit h4 {\n    color: var(--highlight-color);\n    font-weight: bold;\n    text-transform: uppercase;\n    font-size: 22px;\n    margin-top: -10px;\n    letter-spacing: 1px;\n}\n\n.Main ol > li {\n    list-style: decimal;\n    margin-left: 40px;\n}\n\n.Main--withSidebar {\n    display: grid;\n    grid-template-columns: 350px 1fr;\n}\n\n.Docs-squareInfo {\n    padding: 10px;\n}\n\n.Docs-squareInfo > h2 {\n    /*border-top: 3px #ddd dashed;*/\n    padding-top: 10px;\n    font-weight: bold;\n}\n\n.Docs-demos {\n  background-image: url(/img/demosmontage.png);\n  background-size: 170px 170px;\n  background-position: 70px 100px;\n  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */\n  text-align: center;\n  padding-top: 90px;\n  margin-top: 10px;\n}\n\n.Docs-sideBySide {\n    display: grid;\n    grid-template-columns: 3fr 2fr;\n}\n\nfooter {\n    color: #aaa;\n    padding: 20px;\n    margin-top: 50px;\n    text-align: center;\n}\n\n\n@media (max-width: 992px) {\n    .Main { display: block; }\n    .Docs-sideBySide { display: block; }\n}\n\n\n@media (max-width: 768px) {\n\n    .Main--fluid {\n        width: 100vw;\n        padding: 1px;\n    }\n    aside {\n        padding: 1px;\n    }\n\n    p, h1, h2, h3, h4, h5, h6 {\n        padding: 5px;\n    }\n}\n\n@media (max-width: 550px) {\n    section, section.SideBySide {\n        display: block;\n    }\n}\n\n@media (max-height: 600px) {\n    nav.Navbar {\n        /* Turn off sticky for the smallest devices */\n        position: relative;\n    }\n}\n\n.Navbar-tinyText {\n    display: none;\n}\n\n@media (max-width: 550px) {\n    /* Turn off logo for the smallest devices */\n    .Navbar-rightInfo {\n        display: none;\n    }\n    .Navbar-logo {\n        display: none;\n    }\n\n    .Navbar-tinyText {\n        display: block;\n        position: absolute;\n        top: -1px;\n        padding: 2px;\n        text-align: center;\n        background: #eee;\n        width: 100%;\n    }\n}\n\n@media (max-width: 992px) {\n    nav.Navbar li {\n        font-size: 24px;\n        margin-left: 20px;\n    }\n    nav.Navbar ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n\n    div.Tagline {\n        padding: 5px;\n    }\n    nav.Navbar .Navbar-rightInfo {\n        padding: 2px;\n        margin-left: 10px;\n    }\n\n}\n\n",
    "Parent": "x_x_mws_Page",
    "DefName": null,
    "Name": "x",
@@ -3436,7 +3436,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_mws_ProjectInfo_x",
-   "Hash": "a32rs7"
+   "Hash": "1vq96ic"
   }
  ],
  "x_x_mws_DevLogNav": [
@@ -3493,7 +3493,7 @@ currentModulo.defs = {
   {
    "Type": "Style",
    "RenderObj": "style",
-   "Content": "nav {\n    min-height: 100px;\n    padding: 20px;\n    clear: both;\n    display: block;\n    max-width: 700px;\n    margin: 10px auto 0 auto;\n    display: flex;\n    border: 1px dotted #888;\n}\n\nul {\n    display: grid;\n    grid-auto-flow: column;\n    grid-template-columns: 1fr 1fr 1fr;\n    grid-template-rows: 1fr 1fr;\n}\n\nh4 {\n    font-weight: bold;\n    border-right: 1px dotted #888;\n    color: #888;\n    margin-right: 10px;\n}\n\nh1 {\n    font-weight: bold;\n    text-align: center;\n    border: 1px dotted #888;\n    margin-top: -1px;\n    padding: 10px;\n    margin-bottom: 20px;\n}\n\n",
+   "Content": "nav {\n    min-height: 100px;\n    padding: 20px;\n    clear: both;\n    display: block;\n    max-width: 700px;\n    margin: 10px auto 0 auto;\n    display: flex;\n    border: 1px dotted #888;\n}\n\nul {\n    display: grid;\n    grid-auto-flow: column;\n    grid-template-columns: 1fr 1fr 1fr;\n    grid-template-rows: 1fr 1fr;\n}\n\nh4 {\n    font-weight: bold;\n    border-right: 1px dotted #888;\n    color: #888;\n    margin-right: 10px;\n}\n\nh1 {\n    font-weight: bold;\n    text-align: center;\n    border: 1px dotted #888;\n    margin-top: -1px;\n    padding: 10px;\n    margin-bottom: 20px;\n}\n\n@media (max-width: 768px) {\n    ul {\n        grid-auto-flow: row;\n        grid-template-columns: 1fr;\n    }\n}\n",
    "Parent": "x_x_mws_DevLogNav",
    "DefName": null,
    "Name": "x",
@@ -3632,7 +3632,7 @@ currentModulo.defs = {
   {
    "Type": "Style",
    "RenderObj": "style",
-   "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color) !important; /* Why !important ?? TODO */\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important; /* Why !important ?? TODO */\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n    .demo-wrapper {\n        --side-width: 150px;\n    }\n    .demo-fs-button {\n        display: none;\n    }\n\n\n    .demo-wrapper.demo-wrapper__tabs {\n        display: grid;\n        grid-template-columns: var(--side-width) 1fr;\n        grid-template-rows: 1fr 80px;\n    }\n    \n\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {\n        grid-row: 1 / span 2;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {\n        position: absolute;\n        top: 121px;\n        right: -18px;\n        background: white;\n        border-color: black;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {\n        grid-column: 2;\n        grid-row: 1;\n    }\n    .demo-wrapper.demo-wrapper__tabs .TabNav-title {\n        border: 1px solid black;\n        border-radius: 1px;\n        background: white;\n        width: var(--side-width);\n    }\n\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {\n        display: grid;\n        grid-template-rows: 200px 1fr;\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {\n        grid-row: 2;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {\n        grid-row: 1;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    /*\n    .TabNav-title--selected {\n        box-shadow: 0 0 0 0 var(--highlight-color);\n        box-shadow: none;\n    }\n    */\n /* UGH TODO */\n    /*\n    .TabNav-title--selected a {\n        color: var(--highlight-color) !important;\n    }\n    */\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
+   "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color) !important; /* Why !important ?? TODO */\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important; /* Why !important ?? TODO */\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n    .demo-wrapper {\n        --side-width: 130px;\n    }\n    .demo-fs-button {\n        display: none;\n    }\n\n\n    .demo-wrapper.demo-wrapper__tabs {\n        display: grid;\n        grid-template-columns: var(--side-width) 1fr;\n    }\n    \n\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {\n        grid-row: 1 / span 2;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {\n        position: absolute;\n        top: 121px;\n        right: -18px;\n        background: white;\n        border-color: black;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {\n        grid-column: 2;\n        grid-row: 1;\n    }\n    .demo-wrapper.demo-wrapper__tabs .TabNav-title {\n        border: 1px solid black;\n        border-radius: 1px;\n        background: white;\n        width: var(--side-width);\n        padding: 6px;\n    }\n\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {\n        display: grid;\n        grid-template-rows: 200px 1fr;\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {\n        grid-row: 2;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {\n        grid-row: 1;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    /*\n    .TabNav-title--selected {\n        box-shadow: 0 0 0 0 var(--highlight-color);\n        box-shadow: none;\n    }\n    */\n /* UGH TODO */\n    /*\n    .TabNav-title--selected a {\n        color: var(--highlight-color) !important;\n    }\n    */\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
    "Parent": "x_x_mws_Demo",
    "DefName": null,
    "Name": "x",
@@ -3685,7 +3685,7 @@ currentModulo.defs = {
   {
    "Type": "Style",
    "RenderObj": "style",
-   "Content": ":host {\n    --colcount: 5;\n    display: grid;\n    grid-template-columns: repeat(var(--colcount), 1fr);\n}\n:host > .Example {\n    border: 1px solid black;\n    border-radius: 2px;\n    padding: 10px;\n    margin: 10px;\n    min-height: 200px;\n    background: #ddd;\n    position: relative;\n    margin-top: 50px;\n}\n.Example-wrapper {\n    height: 200px;\n    overflow-y: auto;\n}\n\n:host > .Example.expanded {\n    background: transparent;\n    grid-column: 1 / span var(--colcount);\n}\n\n:host > .Example .tool-button {\n    position: absolute;\n    top: -30px;\n    height: 30px;\n    right: 0px;\n    min-width: 80px;\n    border-radius: 10px 10px 0 0;\n    /*border-bottom: none;*/\n    background: #ddd;\n}\n:host > .Example .tool-button:hover {\n    cursor: pointer;\n    text-decoration: underline;\n}\n\n@media (max-width: 1550px) {\n    :host {\n        --colcount: 4;\n    }\n}\n@media (max-width: 1250px) {\n    :host {\n        --colcount: 3;\n    }\n}\n\n@media (max-width: 1160px) {\n    :host {\n        --colcount: 2;\n    }\n}\n\n@media (max-width: 768px) {\n    :host {\n        --colcount: 1;\n    }\n}\n\n",
+   "Content": ":host {\n    --colcount: 5;\n    display: grid;\n    grid-template-columns: repeat(var(--colcount), 1fr);\n}\n:host > .Example {\n    border: 1px solid black;\n    border-radius: 2px;\n    padding: 10px;\n    margin: 10px;\n    min-height: 200px;\n    background: #ddd;\n    position: relative;\n    margin-top: 50px;\n}\n.Example-wrapper {\n    height: 200px;\n    overflow-y: auto;\n}\n\n:host > .Example.expanded {\n    background: transparent;\n    grid-column: 1 / span var(--colcount);\n}\n\n:host > .Example .tool-button {\n    position: absolute;\n    top: -30px;\n    height: 30px;\n    right: 0px;\n    min-width: 80px;\n    border-radius: 10px 10px 0 0;\n    /*border-bottom: none;*/\n    background: #ddd;\n}\n:host > .Example .tool-button:hover {\n    cursor: pointer;\n    text-decoration: underline;\n}\n\n@media (max-width: 1550px) {\n    :host {\n        --colcount: 4;\n    }\n}\n@media (max-width: 1250px) {\n    :host {\n        --colcount: 3;\n    }\n}\n\n@media (max-width: 1160px) {\n    :host {\n        --colcount: 2;\n    }\n}\n\n@media (max-width: 550px) {\n    :host {\n        --colcount: 1;\n    }\n}\n\n",
    "Parent": "x_x_mws_AllExamples",
    "DefName": null,
    "Name": "x",
@@ -4098,7 +4098,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "xvtf413"
+   "Hash": "133nat1"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -4819,7 +4819,7 @@ currentModulo.parentDefs = {
   "Parent": "x_x",
   "DefName": "mws",
   "FullName": "x_x_mws",
-  "Hash": "8juoaq"
+  "Hash": "x9buum7"
  },
  "x_x_docseg": {
   "Type": "Library",
@@ -4963,9 +4963,9 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "ProjectInfo",
   "FullName": "x_x_mws_ProjectInfo",
-  "Hash": "1mt37h4",
+  "Hash": "18lkdh5",
   "TagName": "mws-projectinfo",
-  "FuncDefHash": "1vt7v7k"
+  "FuncDefHash": "12ib52h"
  },
  "x_x_mws_DevLogNav": {
   "Type": "Component",
@@ -5692,12 +5692,12 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_mws_ProjectInfo_x",
-  "Hash": "a32rs7"
+  "Hash": "1vq96ic"
  },
  "x_x_mws_DevLogNav_x": {
   "Type": "Style",
   "RenderObj": "style",
-  "Content": "nav {\n    min-height: 100px;\n    padding: 20px;\n    clear: both;\n    display: block;\n    max-width: 700px;\n    margin: 10px auto 0 auto;\n    display: flex;\n    border: 1px dotted #888;\n}\n\nul {\n    display: grid;\n    grid-auto-flow: column;\n    grid-template-columns: 1fr 1fr 1fr;\n    grid-template-rows: 1fr 1fr;\n}\n\nh4 {\n    font-weight: bold;\n    border-right: 1px dotted #888;\n    color: #888;\n    margin-right: 10px;\n}\n\nh1 {\n    font-weight: bold;\n    text-align: center;\n    border: 1px dotted #888;\n    margin-top: -1px;\n    padding: 10px;\n    margin-bottom: 20px;\n}\n\n",
+  "Content": "nav {\n    min-height: 100px;\n    padding: 20px;\n    clear: both;\n    display: block;\n    max-width: 700px;\n    margin: 10px auto 0 auto;\n    display: flex;\n    border: 1px dotted #888;\n}\n\nul {\n    display: grid;\n    grid-auto-flow: column;\n    grid-template-columns: 1fr 1fr 1fr;\n    grid-template-rows: 1fr 1fr;\n}\n\nh4 {\n    font-weight: bold;\n    border-right: 1px dotted #888;\n    color: #888;\n    margin-right: 10px;\n}\n\nh1 {\n    font-weight: bold;\n    text-align: center;\n    border: 1px dotted #888;\n    margin-top: -1px;\n    padding: 10px;\n    margin-bottom: 20px;\n}\n\n@media (max-width: 768px) {\n    ul {\n        grid-auto-flow: row;\n        grid-template-columns: 1fr;\n    }\n}\n",
   "Parent": "x_x_mws_DevLogNav",
   "DefName": null,
   "Name": "x",
@@ -5715,7 +5715,7 @@ currentModulo.parentDefs = {
  "x_x_mws_Demo_x": {
   "Type": "Style",
   "RenderObj": "style",
-  "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color) !important; /* Why !important ?? TODO */\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important; /* Why !important ?? TODO */\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n    .demo-wrapper {\n        --side-width: 150px;\n    }\n    .demo-fs-button {\n        display: none;\n    }\n\n\n    .demo-wrapper.demo-wrapper__tabs {\n        display: grid;\n        grid-template-columns: var(--side-width) 1fr;\n        grid-template-rows: 1fr 80px;\n    }\n    \n\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {\n        grid-row: 1 / span 2;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {\n        position: absolute;\n        top: 121px;\n        right: -18px;\n        background: white;\n        border-color: black;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {\n        grid-column: 2;\n        grid-row: 1;\n    }\n    .demo-wrapper.demo-wrapper__tabs .TabNav-title {\n        border: 1px solid black;\n        border-radius: 1px;\n        background: white;\n        width: var(--side-width);\n    }\n\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {\n        display: grid;\n        grid-template-rows: 200px 1fr;\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {\n        grid-row: 2;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {\n        grid-row: 1;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    /*\n    .TabNav-title--selected {\n        box-shadow: 0 0 0 0 var(--highlight-color);\n        box-shadow: none;\n    }\n    */\n /* UGH TODO */\n    /*\n    .TabNav-title--selected a {\n        color: var(--highlight-color) !important;\n    }\n    */\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
+  "Content": ".demo-wrapper.demo-wrapper__minipreview .CodeMirror {\n    height: 200px;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror {\n    height: auto;\n}\n\n.demo-wrapper.demo-wrapper__clipboard .CodeMirror * {\n    font-family: monospace;\n    font-size: 1rem;\n}\n\n.demo-wrapper.demo-wrapper__minipreview .CodeMirror * {\n    font-family: monospace;\n    font-size: 14px;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror {\n    height: 87vh;\n}\n.demo-wrapper.demo-wrapper__fullscreen .CodeMirror * {\n    font-family: monospace;\n    font-size: 16px;\n}\n\n.CodeMirror span.cm-string-2 {\n    color: black !important;\n}\n\n.demo-wrapper {\n    position: relative;\n    display: block;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview   {\n    /* Make look better in Docs */\n    max-width: 900px;\n}\n.Main--fluid  .demo-wrapper.demo-wrapper__minipreview.demo-wrapper__fullscreen  {\n    /* ...except if full screen */\n    max-width: 100vw;\n}\n\n.demo-wrapper.demo-wrapper__fullscreen {\n    position: absolute;\n    display: block;\n    width: 100vw;\n    height: 100vh;\n    z-index: 100;\n    top: 0;\n    left: 0;\n    box-sizing: border-box;\n    padding: 20px;\n    background: white;\n}\n\n/* No tabs sitch: */\n.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 40px;\n    margin-left: 5px;\n    border: 1px solid #999;\n    height: 160px;\n}\n\n.demo-wrapper__fullscreen.demo-wrapper__notabs .editor-minipreview {\n    margin-top: 65px;\n}\n\n.editor-toolbar {\n    position: absolute;\n    z-index: 3;\n    display: flex;\n    width: auto;\n    /*right: -70px;*/\n    right: 30px;\n    top: 0;\n    height: 35px;\n    padding: 2px;\n    border: #ddd 1px solid;\n}\n\n\n\n.demo-wrapper__fullscreen .editor-toolbar {\n    height: 60px;\n    padding: 10px;\n}\n\n\n.demo-wrapper__minipreview  .editor-wrapper {\n    width: 78%;\n    border: 1px solid black;\n}\n.Main--fluid  .demo-wrapper__minipreview  .editor-wrapper {\n}\n\n.demo-wrapper.demo-wrapper__clipboard .editor-wrapper {\n    border: 1px dotted #ddd;\n    width: 100%;\n}\n\n.demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.editor-minipreview {\n    border: 1px solid black;\n    border-radius: 1px;\n    background: #eee;\n    padding: 5px;\n    border-left: none;\n    width: 200px;\n    height: 200px;\n    overflow-y: auto;\n}\n.editor-minipreview > div > * > input {\n  max-width: 175px;\n}\n\n.demo-wrapper__fullscreen .editor-minipreview {\n    width: 30vw;\n    height: auto;\n    border: 1px solid black;\n    margin: 20px;\n    padding: 30px;\n    border: 5px solid black;\n    border-radius: 1px 8px 1px 8px;\n    border-bottom-width: 1px;\n    border-right-width: 1px;\n}\n\n.side-by-side-panes {\n    display: flex;\n    justify-content: space-between;\n}\n\n.TabNav {\n    /*border-bottom: 1px dotted var(--highlight-color);*/\n    width: 100%;\n}\n\n\n.TabNav > ul {\n    width: 100%;\n    display: flex;\n}\n\n.TabNav-title {\n    border: 2px solid black;\n    border-top-width: 4px;\n    /*border-bottom-width: 0;*/\n    margin-bottom: -2px;\n    border-radius: 8px 8px 0 0;\n    background: white;\n    min-width: 50px;\n    box-shadow: 0 0 0 0 var(--highlight-color);\n    transition: box-shadow 0.3s,\n                border-color 0.2s;\n}\n\n.TabNav-title a,\n.TabNav-title a:visited,\n.TabNav-title a:active {\n    text-decoration: none;\n    color: black;\n    display: block;\n    padding: 5px;\n    font-weight: bold;\n    cursor: pointer;\n    font-size: 1.1rem;\n}\n\n.TabNav-title:hover {\n    border-color: var(--highlight-color);\n}\n\n.TabNav-title--selected {\n    border-color: var(--highlight-color);\n    background: var(--highlight-color) !important; /* Why !important ?? TODO */\n    box-shadow: 0 0 0 8px var(--highlight-color);\n    border-radius: 8px 8px 8px 8px;\n}\n.TabNav-title--selected a {\n    color: white !important; /* Why !important ?? TODO */\n}\n\n\n@media (max-width: 992px) {\n    .TabNav > ul {\n        flex-wrap: wrap;\n        justify-content: flex-start;\n    }\n}\n\n@media (max-width: 768px) {\n    .TabNav-title {\n        padding: 7px;\n    }\n    .demo-wrapper {\n        --side-width: 130px;\n    }\n    .demo-fs-button {\n        display: none;\n    }\n\n\n    .demo-wrapper.demo-wrapper__tabs {\n        display: grid;\n        grid-template-columns: var(--side-width) 1fr;\n    }\n    \n\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(1) {\n        grid-row: 1 / span 2;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(2) {\n        position: absolute;\n        top: 121px;\n        right: -18px;\n        background: white;\n        border-color: black;\n    }\n    .demo-wrapper.demo-wrapper__tabs > :nth-child(3) {\n        grid-column: 2;\n        grid-row: 1;\n    }\n    .demo-wrapper.demo-wrapper__tabs .TabNav-title {\n        border: 1px solid black;\n        border-radius: 1px;\n        background: white;\n        width: var(--side-width);\n        padding: 6px;\n    }\n\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes {\n        display: grid;\n        grid-template-rows: 200px 1fr;\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(1) {\n        grid-row: 2;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    .demo-wrapper.demo-wrapper__tabs  .side-by-side-panes > :nth-child(2) {\n        grid-row: 1;\n        width: auto;\n        max-width: calc(100vw - var(--side-width) - 2px);\n    }\n    /*\n    .TabNav-title--selected {\n        box-shadow: 0 0 0 0 var(--highlight-color);\n        box-shadow: none;\n    }\n    */\n /* UGH TODO */\n    /*\n    .TabNav-title--selected a {\n        color: var(--highlight-color) !important;\n    }\n    */\n}\n\n\n\n@media (max-width: 768px) {\n    .demo-wrapper.demo-wrapper__fullscreen {\n        position: relative;\n        display: block;\n        width: 100vw;\n        height: auto;\n        z-index: 1;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-toolbar {\n        position: static;\n        padding: 10px;\n        margin: 20px;\n        height: 60px;\n        font-size: 1.1rem;\n    }\n    .demo-wrapper__fullscreen .editor-toolbar {\n        margin: 5px;\n        height: 60px;\n        padding: 5px;\n        display: flex;\n        justify-content: flex-end;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .side-by-side-panes {\n        display: block;\n    }\n}\n\n@media (max-width: 768px) {\n    .editor-minipreview {\n        width: 100%;\n    }\n    .demo-wrapper__fullscreen .editor-minipreview {\n        width: 90%;\n    }\n}\n\n\n@media (min-width: 768px) {\n    .demo-wrapper__minipreview.demo-wrapper__fullscreen .editor-wrapper {\n        height: auto;\n        width: 70vw;\n        min-height: 87vh;\n    }\n}\n\n\n@media (max-width: 768px) {\n    .editor-wrapper {\n        width: 100%;\n        border: 1px solid black;\n    }\n    .demo-wrapper__fullscreen .editor-wrapper {\n        width: 100%;\n    }\n}\n\n",
   "Parent": "x_x_mws_Demo",
   "DefName": null,
   "Name": "x",
@@ -5724,7 +5724,7 @@ currentModulo.parentDefs = {
  "x_x_mws_AllExamples_x": {
   "Type": "Style",
   "RenderObj": "style",
-  "Content": ":host {\n    --colcount: 5;\n    display: grid;\n    grid-template-columns: repeat(var(--colcount), 1fr);\n}\n:host > .Example {\n    border: 1px solid black;\n    border-radius: 2px;\n    padding: 10px;\n    margin: 10px;\n    min-height: 200px;\n    background: #ddd;\n    position: relative;\n    margin-top: 50px;\n}\n.Example-wrapper {\n    height: 200px;\n    overflow-y: auto;\n}\n\n:host > .Example.expanded {\n    background: transparent;\n    grid-column: 1 / span var(--colcount);\n}\n\n:host > .Example .tool-button {\n    position: absolute;\n    top: -30px;\n    height: 30px;\n    right: 0px;\n    min-width: 80px;\n    border-radius: 10px 10px 0 0;\n    /*border-bottom: none;*/\n    background: #ddd;\n}\n:host > .Example .tool-button:hover {\n    cursor: pointer;\n    text-decoration: underline;\n}\n\n@media (max-width: 1550px) {\n    :host {\n        --colcount: 4;\n    }\n}\n@media (max-width: 1250px) {\n    :host {\n        --colcount: 3;\n    }\n}\n\n@media (max-width: 1160px) {\n    :host {\n        --colcount: 2;\n    }\n}\n\n@media (max-width: 768px) {\n    :host {\n        --colcount: 1;\n    }\n}\n\n",
+  "Content": ":host {\n    --colcount: 5;\n    display: grid;\n    grid-template-columns: repeat(var(--colcount), 1fr);\n}\n:host > .Example {\n    border: 1px solid black;\n    border-radius: 2px;\n    padding: 10px;\n    margin: 10px;\n    min-height: 200px;\n    background: #ddd;\n    position: relative;\n    margin-top: 50px;\n}\n.Example-wrapper {\n    height: 200px;\n    overflow-y: auto;\n}\n\n:host > .Example.expanded {\n    background: transparent;\n    grid-column: 1 / span var(--colcount);\n}\n\n:host > .Example .tool-button {\n    position: absolute;\n    top: -30px;\n    height: 30px;\n    right: 0px;\n    min-width: 80px;\n    border-radius: 10px 10px 0 0;\n    /*border-bottom: none;*/\n    background: #ddd;\n}\n:host > .Example .tool-button:hover {\n    cursor: pointer;\n    text-decoration: underline;\n}\n\n@media (max-width: 1550px) {\n    :host {\n        --colcount: 4;\n    }\n}\n@media (max-width: 1250px) {\n    :host {\n        --colcount: 3;\n    }\n}\n\n@media (max-width: 1160px) {\n    :host {\n        --colcount: 2;\n    }\n}\n\n@media (max-width: 550px) {\n    :host {\n        --colcount: 1;\n    }\n}\n\n",
   "Parent": "x_x_mws_AllExamples",
   "DefName": null,
   "Name": "x",
@@ -5896,7 +5896,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "xvtf413"
+  "Hash": "133nat1"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -20610,7 +20610,7 @@ currentModulo.assets.functions["11r1u8n"]= function (tagName, modulo){
     return Page;
 
 };
-currentModulo.assets.functions["1vt7v7k"]= function (tagName, modulo){
+currentModulo.assets.functions["12ib52h"]= function (tagName, modulo){
 
     const { Props, StaticData, Template } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_ProjectInfo'];
@@ -20621,7 +20621,7 @@ currentModulo.assets.functions["1vt7v7k"]= function (tagName, modulo){
         constructor() {
             super();
             this.modulo = modulo;
-            this.defHash = '1mt37h4';
+            this.defHash = '18lkdh5';
             this.initRenderObj = initRenderObj;
             this.moduloChildrenData = confArray;
             this.moduloComponentConf = modulo.parentDefs['x_x_mws_ProjectInfo'];
@@ -21584,7 +21584,7 @@ var OUT=[];
 
 return OUT.join("");
 };
-currentModulo.assets.functions["a32rs7"]= function (CTX, G){
+currentModulo.assets.functions["1vq96ic"]= function (CTX, G){
 var OUT=[];
   OUT.push("\n        "); // ""
   if (CTX.props.version) { // "if props.version"
@@ -21598,7 +21598,9 @@ var OUT=[];
   OUT.push(G.escapeText(CTX.staticdata.sloc)); // "staticdata.sloc"
   OUT.push(" lines<br />-->\n            <a href=\"https://github.com/michaelpb/modulo/\">github</a> |\n            <a href=\"https://www.npmjs.com/package/"); // "lines<br />--><a href=\"https://github.com/michaelpb/modulo/\">github</a> | <a href=\"https://www.npmjs.com/package/"
   OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
-  OUT.push("\">npm (mdu-cli)</a>\n        "); // "\">npm (mdu-cli)</a>"
+  OUT.push("\">npm "); // "\">npm"
+  OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
+  OUT.push("</a>\n        "); // "</a>"
   } // "endif"
   OUT.push("\n    "); // ""
 
@@ -22393,7 +22395,7 @@ return {
   }
 };
 };
-currentModulo.assets.functions["xvtf413"]= function (){
+currentModulo.assets.functions["133nat1"]= function (){
 return {
   "id": 320452827,
   "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
@@ -22462,13 +22464,13 @@ return {
   "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
   "created_at": "2020-12-11T03:08:21Z",
   "updated_at": "2022-09-23T22:20:01Z",
-  "pushed_at": "2022-09-25T17:08:56Z",
+  "pushed_at": "2022-09-25T20:02:12Z",
   "git_url": "git://github.com/michaelpb/modulo.git",
   "ssh_url": "git@github.com:michaelpb/modulo.git",
   "clone_url": "https://github.com/michaelpb/modulo.git",
   "svn_url": "https://github.com/michaelpb/modulo",
   "homepage": "https://modulojs.org/",
-  "size": 6729,
+  "size": 6998,
   "stargazers_count": 3,
   "watchers_count": 3,
   "language": "JavaScript",
@@ -23970,7 +23972,7 @@ currentModulo.assets.functions['xhqlhp0']('x-demoselector', currentModulo);
 
 currentModulo.assets.functions['11r1u8n']('mws-page', currentModulo);
 
-currentModulo.assets.functions['1vt7v7k']('mws-projectinfo', currentModulo);
+currentModulo.assets.functions['12ib52h']('mws-projectinfo', currentModulo);
 
 currentModulo.assets.functions['x137e220']('mws-devlognav', currentModulo);
 
@@ -24038,35 +24040,341 @@ currentModulo.assets.functions['xrqe02h']('eg-memory', currentModulo);
 
 currentModulo.assets.functions['xairn07']('eg-conwaygameoflife', currentModulo);
 
-currentModulo.assets.functions["x1leb5ue"]= function (CTX, G){
+currentModulo.assets.functions["x8j3c54"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\n    API data: <pre>"); // "API data: <pre>"
-  OUT.push(G.escapeText(G.filters["truncate"](G.filters["json"](CTX.state.data),80))); // "state.data|json|truncate:80"
-  OUT.push("</pre>\n    <button @click:=\"script.fetchMe\">Get API data</button>\n"); // "</pre><button @click:=\"script.fetchMe\">Get API data</button>"
+  OUT.push("\n    <p>Before comment</p>\n    "); // "<p>Before comment</p>"
+  /* // "comment \"Optional note\""
+  OUT.push("\n        <p>Commented out text that will be ignored\n          "); // "<p>Commented out text that will be ignored"
+  OUT.push(G.escapeText(G.filters["brokenFilter"](CTX.nonExistingVar,"abc"))); // "nonExistingVar|brokenFilter:\"abc\""
+  OUT.push("</p>\n    "); // "</p>"
+  */ // "endcomment"
+  OUT.push("\n    <p>After comment</p>\n"); // "<p>After comment</p>"
 
 return OUT.join("");
 };
-currentModulo.assets.functions["xpuvhr2"]= function (CTX, G){
+currentModulo.assets.functions["x11k4oji"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.athletes;for (var KEY in ARR0) {CTX. athlete=ARR0[KEY]; // "for athlete in state.athletes"
+  OUT.push("\n            <li>"); // "<li>"
+  OUT.push(G.escapeText(CTX.athlete.name)); // "athlete.name"
+  OUT.push("</li>\n        "); // "</li>"
+  } // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1g4g3r1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.fave_colors;for (var KEY in ARR0) {CTX.name=KEY;CTX.color=ARR0[KEY]; // "for name, color in state.fave_colors"
+  OUT.push("\n            <li><strong>"); // "<li><strong>"
+  OUT.push(G.escapeText(CTX.name)); // "name"
+  OUT.push("</strong>: "); // "</strong>:"
+  OUT.push(G.escapeText(CTX.color)); // "color"
+  OUT.push("</li>\n        "); // "</li>"
+  } // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x14l5i9t"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <ul>\n        "); // "<ul>"
+  var ARR0=CTX.state.fave_colors;for (var KEY in ARR0) {CTX.name=KEY;CTX.color=ARR0[KEY]; // "for name, color in state.fave_colors"
+  OUT.push("\n            <li><strong>"); // "<li><strong>"
+  OUT.push(G.escapeText(CTX.name)); // "name"
+  OUT.push("</strong>: "); // "</strong>:"
+  OUT.push(G.escapeText(CTX.color)); // "color"
+  OUT.push("</li>\n        "); // "</li>"
+  G.FORLOOP_NOT_EMPTY1=true; } if (!G.FORLOOP_NOT_EMPTY1) { // "empty"
+  OUT.push("\n            No colors were found.\n        "); // "No colors were found."
+  }G.FORLOOP_NOT_EMPTY1 = false; // "endfor"
+  OUT.push("\n    </ul>\n"); // "</ul>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["a5djj"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.show) { // "if state.show"
+  OUT.push("\n        Hello testing template world!\n    "); // "Hello testing template world!"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x7lkdod"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.athletes) { // "if state.athletes"
+  OUT.push("\n        Athletes exists. Total athletes: "); // "Athletes exists. Total athletes:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.athletes))); // "state.athletes|length"
+  OUT.push("\n    "); // ""
+  } else if (CTX.state.benched) { // "elif state.benched"
+  OUT.push("\n        Benched exists. Total benched: "); // "Benched exists. Total benched:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.benched))); // "state.benched|length"
+  OUT.push("\n    "); // ""
+  } else { // "else"
+  OUT.push("\n        No athletes.\n    "); // "No athletes."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["2rm5kq"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar === "x") { // "if state.somevar == \"x\""
+  OUT.push("\n        This appears if variable somevar equals the string \"x\"\n    "); // "This appears if variable somevar equals the string \"x\""
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x1k1tbb1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar != "x") { // "if state.somevar != \"x\""
+  OUT.push("\n        This appears if variable state.somevar does not equal the string \"x\".\n    "); // "This appears if variable state.somevar does not equal the string \"x\"."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x15dnkp2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (!(CTX.state.show)) { // "if not state.show"
+  OUT.push("\n        Do not show it!\n    "); // "Do not show it!"
+  } else { // "else"
+  OUT.push("\n        Show it!\n    "); // "Show it!"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x8rv5n5"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar < 100) { // "if state.somevar lt 100"
+  OUT.push("\n        This appears if variable somevar is less than 100.\n    "); // "This appears if variable somevar is less than 100."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["cip3uc"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (CTX.state.somevar > 100) { // "if state.somevar gt 100"
+  OUT.push("\n        This appears if variable somevar is greater than 100.\n    "); // "This appears if variable somevar is greater than 100."
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1otvgl5"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if ((CTX.state.era).includes ? (CTX.state.era).includes("B.C.E.") : ("B.C.E." in CTX.state.era)) { // "if \"B.C.E.\" in state.era"
+  OUT.push("\n        This appears since \"B.C.E.\" is a substring of \""); // "This appears since \"B.C.E.\" is a substring of \""
+  OUT.push(G.escapeText(CTX.state.era)); // "state.era"
+  OUT.push("\"\n    "); // "\""
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["ale86f"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  if (G.filters["length"](CTX.state.athletes) > 2) { // "if state.athletes|length gt 2"
+  OUT.push("\n        <p>There are more than 2 athletes!</p>\n    "); // "<p>There are more than 2 athletes!</p>"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1nj3f1e"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    "); // ""
+  OUT.push(G.escapeText(G.filters["add"](CTX.state.value,7))); // "state.value|add:7"
+  OUT.push(" hacks <br>\n    "); // "hacks <br>"
+  OUT.push(G.escapeText(G.filters["add"](CTX.state.value,CTX.state.another))); // "state.value|add:state.another"
+  OUT.push(" hz\n"); // "hz"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1ofib1a"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Valid: "); // "Valid:"
+  OUT.push(G.escapeText(G.filters["allow"](CTX.state.value,"orange,apple,pear"))); // "state.value|allow:\"orange,apple,pear\""
+  OUT.push(" <br>\n    Invalid: "); // "<br> Invalid:"
+  OUT.push(G.escapeText(G.filters["allow"](CTX.state.value,"a,b,c"))); // "state.value|allow:\"a,b,c\""
+  OUT.push(" <br>\n    Invalid + default: "); // "<br> Invalid + default:"
+  OUT.push(G.escapeText(G.filters["default"](G.filters["allow"](CTX.state.value,"a,b,c"),"Oops!"))); // "state.value|allow:\"a,b,c\"|default:\"Oops!\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x1q1s27l"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    The "); // "The"
+  OUT.push(G.escapeText(G.filters["capfirst"](CTX.state.value))); // "state.value|capfirst"
+  OUT.push(" framework is my favorite\n"); // "framework is my favorite"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xqccfe1"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Fave snack: "); // "Fave snack:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.snack,"icecream"))); // "state.snack|default:\"icecream\""
+  OUT.push(" <br>\n    Snack count: "); // "<br> Snack count:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.count,"none"))); // "state.count|default:\"none\""
+  OUT.push(" <br>\n    Fave soda: "); // "<br> Fave soda:"
+  OUT.push(G.escapeText(G.filters["default"](CTX.state.soda,"Cola"))); // "state.soda|default:\"Cola\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xu2cevu"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Can "); // "Can"
+  OUT.push(G.escapeText(CTX.state.value)); // "state.value"
+  OUT.push(" divide by 3? <br>\n    "); // "divide by 3? <br>"
+  OUT.push(G.escapeText(G.filters["divisibleby"](CTX.state.value,3))); // "state.value|divisibleby:3"
+  OUT.push(" <br>\n    "); // "<br>"
+  if (G.filters["divisibleby"](CTX.state.value,2)) { // "if state.value|divisibleby:2"
+  OUT.push("\n        "); // ""
+  OUT.push(G.escapeText(CTX.state.value)); // "state.value"
+  OUT.push(" is even\n    "); // "is even"
+  } // "endif"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1sa0mpn"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    Result: "); // "Result:"
+  OUT.push(G.escapeText(G.filters["escapejs"](CTX.state.value))); // "state.value|escapejs"
+  OUT.push(" <br>\n"); // "<br>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["18vl137"]= function (CTX, G){
 var OUT=[];
   OUT.push("\n    <p>"); // "<p>"
-  var ARR0=CTX.script.exports.bigArray;for (var KEY in ARR0) {CTX. item=ARR0[KEY]; // "for item in script.exports.bigArray"
-  OUT.push("\n        "); // ""
-  OUT.push(G.escapeText(CTX.item)); // "item"
-  OUT.push(",\n    "); // ","
-  } // "endfor"
+  OUT.push(G.escapeText(G.filters["first"](CTX.state.athletes))); // "state.athletes|first"
   OUT.push("</p>\n"); // "</p>"
 
 return OUT.join("");
 };
-currentModulo.assets.functions["emgqio"]= function (CTX, G){
+currentModulo.assets.functions["1d8ujon"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["join"](CTX.state.athletes))); // "state.athletes|join"
+  OUT.push("</p>\n    <p>"); // "</p><p>"
+  OUT.push(G.escapeText(G.filters["join"](CTX.state.athletes," + "))); // "state.athletes|join:\" + \""
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x139tl73"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <pre>"); // "<pre>"
+  OUT.push(G.escapeText(G.filters["json"](CTX.state.athletes))); // "state.athletes|json"
+  OUT.push("</pre>\n    <pre>"); // "</pre><pre>"
+  OUT.push(G.escapeText(G.filters["json"](CTX.state.athletes,2))); // "state.athletes|json:2"
+  OUT.push("</pre>\n"); // "</pre>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["jrca7"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["last"](CTX.state.athletes))); // "state.athletes|last"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["ljtjgd"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Sentence length: "); // "<p>Sentence length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.sentence))); // "state.sentence|length"
+  OUT.push("</p>\n    <p>Flowers length: "); // "</p><p>Flowers length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flowers))); // "state.flowers|length"
+  OUT.push("</p>\n    <p>Flights length: "); // "</p><p>Flights length:"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flights))); // "state.flights|length"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["qoh762"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Without: "); // "<p>Without:"
+  OUT.push(G.escapeText(CTX.state.word)); // "state.word"
+  OUT.push("</p>\n    <p>Lower: "); // "</p><p>Lower:"
+  OUT.push(G.escapeText(G.filters["lower"](CTX.state.word))); // "state.word|lower"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["xpgpf73"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    We visited "); // "We visited"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.citynames))); // "state.citynames|length"
+  OUT.push(" \n    "); // ""
+  OUT.push(G.escapeText(G.filters["pluralize"](G.filters["length"](CTX.state.citynames),"cities,city"))); // "state.citynames|length|pluralize:\"cities,city\""
+  OUT.push("\n\n    and picked "); // "and picked"
+  OUT.push(G.escapeText(G.filters["length"](CTX.state.flowers))); // "state.flowers|length"
+  OUT.push(" \n    flower"); // "flower"
+  OUT.push(G.escapeText(G.filters["pluralize"](G.filters["length"](CTX.state.flowers),"s"))); // "state.flowers|length|pluralize:\"s\""
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["12f47p2"]= function (CTX, G){
 var OUT=[];
   OUT.push("\n    "); // ""
-  OUT.push(G.escapeText(CTX.staticdata.name)); // "staticdata.name"
-  OUT.push(" v"); // "v"
-  OUT.push(G.escapeText(CTX.staticdata.version)); // "staticdata.version"
-  OUT.push("\n    (by "); // "(by"
-  OUT.push(G.escapeText(CTX.staticdata.author)); // "staticdata.author"
-  OUT.push(")\n"); // ")"
+  OUT.push(G.escapeText(G.filters["subtract"](CTX.state.value,3))); // "state.value|subtract:3"
+  OUT.push(" hacks <br>\n    "); // "hacks <br>"
+  OUT.push(G.escapeText(G.filters["subtract"](CTX.state.value,CTX.state.another))); // "state.value|subtract:state.another"
+  OUT.push(" is the answer\n"); // "is the answer"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["1p6tva9"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Long sentence: "); // "<p>Long sentence:"
+  OUT.push(G.escapeText(G.filters["truncate"](CTX.state.sentence,20))); // "state.sentence|truncate:20"
+  OUT.push("</p>\n    <p>Short word: "); // "</p><p>Short word:"
+  OUT.push(G.escapeText(G.filters["truncate"](CTX.state.word,20))); // "state.word|truncate:20"
+  OUT.push("</p>\n"); // "</p>"
+
+return OUT.join("");
+};
+currentModulo.assets.functions["x36bu36"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>"); // "<p>"
+  OUT.push(G.escapeText(G.filters["join"](G.filters["reversed"](CTX.state.flowers)))); // "state.flowers|reversed|join"
+  OUT.push("</p>\n    "); // "</p>"
+  var ARR0=G.filters["reversed"](CTX.state.cities);for (var KEY in ARR0) {CTX. city=ARR0[KEY]; // "for city in state.cities|reversed"
+  OUT.push("\n        <p>"); // "<p>"
+  OUT.push(G.escapeText(CTX.city)); // "city"
+  OUT.push("</p>\n    "); // "</p>"
+  } // "endfor"
+  OUT.push("\n"); // ""
+
+return OUT.join("");
+};
+currentModulo.assets.functions["17hmqg2"]= function (CTX, G){
+var OUT=[];
+  OUT.push("\n    <p>Without: "); // "<p>Without:"
+  OUT.push(G.escapeText(CTX.state.word)); // "state.word"
+  OUT.push("</p>\n    <p>Upper: "); // "</p><p>Upper:"
+  OUT.push(G.escapeText(G.filters["upper"](CTX.state.word))); // "state.word|upper"
+  OUT.push("</p>\n"); // "</p>"
 
 return OUT.join("");
 };

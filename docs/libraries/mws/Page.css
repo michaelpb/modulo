@@ -157,7 +157,6 @@ nav.Navbar .Navbar-rightInfo {
     padding-right: 20px;
     max-width: 100vw;
 }
-
 section.SideBySide {
     display: flex;
 }
@@ -272,7 +271,7 @@ div.Tagline {
     text-align: center;
 }
 div.Tagline ul {
-    width: 500px;
+    max-width: 98vw;
     margin: auto;
 }
 
@@ -533,6 +532,17 @@ a:visited {
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    .DemoPanels {
+        display: block;
+    }
+
+    .DemoPanels > li {
+        width: auto;
+        height: auto;
+    }
+}
+
 .Tutorial-tryit h4 {
     color: var(--highlight-color);
     font-weight: bold;
@@ -590,24 +600,56 @@ footer {
     .Docs-sideBySide { display: block; }
 }
 
-.Navbar-tinyText {
-    display: none;
-}
+
 @media (max-width: 768px) {
+
+    .Main--fluid {
+        width: 100vw;
+        padding: 1px;
+    }
+    aside {
+        padding: 1px;
+    }
+
+    p, h1, h2, h3, h4, h5, h6 {
+        padding: 5px;
+    }
+}
+
+@media (max-width: 550px) {
     section, section.SideBySide {
         display: block;
     }
+}
+
+@media (max-height: 600px) {
+    nav.Navbar {
+        /* Turn off sticky for the smallest devices */
+        position: relative;
+    }
+}
+
+.Navbar-tinyText {
+    display: none;
+}
+
+@media (max-width: 550px) {
+    /* Turn off logo for the smallest devices */
     .Navbar-rightInfo {
         display: none;
     }
     .Navbar-logo {
         display: none;
     }
+
     .Navbar-tinyText {
         display: block;
         position: absolute;
-        top: 0;
+        top: -1px;
+        padding: 2px;
         text-align: center;
+        background: #eee;
+        width: 100%;
     }
 }
 
