@@ -157,7 +157,6 @@ nav.Navbar .Navbar-rightInfo {
     padding-right: 20px;
     max-width: 100vw;
 }
-
 section.SideBySide {
     display: flex;
 }
@@ -533,6 +532,17 @@ a:visited {
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    .DemoPanels {
+        display: block;
+    }
+
+    .DemoPanels > li {
+        width: auto;
+        height: auto;
+    }
+}
+
 .Tutorial-tryit h4 {
     color: var(--highlight-color);
     font-weight: bold;
@@ -593,6 +603,7 @@ footer {
 .Navbar-tinyText {
     display: none;
 }
+
 @media (max-width: 768px) {
     section, section.SideBySide {
         display: block;
@@ -606,10 +617,34 @@ footer {
     .Navbar-tinyText {
         display: block;
         position: absolute;
-        top: 0;
+        top: -1px;
+        padding: 2px;
         text-align: center;
+        background: #eee;
+        width: 100%;
+    }
+
+    .Main--fluid {
+        width: 100vw;
+        padding: 1px;
+    }
+    aside {
+        padding: 1px;
+    }
+
+    p, h1, h2, h3, h4, h5, h6 {
+        padding: 5px;
     }
 }
+
+
+@media (max-height: 600px) {
+    nav.Navbar {
+        /* Turn off sticky for the smallest devices */
+        position: relative;
+    }
+}
+
 
 @media (max-width: 992px) {
     nav.Navbar li {

@@ -77,20 +77,34 @@ normal HTML tag:
   starting with
 [Part 1, Section 2: CParts](https://modulojs.org/docs/tutorial_part1.html#cparts)
 
-
 -----
 
-# Modulo via `create-modulo` on `npm`
+### Modulo SSG
 
-If you prefer the `create-react-app` experience, you can use `create-modulo` as
-such:
+If you prefer using command-line scaffolding tools (e.g., just like `npx
+create-react-app`), or want to use Modulo for a SSG or [JAMStack-style
+app](https://jamstack.org/), Modulo has experimental support for this as well.
+This is experimental because of poor documentation, and an API that is likely
+to change in the future; however, it's already useful for small projects (it
+was used to make [modulojs.org](https://modulojs.org)).
+
+Generate a 3-page sample app by running `create-modulo` as such:
 
 ```bash
 npm init modulo
 ```
 
-Note that the `modulocli` is still under heavy development, and is more poorly
-documented than the rest of Modulo.
+Once created, use `npm start` to run a development server, and `npm run build`
+to SSG and/or server-side render the static site. Note that some version of
+`puppeteer` must be installed and configured for the server-side renderer to
+work.
+
+The server-side rendered version of the site has CSS and JavaScript bundled
+into a single file, and will "hydrate" upon page load, meaning adding
+JavaScript functionality and behavior on top of the "frozen" initial status of
+the HTML, for a very fast load-time. It follows the same behavior as the output
+of the Modulo `bundle` browser console command.
+
 
 -----
 
