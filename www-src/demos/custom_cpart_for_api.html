@@ -12,6 +12,10 @@
 -->
 <template Modulo>
     <Component name="ExampleComponent">
+        <!-- List the API. As we expand on the API, we can provide extra
+        options here to limit it's scope or otherwise configure it between
+        components that may need it. -->
+        <ExampleAPI></ExampleAPI>
         <Template>
             {% if exampleapi.error %}
                 <p><em>Error:</em> {{ exampleapi.error }}</p>
@@ -53,11 +57,6 @@
             comment="The sad catastrophe of my sudden depature and return to Montevideo"
         ></State>
 
-        <!-- Include it. As we expand on the API, we can provide extra options
-        here to limit it's scope or otherwise configure it between components
-        that may need it. -->
-        <ExampleAPI></ExampleAPI>
-
         <Style>
             section {
                 border: 1px solid tomato;
@@ -81,6 +80,9 @@
                 error: null,
                 saveSuccess: null,
                 lastPosted: {},
+                // Expose two methods:
+                refresh: this.refresh.bind(this),
+                submit: this.submit.bind(this),
             };
             // Any data private to each component can be defined here. In
             // this case, we are using it to store away the posts, since
@@ -142,7 +144,7 @@
 </script>
 
 
-<h1>Custom CPart</h1>
+<h1>Custom API CPart Example</h1>
 
 <hr />
 

@@ -269,9 +269,11 @@ div.IndexWrapper mws-Demo {
 
 div.Tagline {
     text-align: center;
+    width: 100%;
 }
 div.Tagline ul {
     max-width: 98vw;
+    width: 560px;
     margin: auto;
 }
 
@@ -280,10 +282,6 @@ div.Tagline ul > li {
     list-style-type: '>>   ';
 }
 @media (min-height: 768px) {
-    div.Tagline ul {
-        margin-top: 50px;
-        width: 560px;
-    }
     div.Tagline ul > li {
         font-size: 1.3rem;
     }
