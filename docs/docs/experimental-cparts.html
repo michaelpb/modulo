@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Experimental CParts - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1e4nds1.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Experimental CParts - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-xj5723r.css"></head><body>
 
 
     
@@ -56,7 +56,7 @@
             <h3><span alt="Lower-case delta">%</span></h3>
             <nav class="TitleAside-navigation">
                 <h3>Documentation</h3>
-                <mws-docsidebar path="experimental-cParts.html" modulo-original-html=""><ul>
+                <mws-docsidebar path="experimental-cparts.html" modulo-original-html=""><ul>
     
         <li class="
             
@@ -147,9 +147,8 @@
 
 <h1>Experimental CParts</h1>
 
-<p>The remaining documentation here is on experimental features for Modulo.
-Experimental features may have incomplete documentation or an API that might
-change drastically in the future.</p>
+<p>NOTE: Most of this API documentation is out of date, and references features
+that will were deleted / never included.</p>
 
 
 
@@ -192,9 +191,9 @@ or <em>Props</em>: Only defined with properties, but no contents.</p>
 
 <mws-demo text="
 <Store
-    name=&quot;userinfo&quot;
+    -name=&quot;userinfo&quot;
     username=&quot;Luiz&quot;
-    faveratenum:=13
+    favenum:=13
 ></Store>
 " modulo-original-html=""><div @mouseenter:="script.rerenderFirstTime" class="demo-wrapper
         
@@ -219,17 +218,21 @@ or <em>Props</em>: Only defined with properties, but no contents.</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
         <div class="editor-wrapper">
-            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 128px; min-width: 189.438px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Store</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">name</span>=<span class="cm-string">"userinfo"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">username</span>=<span class="cm-string">"Luiz"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">faveratenum:</span>=<span class="cm-string">13</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">Store</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 128px;"></div><div class="CodeMirror-gutters" style="display: none; height: 178px;"></div></div></div></div>
+            <div [script.codemirror]="" modulo-ignore=""><div class="CodeMirror cm-s-eclipse" translate="no"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 4px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" readonly="" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true" style="width: 18px; pointer-events: none;"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true" style="height: 18px; pointer-events: none;"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 50px; min-height: 128px; min-width: 199.047px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 24px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">Store</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">-name</span>=<span class="cm-string">"userinfo"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">username</span>=<span class="cm-string">"Luiz"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">    <span class="cm-attribute">favenum:</span>=<span class="cm-string">13</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tag cm-bracket">&gt;&lt;/</span><span class="cm-tag">Store</span><span class="cm-tag cm-bracket">&gt;</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 128px;"></div><div class="CodeMirror-gutters" style="display: none; height: 178px;"></div></div></div></div>
         </div>
 
         
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -338,6 +341,8 @@ of 4 ways:</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -349,6 +354,8 @@ of 4 ways:</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -438,6 +445,8 @@ library file and is shared by components within that file.</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -449,6 +458,8 @@ library file and is shared by components within that file.</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -465,4 +476,4 @@ library file and is shared by components within that file.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-13uhanq.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-1og7744.js"></script></body></html>

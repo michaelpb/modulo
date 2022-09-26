@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Lifecycle - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1e4nds1.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Lifecycle - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-xj5723r.css"></head><body>
 
 
     
@@ -105,15 +105,15 @@
                 
                     <ul>
                     
-                        <li><a href="/docs/lifecycle.html#phases">Lifecycle phases</a>
+                        <li><a href="/docs/lifecycle.html#global">Global lifecycle</a>
                         
                         </li>
                     
-                        <li><a href="/docs/lifecycle.html#factory">Factory lifecycle</a>
+                        <li><a href="/docs/lifecycle.html#global">Component lifecycle</a>
                         
                         </li>
                     
-                        <li><a href="/docs/lifecycle.html#renderobj">renderObj</a>
+                        <li><a href="/docs/lifecycle.html#callbacks">Lifecycle callbacks</a>
                         
                         </li>
                     
@@ -171,9 +171,9 @@ analogy: If CParts are the stage-hands and actors who put on a play, then the
 so on, such that every CPart stage-hand "jumps in" at the right moment to do
 it's job and set up for the next act.</p>
 
-<mws-section name="phases" modulo-original-html="Component lifecycle phases">
-        <a class="secanchor" title="Click to focus on this section." id="phases" name="phases" href="#phases">#</a>
-        <h2>Component lifecycle phases</h2>
+<mws-section name="global" modulo-original-html="Global lifecycle">
+        <a class="secanchor" title="Click to focus on this section." id="global" name="global" href="#global">#</a>
+        <h2>Global lifecycle</h2>
     </mws-section>
 
 <p>Every <em>Component</em> that you define triggers a certain set of lifecycle
@@ -222,7 +222,7 @@ using script tags.</p>
 <p>The factory phase happen <em>once per Component definition</em>. It will
 happen even if the component is never used or instantiated anywhere, but only
 defined. This <code>factory</code> thus happens during the <code>define</code>
-global phase of Modulo.</p>
+global phase of Modulo, and is invoked to prepare the Component definition.</p>
 
 <ul>
     <li><code>factory</code> - Happens while a component is getting defined.
@@ -235,7 +235,12 @@ global phase of Modulo.</p>
 </ul>
 
 
-<h3>Component lifecycle phases: Instantiation and initialization</h3>
+<mws-section name="component" modulo-original-html="Component lifecycle">
+        <a class="secanchor" title="Click to focus on this section." id="component" name="component" href="#component">#</a>
+        <h2>Component lifecycle</h2>
+    </mws-section>
+
+<h3>Construction and initialization lifecycle</h3>
 
 <p>Two methods are triggered when a component is mounted on the
 page:</p>
@@ -253,7 +258,7 @@ page:</p>
 </ul>
 
 
-<h3>Component lifecycle phases: Rendering lifecycle</h3>
+<h3>Rendering lifecycle</h3>
 
 <p>All of 4 these lifecycle phases trigger in the following sequence every time
 a component renders. This including the first time, every manual rerender (e.g.
@@ -279,12 +284,13 @@ don't have a <em>Template</em> CPart defined (although without a
 </ul>
 
 
-<h3>Directive lifecycle phases: Rendering lifecycle</h3>
+<h3>Directives that invoke lifecycle methods</h3>
 
-<p>Directives can also have lifecycle phases. More information on them is <a href="/docs/directives.html">covered in the Directives section</a>. For now,
-we'll look at 2 lifecycle phases that are introduced whenever an event occurs.
-That is, these phases will be available whenever you attach an event, e.g.
-<code>@click</code>.</p>
+<p>Directives can can cause lifecycle phases as well. With the built-in CParts,
+there is only one directive that will trigger any lifecycle phases: The
+<code>event</code> directive (e.g. <code>@click</code>).  More information on
+directives is <a href="/docs/directives.html">covered in the Directives
+section</a>. </p>
 
 <ul>
     <li><code>event</code> - Triggers when an event is about to happen.</li>
@@ -326,10 +332,13 @@ behavior can be controlled from within each CPart factoryCallback itself.</p>
 -->
 
 
-<h3>Callback functions: Hooking into a lifecycle phase</h3>
+<mws-section name="callbacks" modulo-original-html="Lifecycle Callbacks">
+        <a class="secanchor" title="Click to focus on this section." id="callbacks" name="callbacks" href="#callbacks">#</a>
+        <h2>Lifecycle Callbacks</h2>
+    </mws-section>
 
 <p>The purpose of <em>lifecycle phases</em> is the <em>lifecycle methods</em>
-or functions that "hook into" each phase and run during them.</p>
+or callback functions that "hook into" each phase and run during them.</p>
 
 <p>You can get the name for a <em>lifecycle method</em> by simply suffixing the
 name of the phase with the word <code>Callback</code>. For example,
@@ -409,12 +418,21 @@ Open your browser dev console to see messages...
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -442,6 +460,8 @@ Open your browser dev console to see messages...
     </div>
 </div>
 
+
+
 </mws-demo>
 
 
@@ -449,10 +469,8 @@ Open your browser dev console to see messages...
 
 
 
-<mws-section name="renderobj" modulo-original-html="renderObj">
-        <a class="secanchor" title="Click to focus on this section." id="renderobj" name="renderobj" href="#renderobj">#</a>
-        <h2>renderObj</h2>
-    </mws-section>
+<a name="renderobj"></a>
+<h3>renderObj</h3>
 
 <blockquote>
 <p><strong>renderObj is like "req" </strong> -
@@ -576,12 +594,21 @@ Show messages in console</label>
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -607,6 +634,8 @@ Show messages in console</label>
     </div>
 </div>
 
+
+
 </mws-demo>
 
 
@@ -623,4 +652,4 @@ Show messages in console</label>
 
 
 
-<script src="/_modulo/modulo-bundle-10gve62.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-2hk1ec.js"></script></body></html>

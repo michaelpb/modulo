@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Templating - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1e4nds1.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Templating - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-xj5723r.css"></head><body>
 
 
     
@@ -98,6 +98,10 @@
                         </li>
                     
                         <li><a href="/docs/templating.html#comments">Comments</a>
+                        
+                        </li>
+                    
+                        <li><a href="/docs/templating.html#debugging">Debugging</a>
                         
                         </li>
                     
@@ -256,12 +260,21 @@ be explained later in this document.</p>
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -304,6 +317,8 @@ be explained later in this document.</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -392,12 +407,21 @@ follows. Examine the following example:</p>
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -424,6 +448,8 @@ follows. Examine the following example:</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -490,6 +516,8 @@ into the mix as well. As a sneak-peak, examine the following code:</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -501,6 +529,8 @@ into the mix as well. As a sneak-peak, examine the following code:</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -632,6 +662,8 @@ stored as an array of objects within <code>state.athletes</code>:</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -643,6 +675,8 @@ stored as an array of objects within <code>state.athletes</code>:</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -677,6 +711,8 @@ block are displayed:</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -688,6 +724,8 @@ block are displayed:</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -725,6 +763,8 @@ displayed by the {{ state.athletes|length }} variable.</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -736,6 +776,8 @@ displayed by the {{ state.athletes|length }} variable.</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 </div>
@@ -796,12 +838,21 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -828,6 +879,8 @@ looks like: <code>{% comment %}text in here is ignored{% endcomment %}</code></p
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -887,6 +940,8 @@ was used:</p>
 
         
 
+        
+
     </div>
 
     <div class="side-by-side-panes">
@@ -898,6 +953,8 @@ was used:</p>
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -997,12 +1054,21 @@ Examine the code below for a concrete example of how this escaping behaves:</p>
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -1034,6 +1100,8 @@ Examine the code below for a concrete example of how this escaping behaves:</p>
     </div>
 </div>
 
+
+
 </mws-demo>
 
 </slot>
@@ -1049,4 +1117,4 @@ Examine the code below for a concrete example of how this escaping behaves:</p>
 
 
 
-<script src="/_modulo/modulo-bundle-13uhanq.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-1og7744.js"></script></body></html>

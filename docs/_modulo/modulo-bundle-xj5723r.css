@@ -1113,11 +1113,31 @@ a:visited {
   background-image: url(/img/demosmontage.png);
   background-size: 170px 170px;
   background-position: 70px 100px;
-  box-shadow: 0 0 50px 50px inset white; /* extremely subtle shadow */
   text-align: center;
-  padding-top: 90px;
+  padding-top: 60px;
   margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 25px;
+  margin-right: 25px;
+  transition: box-shadow 0.5s;
+  box-shadow: 0 0 50px 50px inset white;
 }
+
+.Docs-demos:hover {
+  box-shadow: none;
+}
+
+.Docs-demos > a::before {
+    content: ' ';
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
 
 .Docs-sideBySide {
     display: grid;
@@ -1461,6 +1481,45 @@ mws-Demo .TabNav-title--selected a {
     color: white !important; /* Why !important ?? TODO */
 }
 
+mws-Demo .Demo-toast {
+    position: fixed;
+    z-index: 400;
+    top: 100px;
+    right: 10px;
+    border: 4px solid black;
+    border-radius: 10px;
+    background: white;
+    width: 400px;
+    max-width: 99vw;
+    box-shadow: 5px 5px 0 0 black,
+                0 0 20px 20px white;
+    overflow: auto;
+}
+
+mws-Demo .Demo-toast > * {
+    margin: 20px;
+}
+mws-Demo .Demo-toast li {
+    list-style-type: decimal;
+    margin-left: 50px;
+}
+
+mws-Demo .Demo-toastButton {
+    position: fixed;
+    top: 110px;
+    right: 20px;
+    border: 1px solid black;
+    border-radius: 2px;
+    background: white;
+    box-shadow: 2px 2px 0 0 black;
+    padding: 5px;
+    text-decoration: none;
+}
+
+mws-Demo .Demo-toastButton:hover {
+    background-color: var(--highlight-color);
+    color: white;
+}
 
 @media (max-width: 992px) {
 mws-Demo .TabNav > ul {

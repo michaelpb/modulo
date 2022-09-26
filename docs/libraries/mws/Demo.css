@@ -190,6 +190,45 @@
     color: white !important; /* Why !important ?? TODO */
 }
 
+.Demo-toast {
+    position: fixed;
+    z-index: 400;
+    top: 100px;
+    right: 10px;
+    border: 4px solid black;
+    border-radius: 10px;
+    background: white;
+    width: 400px;
+    max-width: 99vw;
+    box-shadow: 5px 5px 0 0 black,
+                0 0 20px 20px white;
+    overflow: auto;
+}
+
+.Demo-toast > * {
+    margin: 20px;
+}
+.Demo-toast li {
+    list-style-type: decimal;
+    margin-left: 50px;
+}
+
+.Demo-toastButton {
+    position: fixed;
+    top: 110px;
+    right: 20px;
+    border: 1px solid black;
+    border-radius: 2px;
+    background: white;
+    box-shadow: 2px 2px 0 0 black;
+    padding: 5px;
+    text-decoration: none;
+}
+
+.Demo-toastButton:hover {
+    background-color: var(--highlight-color);
+    color: white;
+}
 
 @media (max-width: 992px) {
     .TabNav > ul {

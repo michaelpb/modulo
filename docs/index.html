@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1e4nds1.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Modulo - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-xj5723r.css"></head><body>
 
 
     
@@ -99,12 +99,21 @@
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -129,6 +138,8 @@
 
     </div>
 </div>
+
+
 
 </mws-demo>
         <!--fromlibrary="Hello,Simple,ToDo,JSON,API,PrimeSieve,Memory"-->
@@ -354,4 +365,4 @@
 
 
 
-<script src="/_modulo/modulo-bundle-13uhanq.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-1og7744.js"></script></body></html>

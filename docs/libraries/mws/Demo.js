@@ -50,6 +50,7 @@ function _setupCodemirrorSync(el, demoType, myElement, myState) {
           myState.showclipboard = true;
       } else if (demoType === 'minipreview') {
           myState.showpreview = true;
+          myState.showcomponentcopy = true;
       }
 
       if (!myElement.codeMirrorEditor) {
@@ -80,9 +81,53 @@ function selectTab(newTitle) {
     doRun();
 }
 
-function doCopy() {
+function toEmbedScript(text, selected) {
+    const indentText = ('\n' + text.trim()).replace(/\n/g, '\n    ');
+
+    // Escape all "script" tags, so it's safe according to HTML syntax:
+    const safeText = indentText.replace(/<script/gi, '<cpart Script')
+                            .replace(/<\/script\s*>/gi, '</cpart>');
+    const componentName = selected || 'Demo';
+    const usage = `<p>Example usage: <x-${componentName}></x-${componentName}></p>`;
+    // Generate pastable snippet
+    const fullText = '<script Modulo src="https://unpkg.com/mdu.js">\n' +
+                      `  <Component name="${ componentName }">` + safeText + '\n' +
+                      '  </Component>\n' +
+                      '</script>' + '\n' + usage;
+    return fullText;
+}
+
+function toEmbedTemplate(text, selected) {
+    const indentText = ('\n' + text.trim()).replace(/\n/g, '\n    ');
+
+    /*const safeText = indentText.replace(/<script/gi, '<cpart Script')
+                            .replace(/<\/script\s*>/gi, '</cpart>');*/
+    const componentName = selected || 'Demo';
+    const usage = `<p>Example usage: <x-${componentName}></x-${componentName}></p>`;
+    // Generate pastable snippet
+    const fullText = '<template Modulo>\n' +
+                      `  <Component name="${ componentName }">` + indentText + '\n' +
+                      '  </Component>\n' +
+                      '</template>\n' +
+                      '<script src="https://unpkg.com/mdu.js"></script>\n' + usage;
+    return fullText;
+}
+
+function doCopy(componentCopy = false) {
     const { copyTextToClipboard } = modulo.registry.utils;
-    copyTextToClipboard(state.text);
+    if (componentCopy) {
+        const fullText = toEmbedTemplate(state.text, state.selected);
+        state.showtoast = true;
+        state.toasttext = fullText;
+        copyTextToClipboard(fullText);
+    } else {
+        copyTextToClipboard(state.text);
+    }
+}
+
+function hideToast() {
+    state.showtoast = false;
+    state.toasttext = '';
 }
 
 function initializedCallback() {
@@ -145,6 +190,7 @@ function initializedCallback() {
         state.showclipboard = true;
     } else if (demoType === 'minipreview') {
         state.showpreview = true;
+        state.showcomponentcopy = true;
     }
 
     state.text = state.tabs[0].text; // load first

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>API &amp; Extension - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1e4nds1.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>API &amp; Extension - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-xj5723r.css"></head><body>
 
 
     
@@ -147,6 +147,10 @@
 
 <h1>API &amp; Extension</h1>
 
+<p>NOTE: Most of this API documentation is out of date, and references features
+that will probably be deleted / never included.</p>
+
+
 <p>This documentation is intended for developers intending to write their own
 <em>CParts</em>, developers looking for deeper customization of Modulo (such as
 using a different templating engine or DOM reconciler), or developers looking
@@ -215,12 +219,21 @@ Modulo.cparts.mycoolpart = MyCoolPart;
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -243,6 +256,8 @@ Modulo.cparts.mycoolpart = MyCoolPart;
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -334,12 +349,21 @@ a {
         
 
         
-            <button class="m-Btn demo-fs-button" title="Toggle full screen view of code" @click:="script.doFullscreen">
+            <button class="m-Btn" title="Copy the code to make this component" @click:="script.doCopy" payload:="true">
+                <span alt="Copy component symbol">‹⬡›</span>
+            </button>&nbsp;
+        
+
+        
+            <!--
+            <button class="m-Btn demo-fs-button"
+                    title="Toggle full screen view of code" @click:=script.doFullscreen>
                 
-                    <span alt="Go Full Screen">↗</span>
+                    <span alt="Go Full Screen">&nearr;</span>
                 
             </button>
             &nbsp;
+            -->
             <button class="m-Btn" title="Run a preview of this code" @click:="script.doRun">
                 Run <span alt="Refresh">⟳</span>
             </button>
@@ -364,6 +388,8 @@ a {
 
     </div>
 </div>
+
+
 
 </mws-demo>
 
@@ -403,4 +429,4 @@ be "squashed" into a single renderObj.</p>
 
 
 
-<script src="/_modulo/modulo-bundle-1ikn5ft.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-15t0647.js"></script></body></html>
