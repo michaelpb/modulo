@@ -10,20 +10,12 @@
 
 <h1>Directives</h1>
 
-
 <p><em>Directives</em> are one of the core features of Modulo. It allows for
 callbacks to be triggered when a particular DOM element is "mounted" or first
 appears in the DOM. It allows for your custom code to access references to DOM
 nodes created after rendering.</p>
 
 <mws-Section name="directives">Introduction to directives</mws-Section>
-
-<blockquote><p><strong>Directives are like "refs"</strong> - Directives have
-the same uses as Refs in <a
-href="https://reactjs.org/docs/refs-and-the-dom.html"
-target="_blank">React</a>: &ldquo;Managing focus, text selection, or media
-playback, triggering imperative animations, or integrating with third-party DOM
-libraries.&rdquo;</p></blockquote>
 
 <p>Every directive has a name. Every directive is specified as an attribute on
 the DOM element that you wish to gain access to, by enclosing the name in
@@ -113,24 +105,82 @@ contents some other way.</p>
 
 <mws-Section name="custom">Custom directives</mws-Section>
 
-<p>Before we dive into custom directives, let's see some pitfalls with using
-directives (such as dataProp) in conjunction with <em>Template</em>
-variables.</p>
 
-<h3>Directives and/or DOM manipulation vs Template variables</h3>
+<blockquote><p><strong>Custom directives are like "refs"</strong> - Directives
+have the same uses as Refs in <a
+href="https://reactjs.org/docs/refs-and-the-dom.html"
+target="_blank">React</a>: &ldquo;Managing focus, text selection, or media
+playback, triggering imperative animations, or integrating with third-party DOM
+libraries.&rdquo;</p></blockquote>
 
-<p>Not sure which to use? Short answer: Templates! Long answer: Directives deal
-with direct DOM references, and thus are almost always messier to use. The <a
-href="/docs/templating.html">design philosophy of Modulo's templating
-system</a> is to generate a string of HTML code as a purposeful limitation
-during the <code>render</code> phase, and thus prevents this messiness with a
-stricter structure.</p>
+<p>Custom directives are used for direct access to the DOM. They are invoked
+when a particular element is first rendered on the screen (<code>Mount</code>),
+invoked when that attribute has any changes (e.g. the value gets changed, also
+<code>Mount</code>), and also invoked when about to be removed from the
+document (<code>Unmount</code>). This allows you to do custom set-up or
+tear-down code for particular elements, such as to attach third-party
+JavaScript frameworks in a convenient manner.</p>
+
+<p>Custom directives can be easily registered in <em>Script</em> CParts simply
+by defining a function with a certain name. For example, for a directive called
+<code>myinput</code> directive, you can create a function called
+<code>function&nbsp;myinputMount(opts)&nbsp;{</code>. A full, working example
+is below, which uses a custom directive to focus on an input when a button is
+clicked:</p>
+
+<p><strong>Example custom directives:</strong></p>
+
+<mws-Demo demotype="minipreview"
+text='
+<Template>
+{# [script.myinput] is a custom directive, defined below #}
+<input [script.myinput] />
+
+{# [component.event] is a built-in directive (shortcut is @) #}
+<button [component.event]click:=script.showInfo>
+    Click me
+</button>
+</Template>
+
+<Script>
+    function myinputMount(mountOptions) {
+        element.inputRef = mountOptions.el;
+        // Try uncommenting the following to see data:
+        //console.log("myinputMount:", mountOptions);
+    }
+    function showInfo(el) {
+        alert("Focusing on:" + String(element.inputRef));
+        element.inputRef.focus();
+    }
+</Script>
+'></mws-Demo>
+
+
+
+<h3>Custom directive pitfalls</h3>
+
+<p>A quick word of caution on custom directives: If you find yourself using
+custom directives to do vanilla JS DOM manipulation often, you are probably
+doing something wrong! They are meant as an "emergency escape hatch" to gain
+access to the DOM underneath, and typically you only use them to integrate with
+other libraries. The most common usage is mixing in older jQuery-style
+libraries that require a reference to a DOM element. In general, it's when you
+run into the limits of what Modulo is capable of doing.</p>
+
+<h4>Directives vs. Templates for manipulating DOM</h4>
+
+<p>Not sure which to use to manipulate the DOM and generate HTML? Short answer:
+Templates! Long answer: Directives deal with direct DOM references, and thus
+are almost always messier to use. Modulo's <a
+href="/docs/templating.html">templating system is designed</a> to generate a
+string of HTML code as a purposeful limitation during the <code>render</code>
+phase, and thus prevents this messiness with a stricter structure.</p>
 
 <p>So, when you can, try to make the DOM the "source of truth", and attach data
-to DOM elements via regular HTML properties (or dataProp properties). In other
-words, avoid using directives too much as an "escape hatch" to vanilla JS DOM
-manipulation. It's a last resort for interoperability as opposed to the
-recommended way of development.</p>
+to DOM elements via regular HTML properties or <code>:=</code>-style dataProp
+properties. In other words, avoid using direct DOM manipulation as your first
+approach, instead only using this "escape hatch" to vanilla JS as a last
+resort.</p>
 
 
 <div class="InfoBox">
@@ -223,40 +273,6 @@ text='
 
 </div>
 
-<p>A quick word of caution on custom directives: If you find yourself using
-custom directives to do vanilla JS DOM manipulation often, you are probably
-doing something wrong! They are meant as an "emergency escape hatch" to gain
-access to the DOM underneath, and typically you only use them to integrate with
-other libraries. The most common usage is mixing in older jQuery-style
-libraries that require a reference to a DOM element. In general, it's when you
-run into the limits of what Modulo is capable of doing.</p>
-
-<p><strong>Example custom directives:</strong></p>
-
-<mws-Demo demotype="minipreview"
-text='
-<Template>
-{# [script.myinput] is a custom directive, defined below #}
-<input [script.myinput] />
-
-{# [component.event] is a built-in directive (shortcut is @) #}
-<button [component.event]click:=script.showInfo>
-    Click me
-</button>
-</Template>
-
-<Script>
-    function myinputMount(mountOptions) {
-        element.inputRef = mountOptions.el;
-        // Try uncommenting the following to see data:
-        //console.log("myinputMount:", mountOptions);
-    }
-    function showInfo(el) {
-        alert("Focusing on:" + String(element.inputRef));
-        element.inputRef.focus();
-    }
-</Script>
-'></mws-Demo>
 
 <!-- TODO The following documentation needs updating once we have a directives
 configuration interface ... -->

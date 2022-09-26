@@ -36,7 +36,15 @@
             </button>
         {% endif %}
 
+        {% if state.showcomponentcopy %}
+            <button class="m-Btn"
+                    title="Copy the code to make this component" @click:=script.doCopy payload:=true>
+                <span alt="Copy component symbol">&lsaquo;&#11041;&rsaquo;</span>
+            </button>&nbsp;
+        {% endif %}
+
         {% if state.showpreview %}
+            <!--
             <button class="m-Btn demo-fs-button"
                     title="Toggle full screen view of code" @click:=script.doFullscreen>
                 {% if state.fullscreen %}
@@ -46,6 +54,7 @@
                 {% endif %}
             </button>
             &nbsp;
+            -->
             <button class="m-Btn"
                     title="Run a preview of this code" @click:=script.doRun>
                 Run <span alt="Refresh">&#10227;</span>
@@ -70,4 +79,27 @@
 
     </div>
 </div>
+
+{% if state.showtoast %}
+    <!--<div class="Demo-toastBackdrop"></div>-->
+    <div class="Demo-toast">
+        <h2>Continue this example locally</h2>
+            <a
+                class="Demo-toastButton"
+                href="#"
+                @click:="script.hideToast"
+            >X</a></h2>
+        <ol>
+            <li>Paste the text into your text editor</li>
+            <li>Save to new ".html" file and/or add to an existing web
+            project</li>
+            <li>View file in your web browser</li>
+            <li>Continue work where you left off!</li>
+        </ol>
+        <span style="float: right" title="The text has already been copied to your clipboard, and is ready to be pasted.">
+            &nbsp;☑ Copied to clipboard!
+        </span>
+        <div style="width: 40%"><textarea>{{ state.toasttext }}</textarea></div>
+    </div>
+{% endif %}
 

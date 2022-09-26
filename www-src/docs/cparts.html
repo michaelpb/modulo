@@ -15,8 +15,10 @@
 <p><strong>Custom CParts?</strong> Here we describe core CParts used by
 component developers, which are sufficient for most common use-cases.
 However, if you are instead looking to extend this core functionality with
-custom CParts written in JavaScript, refer to the <a href="/docs/api.html">API
-&amp; Extension documentation</a>.</p>
+custom CParts written in JavaScript, refer to the
+<a href="/demos/#experiments">Custom Component Part examples on the demos
+page</a>, at least until more thorough CPart API documentation is
+developed.</p>
 </blockquote>
 
 <p>The central concept to Modulo is that of <em>Component Parts</em>. Because
@@ -326,308 +328,7 @@ definition and use of the component.
 -->
 
 
-<mws-Section name="template">Template</mws-Section>
-
-<p>The <em>Template</em> CPart allow components to render their HTML content
-using a small domain-specific language, called the "templating engine". The
-default engine is the <em>Modulo templating language</em> (aka "MTL"), although
-that can be configured on a per-CPart basis.</p>
-
-<p>Without a <em>Template</em> CPart (or equivalent custom code), the default
-behavior of the <em>Component</em> CPart is to make no attempt to alter their
-contents. However, most components require complicated HTML structures within
-them. This is where Templates come into play: They generate the
-<code>innerHTML</code> of a component.</p>
-
-<p>Templates are not DOM-based, but instead render synchronously to a String
-during the <code>render</code> <a
-href="/docs/directives.html#lifecycle">lifecycle phase</a>, and store the
-results in <code>renderObj.component.innerHTML</code>. The <em>Component</em>
-CPart will read this HTML code during the <code>reconcile</code> phase and then
-"reconcile", modify it's contents to resemble the target innerHTML. (More on
-this is in <a href="#component">the Component CPart documentation
-above</a>.)</p>
-
-
-<p>Every time a Component renders, the Template will render using the
-<em>renderObj</em> as a "template context", or, in other words, using the
-various CPart's contributions to the <em>renderObj</em> as Template variables
-that can be inserted into the HTML.  For more discussion of Template, see
-<a href="/docs/tutorial_part2.html#templating">Tutorial Part 2</a>.</p>
-
-
-
-<mws-Section name="state">State</mws-Section>
-
-<p>The <em>State</em> is for component instances to store changing data. This
-could include anything from text a user entered into a form, data received from
-an API, or data that represents UI flow changes, such as the visibility of a
-modal. For more discussion of State, see <a
-href="/docs/tutorial_part3.html#state">Tutorial Part 3</a>.</p>
-
-<p>State data is unique to every component instance, and components can never
-directly access each-others data. It is possible to indirectly reference it,
-however, by passing state data from a "parent" component to a "child"
-components within the parent by passing it via a <em>Props</em> attribute. In
-this case, the data should be considered read-only to the child component, like
-any other <em>Props</em> data. If you want to share data between components
-globally, such that any component can modify the data causing a re-render to
-all linked components, such as user log-in information or global state data,
-you should consider the <a href="#store">Store CPart (not yet implemented)</a>.</p>
-
-
-<h3>Definition</h3>
-
-<p>State is traditionally included in Component definitions below the
-<em>Template</em> tag, but above the <em>Script</em> tag. This makes sense
-because functions in the <em>Script</em> tag typically manipulate state in
-order to render new HTML in the <em>Template</em>, making <em>Script</em> a
-sort of mutable bridge between <em>Script</em> and <em>Template</em>. State is
-defined in a similar way to Props: Only defined with properties, but no
-contents.</p>
-
-<p>See below for an example of defining a <em>State</em> CPart:</p>
-
-<mws-Demo
-text='
-<!-- Example 1: Two variables specified -->
-<State
-    name="Luiz"
-    faveratenum:=13
-></State>
-
-<!-- Example 2: Many variables of different types -->
-<State
-    color="blue"      (String)
-    count:=1          (Number)
-    ready:=true       (Boolean)
-    speed:=null       (null value)
-    items:=&apos;[         (JSON Array)
-        "abc",
-        "def"
-    ]&apos;
-    data_obj:=&apos;{      (JSON Object)
-        "a": "b",
-        "c": "d"
-    }&apos;
-></State>
-'></mws-Demo>
-
-<p>Note that all "state variables" <em>must</em> have an initial value. It's
-okay to make the initial value be <code>null</code> (as in the "speed" example
-above), or other some placeholder that will later be replaced.</p>
-
-
-<h3>CPart properties</h3>
-
-<p>The actual data in a <em>State</em> CPart is stored on it's "data" property.
-This property is a regular JavaScript Object, and thus can store any JavaScript
-data type.  As an example, in a <em>Script</em> CPart, you can directly
-reference this property with the code <code>cparts.state.data</code>.</p>
-
-<p>When writing the <em>State</em> CPart definition, you must declare or
-pre-define each "state variable" or property of the "data" Object that you want
-to use. It is not permitted to create new state variables later on. In other
-words, if you only define <code>cparts.state.data</code> as having
-<code>.count</code> and <code>.title</code> as "state variables" (aka
-properties of the "data" Object), then an attempt like
-<code>cparts.state.data.newstuff = 10;</code> may result in an error.  If you
-are dealing with a situation where you have an unknown quantity of data, such
-as from an API, the correct approach is to store it all within a nested Object
-<em>inside</em> the state data Object, e.g. such as an
-<code>data.apiResults</code> Object or Array. Unlike top-level "state
-variables", it's okay to add properties, modify, or build upon nested
-Objects.</p>
-
-<p>While it's allowed to assign any arbitrary reference as a <em>State</em>
-variable, including complex, unserializable types such as function callbacks,
-it's highly recommended to try to keep it to primitive and serializable types
-as much as possible (e.g. String, Number, Boolean, Array, Object). The reason
-being that there may be future features or third-party add-ons for
-<em>State</em> which will only support primitive types (as an example, that
-would be required to save state to localStorage). If you want to store
-functions, consider using a <code>prepareCallback</code> to generate the
-functions within a Script context, and only store the data needed to "generate"
-the function in the state (as opposed to storing a direct reference to the
-function itself).</p>
-
-
-
-<h3>renderObj</h3>
-
-<p>State contributes it's current data values to the renderObj. Examples:<p>
-
-<ul>
-    <li>State initialized like: <code>&lt;State&nbsp;name="Luiz"&gt;</code> will be
-    accessible on the renderObj like <code>renderObj.state.name</code>, and in
-    the Script or Template CParts like <code>state.name</code>.</li>
-
-    <li>State initialized like: <code>&lt;State stuff:='["a", "b"]'&gt;</code>
-    will be accessible on the renderObj like <code>renderObj.state.info</code>
-    (with individual items accessed with code that ends with
-    "<code>.stuff[0]</code>"), and in the Script or Template CParts like
-    <code>state.info</code>.</li>
-</ul>
-
-
-
-<h3>Directives</h3>
-
-<p>State provides a single directive:</p>
-
-<ul>
-    <li><code>[state.bind]</code> - Two-way binding with State data, with the
-    key determined by the <code>name=</code> property of whatever it is
-    attached to.  You can attach a <code>[state.bind]</code> directive to any
-    HTML <code>&lt;input&gt;</code>, and the <em>State</em> CPart's two-way
-    binding will cause the input value to be updated if the state variable ever
-    changes, and if a user edits the input triggering a <code>"keyup"</code> or
-    <code>"change"</code> event, the state variable will be updated (along
-    with, typically, a re-render of the component).
-
-        <mws-Demo
-            demotype="minipreview"
-            fromlibrary="Tutorial_P3_state_bind"
-        ></mws-Demo>
-
-    </li>
-</ul>
-
-<!-- 
-    <h3>Example</h3>
-    TODO: Replace with simpler one
--->
-
-
-<mws-Section name="staticdata">StaticData</mws-Section>
-
-<p>The <em>StaticData</em> CPart is useful for loading JSON files to use as a
-data source. StaticData has no "refresh" capability, meaning this should only
-consist data that you do not expect to change while running your program, such
-as type definitions or data from a API that does not change frequently.</p>
-
-<h3>Usage</h3>
-
-<p>The StaticData CPart can be used in two different ways. The most common is
-loading data from a JSON file or JSON API by specifying a <code>src=</code>
-attribute. During development, this will "fetch" when refreshing the page, but
-once you "build" the component using <code>build()</code> or
-<code>bundle()</code>, the JSON file or JSON-based API will no longer be
-fetched.  When using <code>build()</code> or <code>bundle()</code>, the
-specified content will be "frozen in time" during the build, and bundled in
-with the resulting JS file.</p>
-
-<p>The other usage is to simply "hardcode" the data in JSON syntax within the
-element itself. There is no functional difference of including data in JSON
-syntax in a StaticData CPart to simply adding a Script CPart that uses
-<code>script.exports</code> to expose data, other than it being slightly more
-convenience (e.g. less typing), and intentionally less flexible compared to a
-script CPart.</p>
-
-<p>Note: Currently, StaticData supports JavaScript Object syntax by default,
-NOT JSON syntax. This default might change in the future, to only strictly
-support JSON (e.g., require double-quotes, error on trailing commas), offering
-the looser structure.</p>
-
-<h3>attrs</h3>
-
-<ul>
-    <li><code>src</code> - Just like any other CParts, the <code>src=</code>
-    attribute lets you load the content from another URL.
-    This could be from an API (e.g. something like
-    <code>src="https://some.api.com/v1/getdata?p=3"</code>), or for loading
-    from a file (e.g.  <code>src="./data/weatherData.json"</code>), or for
-    loading from a file. If not specified, then the data must be specified
-    within the StaticData tag, or else it will be simply "undefined".</li>
-
-    <li><code>transform</code> - This optional attribute can be set to a
-    function (e.g.  using <code>:=</code> data-prop syntax) that takes a single
-    string as input (the original data) and outputs a single string (the
-    transformed data), which should be a valid JavaScript expression that will
-    result in the data format that you want. Generally, this JavaScript
-    expression should be JS primitives, such as in JSON format. This happens
-    before build() and bundle(), meaning it this JS expression will be what
-    gets included in the built JS file.  By default, no transformation is done,
-    and the input is expected to already be valid JSON to be inserted
-    verbatim.</li>
-</ul>
-
-
-<h3>renderObj</h3>
-
-<p>The StaticData CPart exposes it's data directly (e.g. so it can be accessed
-in Script, Template, etc).</p>
-
-
-<h3>Usage Example</h3>
-<p>Examine the following examples for ideas on how to use StaticData:</p>
-<br />
-<mws-Demo
-demotype="minipreview"
-ttitle="Package.json"
-text='
-<!-- Load package.json file directly from GitHub -->
-<Template>
-    {{ staticdata.name }} v{{ staticdata.version }}
-    (by {{ staticdata.author }})
-</Template>
-<StaticData
-    -src="https://raw.githubusercontent.com/michaelpb/modulo/main/package.json"
-></StaticData>
-'
-ttitle2="FromAPI"
-text2='
-<Template>
-    <table>
-    {% for item in staticdata %}
-        <tr>
-            <td>#{{ item.userId }}</td>
-            <td>{{ item.title|truncate:5 }}</td>
-            <td>{{ item.body|truncate:10 }}</td>
-        </tr>
-    {% endfor %}
-    </table>
-</Template>
-<!-- Load 100 items of sample data from a
-     JSON placeholder website "typicode" -->
-<StaticData
-    -src="https://jsonplaceholder.typicode.com/posts"
-></StaticData>
-'
-ttitle3="EmbeddedData"
-text3='
-<Template>
-    {% for item in staticdata %}
-        <label>
-          <img src="{{ item.thumbnailUrl }}" />
-          <tt>#{{ item.id }}</tt>
-          {{ item.title|truncate }}
-        </label>
-    {% endfor %}
-</Template>
-<!-- Hardcode lorem ipsum / sample data -->
-<StaticData>
-[
-  {
-    "id": 1,
-    "title": "accusamus beatae ad facilis cum similique qui sunt",
-    "url": "https://via.placeholder.com/600/92c952",
-    "thumbnailUrl": "https://via.placeholder.com/150/92c952"
-  },
-  {
-    "id": 2,
-    "title": "reprehenderit est deserunt velit ipsam",
-    "url": "https://via.placeholder.com/600/771796",
-    "thumbnailUrl": "https://via.placeholder.com/150/771796"
-  }
-]
-</StaticData>
-'
-></mws-Demo>
-
-
 <mws-Section name="script">Script</mws-Section>
-
 
 <blockquote><p><strong>Custom vs Script CPart</strong> - The general rule of
 thumb is that <em>Script</em> tags are for custom, component-specific behavior,
@@ -920,6 +621,275 @@ text='
 </ul>
 
 
+<mws-Section name="state">State</mws-Section>
+
+<p>The <em>State</em> is for component instances to store changing data. This
+could include anything from text a user entered into a form, data received from
+an API, or data that represents UI flow changes, such as the visibility of a
+modal. For more discussion of State, see <a
+href="/docs/tutorial_part3.html#state">Tutorial Part 3</a>.</p>
+
+<p>State data is unique to every component instance, and components can never
+directly access each-others data. It is possible to indirectly reference it,
+however, by passing state data from a "parent" component to a "child"
+components within the parent by passing it via a <em>Props</em> attribute. In
+this case, the data should be considered read-only to the child component, like
+any other <em>Props</em> data. If you want to share data between components
+globally, such that any component can modify the data causing a re-render to
+all linked components, such as user log-in information or global state data,
+you should consider the <a href="#store">Store CPart (not yet implemented)</a>.</p>
+
+
+<h3>Definition</h3>
+
+<p>State is traditionally included in Component definitions below the
+<em>Template</em> tag, but above the <em>Script</em> tag. This makes sense
+because functions in the <em>Script</em> tag typically manipulate state in
+order to render new HTML in the <em>Template</em>, making <em>Script</em> a
+sort of mutable bridge between <em>Script</em> and <em>Template</em>. State is
+defined in a similar way to Props: Only defined with properties, but no
+contents.</p>
+
+<p>See below for an example of defining a <em>State</em> CPart:</p>
+
+<mws-Demo
+text='
+<!-- Example 1: Two variables specified -->
+<State
+    name="Luiz"
+    favenum:=13
+></State>
+
+<!-- Example 2: Many variables of different types -->
+<State
+    color="blue"      (String)
+    count:=1          (Number)
+    ready:=true       (Boolean)
+    speed:=null       (null value)
+    items:=&apos;[         (JSON Array)
+        "abc",
+        "def"
+    ]&apos;
+    data_obj:=&apos;{      (JSON Object)
+        "a": "b",
+        "c": "d"
+    }&apos;
+></State>
+'></mws-Demo>
+
+<p>Note that all "state variables" <em>must</em> have an initial value. It's
+okay to make the initial value be <code>null</code> (as in the "speed" example
+above), or other some placeholder that will later be replaced.</p>
+
+
+<h3>CPart properties</h3>
+
+<p>The actual data in a <em>State</em> CPart is stored on it's "data" property.
+This property is a regular JavaScript Object, and thus can store any JavaScript
+data type.  As an example, in a <em>Script</em> CPart, you can directly
+reference this property with the code <code>cparts.state.data</code>.</p>
+
+<p>When writing the <em>State</em> CPart definition, you must declare or
+pre-define each "state variable" or property of the "data" Object that you want
+to use. It is not permitted to create new state variables later on. In other
+words, if you only define <code>cparts.state.data</code> as having
+<code>.count</code> and <code>.title</code> as "state variables" (aka
+properties of the "data" Object), then an attempt like
+<code>cparts.state.data.newstuff = 10;</code> may result in an error.  If you
+are dealing with a situation where you have an unknown quantity of data, such
+as from an API, the correct approach is to store it all within a nested Object
+<em>inside</em> the state data Object, e.g. such as an
+<code>data.apiResults</code> Object or Array. Unlike top-level "state
+variables", it's okay to add properties, modify, or build upon nested
+Objects.</p>
+
+<p>While it's allowed to assign any arbitrary reference as a <em>State</em>
+variable, including complex, unserializable types such as function callbacks,
+it's highly recommended to try to keep it to primitive and serializable types
+as much as possible (e.g. String, Number, Boolean, Array, Object). The reason
+being that there may be future features or third-party add-ons for
+<em>State</em> which will only support primitive types (as an example, that
+would be required to save state to localStorage). If you want to store
+functions, consider using a <code>prepareCallback</code> to generate the
+functions within a Script context, and only store the data needed to "generate"
+the function in the state (as opposed to storing a direct reference to the
+function itself).</p>
+
+
+
+<h3>renderObj</h3>
+
+<p>State contributes it's current data values to the renderObj. Examples:<p>
+
+<ul>
+    <li>State initialized like: <code>&lt;State&nbsp;name="Luiz"&gt;</code> will be
+    accessible on the renderObj like <code>renderObj.state.name</code>, and in
+    the Script or Template CParts like <code>state.name</code>.</li>
+
+    <li>State initialized like: <code>&lt;State stuff:='["a", "b"]'&gt;</code>
+    will be accessible on the renderObj like <code>renderObj.state.info</code>
+    (with individual items accessed with code that ends with
+    "<code>.stuff[0]</code>"), and in the Script or Template CParts like
+    <code>state.info</code>.</li>
+</ul>
+
+
+
+<h3>Directives</h3>
+
+<p>State provides a single directive:</p>
+
+<ul>
+    <li><code>[state.bind]</code> - Two-way binding with State data, with the
+    key determined by the <code>name=</code> property of whatever it is
+    attached to.  You can attach a <code>[state.bind]</code> directive to any
+    HTML <code>&lt;input&gt;</code>, and the <em>State</em> CPart's two-way
+    binding will cause the input value to be updated if the state variable ever
+    changes, and if a user edits the input triggering a <code>"keyup"</code> or
+    <code>"change"</code> event, the state variable will be updated (along
+    with, typically, a re-render of the component).
+
+        <mws-Demo
+            demotype="minipreview"
+            fromlibrary="Tutorial_P3_state_bind"
+        ></mws-Demo>
+
+    </li>
+</ul>
+
+<!-- 
+    <h3>Example</h3>
+    TODO: Replace with simpler one
+-->
+
+
+<mws-Section name="staticdata">StaticData</mws-Section>
+
+<p>The <em>StaticData</em> CPart is useful for loading JSON files to use as a
+data source. StaticData has no "refresh" capability, meaning this should only
+consist data that you do not expect to change while running your program, such
+as type definitions or data from a API that does not change frequently.</p>
+
+<h3>Usage</h3>
+
+<p>The StaticData CPart can be used in two different ways. The most common is
+loading data from a JSON file or JSON API by specifying a <code>src=</code>
+attribute. During development, this will "fetch" when refreshing the page, but
+once you "build" the component using <code>build()</code> or
+<code>bundle()</code>, the JSON file or JSON-based API will no longer be
+fetched.  When using <code>build()</code> or <code>bundle()</code>, the
+specified content will be "frozen in time" during the build, and bundled in
+with the resulting JS file.</p>
+
+<p>The other usage is to simply "hardcode" the data in JSON syntax within the
+element itself. There is no functional difference of including data in JSON
+syntax in a StaticData CPart to simply adding a Script CPart that uses
+<code>script.exports</code> to expose data, other than it being slightly more
+convenience (e.g. less typing), and intentionally less flexible compared to a
+script CPart.</p>
+
+<p>Note: Currently, StaticData supports JavaScript Object syntax by default,
+NOT JSON syntax. This default might change in the future, to only strictly
+support JSON (e.g., require double-quotes, error on trailing commas), offering
+the looser structure.</p>
+
+<h3>attrs</h3>
+
+<ul>
+    <li><code>src</code> - Just like any other CParts, the <code>src=</code>
+    attribute lets you load the content from another URL.
+    This could be from an API (e.g. something like
+    <code>src="https://some.api.com/v1/getdata?p=3"</code>), or for loading
+    from a file (e.g.  <code>src="./data/weatherData.json"</code>), or for
+    loading from a file. If not specified, then the data must be specified
+    within the StaticData tag, or else it will be simply "undefined".</li>
+
+    <li><code>transform</code> - This optional attribute can be set to a
+    function (e.g.  using <code>:=</code> data-prop syntax) that takes a single
+    string as input (the original data) and outputs a single string (the
+    transformed data), which should be a valid JavaScript expression that will
+    result in the data format that you want. Generally, this JavaScript
+    expression should be JS primitives, such as in JSON format. This happens
+    before build() and bundle(), meaning it this JS expression will be what
+    gets included in the built JS file.  By default, no transformation is done,
+    and the input is expected to already be valid JSON to be inserted
+    verbatim.</li>
+</ul>
+
+
+<h3>renderObj</h3>
+
+<p>The StaticData CPart exposes it's data directly (e.g. so it can be accessed
+in Script, Template, etc).</p>
+
+
+<h3>Usage Example</h3>
+<p>Examine the following examples for ideas on how to use StaticData:</p>
+<br />
+<mws-Demo
+demotype="minipreview"
+ttitle="Package.json"
+text='
+<!-- Load package.json file directly from GitHub -->
+<Template>
+    {{ staticdata.name }} v{{ staticdata.version }}
+    (by {{ staticdata.author }})
+</Template>
+<StaticData
+    -src="https://raw.githubusercontent.com/michaelpb/modulo/main/package.json"
+></StaticData>
+'
+ttitle2="FromAPI"
+text2='
+<Template>
+    <table>
+    {% for item in staticdata %}
+        <tr>
+            <td>#{{ item.userId }}</td>
+            <td>{{ item.title|truncate:5 }}</td>
+            <td>{{ item.body|truncate:10 }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+</Template>
+<!-- Load 100 items of sample data from a
+     JSON placeholder website "typicode" -->
+<StaticData
+    -src="https://jsonplaceholder.typicode.com/posts"
+></StaticData>
+'
+ttitle3="EmbeddedData"
+text3='
+<Template>
+    {% for item in staticdata %}
+        <label>
+          <img src="{{ item.thumbnailUrl }}" />
+          <tt>#{{ item.id }}</tt>
+          {{ item.title|truncate }}
+        </label>
+    {% endfor %}
+</Template>
+<!-- Hardcode lorem ipsum / sample data -->
+<StaticData>
+[
+  {
+    "id": 1,
+    "title": "accusamus beatae ad facilis cum similique qui sunt",
+    "url": "https://via.placeholder.com/600/92c952",
+    "thumbnailUrl": "https://via.placeholder.com/150/92c952"
+  },
+  {
+    "id": 2,
+    "title": "reprehenderit est deserunt velit ipsam",
+    "url": "https://via.placeholder.com/600/771796",
+    "thumbnailUrl": "https://via.placeholder.com/150/771796"
+  }
+]
+</StaticData>
+'
+></mws-Demo>
+
+
 <mws-Section name="style">Style</mws-Section>
 
 <p>The <em>Style</em> CPart allows us to write CSS for our component. This
@@ -935,7 +905,7 @@ than prefixing or scoping CSS.</p>
 <p>In general, you can freely write any number of CSS rules for your
 components. They will be prefixed based on a few regular expression replacement
 steps, such that they only apply to the elements within your component. For
-example, a rule like <code>a&nsp;{&nsp;color:&nsbsp;blue&nbsp;}</code> in a
+example, a rule like <code>a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code> in a
 component named <code>name="HelloBtn"</code> that has been imported with
 <code>namespace="mylib"</code> would result in the following, fully-prefixed
 rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
@@ -945,13 +915,12 @@ rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
 <ul>
     <li><code>:host</code> - Use the ":host" pseudo-element to select the
     component itself. This will work for both "regular" and "shadow" rendering
-    mode. For example, in regular rendering mode, if you have a button called
-    For example, a rule like
-    <code>:host&nsp;{&nsp;color:&nsbsp;red&nbsp;}</code> in a component named
+    mode. For example, in regular rendering mode, if you have the CSS
+    <code>:host&nbsp;{&nbsp;color:&nbsp;red&nbsp;}</code> in a component named
     <code>name="MyChart"</code> that has been imported with
-    <code>namespace="mws"</code> would result in the following, fully-prefixed
-    rule:
-    <code>mws-MyChart&nbsp;{&nbsp;color:&nbsp;red&nbsp;}</code></li>
+    <code>namespace="mylib"</code>, then it would create the following,
+    fully-prefixed CSS rule:
+    <code>mylib-MyChart&nbsp;{&nbsp;color:&nbsp;red&nbsp;}</code></li>
 
     <li><strong>Shadow vs regular DOM</strong> - By default, components have
     "regular" rendering mode. If you've configured your component to instead
@@ -971,6 +940,36 @@ rule: <code>mylib-HelloBtn&nbsp;a&nbsp;{&nbsp;color:&nbsp;blue&nbsp;}</code></p>
     fromlibrary="Tutorial_P1"
 ></mws-Demo>
 
+
+
+<mws-Section name="template">Template</mws-Section>
+
+<p>The <em>Template</em> CPart allow components to render their HTML content
+using a small domain-specific language, called the "templating engine". The
+default engine is the <em>Modulo templating language</em> (aka "MTL"), although
+that can be configured on a per-CPart basis.</p>
+
+<p>Without a <em>Template</em> CPart (or equivalent custom code), the default
+behavior of the <em>Component</em> CPart is to make no attempt to alter their
+contents. However, most components require complicated HTML structures within
+them. This is where Templates come into play: They generate the
+<code>innerHTML</code> of a component.</p>
+
+<p>Templates are not DOM-based, but instead render synchronously to a String
+during the <code>render</code> <a
+href="/docs/directives.html#lifecycle">lifecycle phase</a>, and store the
+results in <code>renderObj.component.innerHTML</code>. The <em>Component</em>
+CPart will read this HTML code during the <code>reconcile</code> phase and then
+"reconcile", modify it's contents to resemble the target innerHTML. (More on
+this is in <a href="#component">the Component CPart documentation
+above</a>.)</p>
+
+
+<p>Every time a Component renders, the Template will render using the
+<em>renderObj</em> as a "template context", or, in other words, using the
+various CPart's contributions to the <em>renderObj</em> as Template variables
+that can be inserted into the HTML.  For more discussion of Template, see
+<a href="/docs/tutorial_part2.html#templating">Tutorial Part 2</a>.</p>
 
 
 
