@@ -1,6 +1,6 @@
 <!DOCTYPE HTML><html><head>
 
-<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Lifecycle - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-c3kis7.css"></head><body>
+<meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"><title>Lifecycle - modulojs.org</title><link rel="stylesheet" href="/_modulo/modulo-bundle-x1e4nds1.css"></head><body>
 
 
     
@@ -33,7 +33,7 @@
     <div class="Navbar-rightInfo">
         
         
-            v: 0.0.10<br>
+            v: 0.0.13<br>
             <!--SLOC: undefined lines<br />-->
             <a href="https://github.com/michaelpb/modulo/">github</a> |
             <a href="https://www.npmjs.com/package/mdu.js">npm mdu.js</a>
@@ -165,9 +165,6 @@
 
 <h1>Lifecycle</h1>
 
-<p>TODO: This page is not yet updated to the new structure of
-<code>prebuild</code> <code>define</code> then <code>factory</code>.</p>
-
 <p>Every Modulo Component goes through a certain "lifecycle". Here's an
 analogy: If CParts are the stage-hands and actors who put on a play, then the
 "lifecycle" is the pre-described arrangement of each "act", intermission, and
@@ -192,7 +189,7 @@ perform the render based on the variables in the previous phase, and
 output of the previous phase.</p>
 
 
-<h3>Modulo lifecycle phases</h3>
+<h3>Global Modulo lifecycle phases</h3>
 
 <p>These phases happen <em>once per CPart definition</em>. These will happen
 even if the component is never used or instantiated anywhere, but only defined
@@ -200,18 +197,19 @@ and loaded. They are intended for setting up the component "definition" (data
 structure blueprint for component instances).</p>
 
 <ul>
-    <li><code>prebuild</code> - A stage for prebuild processing of data. This is for
-    static analysis and similar pre-processing. Note that if Modulo components
-    are built or cached, or if they are ever pre-compiled into a single JS file, this
-    <code>prebuild</code> phase happens BEFORE saving, and thus gets "baked-in".
-    This means that the results of a <code>prebuild</code> phase must be
-    "serializable", such as in a JSON format.  Note that this happens after
-    conf preprocessors, meaning it will already have things like
-    <code>-src=</code> resolved for you. This is also when you want to define
-    any assets for the asset manager, such as JS functions or CSS.</li>
+    <li><code>prebuild</code> - A stage for prebuild processing of data. This
+    is for static analysis and similar pre-processing. Note that if Modulo
+    components are built or cached, or if they are ever pre-compiled into a
+    single JS file, this <code>prebuild</code> phase happens BEFORE saving, and
+    thus gets "baked-in".  This means that the results of a
+    <code>prebuild</code> phase must be "serializable", such as in a JSON
+    format.  Note that this happens after <code>confPreprocessors</code>,
+    meaning it will already have things like <code>-src=</code> resolved for
+    you. This is also when you want to define any assets for the asset manager,
+    such as JS functions or CSS.</li>
 
     <li><code>define</code> - Use this to actually define and register
-    compoenents, or run global script tags. This happens after the
+    Components, or run global script tags. This happens after the
     <code>prebuild</code>, but before the component is used.</li>
 </ul>
 
@@ -223,48 +221,61 @@ using script tags.</p>
 
 <p>The factory phase happen <em>once per Component definition</em>. It will
 happen even if the component is never used or instantiated anywhere, but only
-defined.</p>
+defined. This <code>factory</code> thus happens during the <code>define</code>
+global phase of Modulo.</p>
 
 <ul>
     <li><code>factory</code> - Happens while a component is getting defined.
     This happens after the <code>prebuild</code> and <code>define</code> phases,
     but before the component is used.  Unlike the <code>prebuild</code> and
     <code>define</code> phases, <code>factory</code> happens after the page
-    loads, and thus does not need to generate any sort of serializeable or
-    asset-manager based results.</li>
+    loads, and thus has no restrictions on what it does or generate. (E.g. it's
+    output does <em>not</em> need to be serializeable, since it will be run
+    after built JS files as well).</li>
 </ul>
 
 
-<h3>Component lifecycle phases: Instantiation</h3>
+<h3>Component lifecycle phases: Instantiation and initialization</h3>
 
-<p>Currently, only one lifecycle phase is triggered when a component is mounted
-on the page.</p>
+<p>Two methods are triggered when a component is mounted on the
+page:</p>
 <ul>
-    <li><code>initialized</code> - happens once per instance, every time a
-    component is instantiated or mounted (i.e. used) on a page. Useful for
-    fetching or setting up initial data on a component, as all the component
-    will be fully ready for use at this point.</li>
+    <li><em>constructor()</em> - While technically not a lifecycle method, the
+    constructor() method will be invoked when creating an instance of the CPart
+    class. This happens <em>before</em> the Component's HTML Element is
+    guaranteed to be fully loaded on the DOM.</li>
+    <li><code>initialized</code> - Happens once per instance, every time a
+    component is fully mounted (i.e. used) on a page, but before the first
+    render. Useful for fetching or setting up initial data on a component, as
+    all the component will be fully ready for use at this point. Note that this
+    will only be invoked after the initial DOM is fully loaded, but before the
+    <em>prepare</em> of the first rerender (described below).</li>
 </ul>
 
 
 <h3>Component lifecycle phases: Rendering lifecycle</h3>
 
 <p>All of 4 these lifecycle phases trigger in the following sequence every time
-a component renders.  This including the first time, every manual rerender
-(e.g. invoking <code>element.rerender()</code>), and ever automatic rerender
-(e.g. after events or state manipulation). These will phases even trigger if
-you don't have a <em>Template</em> CPart defined, although without a
-<em>Template</em> there will be nothing to render.</p>
+a component renders. This including the first time, every manual rerender (e.g.
+invoking <code>element.rerender()</code>), and ever automatic rerender (e.g.
+after events or state manipulation). These will phases even trigger if you
+don't have a <em>Template</em> CPart defined (although without a
+<em>Template</em> there will be nothing to render, <em>per se</em>).</p>
 
 <ul>
     <li><code>prepare</code> - Gather data needed before rendering (e.g. gather
-    variables for template)</li>
-    <li><code>render</code> - Use the Template to render HTML code</li>
-    <li><code>reconcile</code> - Compares the new rendered HTML to the DOM, and
-    generates a "patch-set" or array of operations necessary to reconcile the
-    DOM to the new HTML</li>
-    <li><code>update</code> - Applies the "patches" generated in the previous
-    step, actually modifying the DOM and invoking directives</li>
+    variables for template). Return values from here to have "computed
+    variables" within the Template and Script code.</li>
+    <li><code>render</code> - The Template CPart will use this phase to to
+    render HTML code from the template specified
+    (by setting <code>renderObj.component.innerHTML</code></li>
+    <li><code>reconcile</code> - The Component CPart will compare the new
+    rendered HTML to the DOM, and generates a "patch-set" or array of
+    operations necessary to reconcile the DOM to the new HTML (by setting
+    <code>renderObj.component.patches</code>)</li>
+    <li><code>update</code> - Finally, the Component will apply the patch-set
+    generated in the previous step, actually modifying the DOM and invoking any
+    directive callbacks specified</li>
 </ul>
 
 
@@ -315,28 +326,28 @@ behavior can be controlled from within each CPart factoryCallback itself.</p>
 -->
 
 
-<h3>Hooking into a lifecycle phase</h3>
+<h3>Callback functions: Hooking into a lifecycle phase</h3>
 
 <p>The purpose of <em>lifecycle phases</em> is the <em>lifecycle methods</em>
 or functions that "hook into" each phase and run during them.</p>
 
 <p>You can get the name for a <em>lifecycle method</em> by simply suffixing the
 name of the phase with the word <code>Callback</code>. For example,
-<code>prepare</code> thus becomes <code>function prepareCallback() {...</code>.
-Every CPart has the ability to hook into lifecycle methods by defining a method
-with an expected name. This is useful for CPart developers to implement the
-actual behavior and functionality of a CPart. In fact, most of CPart code is
-just hooking into these different methods!</p>
+<code>prepare</code> thus becomes
+<code>function&nbsp;prepareCallback()&nbsp;{...</code>.  Every CPart has the
+ability to hook into lifecycle methods by defining a method with an expected
+name. This is useful for CPart developers to implement the actual behavior and
+functionality of a CPart. In fact, most of CPart code is just hooking into
+these different methods!</p>
 
 <p>The <em>Script</em> CPart also exposes this interface to component
 developers. This is so that you can write custom code in each component to
-execute during any one of the phases. Note that you cannot hook into Group 1
-phases this way, since those need to happen before your script tag is even
-ready (in fact, it's the <code>factoryCallback</code> of <em>Script</em> that
-hooks your custom methods into the component lifecycle).</p>
+execute during any one of the phases. Note that you cannot hook into the global
+phases (e.g., prebuild, define, factory) this way, since those need to happen
+before your script tag is even ready.</p>
 
-<p>Directives also have callback functions, <a href="#directives">covered
-in a later section</a>.</p>
+<p>Directives also have callback functions, <a href="/docs/directives.html">covered in a
+the directive section</a>.</p>
 
 <p><strong>Try it out below:</strong></p>
 
@@ -452,11 +463,10 @@ They prepare it for the controller functions that accept it as an argument, by
 attaching data and injecting dependencies.  For a concrete example, enabling
 Express's JSON parsing middleware adds the <code>req.json</code> attribute to
 request objects, for parsing of JSON data.</p>
-<p>This is what inspired the
-<code>renderObj</code>: It's a plain object that gets passed along throughout
-<em>all</em> of the lifecycle phases (including the factory callback!). All the
-CParts, much like middleware, work together to construct it and make it ready
-for component developers.</p>
+<p>This is what inspired the <code>renderObj</code>, which is a plain object
+that gets passed along throughout the lifecycle phases. The Component Parts act
+just like middleware in other web frameworks: Work together to construct the
+<code>renderObj</code> for users of the framework.</p>
 </blockquote>
 
 <p>So far in this document, we covered how lifecycle methods are central to
@@ -613,4 +623,4 @@ Show messages in console</label>
 
 
 
-<script src="/_modulo/modulo-bundle-x3d55uu.js"></script></body></html>
+<script src="/_modulo/modulo-bundle-10gve62.js"></script></body></html>
