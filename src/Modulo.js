@@ -1631,9 +1631,10 @@ modulo.config.templater.filters = (function () {
 })();
 
 modulo.config.templater.tags = {
+    'debugger': () => 'debugger;',
     'if': (text, tmplt) => {
         // Limit to 3 (L/O/R)
-        const [lHand, op, rHand] = tmplt.parseCondExpr(text);
+        const [ lHand, op, rHand ] = tmplt.parseCondExpr(text);
         const condStructure = !op ? 'X' : tmplt.opAliases[op] || `X ${op} Y`;
         const condition = condStructure.replace(/([XY])/g,
             (k, m) => tmplt.parseExpr(m === 'X' ? lHand : rHand));

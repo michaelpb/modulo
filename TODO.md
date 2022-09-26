@@ -65,8 +65,15 @@ possibly implement "Config" concept
         - This would allow <x-Page ....>{% if blahblah %} .... {% endif %} stuff
     - Better yet: Compile includes as separate Templaters, so that they
       generate different hashed functions
+- Nice to have CPart notes
+    - Possibly, in order to have complete functionality without any
+      asynchronous code, add a Fetch CPart (that saves to State), and a Timer
+      CPart (which can do both setTimeout and setInterval)
+    - Then, Script tags can be purely synchronous even with core Modulo.js
+
 
 ----
+
 
 
 # (OLD) Final steps for alpha documentation launch:

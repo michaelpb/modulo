@@ -217,9 +217,11 @@ aside:last-of-type {
 a {
     color: #000;
 }
+
 a:visited {
     color: #666;
 }
+
 
 @media (max-width: 992px) {
     nav.Navbar li {
@@ -293,7 +295,7 @@ h1.Tagline-title {
     line-height: 1.0;
     /*font-weight: lighter;*/
     font-weight: 800; /* heavy if possible */
-    margin-left: 10px; /* off-center looks better */
+    margin-left: 20px; /* off-center looks better */
     /*letter-spacing: 10px;*/
     /*color: black;*/
     /*color: var(--highlight-color);*/
@@ -304,6 +306,10 @@ h1.Tagline-title {
     */
     /* extremely subtle shadow */
     color: black;
+}
+
+h1.Tagline-title > span {
+    color: var(--highlight-color);
 }
 
 .Tagline-logoimg {
