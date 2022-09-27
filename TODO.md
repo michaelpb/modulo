@@ -44,8 +44,8 @@ possibly implement "Config" concept
 
 ## Documentation new features
 
-- Make Demo.js better
-- Copy button
+- (DONE!) Make Demo.js better
+- (DONE!) Copy button
 
 ## New features
 
