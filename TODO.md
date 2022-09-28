@@ -50,7 +50,7 @@ possibly implement "Config" concept
 ## New features
 
 - Fixed build / definition ordering system
-    - Finish "register=" Script syntax
+    - Finish "register=" Script syntax (New idea to fix: See "Config" notes below)
     - Fix build system to "record" invocations
     - Ideas on recording and building:
         - Generate the build file separately just based on hashes, and then put
@@ -94,6 +94,27 @@ possibly implement "Config" concept
       CPart (which can do both setTimeout and setInterval)
     - Then, Script tags can be purely synchronous even with core Modulo.js
 
+
+----
+
+## New feature / register= fix
+
+A solution to script ordering and registration, and configuration, all in one:
+- Config CPart ".invokes()" during prebuild phase, so it's invocations will be
+  before everything else (including component parsing, etc)
+    - So, you can do:
+
+        <script Config>
+            class MyCPart () { }
+            modulo.register('cpart', MyCPart);
+        </script>
+
+- It's props could just get sett'ed to the "modulo.config." object, but that's
+  not as important as now (since you can also do modulo.config.xyz = 'yz' etc)
+- This also allows for the original goal of Library / Config -src insertion for
+  overwriting private configs! (The main form of configuration / patching of
+  sub-libraries)
+- Config CPart "invokes" during prebuild phase
 
 ----
 

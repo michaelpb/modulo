@@ -130,8 +130,8 @@ window.Modulo = class Modulo {
                     continue; // Skip if obj has not registered callback
                 }
                 const isType = ({ Type }) => Type === typeName;
-                const defConf = this.config[typeName.toLowerCase()];
-                const confs = defArray ? defArray.filter(isType) : [ defConf ];
+                const defaultConf = this.config[typeName.toLowerCase()];
+                const confs = defArray ? defArray.filter(isType) : [ defaultConf ];
                 for (const conf of confs) {
                     patches.push([ lcObj[typeName], methodName, conf ]);
                 }
@@ -295,6 +295,7 @@ modulo.register('cpart', class Component {
         const cpartNameString = Array.from(cpartTypes).join(', ');
 
         const code = (`
+            modulo = currentModulo;// HAX XXX
             const { ${ cpartNameString } } = modulo.registry.cparts;
             const confArray = modulo.defs['${ FullName }'];
 
@@ -328,7 +329,12 @@ modulo.register('cpart', class Component {
         //const defsCode = `currentModulo.defs['${ FullName }'] = ` + JSON.stringify(conf, null, 1);
         //const defsCode = `currentModulo.parentDefs['${ FullName }'] = ` + JSON.stringify(conf, null, 1);
         const exCode = `currentModulo.assets.functions['${ FuncDefHash }']`;
-        modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
+        //modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
+        if (!FuncDefHash) {
+            console.warn('Empty component specified:', FullName);
+            return;
+        }
+        modulo.assets.invoke(FuncDefHash, [ conf.TagName ]);
     }
 
     /*
@@ -855,6 +861,7 @@ modulo.register('core', class AssetManager {
         this.modulo = modulo;
         this.functions = {};
         this.stylesheets = {};
+        this.invocations = [];
         // TODO: rawAssets and rawAssetsArray are both likely dead code!
         this.rawAssets = { js: {}, css: {} };
         this.rawAssetsArray = { js: [], css: [] };
@@ -891,6 +898,22 @@ modulo.register('core', class AssetManager {
             this.rawAssetsArray.css.push(text);
             this.appendToHead('style', text);
         }
+    }
+
+    invoke(hash, args) {
+        this.invocations.push([ hash, JSON.stringify(args) ]);
+        args.push(this.modulo); // TODO: need to standardize Modulo dependency injection patterns
+        this.functions[hash].apply(window, args);
+    }
+
+    getInlineJS(opts) {
+        // TODO: XXX Fix currentModulo -> modulo
+        let text = 'var _X = currentModulo.assets.invoke.bind(currentModulo.assets);\n';
+        for (const [ hash, argStr ] of this.invocations) {
+            //text += `try { _X('${ hash }', ${ argStr }); } catch (e) { console.log('${ hash } - ERROR:', e); }\n`;
+            text += `_X('${ hash }', ${ argStr });\n`;
+        }
+        return text;
     }
 
     runInline(funcText) {
@@ -1192,23 +1215,30 @@ modulo.register('cpart', class Script {
             modulo.assets.runInline(`modulo.register("${ conf.register }", ` +
                 `${ exCode }.call(window, currentModulo).${ conf.registerName });\n`);
             delete conf.Hash; // prevent getting run again
+            conf._HackHashDeleted = 'conf.register + ' + conf.Hash;
         }
     }
 
     static defineCallback(modulo, conf) {
         // XXX -- HAX
-        if (!conf.Parent || conf.Parent === 'x_x' && conf.Hash) {
+        if (!conf.Parent || (conf.Parent === 'x_x' && conf.Hash)) {
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
             // TODO: Refactor:
             // NOTE: Uses "window" as "this." context for better compat
             modulo.assets.runInline(`${ exCode }.call(window, currentModulo);\n`);
             // currentModulo.registry.cparts.Script.require);\n`);
             delete conf.Hash; // prevent getting run again
+            conf._HackHashDeleted = '!conf.Parent + ' + conf.Hash;
         }
     }
 
     static factoryCallback(renderObj, conf, modulo) {
         const { Content, Hash, localVars } = conf;
+        if (!(Hash in modulo.assets.functions)) {
+            // debugger;
+            console.log('ERROR: Could not find Hash:', conf, renderObj);
+            return {};
+        }
         const func = modulo.assets.functions[Hash];
         // Now, actually run code in Script tag to do factory method
         //const results = func.call(null, modulo, this.require || null);
@@ -2118,6 +2148,7 @@ modulo.register('command', function build (modulo, opts = {}) {
     }
     opts.jsFilePath = modulo.assets.build('js', opts, pre.js.join('\n'));
     opts.cssFilePath = modulo.assets.build('css', opts, pre.css.join('\n'));
+    opts.jsInlineText = modulo.assets.getInlineJS(opts);
     opts.htmlFilePath = buildhtml(modulo, opts);
     setTimeout(() => {
         document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
@@ -2150,16 +2181,20 @@ modulo.register('util', function getBuiltHTML(modulo, opts = {}) {
             elem.setAttribute('modulo-original-html', elem.originalHTML);
         }
     }
+    // TODO: Generate in a template of some sort instead!
     const linkProps = { rel: 'stylesheet', href: opts.cssFilePath };
     doc.head.append(Object.assign(doc.createElement('link'), linkProps));
     const scriptProps = { src: opts.jsFilePath };
     doc.body.append(Object.assign(doc.createElement('script'), scriptProps));
+    const inlineProps = { textContent: opts.jsInlineText };
+    doc.body.append(Object.assign(doc.createElement('script'), inlineProps));
+    //let inlineExtra = '<script>\n' + (opts.jsInlineText || '') + '\n</script>';
     return '<!DOCTYPE HTML><html>' + doc.documentElement.innerHTML + '</html>';
 });
 
 modulo.register('command', function buildhtml(modulo, opts = {}) {
     const { saveFileAs, getBuiltHTML } = modulo.registry.utils;
-    const filename = window.location.pathname.split('/').pop();
+    const filename = window.location.pathname.split('/').pop() || 'index.html';
     return saveFileAs(filename, getBuiltHTML(modulo, opts));
 });
 
@@ -2294,7 +2329,8 @@ currentModulo.defs = {
     "state",
     "element",
     "cparts"
-   ]
+   ],
+   "_HackHashDeleted": "!conf.Parent + undefined"
   },
   {
    "Type": "Library",
@@ -2368,7 +2404,7 @@ currentModulo.defs = {
    "FullName": "x_x_x_DemoModal",
    "Hash": "1rpq1pk",
    "TagName": "x-demomodal",
-   "FuncDefHash": "x2c5kmr"
+   "FuncDefHash": "xqf9b9l"
   },
   {
    "Type": "Component",
@@ -2388,7 +2424,7 @@ currentModulo.defs = {
    "FullName": "x_x_x_DemoChart",
    "Hash": "x1sgecs4",
    "TagName": "x-demochart",
-   "FuncDefHash": "xhi756k"
+   "FuncDefHash": "sg83u6"
   },
   {
    "Type": "Component",
@@ -2408,7 +2444,7 @@ currentModulo.defs = {
    "FullName": "x_x_x_ExampleBtn",
    "Hash": "i2kvpp",
    "TagName": "x-examplebtn",
-   "FuncDefHash": "1l6qfun"
+   "FuncDefHash": "x1da3243"
   },
   {
    "Type": "Component",
@@ -2428,7 +2464,7 @@ currentModulo.defs = {
    "FullName": "x_x_x_DemoSelector",
    "Hash": "ripjvb",
    "TagName": "x-demoselector",
-   "FuncDefHash": "xhqlhp0"
+   "FuncDefHash": "x33s3q"
   }
  ],
  "x_x_mws": [
@@ -2450,7 +2486,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_Page",
    "Hash": "x1ekhkl1",
    "TagName": "mws-page",
-   "FuncDefHash": "11r1u8n"
+   "FuncDefHash": "433vtt"
   },
   {
    "Type": "Component",
@@ -2470,7 +2506,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_ProjectInfo",
    "Hash": "18lkdh5",
    "TagName": "mws-projectinfo",
-   "FuncDefHash": "12ib52h"
+   "FuncDefHash": "4mpqrn"
   },
   {
    "Type": "Component",
@@ -2490,7 +2526,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_DevLogNav",
    "Hash": "x1vdla5b",
    "TagName": "mws-devlognav",
-   "FuncDefHash": "x137e220"
+   "FuncDefHash": "x1aqc8h6"
   },
   {
    "Type": "Component",
@@ -2510,7 +2546,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_DocSidebar",
    "Hash": "15strma",
    "TagName": "mws-docsidebar",
-   "FuncDefHash": "58cbmm"
+   "FuncDefHash": "x1juvmkg"
   },
   {
    "Type": "Component",
@@ -2530,7 +2566,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_Demo",
    "Hash": "x1l0sjo3",
    "TagName": "mws-demo",
-   "FuncDefHash": "tfo23q"
+   "FuncDefHash": "x6nt2r0"
   },
   {
    "Type": "Component",
@@ -2550,7 +2586,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_AllExamples",
    "Hash": "x3m56c2",
    "TagName": "mws-allexamples",
-   "FuncDefHash": "1sqbqgf"
+   "FuncDefHash": "xtg6cqb"
   },
   {
    "Type": "Component",
@@ -2570,7 +2606,7 @@ currentModulo.defs = {
    "FullName": "x_x_mws_Section",
    "Hash": "x1d1j0ca",
    "TagName": "mws-section",
-   "FuncDefHash": "x95th48"
+   "FuncDefHash": "l1gr4i"
   }
  ],
  "x_x_docseg": [
@@ -2592,7 +2628,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Templating_1",
    "Hash": "g1ev96",
    "TagName": "docseg-templating_1",
-   "FuncDefHash": "tem87g"
+   "FuncDefHash": "17sct8m"
   },
   {
    "Type": "Component",
@@ -2612,7 +2648,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Templating_PrepareCallback",
    "Hash": "x1u7tsfu",
    "TagName": "docseg-templating_preparecallback",
-   "FuncDefHash": "xlrudii"
+   "FuncDefHash": "1mvqm2k"
   },
   {
    "Type": "Component",
@@ -2632,7 +2668,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Templating_Comments",
    "Hash": "l7svrm",
    "TagName": "docseg-templating_comments",
-   "FuncDefHash": "x1aeo3i6"
+   "FuncDefHash": "x4kk41c"
   },
   {
    "Type": "Component",
@@ -2652,7 +2688,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Templating_Escaping",
    "Hash": "x1ehsatd",
    "TagName": "docseg-templating_escaping",
-   "FuncDefHash": "x1e26h53"
+   "FuncDefHash": "x14uqs09"
   },
   {
    "Type": "Component",
@@ -2672,7 +2708,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Tutorial_P1",
    "Hash": "x51qst3",
    "TagName": "docseg-tutorial_p1",
-   "FuncDefHash": "1o6n832"
+   "FuncDefHash": "xif6qno"
   },
   {
    "Type": "Component",
@@ -2692,7 +2728,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Tutorial_P2",
    "Hash": "1uj7p64",
    "TagName": "docseg-tutorial_p2",
-   "FuncDefHash": "xc0ehd9"
+   "FuncDefHash": "x1c4jlk3"
   },
   {
    "Type": "Component",
@@ -2712,7 +2748,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Tutorial_P2_filters_demo",
    "Hash": "t0upt6",
    "TagName": "docseg-tutorial_p2_filters_demo",
-   "FuncDefHash": "xpc7pf1"
+   "FuncDefHash": "x1gqlqhr"
   },
   {
    "Type": "Component",
@@ -2732,7 +2768,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Tutorial_P3_state_demo",
    "Hash": "1oig15e",
    "TagName": "docseg-tutorial_p3_state_demo",
-   "FuncDefHash": "x1c768lc"
+   "FuncDefHash": "xpmn7oi"
   },
   {
    "Type": "Component",
@@ -2752,7 +2788,7 @@ currentModulo.defs = {
    "FullName": "x_x_docseg_Tutorial_P3_state_bind",
    "Hash": "ngpccm",
    "TagName": "docseg-tutorial_p3_state_bind",
-   "FuncDefHash": "x1c5hgk3"
+   "FuncDefHash": "1sc0e93"
   }
  ],
  "x_x_eg": [
@@ -2774,7 +2810,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_Hello",
    "Hash": "1icoagp",
    "TagName": "eg-hello",
-   "FuncDefHash": "q80evd"
+   "FuncDefHash": "14n8egj"
   },
   {
    "Type": "Component",
@@ -2794,7 +2830,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_Simple",
    "Hash": "xlo7cf3",
    "TagName": "eg-simple",
-   "FuncDefHash": "flqslf"
+   "FuncDefHash": "r5jke9"
   },
   {
    "Type": "Component",
@@ -2814,7 +2850,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_ToDo",
    "Hash": "1k33iqb",
    "TagName": "eg-todo",
-   "FuncDefHash": "3o6a1p"
+   "FuncDefHash": "18e8a6j"
   },
   {
    "Type": "Component",
@@ -2834,7 +2870,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_JSON",
    "Hash": "x11tjlh2",
    "TagName": "eg-json",
-   "FuncDefHash": "181an31"
+   "FuncDefHash": "x1b5e73p"
   },
   {
    "Type": "Component",
@@ -2854,7 +2890,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_JSONArray",
    "Hash": "xcql4f2",
    "TagName": "eg-jsonarray",
-   "FuncDefHash": "qiueia"
+   "FuncDefHash": "x2b520g"
   },
   {
    "Type": "Component",
@@ -2874,7 +2910,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_GitHubAPI",
    "Hash": "x1at59fc",
    "TagName": "eg-githubapi",
-   "FuncDefHash": "1cfomu7"
+   "FuncDefHash": "cd55r1"
   },
   {
    "Type": "Component",
@@ -2894,7 +2930,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_ColorSelector",
    "Hash": "6riop6",
    "TagName": "eg-colorselector",
-   "FuncDefHash": "xc3se4t"
+   "FuncDefHash": "x1ii4dc3"
   },
   {
    "Type": "Component",
@@ -2914,7 +2950,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_DateNumberPicker",
    "Hash": "1i6hhtf",
    "TagName": "eg-datenumberpicker",
-   "FuncDefHash": "1shvmpg"
+   "FuncDefHash": "f4cpaa"
   },
   {
    "Type": "Component",
@@ -2934,7 +2970,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_PrimeSieve",
    "Hash": "1b9a0ql",
    "TagName": "eg-primesieve",
-   "FuncDefHash": "19446pk"
+   "FuncDefHash": "x1g4uuhi"
   },
   {
    "Type": "Component",
@@ -2954,7 +2990,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_Scatter",
    "Hash": "x137bsev",
    "TagName": "eg-scatter",
-   "FuncDefHash": "x1valf8i"
+   "FuncDefHash": "1vfteg8"
   },
   {
    "Type": "Component",
@@ -2974,7 +3010,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_FlexibleForm",
    "Hash": "x4vivet",
    "TagName": "eg-flexibleform",
-   "FuncDefHash": "11ghnqa"
+   "FuncDefHash": "1ns7ff4"
   },
   {
    "Type": "Component",
@@ -2994,7 +3030,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_FlexibleFormWithAPI",
    "Hash": "x1sg84mj",
    "TagName": "eg-flexibleformwithapi",
-   "FuncDefHash": "x1v0ancm"
+   "FuncDefHash": "x1m1b3bs"
   },
   {
    "Type": "Component",
@@ -3014,7 +3050,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_Components",
    "Hash": "xeg9s6i",
    "TagName": "eg-components",
-   "FuncDefHash": "1b0pe68"
+   "FuncDefHash": "8bv8j2"
   },
   {
    "Type": "Component",
@@ -3034,7 +3070,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_OscillatingGraph",
    "Hash": "ugu6po",
    "TagName": "eg-oscillatinggraph",
-   "FuncDefHash": "1np8jbm"
+   "FuncDefHash": "x7jhpv4"
   },
   {
    "Type": "Component",
@@ -3054,7 +3090,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_Search",
    "Hash": "10mu0ht",
    "TagName": "eg-search",
-   "FuncDefHash": "x2lqenq"
+   "FuncDefHash": "xlrsjv0"
   },
   {
    "Type": "Component",
@@ -3074,7 +3110,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_SearchBox",
    "Hash": "ljc2i4",
    "TagName": "eg-searchbox",
-   "FuncDefHash": "5hvec0"
+   "FuncDefHash": "x1jlcjv6"
   },
   {
    "Type": "Component",
@@ -3094,7 +3130,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_WorldMap",
    "Hash": "xn1lri6",
    "TagName": "eg-worldmap",
-   "FuncDefHash": "x4dmr4r"
+   "FuncDefHash": "x14gac81"
   },
   {
    "Type": "Component",
@@ -3114,7 +3150,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_Memory",
    "Hash": "14schu5",
    "TagName": "eg-memory",
-   "FuncDefHash": "xrqe02h"
+   "FuncDefHash": "4ita9"
   },
   {
    "Type": "Component",
@@ -3134,7 +3170,7 @@ currentModulo.defs = {
    "FullName": "x_x_eg_ConwayGameOfLife",
    "Hash": "x1ketdcf",
    "TagName": "eg-conwaygameoflife",
-   "FuncDefHash": "xairn07"
+   "FuncDefHash": "xao68n1"
   }
  ],
  "x_x_x_DemoModal": [
@@ -4094,7 +4130,7 @@ currentModulo.defs = {
    "DefName": null,
    "Name": "x",
    "FullName": "x_x_eg_JSON_x",
-   "Hash": "v2hmca"
+   "Hash": "1rl6enq"
   }
  ],
  "x_x_eg_JSONArray": [
@@ -4861,7 +4897,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_x_DemoModal",
   "Hash": "1rpq1pk",
   "TagName": "x-demomodal",
-  "FuncDefHash": "x2c5kmr"
+  "FuncDefHash": "xqf9b9l"
  },
  "x_x_x_DemoChart": {
   "Type": "Component",
@@ -4881,7 +4917,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_x_DemoChart",
   "Hash": "x1sgecs4",
   "TagName": "x-demochart",
-  "FuncDefHash": "xhi756k"
+  "FuncDefHash": "sg83u6"
  },
  "x_x_x_ExampleBtn": {
   "Type": "Component",
@@ -4901,7 +4937,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_x_ExampleBtn",
   "Hash": "i2kvpp",
   "TagName": "x-examplebtn",
-  "FuncDefHash": "1l6qfun"
+  "FuncDefHash": "x1da3243"
  },
  "x_x_x_DemoSelector": {
   "Type": "Component",
@@ -4921,7 +4957,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_x_DemoSelector",
   "Hash": "ripjvb",
   "TagName": "x-demoselector",
-  "FuncDefHash": "xhqlhp0"
+  "FuncDefHash": "x33s3q"
  },
  "x_x_mws_Page": {
   "Type": "Component",
@@ -4941,7 +4977,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_Page",
   "Hash": "x1ekhkl1",
   "TagName": "mws-page",
-  "FuncDefHash": "11r1u8n"
+  "FuncDefHash": "433vtt"
  },
  "x_x_mws_ProjectInfo": {
   "Type": "Component",
@@ -4961,7 +4997,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_ProjectInfo",
   "Hash": "18lkdh5",
   "TagName": "mws-projectinfo",
-  "FuncDefHash": "12ib52h"
+  "FuncDefHash": "4mpqrn"
  },
  "x_x_mws_DevLogNav": {
   "Type": "Component",
@@ -4981,7 +5017,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_DevLogNav",
   "Hash": "x1vdla5b",
   "TagName": "mws-devlognav",
-  "FuncDefHash": "x137e220"
+  "FuncDefHash": "x1aqc8h6"
  },
  "x_x_mws_DocSidebar": {
   "Type": "Component",
@@ -5001,7 +5037,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_DocSidebar",
   "Hash": "15strma",
   "TagName": "mws-docsidebar",
-  "FuncDefHash": "58cbmm"
+  "FuncDefHash": "x1juvmkg"
  },
  "x_x_mws_Demo": {
   "Type": "Component",
@@ -5021,7 +5057,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_Demo",
   "Hash": "x1l0sjo3",
   "TagName": "mws-demo",
-  "FuncDefHash": "tfo23q"
+  "FuncDefHash": "x6nt2r0"
  },
  "x_x_mws_AllExamples": {
   "Type": "Component",
@@ -5041,7 +5077,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_AllExamples",
   "Hash": "x3m56c2",
   "TagName": "mws-allexamples",
-  "FuncDefHash": "1sqbqgf"
+  "FuncDefHash": "xtg6cqb"
  },
  "x_x_mws_Section": {
   "Type": "Component",
@@ -5061,7 +5097,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_mws_Section",
   "Hash": "x1d1j0ca",
   "TagName": "mws-section",
-  "FuncDefHash": "x95th48"
+  "FuncDefHash": "l1gr4i"
  },
  "x_x_docseg_Templating_1": {
   "Type": "Component",
@@ -5081,7 +5117,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Templating_1",
   "Hash": "g1ev96",
   "TagName": "docseg-templating_1",
-  "FuncDefHash": "tem87g"
+  "FuncDefHash": "17sct8m"
  },
  "x_x_docseg_Templating_PrepareCallback": {
   "Type": "Component",
@@ -5101,7 +5137,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Templating_PrepareCallback",
   "Hash": "x1u7tsfu",
   "TagName": "docseg-templating_preparecallback",
-  "FuncDefHash": "xlrudii"
+  "FuncDefHash": "1mvqm2k"
  },
  "x_x_docseg_Templating_Comments": {
   "Type": "Component",
@@ -5121,7 +5157,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Templating_Comments",
   "Hash": "l7svrm",
   "TagName": "docseg-templating_comments",
-  "FuncDefHash": "x1aeo3i6"
+  "FuncDefHash": "x4kk41c"
  },
  "x_x_docseg_Templating_Escaping": {
   "Type": "Component",
@@ -5141,7 +5177,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Templating_Escaping",
   "Hash": "x1ehsatd",
   "TagName": "docseg-templating_escaping",
-  "FuncDefHash": "x1e26h53"
+  "FuncDefHash": "x14uqs09"
  },
  "x_x_docseg_Tutorial_P1": {
   "Type": "Component",
@@ -5161,7 +5197,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Tutorial_P1",
   "Hash": "x51qst3",
   "TagName": "docseg-tutorial_p1",
-  "FuncDefHash": "1o6n832"
+  "FuncDefHash": "xif6qno"
  },
  "x_x_docseg_Tutorial_P2": {
   "Type": "Component",
@@ -5181,7 +5217,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Tutorial_P2",
   "Hash": "1uj7p64",
   "TagName": "docseg-tutorial_p2",
-  "FuncDefHash": "xc0ehd9"
+  "FuncDefHash": "x1c4jlk3"
  },
  "x_x_docseg_Tutorial_P2_filters_demo": {
   "Type": "Component",
@@ -5201,7 +5237,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Tutorial_P2_filters_demo",
   "Hash": "t0upt6",
   "TagName": "docseg-tutorial_p2_filters_demo",
-  "FuncDefHash": "xpc7pf1"
+  "FuncDefHash": "x1gqlqhr"
  },
  "x_x_docseg_Tutorial_P3_state_demo": {
   "Type": "Component",
@@ -5221,7 +5257,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Tutorial_P3_state_demo",
   "Hash": "1oig15e",
   "TagName": "docseg-tutorial_p3_state_demo",
-  "FuncDefHash": "x1c768lc"
+  "FuncDefHash": "xpmn7oi"
  },
  "x_x_docseg_Tutorial_P3_state_bind": {
   "Type": "Component",
@@ -5241,7 +5277,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_docseg_Tutorial_P3_state_bind",
   "Hash": "ngpccm",
   "TagName": "docseg-tutorial_p3_state_bind",
-  "FuncDefHash": "x1c5hgk3"
+  "FuncDefHash": "1sc0e93"
  },
  "x_x_eg_Hello": {
   "Type": "Component",
@@ -5261,7 +5297,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_Hello",
   "Hash": "1icoagp",
   "TagName": "eg-hello",
-  "FuncDefHash": "q80evd"
+  "FuncDefHash": "14n8egj"
  },
  "x_x_eg_Simple": {
   "Type": "Component",
@@ -5281,7 +5317,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_Simple",
   "Hash": "xlo7cf3",
   "TagName": "eg-simple",
-  "FuncDefHash": "flqslf"
+  "FuncDefHash": "r5jke9"
  },
  "x_x_eg_ToDo": {
   "Type": "Component",
@@ -5301,7 +5337,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_ToDo",
   "Hash": "1k33iqb",
   "TagName": "eg-todo",
-  "FuncDefHash": "3o6a1p"
+  "FuncDefHash": "18e8a6j"
  },
  "x_x_eg_JSON": {
   "Type": "Component",
@@ -5321,7 +5357,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_JSON",
   "Hash": "x11tjlh2",
   "TagName": "eg-json",
-  "FuncDefHash": "181an31"
+  "FuncDefHash": "x1b5e73p"
  },
  "x_x_eg_JSONArray": {
   "Type": "Component",
@@ -5341,7 +5377,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_JSONArray",
   "Hash": "xcql4f2",
   "TagName": "eg-jsonarray",
-  "FuncDefHash": "qiueia"
+  "FuncDefHash": "x2b520g"
  },
  "x_x_eg_GitHubAPI": {
   "Type": "Component",
@@ -5361,7 +5397,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_GitHubAPI",
   "Hash": "x1at59fc",
   "TagName": "eg-githubapi",
-  "FuncDefHash": "1cfomu7"
+  "FuncDefHash": "cd55r1"
  },
  "x_x_eg_ColorSelector": {
   "Type": "Component",
@@ -5381,7 +5417,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_ColorSelector",
   "Hash": "6riop6",
   "TagName": "eg-colorselector",
-  "FuncDefHash": "xc3se4t"
+  "FuncDefHash": "x1ii4dc3"
  },
  "x_x_eg_DateNumberPicker": {
   "Type": "Component",
@@ -5401,7 +5437,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_DateNumberPicker",
   "Hash": "1i6hhtf",
   "TagName": "eg-datenumberpicker",
-  "FuncDefHash": "1shvmpg"
+  "FuncDefHash": "f4cpaa"
  },
  "x_x_eg_PrimeSieve": {
   "Type": "Component",
@@ -5421,7 +5457,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_PrimeSieve",
   "Hash": "1b9a0ql",
   "TagName": "eg-primesieve",
-  "FuncDefHash": "19446pk"
+  "FuncDefHash": "x1g4uuhi"
  },
  "x_x_eg_Scatter": {
   "Type": "Component",
@@ -5441,7 +5477,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_Scatter",
   "Hash": "x137bsev",
   "TagName": "eg-scatter",
-  "FuncDefHash": "x1valf8i"
+  "FuncDefHash": "1vfteg8"
  },
  "x_x_eg_FlexibleForm": {
   "Type": "Component",
@@ -5461,7 +5497,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_FlexibleForm",
   "Hash": "x4vivet",
   "TagName": "eg-flexibleform",
-  "FuncDefHash": "11ghnqa"
+  "FuncDefHash": "1ns7ff4"
  },
  "x_x_eg_FlexibleFormWithAPI": {
   "Type": "Component",
@@ -5481,7 +5517,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_FlexibleFormWithAPI",
   "Hash": "x1sg84mj",
   "TagName": "eg-flexibleformwithapi",
-  "FuncDefHash": "x1v0ancm"
+  "FuncDefHash": "x1m1b3bs"
  },
  "x_x_eg_Components": {
   "Type": "Component",
@@ -5501,7 +5537,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_Components",
   "Hash": "xeg9s6i",
   "TagName": "eg-components",
-  "FuncDefHash": "1b0pe68"
+  "FuncDefHash": "8bv8j2"
  },
  "x_x_eg_OscillatingGraph": {
   "Type": "Component",
@@ -5521,7 +5557,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_OscillatingGraph",
   "Hash": "ugu6po",
   "TagName": "eg-oscillatinggraph",
-  "FuncDefHash": "1np8jbm"
+  "FuncDefHash": "x7jhpv4"
  },
  "x_x_eg_Search": {
   "Type": "Component",
@@ -5541,7 +5577,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_Search",
   "Hash": "10mu0ht",
   "TagName": "eg-search",
-  "FuncDefHash": "x2lqenq"
+  "FuncDefHash": "xlrsjv0"
  },
  "x_x_eg_SearchBox": {
   "Type": "Component",
@@ -5561,7 +5597,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_SearchBox",
   "Hash": "ljc2i4",
   "TagName": "eg-searchbox",
-  "FuncDefHash": "5hvec0"
+  "FuncDefHash": "x1jlcjv6"
  },
  "x_x_eg_WorldMap": {
   "Type": "Component",
@@ -5581,7 +5617,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_WorldMap",
   "Hash": "xn1lri6",
   "TagName": "eg-worldmap",
-  "FuncDefHash": "x4dmr4r"
+  "FuncDefHash": "x14gac81"
  },
  "x_x_eg_Memory": {
   "Type": "Component",
@@ -5601,7 +5637,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_Memory",
   "Hash": "14schu5",
   "TagName": "eg-memory",
-  "FuncDefHash": "xrqe02h"
+  "FuncDefHash": "4ita9"
  },
  "x_x_eg_ConwayGameOfLife": {
   "Type": "Component",
@@ -5621,7 +5657,7 @@ currentModulo.parentDefs = {
   "FullName": "x_x_eg_ConwayGameOfLife",
   "Hash": "x1ketdcf",
   "TagName": "eg-conwaygameoflife",
-  "FuncDefHash": "xairn07"
+  "FuncDefHash": "xao68n1"
  },
  "x_x_x_DemoModal_x": {
   "Type": "Style",
@@ -5892,7 +5928,7 @@ currentModulo.parentDefs = {
   "DefName": null,
   "Name": "x",
   "FullName": "x_x_eg_JSON_x",
-  "Hash": "v2hmca"
+  "Hash": "1rl6enq"
  },
  "x_x_eg_JSONArray_x": {
   "Type": "StaticData",
@@ -20530,8 +20566,9 @@ return { "toggle": typeof toggle !== "undefined" ? toggle : undefined,
 "countNeighbors": typeof countNeighbors !== "undefined" ? countNeighbors : undefined,
  setLocalVariable: __set, exports: script.exports}
 };
-currentModulo.assets.functions["x2c5kmr"]= function (tagName, modulo){
+currentModulo.assets.functions["xqf9b9l"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_x_DemoModal'];
 
@@ -20555,8 +20592,9 @@ currentModulo.assets.functions["x2c5kmr"]= function (tagName, modulo){
     return DemoModal;
 
 };
-currentModulo.assets.functions["xhi756k"]= function (tagName, modulo){
+currentModulo.assets.functions["sg83u6"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_x_DemoChart'];
 
@@ -20580,8 +20618,9 @@ currentModulo.assets.functions["xhi756k"]= function (tagName, modulo){
     return DemoChart;
 
 };
-currentModulo.assets.functions["1l6qfun"]= function (tagName, modulo){
+currentModulo.assets.functions["x1da3243"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_x_ExampleBtn'];
 
@@ -20605,8 +20644,9 @@ currentModulo.assets.functions["1l6qfun"]= function (tagName, modulo){
     return ExampleBtn;
 
 };
-currentModulo.assets.functions["xhqlhp0"]= function (tagName, modulo){
+currentModulo.assets.functions["x33s3q"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_x_DemoSelector'];
 
@@ -20630,8 +20670,9 @@ currentModulo.assets.functions["xhqlhp0"]= function (tagName, modulo){
     return DemoSelector;
 
 };
-currentModulo.assets.functions["11r1u8n"]= function (tagName, modulo){
+currentModulo.assets.functions["433vtt"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Style, Template, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_Page'];
 
@@ -20655,8 +20696,9 @@ currentModulo.assets.functions["11r1u8n"]= function (tagName, modulo){
     return Page;
 
 };
-currentModulo.assets.functions["12ib52h"]= function (tagName, modulo){
+currentModulo.assets.functions["4mpqrn"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, StaticData, Template } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_ProjectInfo'];
 
@@ -20680,8 +20722,9 @@ currentModulo.assets.functions["12ib52h"]= function (tagName, modulo){
     return ProjectInfo;
 
 };
-currentModulo.assets.functions["x137e220"]= function (tagName, modulo){
+currentModulo.assets.functions["x1aqc8h6"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, State, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_DevLogNav'];
 
@@ -20705,8 +20748,9 @@ currentModulo.assets.functions["x137e220"]= function (tagName, modulo){
     return DevLogNav;
 
 };
-currentModulo.assets.functions["58cbmm"]= function (tagName, modulo){
+currentModulo.assets.functions["x1juvmkg"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_DocSidebar'];
 
@@ -20730,8 +20774,9 @@ currentModulo.assets.functions["58cbmm"]= function (tagName, modulo){
     return DocSidebar;
 
 };
-currentModulo.assets.functions["tfo23q"]= function (tagName, modulo){
+currentModulo.assets.functions["x6nt2r0"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_Demo'];
 
@@ -20755,8 +20800,9 @@ currentModulo.assets.functions["tfo23q"]= function (tagName, modulo){
     return Demo;
 
 };
-currentModulo.assets.functions["1sqbqgf"]= function (tagName, modulo){
+currentModulo.assets.functions["xtg6cqb"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_AllExamples'];
 
@@ -20780,8 +20826,9 @@ currentModulo.assets.functions["1sqbqgf"]= function (tagName, modulo){
     return AllExamples;
 
 };
-currentModulo.assets.functions["x95th48"]= function (tagName, modulo){
+currentModulo.assets.functions["l1gr4i"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Props, Template, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_mws_Section'];
 
@@ -20805,8 +20852,9 @@ currentModulo.assets.functions["x95th48"]= function (tagName, modulo){
     return Section;
 
 };
-currentModulo.assets.functions["tem87g"]= function (tagName, modulo){
+currentModulo.assets.functions["17sct8m"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Templating_1'];
 
@@ -20830,8 +20878,9 @@ currentModulo.assets.functions["tem87g"]= function (tagName, modulo){
     return Templating_1;
 
 };
-currentModulo.assets.functions["xlrudii"]= function (tagName, modulo){
+currentModulo.assets.functions["1mvqm2k"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Templating_PrepareCallback'];
 
@@ -20855,8 +20904,9 @@ currentModulo.assets.functions["xlrudii"]= function (tagName, modulo){
     return Templating_PrepareCallback;
 
 };
-currentModulo.assets.functions["x1aeo3i6"]= function (tagName, modulo){
+currentModulo.assets.functions["x4kk41c"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Templating_Comments'];
 
@@ -20880,8 +20930,9 @@ currentModulo.assets.functions["x1aeo3i6"]= function (tagName, modulo){
     return Templating_Comments;
 
 };
-currentModulo.assets.functions["x1e26h53"]= function (tagName, modulo){
+currentModulo.assets.functions["x14uqs09"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Templating_Escaping'];
 
@@ -20905,8 +20956,9 @@ currentModulo.assets.functions["x1e26h53"]= function (tagName, modulo){
     return Templating_Escaping;
 
 };
-currentModulo.assets.functions["1o6n832"]= function (tagName, modulo){
+currentModulo.assets.functions["xif6qno"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Tutorial_P1'];
 
@@ -20930,8 +20982,9 @@ currentModulo.assets.functions["1o6n832"]= function (tagName, modulo){
     return Tutorial_P1;
 
 };
-currentModulo.assets.functions["xc0ehd9"]= function (tagName, modulo){
+currentModulo.assets.functions["x1c4jlk3"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Tutorial_P2'];
 
@@ -20955,8 +21008,9 @@ currentModulo.assets.functions["xc0ehd9"]= function (tagName, modulo){
     return Tutorial_P2;
 
 };
-currentModulo.assets.functions["xpc7pf1"]= function (tagName, modulo){
+currentModulo.assets.functions["x1gqlqhr"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Tutorial_P2_filters_demo'];
 
@@ -20980,8 +21034,9 @@ currentModulo.assets.functions["xpc7pf1"]= function (tagName, modulo){
     return Tutorial_P2_filters_demo;
 
 };
-currentModulo.assets.functions["x1c768lc"]= function (tagName, modulo){
+currentModulo.assets.functions["xpmn7oi"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Tutorial_P3_state_demo'];
 
@@ -21005,8 +21060,9 @@ currentModulo.assets.functions["x1c768lc"]= function (tagName, modulo){
     return Tutorial_P3_state_demo;
 
 };
-currentModulo.assets.functions["x1c5hgk3"]= function (tagName, modulo){
+currentModulo.assets.functions["1sc0e93"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_docseg_Tutorial_P3_state_bind'];
 
@@ -21030,8 +21086,9 @@ currentModulo.assets.functions["x1c5hgk3"]= function (tagName, modulo){
     return Tutorial_P3_state_bind;
 
 };
-currentModulo.assets.functions["q80evd"]= function (tagName, modulo){
+currentModulo.assets.functions["14n8egj"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_Hello'];
 
@@ -21055,8 +21112,9 @@ currentModulo.assets.functions["q80evd"]= function (tagName, modulo){
     return Hello;
 
 };
-currentModulo.assets.functions["flqslf"]= function (tagName, modulo){
+currentModulo.assets.functions["r5jke9"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_Simple'];
 
@@ -21080,8 +21138,9 @@ currentModulo.assets.functions["flqslf"]= function (tagName, modulo){
     return Simple;
 
 };
-currentModulo.assets.functions["3o6a1p"]= function (tagName, modulo){
+currentModulo.assets.functions["18e8a6j"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_ToDo'];
 
@@ -21105,8 +21164,9 @@ currentModulo.assets.functions["3o6a1p"]= function (tagName, modulo){
     return ToDo;
 
 };
-currentModulo.assets.functions["181an31"]= function (tagName, modulo){
+currentModulo.assets.functions["x1b5e73p"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, StaticData } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_JSON'];
 
@@ -21130,8 +21190,9 @@ currentModulo.assets.functions["181an31"]= function (tagName, modulo){
     return JSON;
 
 };
-currentModulo.assets.functions["qiueia"]= function (tagName, modulo){
+currentModulo.assets.functions["x2b520g"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, StaticData } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_JSONArray'];
 
@@ -21155,8 +21216,9 @@ currentModulo.assets.functions["qiueia"]= function (tagName, modulo){
     return JSONArray;
 
 };
-currentModulo.assets.functions["1cfomu7"]= function (tagName, modulo){
+currentModulo.assets.functions["cd55r1"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_GitHubAPI'];
 
@@ -21180,8 +21242,9 @@ currentModulo.assets.functions["1cfomu7"]= function (tagName, modulo){
     return GitHubAPI;
 
 };
-currentModulo.assets.functions["xc3se4t"]= function (tagName, modulo){
+currentModulo.assets.functions["x1ii4dc3"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_ColorSelector'];
 
@@ -21205,8 +21268,9 @@ currentModulo.assets.functions["xc3se4t"]= function (tagName, modulo){
     return ColorSelector;
 
 };
-currentModulo.assets.functions["1shvmpg"]= function (tagName, modulo){
+currentModulo.assets.functions["f4cpaa"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_DateNumberPicker'];
 
@@ -21230,8 +21294,9 @@ currentModulo.assets.functions["1shvmpg"]= function (tagName, modulo){
     return DateNumberPicker;
 
 };
-currentModulo.assets.functions["19446pk"]= function (tagName, modulo){
+currentModulo.assets.functions["x1g4uuhi"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_PrimeSieve'];
 
@@ -21255,8 +21320,9 @@ currentModulo.assets.functions["19446pk"]= function (tagName, modulo){
     return PrimeSieve;
 
 };
-currentModulo.assets.functions["x1valf8i"]= function (tagName, modulo){
+currentModulo.assets.functions["1vfteg8"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, StaticData, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_Scatter'];
 
@@ -21280,8 +21346,9 @@ currentModulo.assets.functions["x1valf8i"]= function (tagName, modulo){
     return Scatter;
 
 };
-currentModulo.assets.functions["11ghnqa"]= function (tagName, modulo){
+currentModulo.assets.functions["1ns7ff4"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_FlexibleForm'];
 
@@ -21305,8 +21372,9 @@ currentModulo.assets.functions["11ghnqa"]= function (tagName, modulo){
     return FlexibleForm;
 
 };
-currentModulo.assets.functions["x1v0ancm"]= function (tagName, modulo){
+currentModulo.assets.functions["x1m1b3bs"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_FlexibleFormWithAPI'];
 
@@ -21330,8 +21398,9 @@ currentModulo.assets.functions["x1v0ancm"]= function (tagName, modulo){
     return FlexibleFormWithAPI;
 
 };
-currentModulo.assets.functions["1b0pe68"]= function (tagName, modulo){
+currentModulo.assets.functions["8bv8j2"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_Components'];
 
@@ -21355,8 +21424,9 @@ currentModulo.assets.functions["1b0pe68"]= function (tagName, modulo){
     return Components;
 
 };
-currentModulo.assets.functions["1np8jbm"]= function (tagName, modulo){
+currentModulo.assets.functions["x7jhpv4"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_OscillatingGraph'];
 
@@ -21380,8 +21450,9 @@ currentModulo.assets.functions["1np8jbm"]= function (tagName, modulo){
     return OscillatingGraph;
 
 };
-currentModulo.assets.functions["x2lqenq"]= function (tagName, modulo){
+currentModulo.assets.functions["xlrsjv0"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_Search'];
 
@@ -21405,8 +21476,9 @@ currentModulo.assets.functions["x2lqenq"]= function (tagName, modulo){
     return Search;
 
 };
-currentModulo.assets.functions["5hvec0"]= function (tagName, modulo){
+currentModulo.assets.functions["x1jlcjv6"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, StaticData, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_SearchBox'];
 
@@ -21430,8 +21502,9 @@ currentModulo.assets.functions["5hvec0"]= function (tagName, modulo){
     return SearchBox;
 
 };
-currentModulo.assets.functions["x4dmr4r"]= function (tagName, modulo){
+currentModulo.assets.functions["x14gac81"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, StaticData, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_WorldMap'];
 
@@ -21455,8 +21528,9 @@ currentModulo.assets.functions["x4dmr4r"]= function (tagName, modulo){
     return WorldMap;
 
 };
-currentModulo.assets.functions["xrqe02h"]= function (tagName, modulo){
+currentModulo.assets.functions["4ita9"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_Memory'];
 
@@ -21480,8 +21554,9 @@ currentModulo.assets.functions["xrqe02h"]= function (tagName, modulo){
     return Memory;
 
 };
-currentModulo.assets.functions["xairn07"]= function (tagName, modulo){
+currentModulo.assets.functions["xao68n1"]= function (tagName, modulo){
 
+    modulo = currentModulo;// HAX XXX
     const { Template, State, Script, Style } = modulo.registry.cparts;
     const confArray = modulo.defs['x_x_eg_ConwayGameOfLife'];
 
@@ -22450,7 +22525,7 @@ return {
   }
 };
 };
-currentModulo.assets.functions["v2hmca"]= function (){
+currentModulo.assets.functions["1rl6enq"]= function (){
 return {
   "id": 320452827,
   "node_id": "MDEwOlJlcG9zaXRvcnkzMjA0NTI4Mjc=",
@@ -22519,13 +22594,13 @@ return {
   "deployments_url": "https://api.github.com/repos/michaelpb/modulo/deployments",
   "created_at": "2020-12-11T03:08:21Z",
   "updated_at": "2022-09-23T22:20:01Z",
-  "pushed_at": "2022-09-26T18:16:52Z",
+  "pushed_at": "2022-09-26T22:18:35Z",
   "git_url": "git://github.com/michaelpb/modulo.git",
   "ssh_url": "git@github.com:michaelpb/modulo.git",
   "clone_url": "https://github.com/michaelpb/modulo.git",
   "svn_url": "https://github.com/michaelpb/modulo",
   "homepage": "https://modulojs.org/",
-  "size": 7551,
+  "size": 7827,
   "stargazers_count": 3,
   "watchers_count": 3,
   "language": "JavaScript",
@@ -24017,89 +24092,9 @@ return {
 };
 currentModulo.assets.functions['x1fmu1bk'].call(window, currentModulo);
 
-currentModulo.assets.functions['x2c5kmr']('x-demomodal', currentModulo);
-
-currentModulo.assets.functions['xhi756k']('x-demochart', currentModulo);
-
-currentModulo.assets.functions['1l6qfun']('x-examplebtn', currentModulo);
-
-currentModulo.assets.functions['xhqlhp0']('x-demoselector', currentModulo);
-
-currentModulo.assets.functions['11r1u8n']('mws-page', currentModulo);
-
-currentModulo.assets.functions['12ib52h']('mws-projectinfo', currentModulo);
-
-currentModulo.assets.functions['x137e220']('mws-devlognav', currentModulo);
-
-currentModulo.assets.functions['58cbmm']('mws-docsidebar', currentModulo);
-
-currentModulo.assets.functions['tfo23q']('mws-demo', currentModulo);
-
-currentModulo.assets.functions['1sqbqgf']('mws-allexamples', currentModulo);
-
-currentModulo.assets.functions['x95th48']('mws-section', currentModulo);
-
-currentModulo.assets.functions['tem87g']('docseg-templating_1', currentModulo);
-
-currentModulo.assets.functions['xlrudii']('docseg-templating_preparecallback', currentModulo);
-
-currentModulo.assets.functions['x1aeo3i6']('docseg-templating_comments', currentModulo);
-
-currentModulo.assets.functions['x1e26h53']('docseg-templating_escaping', currentModulo);
-
-currentModulo.assets.functions['1o6n832']('docseg-tutorial_p1', currentModulo);
-
-currentModulo.assets.functions['xc0ehd9']('docseg-tutorial_p2', currentModulo);
-
-currentModulo.assets.functions['xpc7pf1']('docseg-tutorial_p2_filters_demo', currentModulo);
-
-currentModulo.assets.functions['x1c768lc']('docseg-tutorial_p3_state_demo', currentModulo);
-
-currentModulo.assets.functions['x1c5hgk3']('docseg-tutorial_p3_state_bind', currentModulo);
-
-currentModulo.assets.functions['q80evd']('eg-hello', currentModulo);
-
-currentModulo.assets.functions['flqslf']('eg-simple', currentModulo);
-
-currentModulo.assets.functions['3o6a1p']('eg-todo', currentModulo);
-
-currentModulo.assets.functions['181an31']('eg-json', currentModulo);
-
-currentModulo.assets.functions['qiueia']('eg-jsonarray', currentModulo);
-
-currentModulo.assets.functions['1cfomu7']('eg-githubapi', currentModulo);
-
-currentModulo.assets.functions['xc3se4t']('eg-colorselector', currentModulo);
-
-currentModulo.assets.functions['1shvmpg']('eg-datenumberpicker', currentModulo);
-
-currentModulo.assets.functions['19446pk']('eg-primesieve', currentModulo);
-
-currentModulo.assets.functions['x1valf8i']('eg-scatter', currentModulo);
-
-currentModulo.assets.functions['11ghnqa']('eg-flexibleform', currentModulo);
-
-currentModulo.assets.functions['x1v0ancm']('eg-flexibleformwithapi', currentModulo);
-
-currentModulo.assets.functions['1b0pe68']('eg-components', currentModulo);
-
-currentModulo.assets.functions['1np8jbm']('eg-oscillatinggraph', currentModulo);
-
-currentModulo.assets.functions['x2lqenq']('eg-search', currentModulo);
-
-currentModulo.assets.functions['5hvec0']('eg-searchbox', currentModulo);
-
-currentModulo.assets.functions['x4dmr4r']('eg-worldmap', currentModulo);
-
-currentModulo.assets.functions['xrqe02h']('eg-memory', currentModulo);
-
-currentModulo.assets.functions['xairn07']('eg-conwaygameoflife', currentModulo);
-
-currentModulo.assets.functions["u8a55d"]= function (CTX, G){
+currentModulo.assets.functions["xrn1o07"]= function (CTX, G){
 var OUT=[];
-  OUT.push("\n"); // ""
-  OUT.push("\n<input [script.myinput]=\"\">\n\n"); // "<input [script.myinput]=\"\">"
-  OUT.push("\n<button [component.event]click:=\"script.showInfo\">\n    Click me\n</button>\n"); // "<button [component.event]click:=\"script.showInfo\"> Click me </button>"
+  OUT.push("\n    <button @click:=\"script.doLog\">\n        Click to console.log\n    </button>\n"); // "<button @click:=\"script.doLog\"> Click to console.log </button>"
 
 return OUT.join("");
 };

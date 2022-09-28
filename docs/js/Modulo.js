@@ -130,8 +130,8 @@ window.Modulo = class Modulo {
                     continue; // Skip if obj has not registered callback
                 }
                 const isType = ({ Type }) => Type === typeName;
-                const defConf = this.config[typeName.toLowerCase()];
-                const confs = defArray ? defArray.filter(isType) : [ defConf ];
+                const defaultConf = this.config[typeName.toLowerCase()];
+                const confs = defArray ? defArray.filter(isType) : [ defaultConf ];
                 for (const conf of confs) {
                     patches.push([ lcObj[typeName], methodName, conf ]);
                 }
@@ -295,6 +295,7 @@ modulo.register('cpart', class Component {
         const cpartNameString = Array.from(cpartTypes).join(', ');
 
         const code = (`
+            modulo = currentModulo;// HAX XXX
             const { ${ cpartNameString } } = modulo.registry.cparts;
             const confArray = modulo.defs['${ FullName }'];
 
@@ -328,7 +329,12 @@ modulo.register('cpart', class Component {
         //const defsCode = `currentModulo.defs['${ FullName }'] = ` + JSON.stringify(conf, null, 1);
         //const defsCode = `currentModulo.parentDefs['${ FullName }'] = ` + JSON.stringify(conf, null, 1);
         const exCode = `currentModulo.assets.functions['${ FuncDefHash }']`;
-        modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
+        //modulo.assets.runInline(`${ exCode }('${ conf.TagName }', currentModulo);\n`);
+        if (!FuncDefHash) {
+            console.warn('Empty component specified:', FullName);
+            return;
+        }
+        modulo.assets.invoke(FuncDefHash, [ conf.TagName ]);
     }
 
     /*
@@ -855,6 +861,7 @@ modulo.register('core', class AssetManager {
         this.modulo = modulo;
         this.functions = {};
         this.stylesheets = {};
+        this.invocations = [];
         // TODO: rawAssets and rawAssetsArray are both likely dead code!
         this.rawAssets = { js: {}, css: {} };
         this.rawAssetsArray = { js: [], css: [] };
@@ -891,6 +898,22 @@ modulo.register('core', class AssetManager {
             this.rawAssetsArray.css.push(text);
             this.appendToHead('style', text);
         }
+    }
+
+    invoke(hash, args) {
+        this.invocations.push([ hash, JSON.stringify(args) ]);
+        args.push(this.modulo); // TODO: need to standardize Modulo dependency injection patterns
+        this.functions[hash].apply(window, args);
+    }
+
+    getInlineJS(opts) {
+        // TODO: XXX Fix currentModulo -> modulo
+        let text = 'var _X = currentModulo.assets.invoke.bind(currentModulo.assets);\n';
+        for (const [ hash, argStr ] of this.invocations) {
+            //text += `try { _X('${ hash }', ${ argStr }); } catch (e) { console.log('${ hash } - ERROR:', e); }\n`;
+            text += `_X('${ hash }', ${ argStr });\n`;
+        }
+        return text;
     }
 
     runInline(funcText) {
@@ -1192,23 +1215,30 @@ modulo.register('cpart', class Script {
             modulo.assets.runInline(`modulo.register("${ conf.register }", ` +
                 `${ exCode }.call(window, currentModulo).${ conf.registerName });\n`);
             delete conf.Hash; // prevent getting run again
+            conf._HackHashDeleted = 'conf.register + ' + conf.Hash;
         }
     }
 
     static defineCallback(modulo, conf) {
         // XXX -- HAX
-        if (!conf.Parent || conf.Parent === 'x_x' && conf.Hash) {
+        if (!conf.Parent || (conf.Parent === 'x_x' && conf.Hash)) {
             const exCode = `currentModulo.assets.functions['${ conf.Hash }']`
             // TODO: Refactor:
             // NOTE: Uses "window" as "this." context for better compat
             modulo.assets.runInline(`${ exCode }.call(window, currentModulo);\n`);
             // currentModulo.registry.cparts.Script.require);\n`);
             delete conf.Hash; // prevent getting run again
+            conf._HackHashDeleted = '!conf.Parent + ' + conf.Hash;
         }
     }
 
     static factoryCallback(renderObj, conf, modulo) {
         const { Content, Hash, localVars } = conf;
+        if (!(Hash in modulo.assets.functions)) {
+            // debugger;
+            console.log('ERROR: Could not find Hash:', conf, renderObj);
+            return {};
+        }
         const func = modulo.assets.functions[Hash];
         // Now, actually run code in Script tag to do factory method
         //const results = func.call(null, modulo, this.require || null);
@@ -2118,6 +2148,7 @@ modulo.register('command', function build (modulo, opts = {}) {
     }
     opts.jsFilePath = modulo.assets.build('js', opts, pre.js.join('\n'));
     opts.cssFilePath = modulo.assets.build('css', opts, pre.css.join('\n'));
+    opts.jsInlineText = modulo.assets.getInlineJS(opts);
     opts.htmlFilePath = buildhtml(modulo, opts);
     setTimeout(() => {
         document.body.innerHTML = `<h1><a href="?mod-cmd=${opts.type}">&#10227;
@@ -2150,16 +2181,20 @@ modulo.register('util', function getBuiltHTML(modulo, opts = {}) {
             elem.setAttribute('modulo-original-html', elem.originalHTML);
         }
     }
+    // TODO: Generate in a template of some sort instead!
     const linkProps = { rel: 'stylesheet', href: opts.cssFilePath };
     doc.head.append(Object.assign(doc.createElement('link'), linkProps));
     const scriptProps = { src: opts.jsFilePath };
     doc.body.append(Object.assign(doc.createElement('script'), scriptProps));
+    const inlineProps = { textContent: opts.jsInlineText };
+    doc.body.append(Object.assign(doc.createElement('script'), inlineProps));
+    //let inlineExtra = '<script>\n' + (opts.jsInlineText || '') + '\n</script>';
     return '<!DOCTYPE HTML><html>' + doc.documentElement.innerHTML + '</html>';
 });
 
 modulo.register('command', function buildhtml(modulo, opts = {}) {
     const { saveFileAs, getBuiltHTML } = modulo.registry.utils;
-    const filename = window.location.pathname.split('/').pop();
+    const filename = window.location.pathname.split('/').pop() || 'index.html';
     return saveFileAs(filename, getBuiltHTML(modulo, opts));
 });
 
